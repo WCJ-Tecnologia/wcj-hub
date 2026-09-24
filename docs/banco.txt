@@ -330,7 +330,7 @@ deactivated_at / deactivated_by
 índices: date
 unique: (date, holiday_scope_id, state, city)
          ('' em vez de null de propósito: null não colide em unique e deixaria duplicar)
-Ver dúvida PRJ-06: feriado local vale para todos ou depende da cidade do dev?
+Feriado vale para todos os usuários, independente da cidade do dev (PRJ-06).
 
 =====================================================================
 settings                               [v1]
@@ -499,7 +499,7 @@ project_status_id           fk project_statuses   not null  on delete restrict
 project_modality_id         fk project_modalities not null  on delete restrict  default 1
 key_prefix                  varchar(10)           not null  unique  check (maiúsculas A-Z e 0-9)
                                                              (RN-PRJ-19. Não muda depois da 1ª tarefa,
-                                                             ver dúvida PRJ-02)
+                                                             PRJ-02)
 name                        varchar(160)          not null
 description                 text                  null
 started_on                  date                  null
@@ -509,7 +509,7 @@ last_task_number            int unsigned          not null  default 0
                                                              contador da chave (RN-PRJ-19): lido com
                                                              lockForUpdate na criação da tarefa;
                                                              unique(tasks.project_id, number) é a trava
-                                                             final. Ver dúvida PRJ-03.
+                                                             final (PRJ-03).
 -- Padrões configuráveis (D-GER-05). Mudar vale dali para a frente (RN-PRJ-29), histórico em audit_logs.
 require_assignee_out_of_backlog  boolean  not null  default true   (RN-PRJ-02)
 default_requires_code_review     boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
@@ -566,7 +566,7 @@ id   slug          label              etapa padrão (D-PRJ-11, D-PRJ-17)
 5    test          Teste              In test
 6    done          Pronto             Done
 7    paused        Pausa              Paused
-8    support       Suporte/chamados   Suporte
+8    support       Suporte/chamados   Support
 Regra derivada (RN-PRJ-08): saída de code_review, test ou done para queue, sprint ou development
 = retrabalho. Pegar só "para development" deixava escapar a devolução para To do. Saída de done
 = reprovação na homologação (origem homologation).
@@ -575,7 +575,7 @@ Regra derivada (RN-PRJ-08): saída de code_review, test ou done para queue, spri
 board_stages                           [v1]
 =====================================================================
 Etapas do quadro, por projeto (RN-PRJ-30). O projeto nasce com as 8 do padrão acima, em inglês
-(D-PRJ-14); "Suporte" é a única em português porque é o nome dado no requisito (ver dúvida PRJ-10).
+(D-PRJ-14), inclusive "Support" (PRJ-10).
 project_id            fk projects      not null   on delete cascade
 stage_role_id         fk stage_roles   not null   on delete restrict
 name                  varchar(60)      not null
@@ -629,7 +629,7 @@ unique: (project_id, name)   (mata a duplicata ANCORA/ÂNCORA do Trello no cadas
 task_priorities                        (fechado) [v1]
 =====================================================================
 Não está no requisito de Projetos; proposto porque Chamados terá prioridade e o card de suporte
-vai conviver com ela. Ver dúvida PRJ-07 (pode sair).
+vai conviver com ela. Confirmado (PRJ-07).
 id   slug     label
 1    low      Baixa
 2    normal   Normal
@@ -689,8 +689,10 @@ origin_task_id        fk tasks             null      on delete restrict
                                                      bug achado DEPOIS de publicado vira tarefa nova
                                                      (tipo bug) apontando para a original. Reabrir a
                                                      original a tiraria do pacote já em produção e
-                                                     falsificaria a versão (package_tasks). Indicador
-                                                     "bug de produção" = contagem por origin_task_id.
+                                                     falsificaria a versão (package_tasks). Conta como
+                                                     indicador de QUALIDADE DO PROJETO (bugs de produção
+                                                     por pacote), não como retrabalho do dev original
+                                                     nem no painel de produtividade (PRJ-08).
 created_by            fk users             not null  on delete restrict
 audit_channel_id      fk audit_channels    not null  (canal de criação; a IA escreve tarefa, F-PRJ-05)
 índices: project_id, (project_id, board_stage_id), board_stage_id, task_type_id, project_area_id,
@@ -868,13 +870,16 @@ task_id               fk tasks               not null  on delete cascade
 validation_type_id    fk validation_types    not null  on delete restrict
 round                 smallint unsigned      not null  default 1  (+1 a cada volta para desenvolvimento)
 validation_result_id  fk validation_results  not null  on delete restrict  default 1
-validated_by          fk users               null      on delete restrict
-validated_at          timestamp              null
+validated_by          fk users               null      on delete restrict  quem puxou e valida
+claimed_at            timestamp              null      quando puxou (PRJ-09)
+validated_at          timestamp              null      quando deu o parecer
 notes                 text                   null
-índices: task_id, (validated_by, validated_at), validation_result_id
+índices: task_id, (validated_by, validated_at), validation_result_id,
+         (validation_type_id, validation_result_id, claimed_at)   ("fila de teste cruzado")
 unique: (task_id, validation_type_id, round)
-RN-PRJ-26 (teste cruzado por dev diferente do autor) e RN-PRJ-25 são regras do Service: o banco
-não sabe quem é "autor" (ver dúvida PRJ-09).
+Teste cruzado NÃO é atribuído de antemão (PRJ-09): fica livre na fila e qualquer dev alocado no
+projeto puxa (validated_by + claimed_at). Regra do Service (RN-PRJ-26): não pode puxar quem está
+atribuído à tarefa como back-end, front-end ou full-stack. RN-PRJ-25 também é regra do Service.
 
 =====================================================================
 pull_request_statuses                  (fechado) [v1]
@@ -917,7 +922,7 @@ created_by            fk users            not null  on delete restrict  (pode se
 audit_channel_id      fk audit_channels   not null
 removed_at / removed_by                             (lançamento errado sai do total; fica no histórico)
 índices: task_id, (user_id, worked_on), worked_on
-Sem cronômetro (start/stop) na v1: ver dúvida PRJ-11.
+Lançamento à mão, sem cronômetro (PRJ-11).
 
 =====================================================================
 package_status_roles                   (fechado) [v1]
@@ -1330,7 +1335,7 @@ Já pronto no Núcleo, sem mudança:
 
 Chamados criará no próprio domínio (app/Domains/Chamados/), só com FK para o Núcleo e para tasks:
 - tickets (number por sequência do banco RN-CHM-02, client_id, contract_id, project_id null,
-  task_id null → coluna Suporte F-PRJ-08, queue_id, priority, status, sla_due_at,
+  task_id null → coluna Support F-PRJ-08, queue_id, priority, status, sla_due_at,
   requester_contact_id, parent_ticket_id RN-CHM-06, auto_close_at RN-CHM-09)
 - ticket_queues (N1/N2/N3, RN-CHM-07) · ticket_queue_members (+ flag despachante, D-CHM-02)
 - ticket_statuses · ticket_types · ticket_areas
@@ -1419,30 +1424,22 @@ PROJETOS
 PRJ-01 [RESPONDIDA 24/09, Lucas Scholz] Contrato no projeto é opcional (só referência). Projeto
        fechado é contrato de entrega; Projetos gerencia o projeto e não compara horas com contrato.
        Saíram tasks.contract_id e time_entries.contract_id (D-PRJ-18).
-PRJ-02 O prefixo da chave (SGM) pode mudar depois de criadas tarefas? Proposta: não (key gravada).
-       Se puder: key vira derivada e a busca "SGM-17" passa por join.
-PRJ-03 Numeração da chave: contador em projects com lockForUpdate (proposto) ou sequência real do
-       banco por projeto? banco.md §8 fala em sequência; MySQL não tem sequência por grupo, e
-       criar SEQUENCE por projeto no Postgres é DDL em runtime. O contador com lock + unique
-       cumpre o objetivo (sem max+1, sem reuso). Confirmar que atende a regra.
+PRJ-02 [RESPONDIDA 24/09, Lucas Scholz] Prefixo congela depois da 1ª tarefa; key gravada.
+PRJ-03 [RESPONDIDA 24/09, Lucas Scholz] Contador em projects com lockForUpdate + unique (project_id, number).
 PRJ-04 Horas previstas por tarefa×pessoa (proposto) ou por item do roteiro? (Rafael citou as duas)
 PRJ-05 Depois de retrabalho, o QA reaproveita os test_items (volta tudo a pending) ou abre uma
        rodada nova (test_runs → test_items)? Proposta: reaproveita e usa task_validations.round
        + audit_logs; rodada nova só se o Rafael quiser comparar rodadas lado a lado.
-PRJ-06 Feriado municipal vale para todos (empresa em Mogi) ou depende da cidade de cada dev (PJ
-       remotos)? Proposta: vale para todos; users.city fica para depois.
-PRJ-07 task_priorities: entra (proposto) ou sai? Não está no requisito de Projetos.
-PRJ-08 Bug achado depois de publicado: tarefa nova ligada à original (tasks.origin_task_id,
-       proposto) conta como retrabalho do dev original no painel de produtividade, ou só como
-       indicador de qualidade do projeto?
-PRJ-09 "Autor" da tarefa para o teste cruzado (RN-PRJ-26) = quem está atribuído como back/front?
-       Proposta: sim, derivado de task_assignments; sem coluna author_id.
-PRJ-10 Etapa padrão "Suporte" em português ou "Support", já que as outras são em inglês (D-PRJ-14)?
-PRJ-11 Lançamento de horas manual (proposto) ou com cronômetro start/stop? Cronômetro pede
-       tabela de sessões abertas.
-PRJ-12 Fase × sprint × versão (modelos Rafael): fase existe acima do pacote? Se sim, entra
-       project_phases; se não, sai. Sprint vira entidade ou continua sendo só a coluna "To do"?
-       Proposta: sprint = coluna; fase só se o Rafael confirmar.
+PRJ-06 [RESPONDIDA 24/09, Lucas Scholz] Feriado vale para todos.
+PRJ-07 [RESPONDIDA 24/09, Lucas Scholz] Tarefa tem prioridade (baixa, normal, alta, urgente).
+PRJ-08 [RESPONDIDA 24/09, Lucas Scholz] Bug em produção = tarefa nova (origin_task_id) e indicador de qualidade do
+       projeto. Não entra no retrabalho nem na produtividade do dev.
+PRJ-09 [RESPONDIDA 24/09, Lucas Scholz] Teste cruzado fica livre para qualquer dev alocado puxar (claimed_at).
+       Mantida a RN-PRJ-26: quem desenvolveu (atribuído como back/front/full-stack) não puxa.
+PRJ-10 [RESPONDIDA 24/09, Lucas Scholz] "Support".
+PRJ-11 [RESPONDIDA 24/09, Lucas Scholz] Horas lançadas à mão.
+PRJ-12 [RESPONDIDA 24/09, Lucas Scholz] Sprint = coluna "To do", sem entidade. Fase (project_phases) segue
+       pendente de confirmação do Rafael.
 PRJ-13 Equipe do cliente por fase no Histórico de Desenvolvimento (F-PRJ-15): basta listar
        client_contacts do projeto (tabela project_client_contacts) ou é texto no relatório?
        Proposta: v1+, decidir com o relatório.

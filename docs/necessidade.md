@@ -52,6 +52,9 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-NUC-01 | 24/09/2026 | Cliente pode ser **empresa estrangeira** (casos pequenos; hoje 2 projetos): país + identificador fiscal do país, opcional; contrato com moeda própria. Pessoa física continua fora. |
 | D-NUC-02 | 24/09/2026 | **Contato do cliente não tem login na v1.** O acesso do contato entra com o módulo Chamados. |
 | D-PRJ-18 | 24/09/2026 | Projetos **gerencia o projeto**, não o contrato: projeto fechado é contrato de entrega, não de horas. Horas previstas e realizadas servem a prazo, previsto × realizado e produtividade; **não são comparadas com horas de contrato** no módulo Projetos. Contrato no projeto é opcional. |
+| D-PRJ-19 | 24/09/2026 | **Teste cruzado livre:** não é atribuído; qualquer dev alocado puxa, menos quem desenvolveu a tarefa. |
+| D-PRJ-20 | 24/09/2026 | Coluna padrão de suporte se chama **`Support`**, em inglês como as demais (D-PRJ-14). Substitui o nome `Suporte` de D-PRJ-17. |
+| D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. Sprint é a coluna `To do`, não entidade. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -118,7 +121,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 
 ### Fluxo principal
 
-1. Gestor cria o projeto vinculado a um cliente e a um contrato, com **prefixo** (ex.: `SGM`) e **etapas próprias** (D-PRJ-01). Modelo padrão (D-PRJ-11): `Backlog → To do (sprint) → Doing → Code-review → In test → Done`, mais `Paused` e `Suporte` (D-PRJ-17). Detalhe em [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md).
+1. Gestor cria o projeto vinculado a um cliente e a um contrato, com **prefixo** (ex.: `SGM`) e **etapas próprias** (D-PRJ-01). Modelo padrão (D-PRJ-11): `Backlog → To do (sprint) → Doing → Code-review → In test → Done`, mais `Paused` e `Support` (D-PRJ-17). Detalhe em [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md).
 2. Gestor (ou a IA dele) escreve a tarefa no **modelo de requisição**: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`. Cada critério vira item do roteiro de teste.
 3. Gestor atribui pessoas **por função** (back-end, front-end, QA) e define quais validações a tarefa exige: **code review**, **teste cruzado** e/ou **QA** (RN-PRJ-09).
 4. Tarefa sem responsável não sai do Backlog (D-PRJ-02). Quem é atribuído é notificado.
@@ -127,7 +130,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. O dev lança as **horas realizadas**.
 8. Aprovado no QA, é feito o merge (normalmente pelo Tech Lead) e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
 9. Tarefas em `Done` entram num **pacote (versão)**. O pacote é liberado em **homologação**, homologado e publicado em produção; aí está finalizado. A data é definida por projeto; em projeto de cliente, geralmente pelo cliente.
-10. Quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail), o gestor registra um **card de suporte** na coluna `Suporte` do quadro (D-PRJ-17). Quando o módulo Chamados existir, os chamados de projeto passam a cair nessa mesma coluna.
+10. Quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail), o gestor registra um **card de suporte** na coluna `Support` do quadro (D-PRJ-17). Quando o módulo Chamados existir, os chamados de projeto passam a cair nessa mesma coluna.
 11. O gestor gera para o cliente o **histórico de desenvolvimento** (linha do tempo) e o **relatório de fechamento** do período.
 
 ### Princípio: padrão que se ajusta (D-GER-05)
@@ -154,7 +157,7 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 - **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
 - **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa, no sistema e por e-mail.
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos **só pelo gestor e pelo Administrador**. O dev não tem acesso a esse painel.
-- **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele é feito por um dev **diferente do autor**, alocado no projeto.
+- **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele **não é atribuído de antemão**: qualquer dev alocado no projeto puxa, desde que **não seja quem desenvolveu** (atribuído como back-end, front-end ou full-stack) (D-PRJ-19).
 - **RN-PRJ-29** Mudar a configuração de um projeto vale **dali para a frente**, fica no histórico e **nunca apaga** registro já feito. Remover uma etapa com tarefas dentro exige escolher para qual etapa elas vão.
 - **RN-PRJ-32** **Card de suporte** (D-PRJ-17): tarefa do tipo `suporte`, criada pelo gestor (ou pela IA dele) quando o cliente aciona a WCJ direto. Além dos campos da tarefa, registra **quem pediu** (contato do cliente), **por onde** (WhatsApp, telefone, e-mail, reunião, outro) e **quando o pedido chegou**. As horas apontadas nele servem à gestão do projeto como as de qualquer tarefa; o banco de horas é do módulo Chamados (D-PRJ-18). Quando o módulo Chamados entrar, esses cards podem ser vinculados ou convertidos em chamado, sem perder o histórico.
 
@@ -175,7 +178,7 @@ O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configura
 | RN-PRJ-10 | **Estados do pacote (versão)** | `em montagem → em homologação → homologado → em produção`. Só tarefa em `Done` entra. Pacote em homologação não recebe tarefa nova; reprovação devolve as tarefas afetadas com retrabalho de origem homologação. **Homologação feita pela equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13) | Renomear, criar ou remover estados |
 | RN-PRJ-07 | **Tipo** e **área** da tarefa (campos separados, lista fechada) | Tipos: melhoria, correção de bug, **suporte**, mudança (GMUD). Áreas: nenhuma, o gestor cadastra (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial) | Editar as duas listas |
 | RN-PRJ-06 | **Modalidade** do projeto | `tradicional` (D-GER-02) | `100% IA`. Na v1 é só uma marcação no projeto, com o mesmo fluxo aberto |
-| RN-PRJ-31 | Coluna `Suporte` | **Ligada desde a v1** (D-PRJ-17): recebe os cards de suporte registrados pelo gestor. Com o módulo Chamados, recebe também os chamados de projeto (F-PRJ-08) | Renomear, desligar |
+| RN-PRJ-31 | Coluna `Support` | **Ligada desde a v1** (D-PRJ-17): recebe os cards de suporte registrados pelo gestor. Com o módulo Chamados, recebe também os chamados de projeto (F-PRJ-08) | Renomear, desligar |
 
 Observação (D-PRJ-12): o QA testa a branch do PR **no próprio ambiente local**; o sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado.
 
@@ -194,7 +197,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | F-PRJ-20 | **Chave por projeto** (`SGM-17`) | Modelos SGM | **v1** |
 | F-PRJ-05 | **Modelo de tarefa** = documento de requisição (Sendo/Quero/Para + `CA_n`) | Modelos SGM | **v1** |
 | F-PRJ-14 | **Critério de aceite vira item do roteiro de teste** | Rafael | **v1** |
-| F-PRJ-08 | **Coluna "Suporte"** no quadro: na v1, card de suporte registrado pelo gestor; depois, chamado do cliente cai como tarefa ligada | Rafael + D-PRJ-17 | **v1** (card manual) / com o módulo Chamados (automático) |
+| F-PRJ-08 | **Coluna "Support"** no quadro: na v1, card de suporte registrado pelo gestor; depois, chamado do cliente cai como tarefa ligada | Rafael + D-PRJ-17 | **v1** (card manual) / com o módulo Chamados (automático) |
 | F-PRJ-01 | **Indicador de retrabalho** com motivo da devolução | Trello Wpay | v1+ (os dados já são gravados na v1 por RN-PRJ-08/11) |
 | F-PRJ-17 | **Painel de produtividade por dev** (prazo, retrabalho, previsto × realizado) | Rafael | v1+ (idem) |
 | F-PRJ-03 | **Versão** como registro, com notas de versão | Trello Wpay + Rafael | v1+ |
@@ -288,7 +291,7 @@ O Alaor recomenda o **GLPI**, ferramenta de ITSM open source, sem licença, hosp
 
 | | A. Construir no Hub | B. GLPI integrado ao Hub | C. Em duas fases (recomendada) |
 |---|---|---|---|
-| O que é | Módulo próprio, como Projetos e CRM | GLPI hospedado pela WCJ; Hub e GLPI conversam pela API do GLPI | **Agora (v1 de Projetos):** o gestor registra à mão o card de suporte na coluna `Suporte` do quadro (D-PRJ-17). **Depois:** entrada por e-mail. **Quando entrar sustentação de infra:** avaliar o GLPI para o ITSM completo |
+| O que é | Módulo próprio, como Projetos e CRM | GLPI hospedado pela WCJ; Hub e GLPI conversam pela API do GLPI | **Agora (v1 de Projetos):** o gestor registra à mão o card de suporte na coluna `Support` do quadro (D-PRJ-17). **Depois:** entrada por e-mail. **Quando entrar sustentação de infra:** avaliar o GLPI para o ITSM completo |
 | A favor | Tudo num lugar só: mesmo login, mesma auditoria, IA pelo mesmo MCP, chamado vira tarefa sem integração | ITSM completo pronto e maduro; inventário; comunidade grande; Alaor já conhece | Resolve o pedido do Rafael (coluna de suporte no quadro) já na v1, sem construir ITSM antes de ter demanda; decide o GLPI com demanda real |
 | Contra | ITSM é trabalhoso (filas, SLA, regras, e-mail); construir antes de ter volume | Mais um sistema para hospedar, atualizar e proteger; clientes e contratos duplicados (sincronizar do Núcleo); a IA do Hub não enxerga o GLPI sem integração própria; cliente com dois portais | Se o GLPI for adotado depois, o chamado de projeto do Hub precisa conversar com ele |
 
@@ -301,7 +304,7 @@ Pontos de atenção se o GLPI entrar:
 
 1. Cliente manda **e-mail** para o endereço de suporte (D-CHM-02; `ticket@` ou `suporte@wcjtecnologia.com.br`, a definir). O e-mail vira chamado, ligado ao cliente pelo endereço do remetente.
 2. O **despachante** faz a triagem: confirma cliente, contrato e projeto, define **tipo, área e prioridade** (a prioridade é definida pela WCJ, não pelo cliente) e coloca na **fila** certa.
-3. **N1** tenta resolver. Se não resolve, escala para **N2 / N3**. Chamado de desenvolvimento ligado a projeto cai na coluna `Suporte` do quadro do projeto como tarefa (F-PRJ-08).
+3. **N1** tenta resolver. Se não resolve, escala para **N2 / N3**. Chamado de desenvolvimento ligado a projeto cai na coluna `Support` do quadro do projeto como tarefa (F-PRJ-08).
 4. O responsável atende, registra as interações e **aponta as horas**.
 5. Chamado resolvido: o cliente confirma, ou o chamado **fecha sozinho** se o cliente não responder no prazo.
 
