@@ -49,6 +49,7 @@ Fonte: transcrição automática da chamada. Trechos ambíguos na transcrição 
 | D-PRJ-07 | Nomenclatura: indiferente para a equipe. O sistema usa **tarefa**. | Vocabulário |
 | D-PRJ-08 | Gestor de projetos **não vê** pipeline comercial nem valores de proposta (confirmado por Lucas Scholz após a reunião). | Quem usa |
 | D-PRJ-09 | Revisão técnica = aprovação do PR pelo Tech Lead (fluxo atual, confirmado por Lucas Scholz após a reunião). | RN-PRJ-23, F-PRJ-06 |
+| D-PRJ-10 | O Tech Lead **varia por projeto** (confirmado por Lucas Scholz após a reunião). | RN-PRJ-24, RN-PRJ-25 |
 
 ## Pendências
 

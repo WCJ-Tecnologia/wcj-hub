@@ -45,6 +45,7 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 | 8 | ~~Tarefa sem responsável sai do Backlog?~~ **Resolvido: não** (D-PRJ-02) | Ata 24/09 |
 | 9 | Tratativa travada para edição depois de 24 h? (RN-CRM-03) | Pauta 03 |
 | 10 | Chamado fechado reabre ou gera outro? (RN-CHM-06) | Pauta 02 |
+| 10b | Quem aprova a revisão técnica quando o Tech Lead é o próprio dev da tarefa? (RN-PRJ-25) | Ata 24/09 |
 
 **Escopo da v1**
 | # | Decisão | Base |
