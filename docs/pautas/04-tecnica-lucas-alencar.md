@@ -24,7 +24,7 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 - Onde publicar: VPS própria ou ambiente já existente? Precisa de HTTPS público desde a homologação (os assistentes chamam o MCP a partir da nuvem deles).
 
 ### 1b. Fluxo de desenvolvimento (dele, D-PRJ-11)
-As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../levantamento/fluxo-desenvolvimento.md), já com ambiente do QA e merge respondidos (D-PRJ-12). Faltam: teste cruzado vale para toda tarefa? Quem homologa o pacote, e o cliente participa pelo sistema? Nomes das colunas em inglês ou português?
+As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../levantamento/fluxo-desenvolvimento.md), todas respondidas (D-PRJ-12 a 15). Só validar com ele: teste cruzado ligado/desligado por tarefa (D-PRJ-15).
 
 ### 2. Núcleo e banco (15 min)
 - Entidades do núcleo: usuários, papéis, clientes (CNPJ único), contatos, contratos.

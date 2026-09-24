@@ -13,9 +13,13 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
 | D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
 | D-PRJ-01 a 10 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
+| D-PRJ-13 | 24/09/2026 | O cliente **não participa** da homologação do pacote: a equipe WCJ testa tudo junto. |
+| D-PRJ-14 | 24/09/2026 | Colunas padrão em **inglês**, sempre editáveis por projeto. |
+| D-PRJ-15 | 24/09/2026 | Teste cruzado **liga/desliga por tarefa** [validar com Lucas Alencar]. |
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
+| D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
@@ -33,6 +37,8 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | **Chamados** | [LEVANTAR] WhatsApp / e-mail direto com o técnico | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
 
 **Base comum (núcleo):** usuários, papéis, clientes (empresas), contatos e contratos. É o que liga os três módulos: o lead ganho no CRM vira cliente; o cliente tem contratos; o contrato tem projetos e dá direito a abrir chamados.
+
+**Princípio de desenho (D-GER-05):** padrão pronto, ajustável por projeto. Só é fixo o que protege segurança, histórico e indicadores.
 
 **Interface de IA:** cada usuário interno conecta o próprio assistente (Claude ou ChatGPT) ao sistema para consultar e alterar dados dos módulos, com as mesmas permissões que tem na tela. Detalhado no bloco [Interface de IA (MCP)](#interface-de-ia-mcp).
 
@@ -93,22 +99,22 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 10. Chamado de cliente ligado ao projeto cai na coluna `Chamados` do quadro, como tarefa ligada ao chamado.
 11. O gestor gera para o cliente o **histórico de desenvolvimento** (linha do tempo) e o **relatório de fechamento** do período.
 
-### Regras de negócio
+### Princípio: padrão que se ajusta (D-GER-05)
+
+O sistema entrega um **padrão pronto** e o gestor **ajusta por projeto** quando precisar. Fluxo travado vira ferramenta descartável: o projeto que não cabe no padrão volta para a planilha. Por isso a maior parte das regras abaixo são **padrões configuráveis**. Só ficam fixas as regras que protegem segurança, histórico e os números dos indicadores.
+
+O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa tem um **papel** (RN-PRJ-13). O gestor renomeia, cria ou remove etapas à vontade; tempo por etapa e retrabalho são calculados pelo papel, não pelo nome.
+
+### Regras fixas (valem para todo projeto)
 
 - **RN-PRJ-01** Todo projeto pertence a um cliente e a um contrato. Projeto interno ou produto da WCJ (ex.: Wpay) usa o cliente "WCJ".
-- **RN-PRJ-02** Tarefa sem responsável não sai do `Backlog` (D-PRJ-02).
 - **RN-PRJ-03** Projeto encerrado não recebe tarefa nova; reabrir exige Gestor ou Administrador.
 - **RN-PRJ-04** Dev só vê projetos em que está alocado (D-PRJ-03).
 - **RN-PRJ-05** Todo projeto tem um gestor responsável. Gestor vê e edita os projetos que gere; Administrador vê todos.
-- **RN-PRJ-06** Projeto tem **modalidade**: `tradicional` ou `100% IA` (D-GER-02). [LEVANTAR com Lucas Scholz] se a modalidade 100% IA muda o fluxo, por exemplo com etapas fixas espelhando o playbook `aplicacao-nova` e as paradas obrigatórias como marcos do projeto.
-- **RN-PRJ-07** **Tipo** e **área** da tarefa são dois campos separados, cada um com lista fechada. As áreas são cadastradas por projeto (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial).
-- **RN-PRJ-08** Toda devolução para `Doing` exige **motivo de lista fechada** e conta um ciclo de retrabalho, com a **origem**: code review, teste cruzado, QA ou homologação. Motivos iniciais [validar com Rafael]: ajuste visual, regra de negócio, erro/bug, **requisito incompleto ou mal documentado**. O último mede a qualidade da documentação, apontada pelo Rafael como a principal causa de retrabalho.
-- **RN-PRJ-09** A tarefa indica se **exige code review**, se **exige teste cruzado** e se **exige QA**. Validação não exigida é pulada sem registrar exceção (ex.: Swagger tem code review e não tem QA). Pular etapa exigida fica registrado.
-- **RN-PRJ-10** Tarefa só entra num pacote (versão) se estiver `Done`, ou seja, com merge feito. O pacote tem estados: `em montagem → em homologação → homologado → em produção`. Pacote em homologação ou depois não recebe tarefa nova; reprovação na homologação devolve as tarefas afetadas para `Doing` e conta retrabalho de origem **homologação**.
 - **RN-PRJ-11** Mudança de etapa sempre grava quem, quando, de onde e para onde (RN-NUC-04). É daí que saem tempo por etapa e retrabalho.
-- **RN-PRJ-12** Ir para `Impedimento/Pausa` exige motivo; o tempo parado é contado à parte.
-- **RN-PRJ-13** As etapas são **configuráveis por projeto** (D-PRJ-01). O sistema precisa saber o **papel** de cada etapa (fila, desenvolvimento, revisão, teste, pronto, pausa, chamados) para calcular os indicadores, independentemente do nome.
-- **RN-PRJ-14** Pessoa é atribuída à tarefa **com uma função** (back-end, front-end, QA, outra). Pode haver mais de uma pessoa por função.
+- **RN-PRJ-13** Toda etapa tem um **papel**: fila, sprint, desenvolvimento, code review, teste, pronto, pausa, chamados. Nome, ordem e quantidade de etapas são livres (D-PRJ-01); o papel é obrigatório.
+- **RN-PRJ-08** Toda volta para uma etapa de desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA, homologação) e **motivo**. A lista de motivos é editável por projeto e sempre tem "outro" com texto. Motivos iniciais [validar com Rafael]: ajuste visual, regra de negócio, erro/bug, **requisito incompleto ou mal documentado** (a principal causa de retrabalho, segundo o Rafael).
+- **RN-PRJ-14** Pessoa é atribuída à tarefa **com uma função** (back-end, front-end, QA, outra). Pode haver mais de uma pessoa por função. A lista de funções é editável.
 - **RN-PRJ-15** Horas previstas e realizadas são registradas **por pessoa**. Horas são decimais; não há arredondamento para dia.
 - **RN-PRJ-16** A data prevista é calculada em **dias úteis**: horas previstas ÷ carga diária do dev, pulando fins de semana e feriados do calendário. Ex.: 16 h = 2 dias úteis para 8 h/dia e 4 dias úteis para 4 h/dia.
 - **RN-PRJ-17** Cada usuário interno tem **carga diária** cadastrada (ex.: 8 h ou 4 h). Mudança de carga vale dali para a frente; não recalcula o passado.
@@ -116,13 +122,30 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 - **RN-PRJ-19** Tarefa tem **chave** `<prefixo do projeto>-<número>` (ex.: `SGM-17`). O número é sequencial por projeto, gerado por sequência do banco, e nunca é reutilizado.
 - **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
 - **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa. [LEVANTAR canal: no sistema, e-mail]
-- **RN-PRJ-23** Tarefa que exige code review só entra em `Code-review` com **PR vinculado** (PR para a `main`). Vai para `In test` quando o Tech Lead aprova; PR recusado devolve a tarefa para `Doing` com retrabalho de origem **code review** (D-PRJ-09).
-- **RN-PRJ-24** Todo projeto com code review tem **um Tech Lead** definido pelo gestor (D-PRJ-10). A mesma pessoa pode ser Tech Lead num projeto e dev em outro. Só o Tech Lead do projeto (ou o Administrador) move a tarefa de `Code-review` para `In test`. Trocar o Tech Lead vale dali para a frente e fica no histórico.
-- **RN-PRJ-25** O Tech Lead não aprova a revisão de tarefa em que ele próprio é o dev. [DECIDIR] quem aprova nesse caso: outro Tech Lead indicado pelo gestor, ou o gestor.
-- **RN-PRJ-26** O teste cruzado é feito por um dev **diferente do autor** da tarefa, alocado no projeto.
-- **RN-PRJ-27** A tarefa só vai para `Done` com o merge registrado. Quem faz o merge é o **Tech Lead** do projeto (D-PRJ-12); só ele (ou o Administrador) move de `In test` para `Done`.
-- **RN-PRJ-28** O QA testa a branch do PR **no próprio ambiente local** (D-PRJ-12). O sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado (RN-PRJ-10).
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos pelo gestor e pelo Administrador. O dev vê **apenas os próprios**. Não existe ranking público.
+- **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele é feito por um dev **diferente do autor**, alocado no projeto.
+- **RN-PRJ-29** Mudar a configuração de um projeto vale **dali para a frente**, fica no histórico e **nunca apaga** registro já feito. Remover uma etapa com tarefas dentro exige escolher para qual etapa elas vão.
+
+### Padrões configuráveis por projeto
+
+O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configurações do projeto; o que é por tarefa, muda na própria tarefa.
+
+| # | Configuração | Padrão | O que pode mudar |
+|---|---|---|---|
+| RN-PRJ-30 | **Etapas do quadro** | `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` (D-PRJ-11), em inglês (D-PRJ-14) | Renomear, criar, remover, reordenar; nomes em qualquer idioma |
+| RN-PRJ-09 | **Validações da tarefa** | Code review **ligado**, QA **ligado**, teste cruzado conforme o padrão do projeto | Cada validação liga/desliga **por projeto** (padrão) e **por tarefa** (D-PRJ-15). Ex.: Swagger sem QA |
+| RN-PRJ-02 | Responsável obrigatório para sair do `Backlog` | Ligado (D-PRJ-02) | Desligar |
+| RN-PRJ-23 | **PR vinculado** para entrar em `Code-review` | Ligado. PR recusado volta para `Doing` com retrabalho de origem code review (D-PRJ-09) | Desligar (ex.: projeto sem código) |
+| RN-PRJ-24 | **Tech Lead** do projeto (D-PRJ-10) | Um Tech Lead definido pelo gestor. A mesma pessoa pode ser Tech Lead num projeto e dev em outro | Trocar a pessoa; ter mais de um |
+| RN-PRJ-27 | Quem aprova `Code-review` e quem move `In test` → `Done` (merge) | Tech Lead do projeto (ou Administrador) (D-PRJ-12) | Incluir outras pessoas ou funções |
+| RN-PRJ-25 | Quem aprova quando o Tech Lead é o próprio dev da tarefa | [DECIDIR] outro Tech Lead indicado pelo gestor, ou o gestor | Configurável |
+| RN-PRJ-12 | Motivo obrigatório ao ir para `Paused` | Ligado; tempo parado contado à parte | Desligar |
+| RN-PRJ-10 | **Estados do pacote (versão)** | `em montagem → em homologação → homologado → em produção`. Só tarefa em `Done` entra. Pacote em homologação não recebe tarefa nova; reprovação devolve as tarefas afetadas com retrabalho de origem homologação. **Homologação feita pela equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13) | Renomear, criar ou remover estados |
+| RN-PRJ-07 | **Tipo** e **área** da tarefa (campos separados, lista fechada) | Tipos: melhoria, correção de bug, sustentação, mudança (GMUD). Áreas: nenhuma, o gestor cadastra (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial) | Editar as duas listas |
+| RN-PRJ-06 | **Modalidade** do projeto | `tradicional` (D-GER-02) | `100% IA`. [LEVANTAR com Lucas Scholz] se essa modalidade traz um padrão de etapas próprio, por exemplo espelhando o playbook `aplicacao-nova` |
+| RN-PRJ-31 | Coluna `Chamados` | Ligada quando o módulo Chamados existir (F-PRJ-08) | Desligar |
+
+Observação (D-PRJ-12): o QA testa a branch do PR **no próprio ambiente local**; o sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado.
 
 ### Funcionalidades além do Trello e prioridade
 
@@ -362,6 +385,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 - Aplicativo móvel nativo (a v1 é web responsiva).
 
 ## O que não pode
+
+- Não pode haver regra de fluxo que o gestor não consiga ajustar no próprio projeto, a não ser as regras fixas de segurança, histórico e indicadores (D-GER-05).
 
 - Não existe ferramenta MCP de exclusão. A IA não exclui nem desativa nada na v1.
 - Não existe ferramenta MCP de alteração em lote.
