@@ -13,6 +13,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
 | D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
 | D-PRJ-01 a 10 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
+| D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
@@ -87,7 +88,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis, feriados e a carga diária do dev.
 6. A tarefa entra em `To do` (a sprint; no Trello, `Esteira`) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Em `Doing` o dev desenvolve e faz commits e pushes na branch. Ao terminar, **abre o PR para a `main`** e a tarefa vai para `Code-review`, onde o **Tech Lead** do projeto aprova (D-PRJ-09).
 7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. O dev lança as **horas realizadas**.
-8. Aprovado no QA, é feito o **merge** e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
+8. Aprovado no QA, o **Tech Lead faz o merge** e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
 9. Tarefas em `Done` entram num **pacote (versão)**. O pacote é liberado em **homologação**, homologado e publicado em produção; aí está finalizado. A data é definida por projeto; em projeto de cliente, geralmente pelo cliente.
 10. Chamado de cliente ligado ao projeto cai na coluna `Chamados` do quadro, como tarefa ligada ao chamado.
 11. O gestor gera para o cliente o **histórico de desenvolvimento** (linha do tempo) e o **relatório de fechamento** do período.
@@ -119,7 +120,8 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 - **RN-PRJ-24** Todo projeto com code review tem **um Tech Lead** definido pelo gestor (D-PRJ-10). A mesma pessoa pode ser Tech Lead num projeto e dev em outro. Só o Tech Lead do projeto (ou o Administrador) move a tarefa de `Code-review` para `In test`. Trocar o Tech Lead vale dali para a frente e fica no histórico.
 - **RN-PRJ-25** O Tech Lead não aprova a revisão de tarefa em que ele próprio é o dev. [DECIDIR] quem aprova nesse caso: outro Tech Lead indicado pelo gestor, ou o gestor.
 - **RN-PRJ-26** O teste cruzado é feito por um dev **diferente do autor** da tarefa, alocado no projeto.
-- **RN-PRJ-27** A tarefa só vai para `Done` com o merge registrado. [LEVANTAR com Lucas Alencar] quem faz o merge.
+- **RN-PRJ-27** A tarefa só vai para `Done` com o merge registrado. Quem faz o merge é o **Tech Lead** do projeto (D-PRJ-12); só ele (ou o Administrador) move de `In test` para `Done`.
+- **RN-PRJ-28** O QA testa a branch do PR **no próprio ambiente local** (D-PRJ-12). O sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado (RN-PRJ-10).
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos pelo gestor e pelo Administrador. O dev vê **apenas os próprios**. Não existe ranking público.
 
 ### Funcionalidades além do Trello e prioridade

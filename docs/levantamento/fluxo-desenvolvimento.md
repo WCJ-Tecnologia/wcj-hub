@@ -32,8 +32,8 @@ As colunas (B) são o que aparece no quadro. Os passos (A) são o que acontece d
 | 4. Abre PR | `Doing` → `Code-review` | `Doing` → `Technical Review` | **Link do PR obrigatório** para mover (RN-PRJ-23) |
 | 5. Code review | `Code-review` | `Technical Review` | Aprovação do Tech Lead do projeto (RN-PRJ-24) |
 | 6. Teste cruzado | `In test` | `Test QA` | Aprovação de **outro dev**, que não seja o autor |
-| 7. QA | `In test` | `Test QA` | Roteiro de teste executado, com evidência por item |
-| 8. Merge | `In test` → `Done` | `Test QA` → `Finished` | Merge feito na `main` |
+| 7. QA | `In test` | `Test QA` | Roteiro de teste executado **no ambiente local do QA**, com evidência por item |
+| 8. Merge | `In test` → `Done` | `Test QA` → `Finished` | Merge feito na `main` **pelo Tech Lead** |
 | 9–10. Homologação do pacote | Fora do quadro: **versão** | Listas `Produção x.y.z` | Estados da versão |
 | 11. Finalizado | — | — | Versão em produção |
 | (qualquer momento) | `Paused` | `Impedimento/Pausa` | Motivo obrigatório; tempo parado contado à parte |
@@ -42,8 +42,8 @@ A retirada de uma tarefa de `Code-review` ou de `In test` de volta para `Doing` 
 
 ## Perguntas abertas (para a pauta 04, com Lucas Alencar)
 
-1. **O QA testa antes do merge (passo 7 antes do 8): em qual ambiente?** Um ambiente por branch/PR, ou o ambiente do dev? Isso muda a infraestrutura necessária.
-2. **Quem faz o merge:** o dev, o Tech Lead ou o QA?
+1. ~~Em qual ambiente o QA testa, antes do merge?~~ **Respondido 24/09: no ambiente local do próprio QA**, com a branch do PR. A v1 não precisa de ambiente por PR. A integração entre tarefas só é testada junto na homologação do pacote.
+2. ~~Quem faz o merge?~~ **Respondido 24/09: o Tech Lead** do projeto.
 3. **Teste cruzado vale para toda tarefa** ou só para algumas (ex.: não se aplica a Swagger)?
 4. **Homologação do pacote:** quem homologa? A equipe, o cliente ou os dois? O cliente participa pelo sistema?
 5. Os nomes das colunas ficam em inglês, como a equipe usa hoje, ou em português?
