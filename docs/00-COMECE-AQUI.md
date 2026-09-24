@@ -13,7 +13,7 @@ Atualizado em 2026-09-24.
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Fechada para Núcleo, Projetos e CRM**; aguarda validação no Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM. As 31 dúvidas foram respondidas pelo Lucas Scholz em 24/09 (seção 7); só `project_phases` depende do Rafael. Aguarda revisão do Lucas Alencar; depois, Comitê (D-GER-16) | `docs/banco.txt` |
+| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM. Todas as dúvidas (seção 7) respondidas pelo Lucas Scholz em 24/09, inclusive sprint com time e capacidade por pessoa (D-PRJ-23, D-PRJ-24). Aguarda revisão do Lucas Alencar; depois, Comitê (D-GER-16) | `docs/banco.txt` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, Interface de IA |
 | `core/mcp.md` no padrão | A rascunhar, em **outra sessão**, no repositório `ai-systems` (D-GER-16) | `~/Documents/Projetos/WCJ/ai-systems` |
