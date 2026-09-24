@@ -27,7 +27,7 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 **Interface de IA**
 | # | Decisão | Base |
 |---|---|---|
-| 1 | Confirmado que o app ChatGPT só escreve no Business (Pro lê, Plus não conecta). Aprovar a proposta D-IA-05: Claude lê e escreve; ChatGPT Pro só leitura; Plus sem conector; Business fora da v1? | Enquete de ferramentas |
+| 1 | ~~Acesso de quem usa ChatGPT~~ **Resolvido (D-IA-06):** devs por Codex ou Claude; comercial por GPT personalizado com Actions, junto com a v1 do CRM; GitHub move tarefas pelos PRs | — |
 | 2 | ~~Dono da Interface de IA~~ **Resolvido: Lucas Scholz (produto) + Lucas Alencar (técnico)** (D-GER-07) | — |
 | 3 | ~~`core/mcp.md` no padrão?~~ **Resolvido: sim, principalmente para sistemas 100% IA** (D-GER-09) | — |
 

@@ -52,11 +52,13 @@ As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../le
 | Item | Definição |
 |---|---|
 | Escopo | Servidor MCP mínimo, HTTPS público, OAuth, 1 ferramenta de leitura + 1 de escrita |
-| Testes | Claude (app) leitura e escrita; ChatGPT Pro (app) só leitura; Codex e Claude Code leitura e escrita |
+| Testes | Claude (app); Codex no app do ChatGPT (Plus) e no CLI; Claude Code; ChatGPT Pro só leitura. Em paralelo: GPT com Actions + OAuth (comercial) |
 | Perguntas a responder | OAuth e registro dinâmico funcionam nos quatro clientes? Token só de leitura para o ChatGPT Pro funciona? Codex e Claude Code escrevem sem restrição de plano? |
 | Quem faz | [definir] |
 | Prazo | [definir] |
 | Resultado vai para | Pauta 05 (comitê) |
+
+- Webhook do GitHub (F-PRJ-06): app do GitHub da organização ou webhook por repositório? Convenção da chave da tarefa no título ou na branch do PR.
 
 ### 5. Fechamento (5 min)
 - Ler em voz alta as decisões e pendências.

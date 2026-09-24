@@ -31,6 +31,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
+| D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. O Hub também **lê os eventos do GitHub** para mover tarefas pelos PRs, independente da IA. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -84,7 +85,7 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 - **RN-NUC-01** Cliente é identificado pelo CNPJ. Dois clientes com o mesmo CNPJ são recusados.
 - **RN-NUC-02** Cliente, contato e usuário não são excluídos depois de usados. São desativados (`deactivated_at`, `deactivated_by`), conforme `core/banco.md` seção 4.
 - **RN-NUC-03** Contato externo só enxerga dados do próprio cliente. Tentativa de acessar outro cliente por ID é negada e registrada.
-- **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`).
+- **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`, `github`).
 - **RN-NUC-05** Usuário desativado perde acesso imediatamente, inclusive os tokens de IA dele.
 
 ---
@@ -180,7 +181,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | F-PRJ-16 | **Relatório de fechamento** do período para aprovação do cliente antes do pagamento | Rafael | v1+ (aguarda modelo, P-01) |
 | F-PRJ-13 | **Gerar o documento de requisição** (Word/PDF padrão WCJ) a partir da tarefa e anexar | Rafael | v1+ |
 | F-PRJ-04 | **Roteiro de teste padrão** por tipo e perfil do produto, incluindo bloco CRUD reutilizável | Trello Wpay + Modelos SGM | ? |
-| F-PRJ-06 | **Vínculo com PRs do GitHub** (um ou vários por tarefa): links na tarefa (manual ou pela IA) na v1; status do PR (aberto, aprovado, recusado) lido do GitHub depois | Trello Wpay + D-PRJ-09 | **v1** (link) / v1+ (status automático) |
+| F-PRJ-06 | **Vínculo com PRs do GitHub** (um ou vários por tarefa): link manual ou pela IA, e **vínculo automático por webhook** pela chave da tarefa no PR (abre → `Code-review`; integrado → merge registrado) | Trello Wpay + D-IA-06 | **v1** |
 | F-PRJ-07 | **Evidência de teste** presa ao item do roteiro | Trello Wpay | ? |
 | F-PRJ-10 | **Painel de impedimentos** | Trello Wpay | ? |
 
@@ -292,16 +293,22 @@ A restrição é do **app ChatGPT**, não do Codex. No Codex e no Claude Code o 
 
 **R-IA-01 confirmado (24/09/2026, conferido no próprio ChatGPT):** escrita por conector próprio só no **ChatGPT Business** (e superiores). O **Pro só lê**. O **Plus não conecta**.
 
-**Consequência para a v1 (proposta D-IA-05, [DECIDIR] no comitê):**
+**Consequência para a v1 (D-IA-05 e D-IA-06):**
 - **Claude (Pro ou superior):** leitura e escrita. É o assistente de referência para quem precisa alterar dados pela IA.
 - **ChatGPT Pro:** entra só com **escopos de leitura**. O servidor emite token só de leitura para esse cliente, não depende de o ChatGPT se limitar.
 - **ChatGPT Plus:** sem conector. Quem usa Plus e precisa da IA no Hub usa Claude, ou fica sem IA no Hub.
 - **ChatGPT Business:** só se a WCJ decidir assinar um workspace; fora da v1.
-- **Codex e Claude Code:** liberados para leitura e escrita, confirmados na prova de conceito.
+- **Codex e Claude Code (devs):** leitura e escrita pelo MCP. O Codex vem com o ChatGPT Plus/Pro e, desde 07/2026, também roda dentro do app do ChatGPT para computador (Configurações → Integrações → Servidores MCP). Confirmar na prova de conceito.
+- **GPT personalizado "WCJ Hub" (comercial):** para quem usa o ChatGPT no dia a dia, como o Wilson. É um GPT com **Actions** que chama uma API REST do Hub, com **login OAuth de cada usuário** (o mesmo servidor de autenticação do MCP). Funciona no ChatGPT web e no celular a partir do Plus. Regras:
+  - a API das Actions chama a **mesma camada de serviço** do MCP e da tela; as regras RN-IA-01 a 09 valem igual, com canal `ia:gpt` na auditoria;
+  - escopo inicial: **CRM** (leitura e escrita) e **Núcleo** (leitura), as ferramentas de CRM do bloco MCP;
+  - toda ação de escrita marcada como "consequencial", para o ChatGPT pedir confirmação antes;
+  - entregue **junto com a v1 do CRM** (último módulo da ordem), não antes.
+- **GitHub como fonte de eventos (todos os devs, qualquer IA):** o Hub recebe os webhooks do GitHub. PR aberto com a chave da tarefa no título ou na branch (ex.: `SGM-17`) vincula o PR e move a tarefa para `Code-review`; PR integrado registra o merge. A ação no Hub fica registrada como **evento do GitHub, com o autor do PR**, e nunca como se o usuário tivesse feito na tela. Isso não substitui a IA: automatiza o quadro para quem usa qualquer ferramenta.
 
 A enquete interna de ferramentas diz quantas pessoas ficam em cada caso.
 
-**Prova de conceito antes da etapa 4** (agora é validação técnica, não mais dúvida de plano): servidor MCP mínimo, HTTPS público, OAuth, uma ferramenta de leitura e uma de escrita, testado no Claude (app), no ChatGPT Pro (leitura), no Codex e no Claude Code.
+**Prova de conceito antes da etapa 4** (validação técnica): servidor MCP mínimo, HTTPS público, OAuth, uma ferramenta de leitura e uma de escrita, testado no **Claude (app)**, no **Codex dentro do app do ChatGPT (plano Plus)**, no **Codex CLI**, no **Claude Code** e no **ChatGPT Pro (só leitura)**. Em paralelo, um **GPT com uma Action de leitura e uma de escrita**, com OAuth, no plano do Wilson.
 
 Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem deles**, não da máquina do usuário. O servidor precisa estar na internet pública com HTTPS. Isso vale também para homologação: dev local testa por túnel ou por ambiente de homologação publicado.
 
@@ -384,7 +391,9 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 | Integração | Direção | v1? |
 |---|---|---|
-| Claude e ChatGPT via MCP | entrada (consulta e escrita pelo usuário) | **Sim** |
+| Claude, Codex e ChatGPT Pro via MCP | entrada (consulta e escrita pelo usuário; ChatGPT Pro só consulta) | **Sim** |
+| GPT personalizado "WCJ Hub" (Actions + API REST) | entrada (comercial) | **Sim, com a v1 do CRM** |
+| GitHub (webhooks de PR) | entrada (eventos) | **Sim** (F-PRJ-06) |
 | Trello | importação | **Não na v1** (D-PRJ-04): começa do zero com os projetos ativos |
 | Funil de prospecção do DaaS | importação única (RN-CRM-06) | **Sim** (D-GER-03) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
