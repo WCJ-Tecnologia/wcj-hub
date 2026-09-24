@@ -68,13 +68,13 @@ onDelete
 
 
 =====================================================================
-ÍNDICE (52 tabelas + framework)
+ÍNDICE (51 tabelas + framework)
 =====================================================================
 1. PLATFORM   roles · users · clients · contacts · contract_types · contracts · contact_channels
               · audit_channels · audit_logs · ai_assistants · ai_scopes · ai_authorizations
               · ai_authorization_scopes · ai_tool_calls
 2. PROJETOS   projects · project_members · work_functions · stage_roles · board_stages
-              · board_stage_rules · task_types · project_areas · task_priorities · tasks
+              · task_types · project_areas · task_priorities · tasks
               · task_assignments · task_estimates · task_stage_movements · rework_origins
               · rework_reasons · task_acceptance_criteria · test_results · validation_types
               · validation_results · task_validations · task_pull_requests · task_comments
@@ -298,7 +298,6 @@ default_requires_code_review     boolean  not null  default true   (RN-PRJ-09, D
 default_requires_cross_test      boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
 default_requires_qa              boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
 require_pr_for_code_review       boolean  not null  default false  (RN-PRJ-23)
-restrict_stage_moves             boolean  not null  default false  (RN-PRJ-27; liga board_stage_rules)
 require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
 enforce_sprint_capacity          boolean  not null  default true   (D-PRJ-24; false = só avisa)
 fk composta: (contract_id, client_id) → contracts (id, client_id)   (contrato do mesmo cliente)
@@ -353,23 +352,11 @@ name                  varchar(60)      not null
 position              smallint         not null            (ordem no quadro)
 archived_at           datetime         null                "remover" arquiva: a etapa segue nos
                                                            movimentos antigos (RN-PRJ-29)
+Qualquer pessoa alocada move a tarefa entre etapas (D-PRJ-16). Restringir etapa a função
+(RN-PRJ-27, RN-PRJ-25) é v1+ (D-PRJ-25).
 índices: project_id, stage_role_id
 Regras do Service: o papel não muda depois que a etapa tem movimento (os indicadores leem o papel
 atual da etapa); arquivar etapa com tarefas exige escolher o destino delas (RN-PRJ-29).
-
-=====================================================================
-board_stage_rules
-=====================================================================
-RN-PRJ-27 (configurável): restringir etapas a funções. Ex. do requisito: "só o Tech Lead tira de
-Code-review e move para Done". Só vale com projects.restrict_stage_moves = true.
-board_stage_id        fk board_stages     not null  cascade
-direction             varchar(3)          not null  check in ('in','out')   ("move para" × "tira de")
-work_function_id      fk work_functions   null      restrict
-tech_lead_only        boolean             not null  default false
-check: work_function_id is not null or tech_lead_only = true
-índices: board_stage_id, work_function_id
-Sem regra na etapa = qualquer alocado move (D-PRJ-16). Gestor e admin sempre movem. RN-PRJ-25
-(Tech Lead é o próprio dev: aprova o gestor) é regra do Service.
 
 =====================================================================
 task_types                             (cadastrável)
@@ -857,6 +844,12 @@ CRM-01 Um funil.   CRM-02 Vários leads por CNPJ, com aviso.   CRM-03 Contato ú
 CRM-04 Oportunidades pós-auditoria depois da v1 (D-CRM-07).
 CRM-05 Copiar do DaaS: as 5 perguntas sim; "lista de setores" não existe lá (setor é texto livre).
 CRM-06 Compromisso com lead ou cliente.   CRM-07 Convite só para o responsável.
+Revisão de enxugamento, validada pelo Lucas Scholz em 24/09:
+- contato com e-mail e telefone; contrato com nome e datas de início e fim;
+- tarefa não tem cancelamento: tarefa nunca usada se exclui, a usada fica no Backlog;
+- restringir etapa a função (RN-PRJ-27, RN-PRJ-25) é v1+ (D-PRJ-25): saiu board_stage_rules e
+  projects.restrict_stage_moves;
+- lead sem valor e sem previsão de fechamento até o comercial definir os campos mínimos.
 
 
 #####################################################################
