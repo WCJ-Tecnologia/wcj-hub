@@ -125,7 +125,7 @@ id   slug             label (pt-BR)
 3    developer        Desenvolvedor / técnico
 4    sales            Comercial
 5    support          Suporte / sustentação
-6    client_contact   Contato do cliente        (externo; sem login na v1, ver seção 5)
+Contato do cliente NÃO tem login na v1 (NUC-02). O papel client_contact entra com Chamados (seção 5).
 
 =====================================================================
 users                                  [v1]
@@ -153,7 +153,16 @@ deactivated_by        fk users         null       on delete restrict
 clients                                [v1]
 =====================================================================
 Empresa atendida. Inclui a própria WCJ (is_internal), dona dos projetos internos (RN-PRJ-01).
-document              cnpj             not null   unique  (RN-NUC-01; ver dúvida NUC-01)
+Aceita empresa estrangeira (NUC-01; hoje 2 projetos). Brasileira: CNPJ obrigatório e único
+(RN-NUC-01). Estrangeira: identificador fiscal do país, opcional.
+country               char(2)          not null   default 'BR'  (ISO 3166-1: BR, NL, US…)
+document              varchar(30)      null       BR: CNPJ, 14 dígitos, só números.
+                                                   Fora do BR: identificador fiscal do país (VAT,
+                                                   KvK, EIN…), só letras e números, sem máscara.
+document_label        varchar(20)      null       nome do identificador estrangeiro ("VAT", "KvK");
+                                                   null no BR (é sempre CNPJ)
+check: country <> 'BR' or document is not null
+       (formato de 14 dígitos validado no FormRequest)
 legal_name            varchar(160)     not null   (razão social)
 trade_name            varchar(160)     null       (nome fantasia; é o nome exibido se houver)
 is_internal           boolean          not null   default false  (só 1 linha true: a WCJ)
@@ -161,18 +170,20 @@ industry_id           fk industries    null       on delete restrict
 email                 varchar(160)     null
 phone                 varchar(20)      null
 website               varchar(255)     null
-zip_code              char(8)          null
+zip_code              varchar(12)      null       (BR: 8 dígitos; fora: formato do país)
 street                varchar(160)     null
 street_number         varchar(20)      null
 complement            varchar(80)      null
 district              varchar(80)      null
 city                  varchar(80)      null
-state                 char(2)          null
+state                 varchar(60)      null       (BR: UF de 2 letras; fora: estado ou província)
 notes                 text             null
 created_by            fk users         not null   on delete restrict
 deactivated_at        timestamp        null
 deactivated_by        fk users         null       on delete restrict
-índices: document (unique), legal_name, trade_name, industry_id, deactivated_at
+índices: legal_name, trade_name, industry_id, deactivated_at, country
+unique: (country, document)   (estrangeira sem identificador = null, não colide; o Service avisa
+                               quando já existe cliente do mesmo país com a mesma razão social)
 Origem do cliente (cadastro direto × lead ganho): leads.client_id aponta para cá; o Núcleo não
 conhece o CRM (D-GER-15).
 
@@ -187,12 +198,10 @@ email                 varchar(160)     null
 phone                 varchar(20)      null
 mobile                varchar(20)      null
 is_primary            boolean          not null   default false
-user_id               fk users         null       unique   on delete restrict
-                                                   login do portal de chamados (seção 5); null na v1
 notes                 text             null
 deactivated_at        timestamp        null
 deactivated_by        fk users         null       on delete restrict
-índices: client_id, email, user_id (unique)
+índices: client_id, email
 unique: (client_id, email)   (MySQL e Postgres aceitam vários null)
 
 =====================================================================
@@ -244,6 +253,8 @@ contract_status_id    fk contract_statuses not null   on delete restrict
 code                  varchar(40)          null       unique  (número do contrato, se houver)
 name                  varchar(160)         not null
 billing_cycle_id      fk billing_cycles    null       on delete restrict
+currency              char(3)              not null   default 'BRL'  (ISO 4217; cliente estrangeiro
+                                                       pode contratar em EUR/USD, NUC-01)
 amount                money                null       (valor fechado ou mensal, conforme o ciclo)
 hourly_rate           money                null       (valor da hora / hora extra)
 started_on            date                 not null
@@ -372,7 +383,7 @@ created_at            timestamp             not null
 índices: (auditable_type, auditable_id, created_at), user_id, created_at,
          audit_channel_id, ai_authorization_id, (outcome, created_at)
 Não grava senha, token nem hash em changes (lista de campos ocultos no model).
-Volume esperado: baixo (14 usuários). Ver dúvida NUC-04 sobre retenção e particionamento.
+Volume esperado: baixo (14 usuários). Guarda tudo, sem partição (NUC-04).
 
 =====================================================================
 ai_assistants                          (fechado) [v1]
@@ -1053,11 +1064,12 @@ leads                                  [v1]
 =====================================================================
 company_name          varchar(160)       not null
 trade_name            varchar(160)       null
-document              cnpj               null       (lead pode não ter CNPJ ainda)
+country               char(2)            not null   default 'BR'
+document              varchar(30)        null       (mesma regra de clients; lead pode não ter ainda)
 industry_id           fk industries      null       on delete restrict
 website               varchar(255)       null
 city                  varchar(80)        null
-state                 char(2)            null
+state                 varchar(60)        null
 owner_id              fk users           not null   on delete restrict  (RN-CRM-05: edita só o dono;
                                                                           todos os comerciais leem)
 lead_source_id        fk lead_sources    null       on delete restrict
@@ -1085,10 +1097,12 @@ audit_channel_id      fk audit_channels  not null
 deactivated_at / deactivated_by                     (arquivar lead errado ou duplicado)
 índices: owner_id, (owner_id, lead_status_id), funnel_stage_id, lead_status_id, document,
          client_id, expected_close_on, company_name
-unique [PG] document where document is not null and lead_status_id = 1 and deactivated_at is null
-       [MY] coluna gerada open_document = IF(lead_status_id=1 AND deactivated_at IS NULL, document, NULL)
+unique [MY] coluna gerada open_document =
+              IF(lead_status_id=1 AND deactivated_at IS NULL AND document IS NOT NULL,
+                 CONCAT(country, ':', document), NULL)
             + unique(open_document)
-       → dois leads ABERTOS com o mesmo CNPJ são recusados (cadastrar_lead "com checagem de CNPJ").
+       → dois leads ABERTOS com o mesmo documento do mesmo país são recusados
+         (cadastrar_lead "com checagem de CNPJ"). Conversão (RN-CRM-01) casa por (country, document).
          Ver dúvida CRM-02.
 checks: lead_status_id=3 → lost_reason_id not null · lead_status_id=2 → client_id not null
 RN-CRM-04 (lead aberto sem follow-up futuro) é consulta, não coluna.
@@ -1247,6 +1261,7 @@ title                   varchar(200)             not null
 description             text                     null
 source_audit_ref        varchar(120)             null      identificação da auditoria no DaaS
                                                            (texto livre na v1; FK lógica depois)
+currency                char(3)                  not null  default 'BRL'
 amount                  money                    null      (valor único, tipo project)
 monthly_amount          money                    null      (valor mensal, tipo recurring)
 expected_close_on       date                     null
@@ -1313,7 +1328,6 @@ entra aqui depois da prova de conceito.
 #####################################################################
 Já pronto no Núcleo, sem mudança:
 - clients, client_contacts (email indexado para casar remetente, RN-CHM-01)
-- client_contacts.user_id + roles.client_contact → login do contato no portal (RN-NUC-03)
 - contracts.contracted_hours + hours_period + hourly_rate → banco de horas (RN-CHM-08)
 - attachments e comments (is_internal = RN-CHM-05) polimórficos
 - audit_logs com canal 'email'; ai_scopes tickets:read/tickets:write; roles.support
@@ -1329,6 +1343,8 @@ Chamados criará no próprio domínio (app/Domains/Chamados/), só com FK para o
 - contract_slas (contract_id × priority → prazos, D-CHM-03)
 - inbound_emails (fila de não identificados, RN-CHM-01)
 - ticket_time_entries ou reuso de time_entries (decidir com Alaor) · ticket_travels (RN-CHM-10)
+- login do contato (NUC-02: fora da v1): coluna nula client_contacts.user_id (fk users, unique)
+  + papel client_contact em roles. Coluna nova e valor novo: sem migração destrutiva.
 - colunas em contracts, se confirmadas: auto_close_days (RN-CHM-09), travel_policy (RN-CHM-10)
   → entram como coluna nula (banco.md §5), sem quebrar nada.
 Portal do contato: RN-NUC-03 exige escopo por client_id derivado de client_contacts.user_id.
@@ -1384,17 +1400,17 @@ DB-02  [RESPONDIDA 24/09, Lucas Scholz] utf8mb4_0900_ai_ci: nome com unique igno
 DB-03  [RESPONDIDA 24/09, Lucas Scholz] Padrão U1 com coluna gerada: a trava fica no banco.
 
 NÚCLEO
-NUC-01 Cliente sem CNPJ (pessoa física, estrangeiro, como os clientes das invoices NL) existe?
-       Proposta: não na v1; document not null. Se existir: document vira varchar(20) + document_type.
-NUC-02 Contato externo como linha em users (role client_contact) ou tabela de login separada
-       (guard próprio)? Proposta: users + guard/Policy por papel; menos tabela, mesma auditoria.
-       Tabela separada isola melhor o portal. Só pesa quando Chamados entrar.
-NUC-03 Papéis fixos (roles) bastam, ou quer permissões granulares (spatie/laravel-permission)?
-       Proposta: papel fixo + Policy; 14 usuários não justificam matriz de permissão.
-NUC-04 audit_logs: retenção e volume. Proposta: guardar tudo, sem partição (volume baixo).
-       Confirmar se leitura negada (RN-NUC-03) vai para audit_logs ou só para ai_tool_calls/log.
-NUC-05 Endereço do cliente inline (proposto) ou tabela addresses? Proposta: inline; só o cliente
-       tem endereço hoje.
+NUC-01 [RESPONDIDA 24/09, Lucas Scholz] Empresa estrangeira precisa ser cadastrável (casos
+       pequenos; hoje 2 projetos). Feito: clients.country + document varchar(30) opcional fora do
+       BR + document_label; unique (country, document); leads iguais; contracts e opportunities
+       ganham currency (BRL padrão). Pessoa física continua fora.
+NUC-02 [RESPONDIDA 24/09, Lucas Scholz] Cliente não tem login na v1. Saíram client_contacts.user_id
+       e o papel client_contact (campo sem tela sai do schema, banco.md §3); voltam com Chamados
+       (seção 5). Onde fica o login do contato (users ou tabela própria) se decide lá.
+NUC-03 [RESPONDIDA 24/09, Lucas Scholz] Papéis fixos + Policy.
+NUC-04 [RESPONDIDA 24/09, Lucas Scholz] audit_logs guarda tudo, sem partição; acesso negado entra
+       (outcome = denied).
+NUC-05 [RESPONDIDA 24/09, Lucas Scholz] Endereço dentro de clients.
 
 INTERFACE DE IA
 IA-01  Relação papel × escopo de IA: regra no código (proposto) ou tabela role_ai_scopes?

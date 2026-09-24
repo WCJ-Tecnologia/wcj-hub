@@ -49,6 +49,8 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
 | D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. |
 | D-IA-07 | 24/09/2026 | Limite por token: leitura 60/min, escrita 20/min, ajustáveis. Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
+| D-NUC-01 | 24/09/2026 | Cliente pode ser **empresa estrangeira** (casos pequenos; hoje 2 projetos): país + identificador fiscal do país, opcional; contrato com moeda própria. Pessoa física continua fora. |
+| D-NUC-02 | 24/09/2026 | **Contato do cliente não tem login na v1.** O acesso do contato entra com o módulo Chamados. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -99,7 +101,7 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 
 ### Regras de negócio
 
-- **RN-NUC-01** Cliente é identificado pelo CNPJ. Dois clientes com o mesmo CNPJ são recusados.
+- **RN-NUC-01** Cliente brasileiro é identificado pelo CNPJ; dois clientes com o mesmo CNPJ são recusados. Empresa **estrangeira** também é cadastrável, com país e identificador fiscal do país (opcional) (D-NUC-01).
 - **RN-NUC-02** Cliente, contato e usuário não são excluídos depois de usados. São desativados (`deactivated_at`, `deactivated_by`), conforme `core/banco.md` seção 4.
 - **RN-NUC-03** Contato externo só enxerga dados do próprio cliente. Tentativa de acessar outro cliente por ID é negada e registrada.
 - **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`).
