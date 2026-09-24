@@ -1,8 +1,8 @@
-# Necessidade: WCJ Central (nome provisório)
+# Necessidade: WCJ Hub
 
 Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada para o modelo de banco (etapa 2) e para o escopo (etapa 4).
 
-**Situação:** rascunho para o Comitê de IA. Itens marcados **[LEVANTAR]** dependem do dono do módulo; itens marcados **[DECIDIR]** dependem do comitê. Regras marcadas *(proposta)* ainda não foram validadas por quem usa.
+**Situação:** rascunho para o Comitê de IA. Nome definido: **WCJ Hub** (D-GER-06). Itens marcados **[LEVANTAR]** dependem do dono do módulo; itens marcados **[DECIDIR]** dependem do comitê. Regras marcadas *(proposta)* ainda não foram validadas por quem usa.
 
 ### Decisões registradas
 
@@ -19,7 +19,14 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-16 | 24/09/2026 | Lucas Alencar: "não fecha tanto o fluxo". Uma tarefa pode ter **vários PRs**. Por padrão, qualquer pessoa alocada move a tarefa; travas de PR e de função são **opcionais** por projeto. |
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
+| D-CRM-01 | 24/09/2026 | Funil do CRM: etapas do DaaS como padrão, editáveis. Motivos de perda editáveis. Tratativa editável com histórico. Comercial vê todos os leads e edita os próprios. Sizing obrigatório para ganhar auditoria. CRM → DaaS automático depois da v1. |
+| D-CRM-02 | 24/09/2026 | O CRM pós-auditoria do DaaS (oportunidades e contratos) **vem junto** com o funil. |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
+| D-GER-06 | 24/09/2026 | Nome do sistema: **WCJ Hub**. |
+| D-GER-07 | 24/09/2026 | Donos: **Núcleo** = Lucas Scholz; **Interface de IA** = Lucas Scholz (produto) + Lucas Alencar (técnico). |
+| D-GER-08 | 24/09/2026 | Prazo: o mais rápido possível. Ordem das entregas: Núcleo → Projetos → Chamados → CRM. |
+| D-GER-09 | 24/09/2026 | Stack: template da casa (Laravel + Inertia). As regras do padrão `ai-systems` (incluindo o futuro `core/mcp.md`) valem **principalmente para sistemas 100% IA**, como o WCJ Hub; projetos com time mais sênior têm liberdade de stack e template. |
+| D-GER-10 | 24/09/2026 | Volume: até **14 usuários internos**, **6 clientes ativos**, cerca de **10 leads por mês**. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 
@@ -52,8 +59,8 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Administrador | Sócios | Tudo; gerencia usuários, papéis, clientes e contratos | — |
 | Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | **Pipeline comercial e valores de proposta** (D-PRJ-08) |
 | Tech Lead | **Definido por projeto** (D-PRJ-10): é uma função no projeto, não um papel fixo do usuário | Aprova o PR no `Code-review` **dos projetos em que é Tech Lead** | Aprovar code review em projeto em que não é Tech Lead |
-| Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado [DECIDIR] |
-| Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; conteúdo dos chamados [DECIDIR] |
+| Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado (D-PRJ-03) |
+| Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; **conteúdo dos chamados** (na ficha do cliente vê só a quantidade de chamados abertos e o status) |
 | Suporte / sustentação | Alaor Rodrigues (dono); [LEVANTAR] quem mais faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
 | Contato do cliente (externo) | Pessoa indicada pelo cliente | Abre e acompanha os chamados **da própria empresa** | Qualquer dado de outro cliente; CRM; projetos internos; **não conecta IA na v1** |
 
@@ -67,7 +74,7 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 
 1. Administrador cadastra usuários internos e define o papel de cada um.
 2. Cliente nasce de duas formas: cadastro direto ou conversão de lead ganho no CRM.
-3. Cliente recebe contratos (tipo: projeto, sustentação, auditoria, outro [LEVANTAR]).
+3. Cliente recebe contratos. Tipo de contrato é **lista cadastrável** pelo Administrador; padrão inicial: projeto, sustentação, auditoria, alocação de dev, infraestrutura, outro. A lista cresce com a empresa.
 4. Contatos do cliente são cadastrados e, se autorizados, recebem acesso ao portal de chamados.
 
 ### Regras de negócio
@@ -122,8 +129,8 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 - **RN-PRJ-18** Existe um **calendário de feriados** (nacionais + locais) mantido pelo Administrador.
 - **RN-PRJ-19** Tarefa tem **chave** `<prefixo do projeto>-<número>` (ex.: `SGM-17`). O número é sequencial por projeto, gerado por sequência do banco, e nunca é reutilizado.
 - **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
-- **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa. [LEVANTAR canal: no sistema, e-mail]
-- **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos pelo gestor e pelo Administrador. O dev vê **apenas os próprios**. Não existe ranking público.
+- **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa, no sistema e por e-mail.
+- **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos **só pelo gestor e pelo Administrador**. O dev não tem acesso a esse painel.
 - **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele é feito por um dev **diferente do autor**, alocado no projeto.
 - **RN-PRJ-29** Mudar a configuração de um projeto vale **dali para a frente**, fica no histórico e **nunca apaga** registro já feito. Remover uma etapa com tarefas dentro exige escolher para qual etapa elas vão.
 
@@ -143,7 +150,7 @@ O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configura
 | RN-PRJ-12 | Motivo obrigatório ao ir para `Paused` | Ligado; tempo parado contado à parte | Desligar |
 | RN-PRJ-10 | **Estados do pacote (versão)** | `em montagem → em homologação → homologado → em produção`. Só tarefa em `Done` entra. Pacote em homologação não recebe tarefa nova; reprovação devolve as tarefas afetadas com retrabalho de origem homologação. **Homologação feita pela equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13) | Renomear, criar ou remover estados |
 | RN-PRJ-07 | **Tipo** e **área** da tarefa (campos separados, lista fechada) | Tipos: melhoria, correção de bug, sustentação, mudança (GMUD). Áreas: nenhuma, o gestor cadastra (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial) | Editar as duas listas |
-| RN-PRJ-06 | **Modalidade** do projeto | `tradicional` (D-GER-02) | `100% IA`. [LEVANTAR com Lucas Scholz] se essa modalidade traz um padrão de etapas próprio, por exemplo espelhando o playbook `aplicacao-nova` |
+| RN-PRJ-06 | **Modalidade** do projeto | `tradicional` (D-GER-02) | `100% IA`. Na v1 é só uma marcação no projeto, com o mesmo fluxo aberto |
 | RN-PRJ-31 | Coluna `Chamados` | Ligada quando o módulo Chamados existir (F-PRJ-08) | Desligar |
 
 Observação (D-PRJ-12): o QA testa a branch do PR **no próprio ambiente local**; o sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado.
@@ -193,7 +200,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 ### Fluxo principal *(proposta)*
 
 1. Comercial cadastra o lead (empresa, contato, origem).
-2. Lead avança pelas etapas do funil [LEVANTAR etapas; referência: funil do DaaS].
+2. Lead avança pelas etapas do funil. Padrão = etapas do funil do DaaS: `Prospecção → Contato → Reunião → Proposta → Ganhou / Perdido`. **Editáveis** como no quadro de projetos: criar, renomear, remover, reordenar (D-CRM-01).
 3. Cada contato com o lead vira uma **tratativa**: data, canal, resumo, próximo passo.
 4. Tratativa com próximo passo gera um **follow-up** com data e responsável.
 5. Comercial vê, todo dia, os follow-ups vencidos e os do dia.
@@ -202,10 +209,10 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 ### Regras de negócio *(proposta)*
 
 - **RN-CRM-01** Lead ganho converte para cliente sem redigitar dado. Se o CNPJ já existe como cliente, vincula em vez de duplicar.
-- **RN-CRM-02** Lead perdido exige motivo de uma lista fechada [LEVANTAR motivos].
-- **RN-CRM-03** Tratativa não é editada depois de 24 h; correção vira nova tratativa. [DECIDIR]
+- **RN-CRM-02** Lead perdido exige motivo de uma lista. Padrão: preço, momento, concorrente, sem resposta, sem perfil, outro. A lista é **editável**: dá para criar motivos depois.
+- **RN-CRM-03** Tratativa é **editável a qualquer momento**; toda edição fica no histórico (D-GER-05).
 - **RN-CRM-04** Todo lead ativo tem um follow-up futuro. Lead ativo sem follow-up aparece em alerta para o responsável.
-- **RN-CRM-05** Comercial vê os próprios leads; Administrador vê todos. [DECIDIR se comerciais veem os leads uns dos outros]
+- **RN-CRM-05** Todo comercial **vê todos os leads** e **edita só os próprios**; Administrador edita todos. Evita duas pessoas prospectando a mesma empresa sem saber.
 
 ### A levantar
 
@@ -218,10 +225,11 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 O funil de prospecção vive hoje no DaaS (`wcj-ui`, tabelas `lead` e `lead_evento`, kanban em `/console/comercial/prospeccao`). Ele vem para cá; no DaaS fica só a auditoria.
 
 - **RN-CRM-06** Leads e eventos do DaaS entram por **importação única e idempotente**: casa por CNPJ antes de nome e não sobrescreve campo já preenchido (`core/banco.md` seção 9). Evento do DaaS vira tratativa. Roda primeiro em modo simulado.
-- **RN-CRM-07** Os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço) viram campos do lead com oportunidade de **auditoria**. [LEVANTAR com Lucas Scholz] se continuam obrigatórios para ganhar.
-- **RN-CRM-08** Hoje "ganhar lead" no DaaS cria a auditoria em pré-venda. Aqui, lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. [DECIDIR] se a integração automática CRM → DaaS entra numa versão seguinte.
+- **RN-CRM-07** Os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço) viram campos do lead com oportunidade de **auditoria**. Continuam **obrigatórios para ganhar** oportunidade de auditoria.
+- **RN-CRM-08** Hoje "ganhar lead" no DaaS cria a auditoria em pré-venda. Aqui, lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. A integração automática CRM → DaaS fica **para depois da v1**.
 - **RN-CRM-09** Depois da importação conferida (contagem de leads e eventos batendo com a origem), o funil sai do DaaS. A remoção no DaaS é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio: tira a tela, a rota e as RPCs de escrita e mantém as tabelas como histórico somente leitura até a pessoa técnica liberar a exclusão.
-- [ ] [LEVANTAR] O DaaS também tem um CRM pós-auditoria (anterior ao funil). Confirmar se ele fica no DaaS, como parte da auditoria, ou se vem junto.
+- **RN-CRM-10** O **CRM pós-auditoria do DaaS também vem** (D-CRM-02): oportunidades (`opportunity`: origem roadmap ou avulsa, tipo projeto ou recorrente, etapas sugerida → proposta → ganha/perdida), contratos (`contract`, ativo/encerrado) e ajustes de contrato (`contract_adjustment`). Os contratos entram no **Núcleo**; as oportunidades entram no CRM. Mesma importação única e idempotente da RN-CRM-06.
+- [ ] [LEVANTAR com Lucas Alencar] Hoje a auditoria do DaaS gera oportunidades a partir do roadmap. Depois da migração, como essas sugestões chegam ao Hub: à mão na v1, integração depois?
 - [ ] O assistente de voz do funil do DaaS (F2) é IA embutida e **não vem** na v1 (D-IA-02).
 
 ---
@@ -428,23 +436,23 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 ## Restrições
 
-- Stack: template da casa (`stacks/laravel-inertia.md`). [DECIDIR confirmação no comitê]
+- Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09).
 - Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito do R-IA-01.
 - Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
-- Uso principal: desktop no escritório; chamados e follow-ups também pelo celular [LEVANTAR].
-- Volume: [LEVANTAR] nº de usuários internos, clientes com contrato ativo, chamados/mês, leads/mês.
+- Uso principal: computador. Web responsiva; quais telas e funções serão realmente usadas no celular será validado depois.
+- Volume (D-GER-10): até 14 usuários internos, 6 clientes ativos, cerca de 10 leads por mês. [LEVANTAR com Alaor] chamados por mês.
 - Segurança: fatia de segurança obrigatória (`core/seguranca.md` seção 11) **incluindo o servidor MCP e o OAuth**.
-- Prazo: [DECIDIR].
+- Prazo: o mais rápido possível (D-GER-08).
 
 ## Donos e pessoa técnica
 
 | Parte | Dono (ouve o usuário, valida esta seção) |
 |---|---|
-| Núcleo | [DECIDIR] |
+| Núcleo | Lucas Scholz (D-GER-07) |
 | Projetos | Rafael Garcia (modalidade 100% IA: Lucas Scholz) |
 | CRM | Lucas Scholz |
 | Chamados | Alaor Rodrigues (D-GER-04) |
-| Interface de IA | [DECIDIR] |
+| Interface de IA | Lucas Scholz (produto) + Lucas Alencar (técnico) (D-GER-07) |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
 
 ## Reuniões de levantamento (planejadas)

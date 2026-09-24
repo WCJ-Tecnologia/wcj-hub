@@ -20,7 +20,7 @@ Lucas é o dono do CRM, então esta reunião serve para **ouvir quem vende**, n�
 
 ### 1. Contexto (5 min)
 - O que é o sistema, os três módulos e o núcleo comum.
-- O funil do DaaS vem para cá (D-GER-03); o DaaS fica só com a auditoria.
+- O funil do DaaS e o CRM pós-auditoria vêm para cá (D-GER-03, D-CRM-02); o DaaS fica só com a auditoria.
 
 ### 2. Como funciona hoje (15 min)
 Percorrer os leads reais:
@@ -33,14 +33,14 @@ Percorrer os leads reais:
 
 | # | Proposta no documento | Pergunta |
 |---|---|---|
-| 1 | Etapas do funil | Quais são? Qual o critério para passar de uma para a outra? Servem para tudo que a WCJ vende (auditoria, desenvolvimento, sustentação, Wpay) ou cada produto tem seu funil? |
+| 1 | Etapas do funil | Padrão já definido: as do DaaS (Prospecção → Contato → Reunião → Proposta → Ganhou/Perdido), editáveis. Quais são? Qual o critério para passar de uma para a outra? Servem para tudo que a WCJ vende (auditoria, desenvolvimento, sustentação, Wpay) ou cada produto tem seu funil? |
 | 2 | Tratativa: data, canal, resumo, próximo passo | Falta algum campo? Sobra algum? |
-| 3 | Tratativa não é editada depois de 24 h (RN-CRM-03) | Faz sentido ou atrapalha? |
+| 3 | ~~Tratativa travada depois de 24 h~~ | **Já decidido:** edição livre com histórico (D-CRM-01) |
 | 4 | Todo lead ativo tem follow-up futuro (RN-CRM-04) | Lead sem próximo passo deve gerar alerta? |
-| 5 | Lead perdido exige motivo de lista fechada (RN-CRM-02) | Quais motivos? (preço, timing, concorrente, sem resposta, sem perfil…) |
-| 6 | Comercial vê só os próprios leads (RN-CRM-05) | Ou todos veem todos? |
+| 5 | Motivos de perda (RN-CRM-02) | **Já decidido:** preço, momento, concorrente, sem resposta, sem perfil, outro; editável. Falta algum? |
+| 6 | ~~Visibilidade entre comerciais~~ | **Já decidido:** todos veem todos, cada um edita os próprios (D-CRM-01) |
 | 7 | Origem do lead | Quais origens? (indicação, LinkedIn, grupos, site, evento, parceiro…) |
-| 8 | Campos de sizing da auditoria obrigatórios para ganhar (RN-CRM-07) | Continuam obrigatórios? Valem só para auditoria? |
+| 8 | ~~Sizing obrigatório~~ | **Já decidido:** obrigatório para ganhar oportunidade de auditoria (D-CRM-01) |
 | 9 | Lead ganho vira cliente sem redigitar (RN-CRM-01) | O que mais precisa acontecer quando se ganha? (avisar o gestor de projetos, criar contrato, abrir auditoria no DaaS) |
 | 10 | Proposta comercial | A proposta (valor, PDF, versão) fica registrada no lead? |
 

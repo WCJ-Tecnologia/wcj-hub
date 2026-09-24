@@ -76,4 +76,4 @@ Por Lucas Scholz e Lucas Alencar, no mesmo dia. Registrado aqui para ciência do
 
 ## Sugestão registrada
 
-Rafael sugeriu usar o **Vitinho** para desenvolver parte dos três módulos, aproveitando a capacidade livre da equipe enquanto os projetos novos não entram. **[DECIDIR no comitê]**
+Rafael sugeriu usar o **Vitinho** para desenvolver parte dos três módulos, aproveitando a capacidade livre da equipe enquanto os projetos novos não entram. Lucas Scholz: fora de pauta por ora.
