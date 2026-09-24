@@ -11,8 +11,10 @@ Aprovado por: ____________  em: ____-__-__
 0. CONVENÇÕES DESTE ARQUIVO
 =====================================================================
 Banco
-- Motor: MySQL 8 (stacks/laravel-inertia.md). Ver dúvida DB-01: a VPS do DaaS já roda Postgres.
-  Tudo abaixo funciona nos dois; onde muda, está marcado [PG] / [MY].
+- Motor: MySQL 8 (stacks/laravel-inertia.md), DECIDIDO em 24/09 (DB-01), em container próprio na
+  VPS do DaaS, separado do Postgres do Supabase (D-GER-14). Vale o que está marcado [MY]; as notas
+  [PG] ficam só como registro da alternativa descartada.
+- Collation: utf8mb4_0900_ai_ci (sem acento e sem caixa), DECIDIDO (DB-02).
 
 Nomes
 - Inglês, plural, snake_case. FK = <singular>_id.
@@ -1372,17 +1374,14 @@ sincronização (necessidade, "Pontos de atenção").
 #####################################################################
 #  7. DÚVIDAS PARA O LUCAS ALENCAR
 #  Formato: pergunta · proposta da IA · o que muda se a resposta for outra.
+#  [RESPONDIDA] = decidida pelo Lucas Scholz; o Lucas Alencar confirma na revisão do arquivo.
 #####################################################################
 
 BANCO E INFRA
-DB-01  MySQL 8 (padrão da stack) ou Postgres (o que a VPS do DaaS já roda, via Supabase)?
-       Proposta: seguir MySQL 8 do template, em container próprio (D-GER-14 pede banco separado).
-       Se Postgres: trocar as colunas geradas U1 por índice único parcial e timestamp por timestamptz.
-       Decidir junto com o Alaor (D-GER-19).
-DB-02  Collation: utf8mb4_0900_ai_ci (sem acento e sem caixa) nos campos de nome com unique?
-       Proposta: sim. É o que impede "ANCORA" e "ÂNCORA" coexistirem (Trello Wpay).
-DB-03  Padrão U1 (coluna gerada para unique só entre ativos) aceitável, ou prefere garantir no
-       Service com lock? Proposta: coluna gerada; convenção não segura corrida (banco.md §3).
+DB-01  [RESPONDIDA 24/09, Lucas Scholz] MySQL 8, em container próprio. Capacidade da VPS segue
+       com o Alaor (D-GER-19).
+DB-02  [RESPONDIDA 24/09, Lucas Scholz] utf8mb4_0900_ai_ci: nome com unique ignora acento e caixa.
+DB-03  [RESPONDIDA 24/09, Lucas Scholz] Padrão U1 com coluna gerada: a trava fica no banco.
 
 NÚCLEO
 NUC-01 Cliente sem CNPJ (pessoa física, estrangeiro, como os clientes das invoices NL) existe?
