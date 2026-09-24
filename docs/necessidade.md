@@ -12,7 +12,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-02 | 24/09/2026 | Gestor de projetos: **Rafael Garcia**. Projetos feitos 100% com IA são geridos por **Lucas Scholz**. |
 | D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
 | D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
-| D-PRJ-01 a 07 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
+| D-PRJ-01 a 09 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 
@@ -41,7 +41,8 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Papel | Quem é | O que faz no sistema | O que não pode ver ou fazer |
 |---|---|---|---|
 | Administrador | Sócios | Tudo; gerencia usuários, papéis, clientes e contratos | — |
-| Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | Pipeline comercial e valores de proposta [DECIDIR] |
+| Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | **Pipeline comercial e valores de proposta** (D-PRJ-08) |
+| Tech Lead | [LEVANTAR quem, por projeto] | Aprova o PR na etapa de revisão técnica | — |
 | Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado [DECIDIR] |
 | Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; conteúdo dos chamados [DECIDIR] |
 | Suporte / sustentação | Alaor Rodrigues (dono); [LEVANTAR] quem mais faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
@@ -83,7 +84,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 3. Gestor atribui pessoas **por função** (back-end, front-end, QA) e define se a tarefa **exige revisão técnica** e/ou **exige teste de QA**.
 4. Tarefa sem responsável não sai do Backlog (D-PRJ-02). Quem é atribuído é notificado.
 5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis, feriados e a carga diária do dev.
-6. A tarefa entra na `Esteira` (sprint) e segue as etapas. Cada mudança de etapa é registrada com data e hora.
+6. A tarefa entra na `Esteira` (sprint) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Ao terminar o desenvolvimento, o dev **abre o PR** e a tarefa vai para `Revisão técnica`, onde o **Tech Lead** aprova o PR (D-PRJ-09).
 7. O dev lança as **horas realizadas**. O QA executa o roteiro, marca os itens e anexa a evidência em cada um.
 8. O QA aprova (`Pronto`) ou **devolve** para desenvolvimento, com motivo de uma lista fechada.
 9. Tarefas prontas entram numa **versão**. A data da versão é definida por projeto; em projeto de cliente, geralmente pelo cliente.
@@ -113,6 +114,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 - **RN-PRJ-19** Tarefa tem **chave** `<prefixo do projeto>-<número>` (ex.: `SGM-17`). O número é sequencial por projeto, gerado por sequência do banco, e nunca é reutilizado.
 - **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
 - **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa. [LEVANTAR canal: no sistema, e-mail]
+- **RN-PRJ-23** Tarefa que exige revisão técnica só entra em `Revisão técnica` com **PR vinculado**. Sai para o QA quando o Tech Lead aprova; PR recusado devolve a tarefa para desenvolvimento e conta como retrabalho **da revisão**, separado do retrabalho do QA (D-PRJ-09).
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos pelo gestor e pelo Administrador. O dev vê **apenas os próprios**. Não existe ranking público.
 
 ### Funcionalidades além do Trello e prioridade
@@ -138,7 +140,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | F-PRJ-16 | **Relatório de fechamento** do período para aprovação do cliente antes do pagamento | Rafael | v1+ (aguarda modelo, P-01) |
 | F-PRJ-13 | **Gerar o documento de requisição** (Word/PDF padrão WCJ) a partir da tarefa e anexar | Rafael | v1+ |
 | F-PRJ-04 | **Roteiro de teste padrão** por tipo e perfil do produto, incluindo bloco CRUD reutilizável | Trello Wpay + Modelos SGM | ? |
-| F-PRJ-06 | **Vínculo com PR do GitHub** | Trello Wpay + Rafael | ? (depende de P-04) |
+| F-PRJ-06 | **Vínculo com PR do GitHub**: link do PR na tarefa (manual ou pela IA) na v1; status do PR (aberto, aprovado, recusado) lido do GitHub depois | Trello Wpay + D-PRJ-09 | **v1** (link) / v1+ (status automático) |
 | F-PRJ-07 | **Evidência de teste** presa ao item do roteiro | Trello Wpay | ? |
 | F-PRJ-10 | **Painel de impedimentos** | Trello Wpay | ? |
 
@@ -150,7 +152,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 - [ ] Modelo do relatório de fechamento para pagamento (P-01, P-02).
 - [ ] Fase × sprint × versão: a "fase" do histórico Tecsolution é um nível acima da versão? ([`modelos-rafael.md`](levantamento/modelos-rafael.md))
 - [ ] Horas previstas por **tarefa** ou por **item do roteiro**? (Rafael citou as duas formas)
-- [ ] Fluxo de PR e merge dos devs (P-04, Lucas Alencar).
+- [ ] Quem é o Tech Lead de cada projeto.
 - [ ] Canal de notificação (RN-PRJ-21).
 - [ ] Lista de motivos de devolução (RN-PRJ-08).
 

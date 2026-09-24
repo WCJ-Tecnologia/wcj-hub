@@ -34,7 +34,7 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 **Permissões (quem vê o quê)**
 | # | Decisão | Base |
 |---|---|---|
-| 4 | Gestor de projetos vê pipeline comercial e valores de proposta? | Pauta 01: resposta ambígua (P-03 da ata) |
+| 4 | ~~Gestor de projetos vê pipeline comercial?~~ **Resolvido: não** (D-PRJ-08) | Ata 24/09 |
 | 5 | ~~Dev vê só os projetos em que está alocado?~~ **Resolvido: sim** (D-PRJ-03) | Ata 24/09 |
 | 6 | Comercial vê conteúdo de chamados? | — |
 | 7 | Comerciais veem os leads uns dos outros? (RN-CRM-05) | Pauta 03 |
