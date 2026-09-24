@@ -12,7 +12,7 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 
 ## Antes da reunião
 
-- [ ] Lucas Alencar lê o `necessidade.md`, principalmente Núcleo, Interface de IA e RN-CRM-06 a 09.
+- [ ] Lucas Alencar lê o `necessidade.md`, principalmente Núcleo, Interface de IA e a estrutura por domínio.
 
 ## Roteiro
 

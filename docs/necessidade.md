@@ -542,5 +542,5 @@ Perguntas que valem para as três:
 - 24/09/2026: reunião de Chamados com Alaor Rodrigues → `atas/2026-09-24-chamados-alaor.md` (inclui resumo do vídeo de referência do GLPI).
 - 24/09/2026: fluxo de desenvolvimento e colunas do quadro enviados por Lucas Alencar → `levantamento/fluxo-desenvolvimento.md`.
 - 24/09/2026: documentos de requisição SGM-13/17/22 e "Histórico de Desenvolvimento" Tecsolution → `levantamento/modelos-rafael.md` (originais fora do git).
-- Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
+- Funil de prospecção e CRM pós-auditoria do DaaS: repositório `wcj-ui` (referência de funcionalidade; dados não migrados, D-CRM-03).
 - Atas do Comitê de IA: `docs/atas/`.
