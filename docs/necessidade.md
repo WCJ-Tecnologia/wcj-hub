@@ -25,7 +25,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 
 | Módulo | Substitui | Problema de hoje |
 |---|---|---|
-| **Projetos** | Trello | [LEVANTAR] o que o Trello não resolve hoje (visão por cliente, prazos, carga por pessoa, histórico). |
+| **Projetos** | Trello | No quadro Wpay: retrabalho do QA invisível (2 em 3 entregas voltam), versões controladas como listas criadas à mão, prazo quase não usado, chamado misturado com projeto. [LEVANTAR] demais quadros. |
 | **CRM** | Funil de prospecção do DaaS (D-GER-03) + [LEVANTAR] planilha / WhatsApp | Lead e tratativa não ficam registrados num lugar só; follow-up depende de alguém lembrar. |
 | **Chamados** | [LEVANTAR] WhatsApp / e-mail direto com o técnico | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
 
