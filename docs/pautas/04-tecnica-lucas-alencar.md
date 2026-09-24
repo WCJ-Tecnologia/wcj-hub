@@ -23,6 +23,9 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 - PR: fluxo atual é dev abre PR → Tech Lead aprova (D-PRJ-09). Tech Lead é definido por projeto (D-PRJ-10). Confirmar se a v1 lê o status do PR do GitHub ou só guarda o link (F-PRJ-06).
 - Onde publicar: VPS própria ou ambiente já existente? Precisa de HTTPS público desde a homologação (os assistentes chamam o MCP a partir da nuvem deles).
 
+### 1b. Fluxo de desenvolvimento (dele, D-PRJ-11)
+As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../levantamento/fluxo-desenvolvimento.md), principalmente: **em que ambiente o QA testa, se o merge é depois do QA?** e **quem faz o merge?**
+
 ### 2. Núcleo e banco (15 min)
 - Entidades do núcleo: usuários, papéis, clientes (CNPJ único), contatos, contratos.
 - Trilha de auditoria única para todos os módulos, com **canal** (`tela`, `ia:claude`, `ia:chatgpt`) (RN-NUC-04). Tabela genérica ou por módulo?
