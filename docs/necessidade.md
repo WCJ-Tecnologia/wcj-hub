@@ -12,6 +12,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-02 | 24/09/2026 | Gestor de projetos: **Rafael Garcia**. Projetos feitos 100% com IA são geridos por **Lucas Scholz**. |
 | D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
 | D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
+| D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
@@ -42,7 +43,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | Pipeline comercial e valores de proposta [DECIDIR] |
 | Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado [DECIDIR] |
 | Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; conteúdo dos chamados [DECIDIR] |
-| Suporte / sustentação | [LEVANTAR] quem faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
+| Suporte / sustentação | Alaor Rodrigues (dono); [LEVANTAR] quem mais faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
 | Contato do cliente (externo) | Pessoa indicada pelo cliente | Abre e acompanha os chamados **da própria empresa** | Qualquer dado de outro cliente; CRM; projetos internos; **não conecta IA na v1** |
 
 Regra geral: o que o papel não vê na tela, a IA dele também não vê.
@@ -184,7 +185,11 @@ Levantamento de 24/09/2026:
 | Assistente | Conector MCP remoto no plano Pro+ | Escrita | Situação |
 |---|---|---|---|
 | Claude (Pro, Max) | Sim: "Customize → Connectors", com OAuth e registro dinâmico de cliente | Sim | Atende |
-| ChatGPT (Plus, Pro) | Sim, pelo **modo desenvolvedor** (web) | **Incerto** | **Risco** |
+| ChatGPT (Plus, Pro), app web | Sim, pelo **modo desenvolvedor** | **Incerto** | **Risco** |
+| Claude Code (CLI/IDE/desktop) | Sim, conector local do usuário, HTTP + OAuth | Sim | Atende |
+| Codex (CLI/IDE/app) | Sim: `codex mcp add <nome> --url <URL>` + `codex mcp login <nome>` (HTTP + OAuth) | Sim | Atende |
+
+O R-IA-01 é do **app ChatGPT**, não do Codex. No Codex e no Claude Code o conector é configurado pelo próprio usuário no cliente dele e não passa pela regra de conector do workspace do ChatGPT. Só que esses dois são agentes de código: servem para quem já trabalha no terminal ou na IDE (devs), não para o comercial no dia a dia.
 
 **Risco R-IA-01:** a documentação de desenvolvedor da OpenAI diz que o modo desenvolvedor dá suporte completo de leitura e escrita no Plus e no Pro. Fontes de terceiros afirmam que a central de ajuda restringe a escrita em conector próprio a Business, Enterprise e Edu, deixando Plus e Pro só com leitura. As fontes divergem, e a central de ajuda não pôde ser consultada diretamente.
 
@@ -265,6 +270,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ### A levantar
 
 - [ ] Perguntas e ações que cada papel faria pela IA, uma lista curta por dono de módulo. Ela confirma ou corta as ferramentas acima.
+- [ ] Enquete interna de ferramentas (em andamento): para cada pessoa, **qual assistente** (Claude, ChatGPT, outro), **qual plano** e **onde usa** (app web/desktop, celular, Claude Code, Codex). A superfície decide quem cai no R-IA-01: o comercial que usa o app ChatGPT é afetado; o dev que usa Codex, não.
 
 ---
 
@@ -338,14 +344,31 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Núcleo | [DECIDIR] |
 | Projetos | Rafael Garcia (modalidade 100% IA: Lucas Scholz) |
 | CRM | Lucas Scholz |
-| Chamados | [LEVANTAR] responsável pela sustentação |
+| Chamados | Alaor Rodrigues (D-GER-04) |
 | Interface de IA | [DECIDIR] |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
+
+## Reuniões de levantamento (planejadas)
+
+Objetivo comum: o que as ferramentas de hoje **não fazem** e o sistema pode incluir. Cada reunião vira uma ata em `docs/atas/` e atualiza a seção do módulo correspondente.
+
+| Reunião | Com | Foco | Traz para a reunião |
+|---|---|---|---|
+| Chamados | Alaor Rodrigues | Canal atual, tipos, prioridade, SLA por contrato, banco de horas, triagem | Lista de contratos de sustentação ativos; 3 chamados reais recentes, do pedido ao fechamento |
+| Projetos | Rafael Garcia | O que o Trello não resolve; etapas; visão por cliente e por pessoa; prazos | Acesso aos quadros do Trello (export JSON) |
+| Banco + CRM + IA | Lucas Alencar | Viabilidade do núcleo comum, migração do funil do DaaS, prova de conceito MCP (R-IA-01) | Esquema atual de `lead`/`lead_evento` do DaaS |
+
+Perguntas que valem para as três:
+1. O que você faz hoje fora da ferramenta (planilha, WhatsApp, caderno) porque ela não atende?
+2. Qual informação você precisa e demora para achar?
+3. O que você esquece de fazer e só descobre quando dá problema?
+4. O que você pediria para a sua IA fazer nesse módulo, se ela tivesse acesso?
+5. O que **não** pode existir, ou seja, o que atrapalharia se o sistema fizesse?
 
 ## Fontes
 
 - 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-GER-01 a 03 e D-IA-01 a 04.
-- 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro registrada em R-IA-01.
+- 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro registrada em R-IA-01. Codex: OpenAI Developers ("Model Context Protocol", Codex).
 - Trello da WCJ: pendente (export JSON dos quadros).
 - Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
 - Atas do Comitê de IA: `docs/atas/`.
