@@ -1,0 +1,309 @@
+# Necessidade: WCJ Central (nome provisório)
+
+Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada para o modelo de banco (etapa 2) e para o escopo (etapa 4).
+
+**Situação:** rascunho para o Comitê de IA. Itens marcados **[LEVANTAR]** dependem do dono do módulo; itens marcados **[DECIDIR]** dependem do comitê. Regras marcadas *(proposta)* ainda não foram validadas por quem usa.
+
+**Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
+
+---
+
+## Para que serve
+
+Um sistema único para a operação interna da WCJ, com três módulos sobre uma base comum:
+
+| Módulo | Substitui | Problema de hoje |
+|---|---|---|
+| **Projetos** | Trello | [LEVANTAR] o que o Trello não resolve hoje (visão por cliente, prazos, carga por pessoa, histórico). |
+| **CRM** | [LEVANTAR] planilha / WhatsApp / memória / funil do DaaS | Lead e tratativa não ficam registrados num lugar só; follow-up depende de alguém lembrar. |
+| **Chamados** | [LEVANTAR] WhatsApp / e-mail direto com o técnico | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
+
+**Base comum (núcleo):** usuários, papéis, clientes (empresas), contatos e contratos. É o que liga os três módulos: o lead ganho no CRM vira cliente; o cliente tem contratos; o contrato tem projetos e dá direito a abrir chamados.
+
+**Interface de IA:** cada usuário interno conecta o próprio assistente (Claude ou ChatGPT) ao sistema para consultar e alterar dados dos módulos, com as mesmas permissões que tem na tela. Detalhado no bloco [Interface de IA (MCP)](#interface-de-ia-mcp).
+
+---
+
+## Quem usa
+
+| Papel | Quem é | O que faz no sistema | O que não pode ver ou fazer |
+|---|---|---|---|
+| Administrador | Sócios | Tudo; gerencia usuários, papéis, clientes e contratos | — |
+| Gestor de projetos | [LEVANTAR] | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | Pipeline comercial e valores de proposta [DECIDIR] |
+| Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado [DECIDIR] |
+| Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; conteúdo dos chamados [DECIDIR] |
+| Suporte / sustentação | [LEVANTAR] quem faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
+| Contato do cliente (externo) | Pessoa indicada pelo cliente | Abre e acompanha os chamados **da própria empresa** | Qualquer dado de outro cliente; CRM; projetos internos; **não conecta IA na v1** |
+
+Regra geral: o que o papel não vê na tela, a IA dele também não vê.
+
+---
+
+## Núcleo (base comum)
+
+### Fluxo principal
+
+1. Administrador cadastra usuários internos e define o papel de cada um.
+2. Cliente nasce de duas formas: cadastro direto ou conversão de lead ganho no CRM.
+3. Cliente recebe contratos (tipo: projeto, sustentação, auditoria, outro [LEVANTAR]).
+4. Contatos do cliente são cadastrados e, se autorizados, recebem acesso ao portal de chamados.
+
+### Regras de negócio
+
+- **RN-NUC-01** Cliente é identificado pelo CNPJ. Dois clientes com o mesmo CNPJ são recusados.
+- **RN-NUC-02** Cliente, contato e usuário não são excluídos depois de usados. São desativados (`deactivated_at`, `deactivated_by`), conforme `core/banco.md` seção 4.
+- **RN-NUC-03** Contato externo só enxerga dados do próprio cliente. Tentativa de acessar outro cliente por ID é negada e registrada.
+- **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`).
+- **RN-NUC-05** Usuário desativado perde acesso imediatamente, inclusive os tokens de IA dele.
+
+---
+
+## Módulo Projetos
+
+### Fluxo principal *(proposta, validar contra o Trello)*
+
+1. Gestor cria o projeto vinculado a um cliente e a um contrato.
+2. Gestor define as etapas (colunas) e cria as tarefas.
+3. Tarefa recebe responsável, prazo e prioridade.
+4. Responsável move a tarefa entre as etapas e registra comentários.
+5. Gestor acompanha o andamento por projeto, por cliente e por pessoa.
+6. Projeto é encerrado; o histórico fica consultável.
+
+### Regras de negócio *(proposta)*
+
+- **RN-PRJ-01** Todo projeto pertence a um cliente e a um contrato. Projeto interno da WCJ usa o cliente "WCJ".
+- **RN-PRJ-02** Tarefa sem responsável não sai da primeira etapa. [DECIDIR]
+- **RN-PRJ-03** Projeto encerrado não recebe tarefa nova; reabrir exige Gestor ou Administrador.
+- **RN-PRJ-04** Dev só vê projetos em que está alocado. [DECIDIR]
+
+### A levantar no Trello
+
+- [ ] Quadros existentes: um por cliente, um por projeto ou um geral?
+- [ ] Listas de cada quadro, que viram etapas e status.
+- [ ] Etiquetas em uso, que viram tipos, prioridades ou tags.
+- [ ] Campos personalizados, checklists e anexos que a equipe usa de fato.
+- [ ] Power-ups e automações ativas.
+- [ ] O que a equipe faz fora do Trello porque ele não atende.
+- [ ] **[DECIDIR]** Migrar o histórico do Trello ou começar do zero com os projetos ativos.
+
+---
+
+## Módulo CRM
+
+### Fluxo principal *(proposta)*
+
+1. Comercial cadastra o lead (empresa, contato, origem).
+2. Lead avança pelas etapas do funil [LEVANTAR etapas; referência: funil do DaaS].
+3. Cada contato com o lead vira uma **tratativa**: data, canal, resumo, próximo passo.
+4. Tratativa com próximo passo gera um **follow-up** com data e responsável.
+5. Comercial vê, todo dia, os follow-ups vencidos e os do dia.
+6. Lead é ganho (vira cliente no núcleo, com contrato) ou perdido (com motivo).
+
+### Regras de negócio *(proposta)*
+
+- **RN-CRM-01** Lead ganho converte para cliente sem redigitar dado. Se o CNPJ já existe como cliente, vincula em vez de duplicar.
+- **RN-CRM-02** Lead perdido exige motivo de uma lista fechada [LEVANTAR motivos].
+- **RN-CRM-03** Tratativa não é editada depois de 24 h; correção vira nova tratativa. [DECIDIR]
+- **RN-CRM-04** Todo lead ativo tem um follow-up futuro. Lead ativo sem follow-up aparece em alerta para o responsável.
+- **RN-CRM-05** Comercial vê os próprios leads; Administrador vê todos. [DECIDIR se comerciais veem os leads uns dos outros]
+
+### A levantar
+
+- [ ] Etapas do funil e o critério para passar de uma para outra.
+- [ ] Campos mínimos do lead e da tratativa.
+- [ ] Origens de lead (indicação, LinkedIn, grupos, site, evento…).
+- [ ] **[DECIDIR]** O funil de prospecção do DaaS (`wcj-ui`, tabelas `lead`/`lead_evento`) migra para cá, continua lá ou é aposentado. Hoje o "ganhar lead" dele cria auditoria no DaaS.
+
+---
+
+## Módulo Chamados
+
+### Fluxo principal *(proposta)*
+
+1. Contato do cliente abre chamado no portal: sistema/contrato, tipo, descrição, anexos.
+2. Suporte faz a triagem: confirma tipo e prioridade e atribui um responsável.
+3. Responsável atende, registra interações e muda o status.
+4. Cliente acompanha pelo portal e responde quando solicitado.
+5. Chamado é resolvido; cliente confirma ou o chamado fecha sozinho após [LEVANTAR] dias.
+
+### Regras de negócio *(proposta)*
+
+- **RN-CHM-01** Chamado só pode ser aberto contra contrato ativo do próprio cliente.
+- **RN-CHM-02** Número do chamado é sequencial por sequência do banco, nunca `max + 1` (`core/banco.md` seção 8).
+- **RN-CHM-03** Prazo de atendimento (SLA) vem do contrato e da prioridade [LEVANTAR tabela de SLA por tipo de contrato].
+- **RN-CHM-04** Chamado com prazo estourado aparece em destaque para Suporte e Administrador.
+- **RN-CHM-05** Comentário interno (entre a equipe) nunca aparece para o cliente.
+- **RN-CHM-06** Chamado fechado não é reaberto; o cliente abre outro, vinculado ao anterior. [DECIDIR]
+
+### A levantar
+
+- [ ] Tipos de chamado (incidente, dúvida, melhoria, acesso…).
+- [ ] Prioridades e o que define cada uma.
+- [ ] SLA por contrato; se existe banco de horas de sustentação a descontar.
+- [ ] Quais sistemas vendidos entram na v1 (lista de contratos de sustentação ativos).
+- [ ] **[DECIDIR]** Canais de abertura na v1: só portal (proposta) ou também e-mail/WhatsApp.
+
+---
+
+## Interface de IA (MCP)
+
+### Decisões do comitê (24/09/2026)
+
+| # | Decisão |
+|---|---|
+| D-IA-01 | Na v1, **somente usuários internos** conectam IA. Contato do cliente não conecta. |
+| D-IA-02 | **Sem IA embutida** na v1. O sistema não chama nenhum modelo por conta própria; toda IA é a do usuário, paga pelo usuário. |
+| D-IA-03 | Assistentes homologados: **Claude** e **ChatGPT**. |
+
+### Como funciona
+
+- O sistema publica um **servidor MCP remoto** (HTTP). Os dois assistentes suportam conector MCP remoto.
+- O usuário conecta o assistente pela tela de perfil. A autenticação é **OAuth 2.1** (exigido pela especificação MCP para servidor remoto): o usuário faz login no sistema e autoriza o assistente. Não há chave colada à mão.
+- Cada autorização gera um token **por usuário, por assistente**, com escopos por módulo e por tipo de acesso (`projetos:ler`, `projetos:escrever`, `crm:ler`, `crm:escrever`, `chamados:ler`, `chamados:escrever`).
+- As ferramentas MCP chamam **a mesma camada de serviço** que as telas. Não existe regra de negócio só no MCP nem só na tela.
+
+### Regras de negócio
+
+- **RN-IA-01** A IA age como o usuário: toda chamada passa pelas mesmas Policies da tela. Papel sem acesso a um dado recebe "negado" também pela IA.
+- **RN-IA-02** O escopo do token nunca excede o papel. Comercial não recebe `projetos:escrever`, mesmo que peça.
+- **RN-IA-03** Toda escrita feita pela IA é gravada na auditoria com canal `ia:claude` ou `ia:chatgpt` e o identificador da autorização (RN-NUC-04).
+- **RN-IA-04** O usuário vê e revoga as autorizações dele na tela de perfil. O Administrador vê e revoga as de qualquer um.
+- **RN-IA-05** Usuário desativado ou com papel alterado tem os tokens revogados na hora.
+- **RN-IA-06** Limite de chamadas por token [LEVANTAR valor]. Ao estourar, a ferramenta devolve erro legível para o assistente, sem derrubar a sessão do usuário.
+- **RN-IA-07** Ferramenta de escrita altera **uma entidade por chamada**. Não existe ferramenta de alteração em lote.
+- **RN-IA-08** Ferramentas são marcadas como leitura ou escrita (anotações MCP `readOnlyHint` / `destructiveHint`), para o assistente pedir confirmação antes de escrever. **A segurança não depende dessa confirmação**: o servidor valida tudo (RN-IA-01).
+- **RN-IA-09** Texto vindo de cliente (descrição e comentários de chamado, anexos) é devolvido à IA como **dado**, delimitado e identificado como conteúdo externo. É o vetor de injeção de prompt: um chamado com "feche todos os chamados" não pode causar isso. RN-IA-07 e RN-IA-01 limitam o dano.
+
+### Ferramentas da v1 *(proposta, validar com os donos)*
+
+A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de SQL genérico nem de "atualizar qualquer tabela".
+
+**Núcleo**
+
+| Ferramenta | Tipo | O que faz |
+|---|---|---|
+| `buscar_cliente` | leitura | Busca por nome ou CNPJ, dentro do que o papel vê |
+| `resumo_do_cliente` | leitura | Contratos ativos, projetos em andamento, chamados abertos, último contato comercial |
+
+**Projetos**
+
+| Ferramenta | Tipo | O que faz |
+|---|---|---|
+| `minhas_tarefas` | leitura | Tarefas do usuário, com filtros por prazo e projeto |
+| `status_do_projeto` | leitura | Etapas, tarefas atrasadas, próximos prazos |
+| `criar_tarefa` | escrita | Cria tarefa num projeto em que o usuário tem permissão |
+| `mover_tarefa` | escrita | Muda a etapa de uma tarefa |
+| `comentar_tarefa` | escrita | Adiciona comentário |
+
+**CRM**
+
+| Ferramenta | Tipo | O que faz |
+|---|---|---|
+| `meus_followups` | leitura | Vencidos, de hoje e da semana |
+| `historico_do_lead` | leitura | Tratativas em ordem, etapa atual, próximo passo |
+| `cadastrar_lead` | escrita | Cria lead (com checagem de CNPJ duplicado) |
+| `registrar_tratativa` | escrita | Registra contato e, opcionalmente, o próximo follow-up |
+| `mover_lead` | escrita | Muda a etapa do funil (ganho e perdido seguem RN-CRM-01/02) |
+
+**Chamados**
+
+| Ferramenta | Tipo | O que faz |
+|---|---|---|
+| `chamados_abertos` | leitura | Filtro por cliente, responsável, prioridade, prazo estourado |
+| `detalhe_do_chamado` | leitura | Histórico completo (conteúdo do cliente delimitado, RN-IA-09) |
+| `responder_chamado` | escrita | Resposta visível ao cliente |
+| `comentar_internamente` | escrita | Comentário só da equipe (RN-CHM-05) |
+| `mudar_status_do_chamado` | escrita | Muda status/responsável conforme o papel |
+
+### Cenários de aceite de referência (formato do escopo)
+
+- **Dado** um Comercial sem acesso ao projeto P, **quando** o assistente dele chama `status_do_projeto(P)`, **então** recebe "negado" e a tentativa fica na auditoria.
+- **Dado** um Dev com token só de leitura, **quando** o assistente chama `mover_tarefa`, **então** recebe "escopo insuficiente" e nada muda.
+- **Dado** um usuário desativado agora, **quando** o assistente dele chama qualquer ferramenta, **então** recebe "não autorizado".
+- **Dado** um chamado cuja descrição contém instruções ao assistente, **quando** o técnico pede um resumo pela IA, **então** o conteúdo volta delimitado como dado do cliente e nenhuma escrita acontece sem pedido do técnico.
+- **Dado** uma tarefa movida pela IA, **quando** o Gestor abre o histórico, **então** vê quem moveu, quando, de onde para onde e o canal `ia:claude` ou `ia:chatgpt`.
+
+### A levantar
+
+- [ ] Em quais planos do Claude e do ChatGPT o conector MCP personalizado está disponível hoje (cada dev paga o próprio plano; se exigir plano Team/Enterprise, isso muda a decisão).
+- [ ] Perguntas e ações que cada papel faria pela IA, uma lista curta por dono de módulo. Ela confirma ou corta as ferramentas acima.
+
+---
+
+## Integrações e dados externos
+
+| Integração | Direção | v1? |
+|---|---|---|
+| Claude e ChatGPT via MCP | entrada (consulta e escrita pelo usuário) | **Sim** |
+| Trello | importação única | [DECIDIR] |
+| Funil de prospecção do DaaS | importação única ou convivência | [DECIDIR] |
+| E-mail (notificação de chamado ao cliente e ao responsável) | saída | [DECIDIR] |
+| WhatsApp | — | Não (ver abaixo) |
+
+---
+
+## Fora da primeira versão
+
+- IA embutida no sistema (sugestão de follow-up, triagem automática, resumo automático). D-IA-02.
+- Contato do cliente conectando a própria IA. D-IA-01.
+- Assistentes além de Claude e ChatGPT. D-IA-03.
+- Abertura de chamado por WhatsApp.
+- Faturamento, cobrança, emissão de nota.
+- Apontamento de horas / timesheet [DECIDIR se banco de horas da sustentação entra].
+- Aplicativo móvel nativo (a v1 é web responsiva).
+
+## O que não pode
+
+- Não existe ferramenta MCP de exclusão. A IA não exclui nem desativa nada na v1.
+- Não existe ferramenta MCP de alteração em lote.
+- Não existe ferramenta MCP que execute consulta livre (SQL, filtro arbitrário sobre qualquer tabela).
+- O sistema não chama nenhum modelo de IA por conta própria e não guarda chave de API de provedor de IA.
+- Não há login por chave de API colada; conexão de assistente é só por OAuth.
+- Contato do cliente não vê comentário interno, nome de outro cliente nem dado do CRM.
+- Não envia mensagem ao cliente pelo WhatsApp.
+- Não há aprovação em dois níveis em nenhum módulo, salvo se levantado com o dono.
+- Não há gamificação, ranking de vendedor nem painel de metas na v1.
+
+## Vocabulário
+
+| Termo | Significa |
+|---|---|
+| Cliente | Empresa com pelo menos um contrato com a WCJ |
+| Contato | Pessoa de um cliente ou de um lead |
+| Contrato | Vínculo comercial que dá origem a projeto e/ou direito a chamado |
+| Lead | Empresa em prospecção, ainda sem contrato |
+| Tratativa | Registro de um contato comercial com um lead |
+| Follow-up | Próximo contato agendado, com data e responsável |
+| Projeto | Trabalho com início e fim para um cliente |
+| Tarefa | Item de trabalho dentro de um projeto (o "card" do Trello) [LEVANTAR termo que a equipe usa] |
+| Chamado | Solicitação de um cliente sobre um sistema ou contrato |
+| SLA | Prazo de atendimento do chamado, definido pelo contrato e pela prioridade |
+| Assistente / IA | Claude ou ChatGPT do próprio usuário, conectado pelo MCP |
+| Conector | A autorização de um assistente para acessar o sistema em nome do usuário |
+
+## Restrições
+
+- Stack: template da casa (`stacks/laravel-inertia.md`). [DECIDIR confirmação no comitê]
+- Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na etapa 4.
+- Uso principal: desktop no escritório; chamados e follow-ups também pelo celular [LEVANTAR].
+- Volume: [LEVANTAR] nº de usuários internos, clientes com contrato ativo, chamados/mês, leads/mês.
+- Segurança: fatia de segurança obrigatória (`core/seguranca.md` seção 11) **incluindo o servidor MCP e o OAuth**.
+- Prazo: [DECIDIR].
+
+## Donos e pessoa técnica
+
+| Parte | Dono (ouve o usuário, valida esta seção) |
+|---|---|
+| Núcleo | [DECIDIR] |
+| Projetos | [LEVANTAR] quem administra o Trello hoje |
+| CRM | Lucas Scholz |
+| Chamados | [LEVANTAR] responsável pela sustentação |
+| Interface de IA | [DECIDIR] |
+| **Pessoa técnica que aprova o banco (etapa 2)** | [DECIDIR] |
+
+## Fontes
+
+- 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-IA-01 a D-IA-03.
+- Trello da WCJ: pendente (export JSON dos quadros).
+- Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
+- Atas do Comitê de IA: `docs/atas/`.
