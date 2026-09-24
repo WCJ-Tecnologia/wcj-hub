@@ -55,6 +55,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-19 | 24/09/2026 | **Teste cruzado livre:** não é atribuído; qualquer dev alocado puxa, menos quem desenvolveu a tarefa. |
 | D-PRJ-20 | 24/09/2026 | Coluna padrão de suporte se chama **`Support`**, em inglês como as demais (D-PRJ-14). Substitui o nome `Suporte` de D-PRJ-17. |
 | D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. Sprint é a coluna `To do`, não entidade. |
+| D-PRJ-22 | 24/09/2026 | **Feriados fora da v1:** data prevista em dias úteis de segunda a sexta. Horas previstas por tarefa × pessoa. Equipe do cliente no Histórico de Desenvolvimento é texto livre no documento gerado. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -125,7 +126,7 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 2. Gestor (ou a IA dele) escreve a tarefa no **modelo de requisição**: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`. Cada critério vira item do roteiro de teste.
 3. Gestor atribui pessoas **por função** (back-end, front-end, QA) e define quais validações a tarefa exige: **code review**, **teste cruzado** e/ou **QA** (RN-PRJ-09).
 4. Tarefa sem responsável não sai do Backlog (D-PRJ-02). Quem é atribuído é notificado.
-5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis, feriados e a carga diária do dev.
+5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis (segunda a sexta) e a carga diária do dev.
 6. A tarefa entra em `To do` (a sprint; no Trello, `Esteira`) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Em `Doing` o dev desenvolve e faz commits e pushes na branch. Ao terminar, **abre um ou mais PRs para a `main`** e a tarefa vai para `Code-review`, onde normalmente o **Tech Lead** do projeto revisa (D-PRJ-09, D-PRJ-16).
 7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. O dev lança as **horas realizadas**.
 8. Aprovado no QA, é feito o merge (normalmente pelo Tech Lead) e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
@@ -150,9 +151,9 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 - **RN-PRJ-08** Toda volta para uma etapa de desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA, homologação) e **motivo**. A lista de motivos é editável por projeto e sempre tem "outro" com texto. Motivos iniciais [validar com Rafael]: ajuste visual, regra de negócio, erro/bug, **requisito incompleto ou mal documentado** (a principal causa de retrabalho, segundo o Rafael).
 - **RN-PRJ-14** Pessoa é atribuída à tarefa **com uma função** (back-end, front-end, QA, outra). Pode haver mais de uma pessoa por função. A lista de funções é editável.
 - **RN-PRJ-15** Horas previstas e realizadas são registradas **por pessoa**. Horas são decimais; não há arredondamento para dia.
-- **RN-PRJ-16** A data prevista é calculada em **dias úteis**: horas previstas ÷ carga diária do dev, pulando fins de semana e feriados do calendário. Ex.: 16 h = 2 dias úteis para 8 h/dia e 4 dias úteis para 4 h/dia.
+- **RN-PRJ-16** A data prevista é calculada em **dias úteis**: horas previstas ÷ carga diária do dev, pulando fins de semana. Feriados ficam fora da v1 (D-PRJ-22). Ex.: 16 h = 2 dias úteis para 8 h/dia e 4 dias úteis para 4 h/dia.
 - **RN-PRJ-17** Cada usuário interno tem **carga diária** cadastrada (ex.: 8 h ou 4 h). Mudança de carga vale dali para a frente; não recalcula o passado.
-- **RN-PRJ-18** Existe um **calendário de feriados** (nacionais + locais) mantido pelo Administrador.
+- **RN-PRJ-18** ~~Calendário de feriados mantido pelo Administrador~~ **fora da v1** (D-PRJ-22).
 - **RN-PRJ-19** Tarefa tem **chave** `<prefixo do projeto>-<número>` (ex.: `SGM-17`). O número é sequencial por projeto, gerado por sequência do banco, e nunca é reutilizado.
 - **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
 - **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa, no sistema e por e-mail.
@@ -190,7 +191,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 |---|---|---|---|
 | F-PRJ-02 | **Tempo por etapa em linha do tempo**, por tarefa, e tempo total até pronto | Trello Wpay + Rafael | **v1** |
 | F-PRJ-11 | **Horas previstas × realizadas** por tarefa, pessoa e projeto | Rafael | **v1** |
-| F-PRJ-12 | **Data prevista em dias úteis** pela carga diária do dev e pelo calendário de feriados | Rafael | **v1** |
+| F-PRJ-12 | **Data prevista em dias úteis** pela carga diária do dev (feriados fora da v1, D-PRJ-22) | Rafael | **v1** |
 | F-PRJ-09 | **Prazo e atraso** visíveis por projeto e por pessoa | Rafael | **v1** |
 | F-PRJ-18 | **Atribuição por função** (back, front, QA) | Rafael | **v1** |
 | F-PRJ-19 | **Notificação** ao atribuir | Rafael | **v1** |
@@ -476,6 +477,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 ## Fora da primeira versão
 
+- Calendário de feriados: a data prevista considera só segunda a sexta. D-PRJ-22.
 - IA embutida no sistema (sugestão de follow-up, triagem automática, resumo automático), inclusive o assistente de voz do funil do DaaS. D-IA-02.
 - Criação automática de auditoria no DaaS quando o lead é ganho. RN-CRM-08.
 - Contato do cliente conectando a própria IA. D-IA-01.
@@ -530,7 +532,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 - Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09).
 - Estrutura do código (D-GER-15), por domínio desde o primeiro commit:
-  - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, contratos, auditoria, calendário de feriados, notificações, OAuth);
+  - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, contratos, auditoria, notificações, OAuth);
   - `app/Domains/Projetos/`, `app/Domains/Crm/` e, depois, `app/Domains/Chamados/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e **`Mcp`** (as ferramentas de IA daquele domínio, chamando o `Service` do próprio domínio);
   - um domínio não lê nem grava a tabela de outro: chama o `Service` dele (ex.: o chamado cria a tarefa de suporte pelo `Service` de Projetos; o lead ganho cria o cliente pelo `Service` do Platform).
 - Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito.
