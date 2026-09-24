@@ -20,6 +20,7 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 ### 1. Stack e estrutura (10 min)
 - Confirmar o template da casa (`stacks/laravel-inertia.md`).
 - Um sistema com três módulos sobre um núcleo comum: separar por módulo de código (pastas/domínios) ou por pacote?
+- Fluxo atual de PR e merge dos devs (P-04 da ata de Projetos): todo trabalho passa por PR? Quem aprova? Base para o vínculo tarefa × PR (F-PRJ-06).
 - Onde publicar: VPS própria ou ambiente já existente? Precisa de HTTPS público desde a homologação (os assistentes chamam o MCP a partir da nuvem deles).
 
 ### 2. Núcleo e banco (15 min)
