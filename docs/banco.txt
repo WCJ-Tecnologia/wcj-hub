@@ -87,7 +87,7 @@ onDelete
 6. DECISÕES DE MODELAGEM
 7. RESPOSTAS DO LUCAS SCHOLZ (24/09)
 8. REVISÃO DE ENXUGAMENTO (o que saiu e por quê)
-9. PARA O LUCAS ALENCAR CONFIRMAR
+9. ESCOLHAS TÉCNICAS (revisáveis pelo Lucas Alencar)
 
 
 #####################################################################
@@ -266,13 +266,13 @@ pk (ai_authorization_id, ai_scope_id)      (pivot puro, sem id nem timestamps)
 ai_tool_calls
 =====================================================================
 Chamadas de ferramenta, inclusive LEITURA (IA-02: 180 dias, só ids e filtros). A escrita já está
-em audit_logs. O limite 60/20 por minuto (RN-IA-06) roda no cache, não aqui.
+em audit_logs. O limite 60/20 por minuto (RN-IA-06) roda no cache, por autorização (escolha T5).
 ai_authorization_id   fk ai_authorizations  not null  restrict
 tool_name             varchar(80)           not null
 arguments             json                  null      (só ids e filtros, nunca texto livre)
 outcome               varchar(15)           not null  check in ('success','denied','rate_limited','error')
 created_at            datetime              not null
-índices: (ai_authorization_id, created_at), created_at   (o job diário apaga o que passou de 180 dias)
+índices: (ai_authorization_id, created_at), created_at   (limpeza de 180 dias, escolha T5)
 
 
 #####################################################################
@@ -291,7 +291,7 @@ name                             varchar(160)  not null
 ai_full                          boolean       not null  default false  modalidade "100% IA" (RN-PRJ-06)
 finished_at                      datetime      null      encerrado não recebe tarefa (RN-PRJ-03)
 last_task_number                 int unsigned  not null  default 0
-                                                         contador da chave, lido com lockForUpdate (PRJ-03)
+                                                         contador da chave (PRJ-03, escolha T4)
 -- Padrões configuráveis (D-GER-05). Mudam dali para a frente (RN-PRJ-29).
 require_assignee_out_of_backlog  boolean  not null  default true   (RN-PRJ-02)
 default_requires_code_review     boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
@@ -540,6 +540,8 @@ e do QA). Uma linha por tentativa; a vigente é a mais recente do tipo. Reprovar
 retrabalho na mesma transação.
 Teste cruzado fica livre para qualquer dev alocado puxar (PRJ-09, D-PRJ-19): validated_by +
 claimed_at. Não puxa quem está na tarefa com função diferente de 'qa' (RN-PRJ-26).
+Escolha T2: puxar trava a linha (lockForUpdate) e recusa se validated_by já estiver preenchido;
+linha nova do mesmo tipo só nasce depois que a anterior foi reprovada.
 task_id               fk tasks               not null  cascade
 validation_type_id    fk validation_types    not null  restrict
 validation_result_id  fk validation_results  not null  restrict  default 1
@@ -640,7 +642,9 @@ unique: (project_id, name)
 Regras do Service (D-PRJ-24):
 - entra na sprint tarefa da coluna To do, com estimativa, e só de gente do time da sprint;
 - por pessoa, a soma das estimativas nas tarefas da sprint não passa de daily_hours ×
-  available_days; com enforce_sprint_capacity = true recusa, com false avisa;
+  available_days; com enforce_sprint_capacity = true recusa, com false avisa. A conferência roda em
+  transação com as linhas de sprint_members travadas (lockForUpdate), para duas inclusões ao mesmo
+  tempo não estourarem a capacidade (banco.md §8, escolha T1);
 - tarefa não concluída no fim é levada pelo gestor à próxima sprint (troca de sprint_id; o rastro
   fica em audit_logs).
 
@@ -674,8 +678,11 @@ name                  varchar(60)   not null
 position              smallint      not null
 outcome               varchar(4)    not null  check in ('open','won','lost')
 archived_at           datetime      null      (etapa com lead não se exclui)
+final_key             varchar(4)    GENERATED ALWAYS AS (IF(outcome <> 'open' AND archived_at IS NULL,
+                                    outcome, NULL)) STORED   unique
+                                    → no máximo 1 etapa ativa won e 1 lost, travado no banco (T1)
 Semente: Prospecção · Contato · Reunião · Proposta (open) · Ganhou (won) · Perdido (lost)
-Regra do Service: exatamente 1 etapa ativa won e 1 lost.
+Regra do Service: pelo menos 1 won e 1 lost ativas (não dá para arquivar a última).
 
 =====================================================================
 lead_sources                           (cadastrável)
@@ -821,15 +828,14 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 6.7  Tarefa aponta para sprint e pacote atuais (uma coluna cada). Troca de sprint e saída do
      pacote ficam em audit_logs: nenhuma regra pede a lista histórica em tabela.
 6.8  Critério de aceite e item do roteiro são a mesma linha: 1 critério = 1 item (F-PRJ-14).
-6.9  Chave da tarefa: key gravada + contador com lockForUpdate + unique (project_id, number).
+6.9  Chave da tarefa: key gravada + contador atômico (T4) + unique (project_id, number).
 
 
 #####################################################################
 #  7. RESPOSTAS DO LUCAS SCHOLZ (24/09)
 #####################################################################
 DB-01  MySQL 8.                      DB-02  Collation ai_ci.
-DB-03  Unique "só entre ativos" no banco. Depois do enxugamento nenhuma tabela precisa desse padrão
-       (vínculos são removidos de verdade); a decisão fica para quando aparecer o caso.
+DB-03  Unique "só entre ativos" no banco, por coluna gerada. Usado em funnel_stages.final_key (T1).
 NUC-01 Empresa estrangeira cadastrável (country + document opcional fora do BR).
 NUC-02 Sem login de cliente na v1.   NUC-03 Papéis fixos.   NUC-04 Auditoria guarda tudo.
 NUC-05 Endereço dentro do cliente. Depois do enxugamento o endereço SAIU: nenhuma regra usa.
@@ -904,13 +910,30 @@ Saiu porque era tabela para algo que uma coluna resolve
 
 
 #####################################################################
-#  9. PARA O LUCAS ALENCAR CONFIRMAR
+#  9. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
+#  Decididas para seguir. O Lucas Alencar corrige na revisão geral se discordar.
 #####################################################################
-A1  Os pontos em que o banco confia no Service e não trava sozinho: papel da etapa imutável depois de
-    usada; 1 etapa won e 1 lost ativas; exclusão de critério só antes de testado; capacidade da sprint.
-A2  task_validations sem "rodada": a vigente é a mais recente por tipo. Atende ao painel de
-    retrabalho, que lê os movimentos?
-A3  tasks.sprint_id / package_id no lugar de tabelas de vínculo, com o histórico em audit_logs.
-A4  Contador da chave (projects.last_task_number com lockForUpdate) no lugar de sequência do banco,
-    que o MySQL não tem por grupo (banco.md §8).
-A5  Retenção de 180 dias em ai_tool_calls por job diário, e parâmetros de IA em config/.env.
+T1  Regras que o banco não trava sozinho ficam no Service, cobertas por teste automatizado:
+    papel da etapa não muda depois de usada; critério só se exclui antes de testado.
+    Onde dá para travar no banco, trava: no máximo 1 etapa won e 1 lost ativas no funil
+    (funnel_stages.final_key, coluna gerada + unique). "Pelo menos 1" fica no Service.
+    Capacidade da sprint: conferência em transação com sprint_members travado (lockForUpdate),
+    contra corrida de duas inclusões simultâneas (banco.md §8).
+T2  task_validations sem número de rodada: vale a linha mais recente de cada tipo. O indicador de
+    retrabalho lê task_stage_movements. Puxar teste cruzado trava a linha e recusa se já houver
+    alguém; nova linha do mesmo tipo só depois de reprovada a anterior.
+T3  tasks.sprint_id e tasks.package_id no lugar de tabelas de vínculo; troca de sprint e saída do
+    pacote ficam em audit_logs. Se um dia pedirem "tarefas que passaram de sprint", cria-se a
+    tabela de vínculo e o passado é reconstruído do antes/depois de audit_logs.
+T4  Chave da tarefa por contador no projeto (o MySQL não tem sequência por grupo, banco.md §8),
+    incrementado de forma atômica na mesma transação da criação da tarefa:
+        UPDATE projects SET last_task_number = LAST_INSERT_ID(last_task_number + 1) WHERE id = ?;
+        SELECT LAST_INSERT_ID();
+    Sem ler-e-gravar. unique (project_id, number) é a segunda trava. Transação que falha desfaz o
+    contador junto: não sobra buraco.
+T5  ai_tool_calls: limpeza de 180 dias pelo prune agendado do Laravel (Prunable + model:prune),
+    em lotes. audit_logs não tem limpeza (NUC-04).
+    Parâmetros em config/hub.php com padrão e override por .env: 60 leituras/min, 20 escritas/min,
+    180 dias de retenção, horário do resumo diário do CRM.
+    Limite de chamadas contado por autorização de IA (ai_authorization_id), não por usuário: um
+    conector em loop não bloqueia os outros assistentes da mesma pessoa.
