@@ -36,6 +36,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-10 | 24/09/2026 | Volume: até **14 usuários internos**, **6 clientes ativos**, cerca de **10 leads por mês**. |
 | D-GER-11 | 24/09/2026 | Tipos de contrato: projeto, sustentação, auditoria, alocação de dev, infraestrutura; o Administrador cadastra mais. |
 | D-GER-14 | 24/09/2026 | Hospedagem: **na mesma VPS do sistema de auditoria (DaaS)**, com subdomínio próprio e HTTPS. |
+| D-GER-15 | 24/09/2026 | Código **organizado por domínio desde o início** (`stacks/laravel-inertia.md`, "Quando o projeto cresce: por domínio"), sem esperar chegar a 5 módulos. Registrar em ADR na etapa 3. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
@@ -488,6 +489,10 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ## Restrições
 
 - Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09).
+- Estrutura do código (D-GER-15), por domínio desde o primeiro commit:
+  - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, contratos, auditoria, calendário de feriados, notificações, OAuth);
+  - `app/Domains/Projetos/`, `app/Domains/Crm/` e, depois, `app/Domains/Chamados/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e **`Mcp`** (as ferramentas de IA daquele domínio, chamando o `Service` do próprio domínio);
+  - um domínio não lê nem grava a tabela de outro: chama o `Service` dele (ex.: o chamado cria a tarefa de suporte pelo `Service` de Projetos; o lead ganho cria o cliente pelo `Service` do Platform).
 - Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito.
 - Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
 - Hospedagem (D-GER-14): **VPS do DaaS** (`auditoria.wcjtecnologia.com.br`), que já roda o app do DaaS e o Supabase em Docker atrás do Nginx. O Hub entra como **mais um conjunto de containers**, com subdomínio próprio (ex.: `hub.wcjtecnologia.com.br`), **banco de dados separado** do Supabase do DaaS, backup próprio e entrada no Nginx. [LEVANTAR com Lucas Alencar] se a VPS tem memória e disco para os dois, e se o banco do Hub fica numa instância Postgres própria ou num banco separado da instância existente.

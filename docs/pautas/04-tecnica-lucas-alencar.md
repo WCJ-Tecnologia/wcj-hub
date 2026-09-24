@@ -19,7 +19,7 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 
 ### 1. Stack e estrutura (10 min)
 - Confirmar o template da casa (`stacks/laravel-inertia.md`).
-- Um sistema com três módulos sobre um núcleo comum: separar por módulo de código (pastas/domínios) ou por pacote?
+- Estrutura decidida: **por domínio desde o início** (D-GER-15): `app/Platform` (Núcleo) + `app/Domains/{Projetos,Crm,Chamados}`, cada domínio com suas ferramentas MCP. Só validar com ele.
 - PR: fluxo atual é dev abre PR → Tech Lead aprova (D-PRJ-09). Tech Lead é definido por projeto (D-PRJ-10). Confirmar se a v1 lê o status do PR do GitHub ou só guarda o link (F-PRJ-06).
 - Hospedagem decidida: VPS do DaaS (D-GER-14). Confirmar capacidade (memória, disco), subdomínio, e banco do Hub separado do Supabase do DaaS (instância própria ou banco separado).
 
