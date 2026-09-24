@@ -2,6 +2,7 @@ MODELO DE DADOS — WCJ Hub
 Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.3.0). PROPOSTA DA IA (D-GER-16), com as
 decisões do Lucas Scholz de 24/09, a revisão de enxugamento de 24/09 (seção 8) e as respostas da
 revisão da etapa 2 (24/09: D-PRJ-26 a 31, D-CRM-09/10, D-IA-08 a 10, D-NUC-03/04, D-GER-21).
+Contrato fica FORA DA V1 (D-CRM-10): saiu a tabela contracts; volta pela seção 5.
 Revisão técnica: Lucas Alencar (D-GER-01). Validação final: Comitê de IA.
 Regras: .ai/core/banco.md. Fonte do requisito: docs/necessidade.md (RN-/D-/F- apontam para lá).
 Escopo: Núcleo (Platform), Projetos e CRM. Chamados fica fora; a seção 5 mostra o que ele acrescenta
@@ -45,7 +46,7 @@ Quem fez e quando
 
 Derivar, não guardar
 - Não há coluna de cache. Status que se deduz de outra coluna é deduzido (lead ganho = etapa de
-  resultado "won"; sprint em andamento = hoje entre as datas; contrato ativo = hoje entre as datas).
+  resultado "won"; sprint em andamento = hoje entre as datas).
 - Exceções, cada uma com regra: tasks.key (busca direta "SGM-17", imutável), tasks.due_on e
   sprint_members.daily_hours (fotos que a RN-PRJ-17 manda não recalcular).
 
@@ -69,9 +70,9 @@ onDelete
 
 
 =====================================================================
-ÍNDICE (48 tabelas + framework)
+ÍNDICE (47 tabelas + framework)
 =====================================================================
-1. PLATFORM   roles · users · clients · contacts · contract_types · contracts · contact_channels
+1. PLATFORM   roles · users · clients · contacts · contract_types · contact_channels
               · audit_channels · audit_logs · ai_assistants · ai_scopes · ai_authorizations
               · ai_authorization_scopes · ai_tool_calls
 2. PROJETOS   projects · project_members · stage_roles · board_stages
@@ -157,6 +158,7 @@ deactivated_by        fk users       null      restrict
 contract_types                         (cadastrável)
 =====================================================================
 D-GER-11. O Administrador cadastra novos tipos. O código depende do slug 'audit' (sizing, RN-CRM-07).
+Na v1 só o lead usa ("o que está sendo vendido"): contrato fica fora da v1 (D-CRM-10).
 slug varchar(40) null unique · label varchar(80) not null unique · deactivated_at/by
      slug              label
      project           Projeto
@@ -164,25 +166,6 @@ slug varchar(40) null unique · label varchar(80) not null unique · deactivated
      audit             Auditoria
      dev_allocation    Alocação de dev
      infrastructure    Infraestrutura
-
-=====================================================================
-contracts
-=====================================================================
-Única fonte de contrato (D-CRM-04). Na v1 é referência: o cliente tem contratos, o projeto pode
-apontar um (D-PRJ-18), e o resumo do cliente lista os ativos (ferramenta resumo_do_cliente).
-Lead ganho NÃO cria contrato (D-CRM-10). [DECIDIR, Lucas Scholz] se esta tabela fica na v1 (cadastro
-manual pelo admin) ou sai da v1 inteira. Se sair: sai também projects.contract_id; contract_types
-fica, porque o lead usa o slug 'audit' (RN-CRM-07).
-client_id             fk clients         not null  restrict
-contract_type_id      fk contract_types  not null  restrict
-name                  varchar(160)       not null           (identifica o contrato nas listas)
-started_on            date               not null           ┐ contrato ativo = hoje entre as datas
-ended_on              date               null               ┘ (null = sem fim)
-deactivated_at        datetime           null
-deactivated_by        fk users           null      restrict
-check: ended_on is null or ended_on >= started_on
-unique: (id, client_id)          (alvo da FK composta de projects: contrato do mesmo cliente)
-índices: client_id, contract_type_id
 
 =====================================================================
 contact_channels                       (fechado)
@@ -282,20 +265,21 @@ created_at            datetime              not null
 
 #####################################################################
 #  2. PROJETOS — app/Domains/Projetos/
-#  FKs para fora: users, clients, contacts, contracts, contact_channels, audit_channels.
+#  FKs para fora: users, clients, contacts, contact_channels, audit_channels.
 #####################################################################
 
 =====================================================================
 projects
 =====================================================================
 client_id                        fk clients    not null  restrict  (RN-PRJ-01)
-contract_id                      fk contracts  null      restrict  referência opcional (D-PRJ-18)
 manager_id                       fk users      not null  restrict  (RN-PRJ-05)
 key_prefix                       varchar(10)   not null  unique    (RN-PRJ-19; congela após a 1ª tarefa, D-PRJ-26)
 name                             varchar(160)  not null
 starts_on                        date          not null            início (D-PRJ-29)
-due_on                           date          not null            entrega (D-PRJ-29): sprints que cabem e
-                                                                   "fora do cronograma" (RN-PRJ-33)
+due_on                           date          null                entrega (D-PRJ-29): sprints que cabem e
+                                                                   "fora do cronograma" (RN-PRJ-33).
+                                                                   null = produto contínuo, sem entrega;
+                                                                   o prazo é o de cada sprint
 ai_full                          boolean       not null  default false  modalidade "100% IA" (RN-PRJ-06)
 finished_at                      datetime      null      encerrado não recebe tarefa (RN-PRJ-03)
 last_task_number                 int unsigned  not null  default 0
@@ -311,8 +295,7 @@ enforce_sprint_capacity          boolean  not null  default true   (D-PRJ-24; fa
 sprint_days                      smallint unsigned  not null  default 10
                                                          duração da sprint em dias úteis (D-PRJ-24,
                                                          RN-PRJ-35); base do "quantas sprints cabem"
-check: due_on >= starts_on;  sprint_days > 0
-fk composta: (contract_id, client_id) → contracts (id, client_id)   (contrato do mesmo cliente)
+check: due_on is null or due_on >= starts_on;  sprint_days > 0
 índices: client_id, manager_id
 Reabrir (RN-PRJ-03) = finished_at volta a null, só gestor ou admin.
 
@@ -640,7 +623,8 @@ Regras do Service (D-PRJ-24):
 - entra na sprint tarefa da coluna To do cujo dev (tasks.developer_id) está no time da sprint;
 - por dev, a soma das HORAS QUE FALTAM das tarefas dele na sprint não passa de daily_hours ×
   available_days (D-PRJ-30). Horas que faltam = estimated_hours − todas as horas lançadas na tarefa
-  (time_entries), nunca abaixo de 0. Tarefa arquivada não conta (RN-PRJ-34). Com
+  (time_entries), nunca abaixo de 0. Tarefa arquivada não conta (RN-PRJ-34). A tarefa conta só na capacidade do dev; a do QA
+  não é conferida na v1 (D-PRJ-30). Com
   enforce_sprint_capacity = true recusa, com false avisa. A conferência roda em
   transação com as linhas de sprint_members travadas (lockForUpdate), para duas inclusões ao mesmo
   tempo não estourarem a capacidade (banco.md §8, escolha T1);
@@ -805,13 +789,15 @@ Colunas: as do pacote, sem alteração. Os campos padrão do Laravel em users qu
 #####################################################################
 Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma migração destrutiva.
 - roles: support, client_contact.  contacts: user_id (login do contato, D-NUC-02).
-- contracts: horas contratadas, período, SLA por prioridade, dias para fechar sozinho (RN-CHM-03,
-  08, 09) — colunas ou tabela contract_slas.
+- contracts (fora da v1, D-CRM-10) entra como tabela nova: client_id, contract_type_id, name,
+  started_on, ended_on, deactivated_at/by, unique (id, client_id); projects ganha contract_id null com
+  FK composta (contract_id, client_id) → contracts (id, client_id). Mais horas contratadas, período,
+  SLA por prioridade, dias para fechar sozinho (RN-CHM-03, 08, 09): colunas ou tabela contract_slas.
 - audit_channels: email.  ai_scopes: tickets:read, tickets:write.
 - tickets (número por sequência, cliente, contrato, projeto, task_id → coluna Support, F-PRJ-08),
   filas N1/N2/N3 e despachante, mensagens (com a marca de interna, RN-CHM-05), anexos, e-mails não
   identificados, apontamento de horas contra o contrato (banco de horas, D-PRJ-18).
-- Reaproveita: clients, contacts (e-mail do remetente), contracts, contact_channels, task_priorities.
+- Reaproveita: clients, contacts (e-mail do remetente), contract_types, contact_channels, task_priorities.
 
 
 #####################################################################
@@ -840,12 +826,12 @@ DB-03  → técnica: unique "só entre ativos" por coluna gerada (T1)
 NUC-01 → D-NUC-01    NUC-02 → D-NUC-02    NUC-03 → D-NUC-03    NUC-04 → D-NUC-04
 NUC-05 → saiu no enxugamento (endereço: nenhuma regra usa)
 IA-01  → técnica: papel × escopo no código    IA-02 → D-IA-08, RN-IA-10    IA-03 → D-IA-09
-PRJ-01 → D-PRJ-18    PRJ-02 → D-PRJ-26    PRJ-03 → técnica (T4)
+PRJ-01 → D-PRJ-18 (contrato fora da v1, D-CRM-10)    PRJ-02 → D-PRJ-26    PRJ-03 → técnica (T4)
 PRJ-04 → D-PRJ-22, SUBSTITUÍDA por D-PRJ-27 (horas da tarefa inteira, pelo gestor)
 PRJ-05 → RN-PRJ-20 (roteiro reaproveitado)   PRJ-06 → D-PRJ-22    PRJ-07/08/11 → D-PRJ-21
 PRJ-09 → D-PRJ-19    PRJ-10 → D-PRJ-20    PRJ-12 → D-PRJ-23    PRJ-13 → D-PRJ-22    PRJ-14 → D-PRJ-24
 CRM-01/02/03 → D-CRM-06    CRM-04 → D-CRM-07    CRM-05/07 → D-CRM-08    CRM-06 → D-CRM-09
-Enxugamento validado (D-GER-20): contato com e-mail e telefone; contrato com nome e datas; restringir
+Enxugamento validado (D-GER-20): contato com e-mail e telefone; contrato com nome e datas (depois da v1); restringir
 etapa a função é v1+ (D-PRJ-25); lead sem valor e sem previsão até o comercial definir os campos
 mínimos. "Tarefa usada fica no Backlog" foi SUBSTITUÍDO por arquivar com motivo (D-PRJ-31).
 Revisão da etapa 2 (24/09): 1 dev + QA e horas pelo gestor (D-PRJ-27), data da tarefa inteira
@@ -945,7 +931,7 @@ T6  MySQL em produção × SQLite nos testes do template (stacks/laravel-inertia
     Recomendo: testes de banco em MySQL no CI (container), ou implementação que rode nos dois.
 T7  Integridade por projeto. Nada no banco garante que etapa, sprint, pacote e área da tarefa, as
     etapas do movimento, o motivo de retrabalho e o estado do pacote são do MESMO projeto. É o mesmo
-    problema que projects × contracts resolveu com FK composta.
+    desenho de FK composta que projects × contracts usava (contrato hoje fora da v1, seção 5).
     Recomendo: unique (id, project_id) em board_stages, sprints, packages, project_areas,
     rework_reasons e package_statuses, e FK composta a partir de tasks, task_stage_movements e
     packages. Com 1 dev por tarefa, dá também (project_id, developer_id) e (project_id, qa_id) →
