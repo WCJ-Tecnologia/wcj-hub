@@ -51,6 +51,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-IA-07 | 24/09/2026 | Limite por token: leitura 60/min, escrita 20/min, ajustáveis. Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
 | D-NUC-01 | 24/09/2026 | Cliente pode ser **empresa estrangeira** (casos pequenos; hoje 2 projetos): país + identificador fiscal do país, opcional; contrato com moeda própria. Pessoa física continua fora. |
 | D-NUC-02 | 24/09/2026 | **Contato do cliente não tem login na v1.** O acesso do contato entra com o módulo Chamados. |
+| D-PRJ-18 | 24/09/2026 | Projetos **gerencia o projeto**, não o contrato: projeto fechado é contrato de entrega, não de horas. Horas previstas e realizadas servem a prazo, previsto × realizado e produtividade; **não são comparadas com horas de contrato** no módulo Projetos. Contrato no projeto é opcional. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -137,7 +138,7 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 
 ### Regras fixas (valem para todo projeto)
 
-- **RN-PRJ-01** Todo projeto pertence a um cliente e a um contrato. Projeto interno ou produto da WCJ (ex.: Wpay) usa o cliente "WCJ".
+- **RN-PRJ-01** Todo projeto pertence a um cliente. O contrato é **opcional**, só referência (D-PRJ-18). Projeto interno ou produto da WCJ (ex.: Wpay) usa o cliente "WCJ", sem contrato.
 - **RN-PRJ-03** Projeto encerrado não recebe tarefa nova; reabrir exige Gestor ou Administrador.
 - **RN-PRJ-04** Dev só vê projetos em que está alocado (D-PRJ-03).
 - **RN-PRJ-05** Todo projeto tem um gestor responsável. Gestor vê e edita os projetos que gere; Administrador vê todos.
@@ -155,7 +156,7 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos **só pelo gestor e pelo Administrador**. O dev não tem acesso a esse painel.
 - **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele é feito por um dev **diferente do autor**, alocado no projeto.
 - **RN-PRJ-29** Mudar a configuração de um projeto vale **dali para a frente**, fica no histórico e **nunca apaga** registro já feito. Remover uma etapa com tarefas dentro exige escolher para qual etapa elas vão.
-- **RN-PRJ-32** **Card de suporte** (D-PRJ-17): tarefa do tipo `suporte`, criada pelo gestor (ou pela IA dele) quando o cliente aciona a WCJ direto. Além dos campos da tarefa, registra **quem pediu** (contato do cliente), **por onde** (WhatsApp, telefone, e-mail, reunião, outro) e **quando o pedido chegou**. As horas apontadas nele ficam separadas por contrato, para o banco de horas usar depois (RN-CHM-08). Quando o módulo Chamados entrar, esses cards podem ser vinculados ou convertidos em chamado, sem perder o histórico.
+- **RN-PRJ-32** **Card de suporte** (D-PRJ-17): tarefa do tipo `suporte`, criada pelo gestor (ou pela IA dele) quando o cliente aciona a WCJ direto. Além dos campos da tarefa, registra **quem pediu** (contato do cliente), **por onde** (WhatsApp, telefone, e-mail, reunião, outro) e **quando o pedido chegou**. As horas apontadas nele servem à gestão do projeto como as de qualquer tarefa; o banco de horas é do módulo Chamados (D-PRJ-18). Quando o módulo Chamados entrar, esses cards podem ser vinculados ou convertidos em chamado, sem perder o histórico.
 
 ### Padrões configuráveis por projeto
 

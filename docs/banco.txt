@@ -262,8 +262,8 @@ ended_on              date                 null       check (ended_on >= started
 contracted_hours      hours                null       horas contratadas por período (banco de
                                                        horas de Chamados, RN-CHM-08). Gravado
                                                        já no Núcleo; consumido quando Chamados entrar.
-                                                       Na v1 de Projetos, só as horas dos cards de
-                                                       suporte são separadas por contrato (RN-PRJ-32).
+                                                       Projetos NÃO confere horas contra contrato
+                                                       (D-PRJ-18).
 hours_period          varchar(10)          null       check in ('monthly','quarterly','total')
 notes                 text                 null
 created_by            fk users             not null   on delete restrict
@@ -488,9 +488,12 @@ id   slug         label
 projects                               [v1]
 =====================================================================
 client_id                   fk clients            not null  on delete restrict  (RN-PRJ-01)
-contract_id                 fk contracts          not null  on delete restrict  (RN-PRJ-01; projeto
-                                                             interno usa contrato interno da WCJ,
-                                                             ver dúvida PRJ-01)
+contract_id                 fk contracts          null      on delete restrict  referência: de qual
+                                                             contrato o projeto nasceu (tela do projeto e
+                                                             resumo do cliente). OPCIONAL (D-PRJ-18):
+                                                             projeto fechado é contrato de entrega, e as
+                                                             horas do projeto não são conferidas contra
+                                                             o contrato. Projeto interno fica sem.
 manager_id                  fk users              not null  on delete restrict  (RN-PRJ-05)
 project_status_id           fk project_statuses   not null  on delete restrict
 project_modality_id         fk project_modalities not null  on delete restrict  default 1
@@ -519,6 +522,7 @@ require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
 created_by                  fk users              not null  on delete restrict
 índices: client_id, contract_id, manager_id, project_status_id, key_prefix (unique)
 fk composta: (contract_id, client_id) → contracts (id, client_id)
+             (com contract_id null a FK composta não é conferida, que é o comportamento certo)
              sem ela, dá para ligar o projeto do cliente A ao contrato do cliente B.
 Projeto não se desativa: encerra ou cancela pelo status.
 
@@ -674,10 +678,6 @@ due_on_calculated_at  timestamp            null
 started_at            timestamp            null      (1ª entrada em development)
 done_at               timestamp            null      (última entrada em done; limpa se sair de done)
 -- Card de suporte (RN-PRJ-32). Obrigatórios quando task_type = support (regra do Service).
-contract_id           fk contracts         null      on delete restrict
-                                                     null = contrato do projeto. Preenchido no card
-                                                     de suporte que cai em outro contrato
-                                                     (ex.: sustentação) — as horas seguem este.
 requester_contact_id  fk client_contacts   null      on delete restrict  (quem pediu)
 request_channel_id    fk request_channels  null      on delete restrict  (por onde)
 requested_at          timestamp            null      (quando o pedido chegou)
@@ -694,7 +694,7 @@ origin_task_id        fk tasks             null      on delete restrict
 created_by            fk users             not null  on delete restrict
 audit_channel_id      fk audit_channels    not null  (canal de criação; a IA escreve tarefa, F-PRJ-05)
 índices: project_id, (project_id, board_stage_id), board_stage_id, task_type_id, project_area_id,
-         contract_id, requester_contact_id, origin_task_id, due_on, done_at, created_by
+         requester_contact_id, origin_task_id, due_on, done_at, created_by
 unique: (project_id, number), key
 [PG] opcional: índice GIN de texto em (title, story_want, description) para busca.
 [MY] opcional: FULLTEXT (title, description).
@@ -905,22 +905,18 @@ unique U1: (task_id, url)
 =====================================================================
 time_entries                           [v1]
 =====================================================================
-Horas realizadas por pessoa (RN-PRJ-15, F-PRJ-11). Separadas por contrato para o banco de horas
-(RN-PRJ-32, RN-CHM-08).
+Horas realizadas por pessoa (RN-PRJ-15, F-PRJ-11). Servem à gestão do projeto (previsto ×
+realizado, produtividade), não ao contrato (D-PRJ-18): sem contract_id.
 task_id               fk tasks            not null  on delete restrict
 user_id               fk users            not null  on delete restrict
 work_function_id      fk work_functions   null      on delete restrict
-contract_id           fk contracts        not null  on delete restrict
-                                                    copiado na gravação: tasks.contract_id ou, se null,
-                                                    projects.contract_id. Congelado: mudar o contrato
-                                                    da tarefa depois não move hora já lançada.
 worked_on             date                not null
 hours                 hours               not null  check (> 0 and <= 24)
 description           varchar(240)        null
 created_by            fk users            not null  on delete restrict  (pode ser o gestor lançando por alguém)
 audit_channel_id      fk audit_channels   not null
 removed_at / removed_by                             (lançamento errado sai do total; fica no histórico)
-índices: task_id, (user_id, worked_on), (contract_id, worked_on), worked_on
+índices: task_id, (user_id, worked_on), worked_on
 Sem cronômetro (start/stop) na v1: ver dúvida PRJ-11.
 
 =====================================================================
@@ -1331,7 +1327,6 @@ Já pronto no Núcleo, sem mudança:
 - attachments e comments (is_internal = RN-CHM-05) polimórficos
 - audit_logs com canal 'email'; ai_scopes tickets:read/tickets:write; roles.support
 - request_channels (canal de entrada) e task_priorities
-- time_entries.contract_id: horas de card de suporte já separadas por contrato (RN-PRJ-32)
 
 Chamados criará no próprio domínio (app/Domains/Chamados/), só com FK para o Núcleo e para tasks:
 - tickets (number por sequência do banco RN-CHM-02, client_id, contract_id, project_id null,
@@ -1341,7 +1336,8 @@ Chamados criará no próprio domínio (app/Domains/Chamados/), só com FK para o
 - ticket_statuses · ticket_types · ticket_areas
 - contract_slas (contract_id × priority → prazos, D-CHM-03)
 - inbound_emails (fila de não identificados, RN-CHM-01)
-- ticket_time_entries ou reuso de time_entries (decidir com Alaor) · ticket_travels (RN-CHM-10)
+- ticket_time_entries: horas do chamado contra o contrato (banco de horas é de Chamados, não de
+  Projetos, D-PRJ-18) · ticket_travels (RN-CHM-10)
 - login do contato (NUC-02: fora da v1): coluna nula client_contacts.user_id (fk users, unique)
   + papel client_contact em roles. Coluna nova e valor novo: sem migração destrutiva.
 - colunas em contracts, se confirmadas: auto_close_days (RN-CHM-09), travel_policy (RN-CHM-10)
@@ -1371,7 +1367,8 @@ sincronização (necessidade, "Pontos de atenção").
 6.7  Estimativa e horas por pessoa, sem coluna de total: previsto e realizado são somas derivadas.
      Única "foto" gravada: tasks.due_on (data prevista), porque depende de carga e feriados do dia
      do cálculo (RN-PRJ-17).
-6.8  time_entries.contract_id é copiado e congelado na gravação: banco de horas não muda sozinho.
+6.8  Projetos não confere horas contra contrato (D-PRJ-18). Contrato no projeto é referência
+     opcional; banco de horas nasce com Chamados, com apontamento próprio.
 6.9  Vínculos (membro, atribuição, PR, item de pacote, estimativa) nunca são apagados: removed_at.
      Cadastros (cliente, contato, usuário, contrato, lead) desativam: deactivated_at/by.
      Exclusão real só de registro nunca usado, por admin, via Service que limpa arquivos.
@@ -1419,8 +1416,9 @@ IA-03  [RESPONDIDA 24/09, Lucas Scholz] Reconectar revoga a autorização anteri
        conceito; o modelo aguenta os dois casos.
 
 PROJETOS
-PRJ-01 Projeto interno (Wpay) precisa de contrato? Proposta: contract_id not null e um contrato
-       "Interno" da WCJ por produto. Alternativa: contract_id null só quando o cliente é interno.
+PRJ-01 [RESPONDIDA 24/09, Lucas Scholz] Contrato no projeto é opcional (só referência). Projeto
+       fechado é contrato de entrega; Projetos gerencia o projeto e não compara horas com contrato.
+       Saíram tasks.contract_id e time_entries.contract_id (D-PRJ-18).
 PRJ-02 O prefixo da chave (SGM) pode mudar depois de criadas tarefas? Proposta: não (key gravada).
        Se puder: key vira derivada e a busca "SGM-17" passa por join.
 PRJ-03 Numeração da chave: contador em projects com lockForUpdate (proposto) ou sequência real do
