@@ -16,6 +16,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-13 | 24/09/2026 | O cliente **não participa** da homologação do pacote: a equipe WCJ testa tudo junto. |
 | D-PRJ-14 | 24/09/2026 | Colunas padrão em **inglês**, sempre editáveis por projeto. |
 | D-PRJ-15 | 24/09/2026 | Teste cruzado **liga/desliga por tarefa** [validar com Lucas Alencar]. |
+| D-PRJ-16 | 24/09/2026 | Lucas Alencar: "não fecha tanto o fluxo". Uma tarefa pode ter **vários PRs**. Por padrão, qualquer pessoa alocada move a tarefa; travas de PR e de função são **opcionais** por projeto. |
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
@@ -92,9 +93,9 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 3. Gestor atribui pessoas **por função** (back-end, front-end, QA) e define quais validações a tarefa exige: **code review**, **teste cruzado** e/ou **QA** (RN-PRJ-09).
 4. Tarefa sem responsável não sai do Backlog (D-PRJ-02). Quem é atribuído é notificado.
 5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis, feriados e a carga diária do dev.
-6. A tarefa entra em `To do` (a sprint; no Trello, `Esteira`) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Em `Doing` o dev desenvolve e faz commits e pushes na branch. Ao terminar, **abre o PR para a `main`** e a tarefa vai para `Code-review`, onde o **Tech Lead** do projeto aprova (D-PRJ-09).
+6. A tarefa entra em `To do` (a sprint; no Trello, `Esteira`) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Em `Doing` o dev desenvolve e faz commits e pushes na branch. Ao terminar, **abre um ou mais PRs para a `main`** e a tarefa vai para `Code-review`, onde normalmente o **Tech Lead** do projeto revisa (D-PRJ-09, D-PRJ-16).
 7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. O dev lança as **horas realizadas**.
-8. Aprovado no QA, o **Tech Lead faz o merge** e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
+8. Aprovado no QA, é feito o merge (normalmente pelo Tech Lead) e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
 9. Tarefas em `Done` entram num **pacote (versão)**. O pacote é liberado em **homologação**, homologado e publicado em produção; aí está finalizado. A data é definida por projeto; em projeto de cliente, geralmente pelo cliente.
 10. Chamado de cliente ligado ao projeto cai na coluna `Chamados` do quadro, como tarefa ligada ao chamado.
 11. O gestor gera para o cliente o **histórico de desenvolvimento** (linha do tempo) e o **relatório de fechamento** do período.
@@ -135,10 +136,10 @@ O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configura
 | RN-PRJ-30 | **Etapas do quadro** | `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` (D-PRJ-11), em inglês (D-PRJ-14) | Renomear, criar, remover, reordenar; nomes em qualquer idioma |
 | RN-PRJ-09 | **Validações da tarefa** | Code review **ligado**, QA **ligado**, teste cruzado conforme o padrão do projeto | Cada validação liga/desliga **por projeto** (padrão) e **por tarefa** (D-PRJ-15). Ex.: Swagger sem QA |
 | RN-PRJ-02 | Responsável obrigatório para sair do `Backlog` | Ligado (D-PRJ-02) | Desligar |
-| RN-PRJ-23 | **PR vinculado** para entrar em `Code-review` | Ligado. PR recusado volta para `Doing` com retrabalho de origem code review (D-PRJ-09) | Desligar (ex.: projeto sem código) |
+| RN-PRJ-23 | **PRs da tarefa** | A tarefa aceita **nenhum, um ou vários PRs** vinculados (D-PRJ-16): demanda grande pode ter vários. Exigir PR para entrar em `Code-review`: **desligado** | Ligar a exigência de ao menos um PR |
 | RN-PRJ-24 | **Tech Lead** do projeto (D-PRJ-10) | Um Tech Lead definido pelo gestor. A mesma pessoa pode ser Tech Lead num projeto e dev em outro | Trocar a pessoa; ter mais de um |
-| RN-PRJ-27 | Quem aprova `Code-review` e quem move `In test` → `Done` (merge) | Tech Lead do projeto (ou Administrador) (D-PRJ-12) | Incluir outras pessoas ou funções |
-| RN-PRJ-25 | Quem aprova quando o Tech Lead é o próprio dev da tarefa | [DECIDIR] outro Tech Lead indicado pelo gestor, ou o gestor | Configurável |
+| RN-PRJ-27 | Quem pode mover a tarefa entre etapas | **Qualquer pessoa alocada no projeto** (D-PRJ-16). Na prática, o Tech Lead aprova o code review e faz o merge (D-PRJ-12), mas o sistema não trava | Restringir etapas a funções. Ex.: só o Tech Lead tira de `Code-review` e move para `Done` |
+| RN-PRJ-25 | Quem aprova quando o Tech Lead é o próprio dev da tarefa | Só se aplica se a restrição da RN-PRJ-27 estiver ligada; aí, o gestor aprova | Indicar outro Tech Lead |
 | RN-PRJ-12 | Motivo obrigatório ao ir para `Paused` | Ligado; tempo parado contado à parte | Desligar |
 | RN-PRJ-10 | **Estados do pacote (versão)** | `em montagem → em homologação → homologado → em produção`. Só tarefa em `Done` entra. Pacote em homologação não recebe tarefa nova; reprovação devolve as tarefas afetadas com retrabalho de origem homologação. **Homologação feita pela equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13) | Renomear, criar ou remover estados |
 | RN-PRJ-07 | **Tipo** e **área** da tarefa (campos separados, lista fechada) | Tipos: melhoria, correção de bug, sustentação, mudança (GMUD). Áreas: nenhuma, o gestor cadastra (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial) | Editar as duas listas |
@@ -170,7 +171,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | F-PRJ-16 | **Relatório de fechamento** do período para aprovação do cliente antes do pagamento | Rafael | v1+ (aguarda modelo, P-01) |
 | F-PRJ-13 | **Gerar o documento de requisição** (Word/PDF padrão WCJ) a partir da tarefa e anexar | Rafael | v1+ |
 | F-PRJ-04 | **Roteiro de teste padrão** por tipo e perfil do produto, incluindo bloco CRUD reutilizável | Trello Wpay + Modelos SGM | ? |
-| F-PRJ-06 | **Vínculo com PR do GitHub**: link do PR na tarefa (manual ou pela IA) na v1; status do PR (aberto, aprovado, recusado) lido do GitHub depois | Trello Wpay + D-PRJ-09 | **v1** (link) / v1+ (status automático) |
+| F-PRJ-06 | **Vínculo com PRs do GitHub** (um ou vários por tarefa): links na tarefa (manual ou pela IA) na v1; status do PR (aberto, aprovado, recusado) lido do GitHub depois | Trello Wpay + D-PRJ-09 | **v1** (link) / v1+ (status automático) |
 | F-PRJ-07 | **Evidência de teste** presa ao item do roteiro | Trello Wpay | ? |
 | F-PRJ-10 | **Painel de impedimentos** | Trello Wpay | ? |
 

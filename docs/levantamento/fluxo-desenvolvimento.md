@@ -29,11 +29,11 @@ As colunas (B) são o que aparece no quadro. Os passos (A) são o que acontece d
 | — | `Backlog` | `Backlog` | Tarefa criada, ainda fora da sprint |
 | — | `To do` | `Esteira` (sprint) | Tarefa na sprint, com responsável (D-PRJ-02) |
 | 1–3. Pega, desenvolve, commita | `Doing` | `Doing` | Início do desenvolvimento; horas realizadas |
-| 4. Abre PR | `Doing` → `Code-review` | `Doing` → `Technical Review` | **Link do PR obrigatório** para mover (RN-PRJ-23) |
+| 4. Abre PR | `Doing` → `Code-review` | `Doing` → `Technical Review` | Um ou vários PRs vinculados; exigir PR é opcional (RN-PRJ-23, D-PRJ-16) |
 | 5. Code review | `Code-review` | `Technical Review` | Aprovação do Tech Lead do projeto (RN-PRJ-24) |
 | 6. Teste cruzado | `In test` | `Test QA` | Aprovação de **outro dev**, que não seja o autor |
 | 7. QA | `In test` | `Test QA` | Roteiro de teste executado **no ambiente local do QA**, com evidência por item |
-| 8. Merge | `In test` → `Done` | `Test QA` → `Finished` | Merge feito na `main` **pelo Tech Lead** |
+| 8. Merge | `In test` → `Done` | `Test QA` → `Finished` | Merge na `main`, normalmente pelo Tech Lead (o sistema não trava, D-PRJ-16) |
 | 9–10. Homologação do pacote | Fora do quadro: **versão** | Listas `Produção x.y.z` | Estados da versão |
 | 11. Finalizado | — | — | Versão em produção |
 | (qualquer momento) | `Paused` | `Impedimento/Pausa` | Motivo obrigatório; tempo parado contado à parte |
