@@ -56,6 +56,9 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-20 | 24/09/2026 | Coluna padrão de suporte se chama **`Support`**, em inglês como as demais (D-PRJ-14). Substitui o nome `Suporte` de D-PRJ-17. |
 | D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. Sprint é a coluna `To do`, não entidade. |
 | D-PRJ-22 | 24/09/2026 | **Feriados fora da v1:** data prevista em dias úteis de segunda a sexta. Horas previstas por tarefa × pessoa. Equipe do cliente no Histórico de Desenvolvimento é texto livre no documento gerado. |
+| D-CRM-06 | 24/09/2026 | O mesmo CNPJ pode ter **vários leads** (cliente pode comprar projeto novo e diferente): o sistema avisa, não recusa. Um funil só. **Contato é um cadastro único** para cliente e lead: a pessoa não é redigitada na conversão. |
+| D-CRM-07 | 24/09/2026 | **Oportunidades pós-auditoria ficam para depois da v1** (RN-CRM-10, RN-CRM-11). Na v1, venda nova para cliente existente é lead ligado ao cliente. Sizing continua obrigatório para ganhar lead de auditoria (D-CRM-01). |
+| D-CRM-08 | 24/09/2026 | Convite de calendário vai **só para o responsável** do compromisso; participantes (dev, outro comercial) são convocados por ele no **Teams**. Perguntas de sizing e setores copiados do DaaS como lista inicial. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -236,7 +239,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 
 ### Regras de negócio *(proposta)*
 
-- **RN-CRM-01** Lead ganho converte para cliente sem redigitar dado. Se o CNPJ já existe como cliente, vincula em vez de duplicar.
+- **RN-CRM-01** Lead ganho converte para cliente sem redigitar dado. Se o CNPJ já existe como cliente, vincula em vez de duplicar. Venda nova para quem **já é cliente** (projeto novo) é um lead novo ligado ao cliente; o mesmo CNPJ pode ter vários leads, e o sistema **avisa** quando já existe cliente ou lead aberto com ele (D-CRM-06).
 - **RN-CRM-02** Lead perdido exige motivo de uma lista. Padrão: preço, momento, concorrente, sem resposta, sem perfil, outro. A lista é **editável**: dá para criar motivos depois.
 - **RN-CRM-03** Tratativa é **editável a qualquer momento**; toda edição fica no histórico (D-GER-05).
 - **RN-CRM-04** Todo lead ativo tem um follow-up futuro. Lead ativo sem follow-up aparece em alerta para o responsável.
@@ -276,8 +279,8 @@ O funil de prospecção e o CRM pós-auditoria vivem hoje no DaaS (`wcj-ui`). As
 - **RN-CRM-07** Oportunidade de **auditoria** tem os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço). Eles são **obrigatórios para ganhar** esse tipo de oportunidade.
 - **RN-CRM-08** Lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. A integração automática CRM → DaaS fica **para depois da v1**.
 - **RN-CRM-09** Com o CRM do Hub no ar, o funil e o CRM pós-auditoria saem do DaaS. A remoção é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio.
-- **RN-CRM-10** O Hub recria as funções do CRM pós-auditoria: **oportunidades** (origem: roadmap da auditoria ou avulsa; tipo: projeto ou recorrente) e **contratos** com ajustes. Contratos vivem no **Núcleo**, que passa a ser a **única fonte de contrato**; o DaaS consulta o Hub quando precisar (D-CRM-04).
-- **RN-CRM-11** Oportunidade sugerida pelo roadmap de uma auditoria é **cadastrada à mão** no Hub na v1 (D-CRM-04). Integração depois.
+- **RN-CRM-10** **Depois da v1** (D-CRM-07): o Hub recria as funções do CRM pós-auditoria: **oportunidades** (origem: roadmap da auditoria ou avulsa; tipo: projeto ou recorrente) e **contratos** com ajustes. Contratos vivem no **Núcleo**, que passa a ser a **única fonte de contrato**; o DaaS consulta o Hub quando precisar (D-CRM-04).
+- **RN-CRM-11** **Depois da v1** (D-CRM-07): oportunidade sugerida pelo roadmap de uma auditoria é cadastrada à mão no Hub; integração depois disso. Contratos continuam no Núcleo desde a v1 (D-CRM-04).
 - [ ] O assistente de voz do funil do DaaS (F2) é IA embutida e **não vem** na v1 (D-IA-02).
 
 ---
@@ -424,7 +427,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 |---|---|---|
 | `meus_followups` | leitura | Vencidos, de hoje e da semana |
 | `historico_do_lead` | leitura | Tratativas em ordem, etapa atual, próximo passo |
-| `cadastrar_lead` | escrita | Cria lead (com checagem de CNPJ duplicado) |
+| `cadastrar_lead` | escrita | Cria lead; avisa se já há cliente ou lead aberto com o mesmo CNPJ (D-CRM-06) |
 | `minha_agenda` | leitura | Compromissos do dia ou da semana (follow-ups e reuniões) |
 | `registrar_tratativa` | escrita | Registra contato, atualiza a situação atual do lead e, opcionalmente, agenda o próximo compromisso |
 | `mover_lead` | escrita | Muda a etapa do funil (ganho e perdido seguem RN-CRM-01/02) |
@@ -478,6 +481,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ## Fora da primeira versão
 
 - Calendário de feriados: a data prevista considera só segunda a sexta. D-PRJ-22.
+- Oportunidades pós-auditoria (CRM pós-venda do DaaS). D-CRM-07.
 - IA embutida no sistema (sugestão de follow-up, triagem automática, resumo automático), inclusive o assistente de voz do funil do DaaS. D-IA-02.
 - Criação automática de auditoria no DaaS quando o lead é ganho. RN-CRM-08.
 - Contato do cliente conectando a própria IA. D-IA-01.

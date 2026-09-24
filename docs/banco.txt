@@ -85,7 +85,7 @@ Marcação de entrega
 ÍNDICE
 =====================================================================
 1. PLATFORM (Núcleo)
-   roles · users · clients · client_contacts · industries · contract_types · contract_statuses
+   roles · users · clients · contacts · industries · contract_types · contract_statuses
    · billing_cycles · contracts · attachments · comments · settings
    · audit_logs · audit_channels · ai_assistants · ai_scopes · ai_authorizations
    · ai_authorization_scopes · ai_tool_calls · notifications (framework)
@@ -100,9 +100,9 @@ Marcação de entrega
 3. CRM
    lead_statuses · funnel_stage_roles · funnel_stages · lead_sources · lost_reasons · leads
    · lead_contacts · lead_stage_movements · interaction_channels · lead_interactions
-   · appointment_types · appointment_statuses · appointments · opportunity_origins
-   · opportunity_types · opportunity_statuses · opportunities · audit_sizing_questions
+   · appointment_types · appointment_statuses · appointments · audit_sizing_questions
    · audit_sizings · audit_sizing_answers
+   (oportunidades pós-auditoria: depois da v1, seção 5.1)
 4. TABELAS DE FRAMEWORK (Laravel + Passport)
 5. O QUE CHAMADOS VAI ACRESCENTAR (não criar agora)
 6. DECISÕES
@@ -188,10 +188,14 @@ Origem do cliente (cadastro direto × lead ganho): leads.client_id aponta para c
 conhece o CRM (D-GER-15).
 
 =====================================================================
-client_contacts                        [v1]
+contacts                               [v1]
 =====================================================================
-Pessoa de um cliente. Chamados vai usar o e-mail para identificar o remetente (RN-CHM-01).
-client_id             fk clients       not null   on delete restrict
+Pessoa de um cliente OU de um lead (vocabulário: "Contato"). Uma pessoa, um cadastro (CRM-03):
+o lead aponta para cá por lead_contacts (CRM → Núcleo, direção permitida); na conversão só se
+preenche client_id, sem copiar nada. Chamados vai usar o e-mail para identificar o remetente
+(RN-CHM-01).
+client_id             fk clients       null       on delete restrict
+                                                   null = pessoa de lead que ainda não é cliente
 name                  varchar(120)     not null
 job_title             varchar(120)     null
 email                 varchar(160)     null
@@ -202,7 +206,8 @@ notes                 text             null
 deactivated_at        timestamp        null
 deactivated_by        fk users         null       on delete restrict
 índices: client_id, email
-unique: (client_id, email)   (MySQL e Postgres aceitam vários null)
+unique: (client_id, email)   (null não colide: pessoas de leads diferentes podem repetir e-mail;
+                              o Service avisa ao cadastrar e-mail já existente)
 
 =====================================================================
 industries                             (cadastrável) [v1]
@@ -210,7 +215,7 @@ industries                             (cadastrável) [v1]
 Setor da empresa. Usado em clients e leads, e no sizing de auditoria (RN-CRM-07).
 slug varchar(40) null unique · label varchar(80) not null unique · sort_order smallint
 · deactivated_at / deactivated_by
-Semente: vazia, ou a lista de setores do DaaS (ver dúvida CRM-05).
+Semente: a lista de setores do DaaS, só a lista (CRM-05).
 
 =====================================================================
 contract_types                         (cadastrável) [v1]
@@ -439,7 +444,7 @@ Limpeza: job diário apaga acima de settings.audit.ai_tool_calls_retention_days.
 
 #####################################################################
 #  2. PROJETOS — app/Domains/Projetos/
-#  FKs permitidas para fora: users, clients, client_contacts, contracts, attachments, audit_channels.
+#  FKs permitidas para fora: users, clients, contacts, contracts, attachments, audit_channels.
 #####################################################################
 
 =====================================================================
@@ -655,7 +660,7 @@ due_on_calculated_at  timestamp            null
 started_at            timestamp            null      (1ª entrada em development)
 done_at               timestamp            null      (última entrada em done; limpa se sair de done)
 -- Card de suporte (RN-PRJ-32). Obrigatórios quando task_type = support (regra do Service).
-requester_contact_id  fk client_contacts   null      on delete restrict  (quem pediu)
+requester_contact_id  fk contacts          null      on delete restrict  (quem pediu; do cliente do projeto)
 request_channel_id    fk request_channels  null      on delete restrict  (por onde)
 requested_at          timestamp            null      (quando o pedido chegou)
 -- Encerramento sem entrega
@@ -972,7 +977,7 @@ unique: (project_id, name)
 
 #####################################################################
 #  3. CRM — app/Domains/Crm/
-#  FKs permitidas para fora: users, clients, contracts, contract_types, industries, audit_channels.
+#  FKs permitidas para fora: users, clients, contacts, contracts, contract_types, industries, audit_channels.
 #  Sem migração do DaaS (D-CRM-03): tudo nasce vazio, só com os domínios semeados.
 #####################################################################
 
@@ -1001,7 +1006,7 @@ Papel won e lost: exatamente 1 etapa ativa de cada (regra do Service).
 =====================================================================
 funnel_stages                          [v1]
 =====================================================================
-Funil único da WCJ na v1 (ver dúvida CRM-01). Padrão = etapas do DaaS (D-CRM-01).
+Funil único da WCJ (CRM-01). Padrão = etapas do DaaS (D-CRM-01).
 funnel_stage_role_id  fk funnel_stage_roles  not null  on delete restrict
 name                  varchar(60)            not null
 position              smallint               not null
@@ -1027,7 +1032,7 @@ lead_sources                           (cadastrável) [v1]
 =====================================================================
 lost_reasons                           (cadastrável) [v1]
 =====================================================================
-RN-CRM-02. Mesmas colunas de rework_reasons, sem project_id. Usado também por opportunities.
+RN-CRM-02. Mesmas colunas de rework_reasons, sem project_id.
      price            Preço                false
      timing           Momento              false
      competitor       Concorrente          false
@@ -1055,6 +1060,7 @@ stage_entered_at      timestamp          not null
 lead_status_id        fk lead_statuses   not null   on delete restrict  default 1
 contract_type_id      fk contract_types  null       on delete restrict  (o que se está vendendo;
                                                                           auditoria ativa o sizing)
+currency              char(3)            not null   default 'BRL'  (NUC-01)
 estimated_amount      money              null
 expected_close_on     date               null
 current_situation     varchar(500)       null       RN-CRM-14. Versões antigas em audit_logs.
@@ -1064,41 +1070,38 @@ lost_at               timestamp          null
 lost_reason_id        fk lost_reasons    null       on delete restrict
 lost_notes            varchar(500)       null
 client_id             fk clients         null       on delete restrict
-                                                    RN-CRM-01: preenchido na conversão. Se o CNPJ já
-                                                    é cliente, vincula ao existente (o Service do
-                                                    Platform decide criar ou achar).
+                                                    Venda nova para quem JÁ é cliente (projeto novo,
+                                                    CRM-02/04): o lead nasce com client_id. Lead de
+                                                    empresa nova: preenchido na conversão (RN-CRM-01;
+                                                    se o documento já é cliente, vincula ao existente).
 contract_id           fk contracts       null       on delete restrict  (contrato criado no ganho)
 created_by            fk users           not null   on delete restrict
 audit_channel_id      fk audit_channels  not null
 deactivated_at / deactivated_by                     (arquivar lead errado ou duplicado)
 índices: owner_id, (owner_id, lead_status_id), funnel_stage_id, lead_status_id, document,
          client_id, expected_close_on, company_name
-unique [MY] coluna gerada open_document =
-              IF(lead_status_id=1 AND deactivated_at IS NULL AND document IS NOT NULL,
-                 CONCAT(country, ':', document), NULL)
-            + unique(open_document)
-       → dois leads ABERTOS com o mesmo documento do mesmo país são recusados
-         (cadastrar_lead "com checagem de CNPJ"). Conversão (RN-CRM-01) casa por (country, document).
-         Ver dúvida CRM-02.
+índice (não unique): (country, document)
+       Mesmo documento pode ter vários leads, abertos ou não (CRM-02): o cliente pode comprar um
+       projeto novo e diferente. Ao cadastrar, o Service (e a ferramenta cadastrar_lead) AVISA se
+       já existe cliente ou lead aberto com o mesmo documento e mostra o dono (RN-CRM-05).
+       Conversão (RN-CRM-01) casa por (country, document).
 checks: lead_status_id=3 → lost_reason_id not null · lead_status_id=2 → client_id not null
 RN-CRM-04 (lead aberto sem follow-up futuro) é consulta, não coluna.
 
 =====================================================================
 lead_contacts                          [v1]
 =====================================================================
-Pessoa do lead. Na conversão, o Service do Platform copia para client_contacts (ver decisão 6.6
-e dúvida CRM-03).
+Quem participa da negociação do lead. A pessoa mora em contacts (Núcleo); aqui só o vínculo.
+Lead de cliente existente reaproveita os contatos que o cliente já tem (CRM-02, CRM-03).
 lead_id               fk leads           not null   on delete cascade
-name                  varchar(120)       not null
-job_title             varchar(120)       null
-email                 varchar(160)       null
-phone                 varchar(20)        null
-mobile                varchar(20)        null
+contact_id            fk contacts        not null   on delete restrict
 is_primary            boolean            not null   default false
-notes                 varchar(500)       null
-client_contact_id     fk client_contacts null       on delete restrict  (preenchido na conversão)
-deactivated_at / deactivated_by
-índices: lead_id, email
+added_by              fk users           not null   on delete restrict
+removed_at / removed_by
+índices: lead_id, contact_id
+unique U1: (lead_id, contact_id)
+Conversão (RN-CRM-01): o Service do Platform preenche contacts.client_id dos contatos do lead que
+ainda estão sem cliente.
 
 =====================================================================
 lead_stage_movements                   [v1]
@@ -1134,7 +1137,7 @@ lead_interactions                      [v1]
 Tratativa (RN-CRM-03: editável a qualquer momento; histórico em audit_logs).
 lead_id               fk leads                 not null  on delete cascade
 user_id               fk users                 not null  on delete restrict  (quem conversou)
-lead_contact_id       fk lead_contacts         null      on delete restrict  (com quem)
+contact_id            fk contacts              null      on delete restrict  (com quem; vinculado ao lead)
 interaction_channel_id fk interaction_channels not null  on delete restrict
 happened_at           timestamp                not null
 summary               text                     not null
@@ -1174,9 +1177,7 @@ appointment_type_id   fk appointment_types     not null  on delete restrict
 appointment_status_id fk appointment_statuses  not null  on delete restrict  default 1
 owner_id              fk users                 not null  on delete restrict  (responsável; recebe o convite)
 lead_id               fk leads                 null      on delete restrict
-client_id             fk clients               null      on delete restrict  (compromisso com cliente
-                                                                              já convertido; v1+)
-opportunity_id        fk opportunities         null      on delete restrict  [v1+]
+client_id             fk clients               null      on delete restrict  (compromisso com cliente)
 lead_interaction_id   fk lead_interactions     null      on delete restrict  (tratativa que gerou)
 title                 varchar(160)             not null
 notes                 text                     null
@@ -1194,64 +1195,14 @@ cancelled_by          fk users                 null      on delete restrict
 created_by            fk users                 not null  on delete restrict
 audit_channel_id      fk audit_channels        not null
 índices: (owner_id, starts_at), (appointment_status_id, starts_at), lead_id, client_id,
-         opportunity_id, lead_interaction_id
-check: lead_id is not null or client_id is not null or opportunity_id is not null
+         lead_interaction_id
+check: lead_id is not null or client_id is not null
+Convite .ics vai SÓ para o responsável (CRM-07). Participantes (dev, outro comercial) são
+convocados por ele no Teams; o link vai em meeting_url. Sem tabela de participantes.
 Resumo diário (RN-CRM-13) e "meus_followups"/"minha_agenda" são consulta sobre esta tabela.
 
 =====================================================================
-opportunity_origins                    (fechado) [v1]
-=====================================================================
-RN-CRM-10.
-id   slug           label
-1    audit_roadmap  Roadmap de auditoria   (cadastrada à mão na v1, RN-CRM-11)
-2    standalone     Avulsa
-
-=====================================================================
-opportunity_types                      (fechado) [v1]
-=====================================================================
-id   slug        label
-1    project     Projeto
-2    recurring   Recorrente
-
-=====================================================================
-opportunity_statuses                   (fechado) [v1]
-=====================================================================
-id   slug        label
-1    open        Aberta
-2    won         Ganha
-3    lost        Perdida
-4    cancelled   Cancelada
-
-=====================================================================
-opportunities                          [v1]
-=====================================================================
-CRM pós-venda (RN-CRM-10): oportunidade para quem já é cliente. Ver dúvida CRM-04 (tem funil
-próprio ou só status?).
-client_id               fk clients               not null  on delete restrict
-opportunity_origin_id   fk opportunity_origins   not null  on delete restrict
-opportunity_type_id     fk opportunity_types     not null  on delete restrict
-contract_type_id        fk contract_types        null      on delete restrict
-opportunity_status_id   fk opportunity_statuses  not null  on delete restrict  default 1
-owner_id                fk users                 not null  on delete restrict
-title                   varchar(200)             not null
-description             text                     null
-source_audit_ref        varchar(120)             null      identificação da auditoria no DaaS
-                                                           (texto livre na v1; FK lógica depois)
-currency                char(3)                  not null  default 'BRL'
-amount                  money                    null      (valor único, tipo project)
-monthly_amount          money                    null      (valor mensal, tipo recurring)
-expected_close_on       date                     null
-won_at / lost_at        timestamp                null
-lost_reason_id          fk lost_reasons          null      on delete restrict
-lost_notes              varchar(500)             null
-contract_id             fk contracts             null      on delete restrict  (contrato gerado no ganho)
-created_by              fk users                 not null  on delete restrict
-audit_channel_id        fk audit_channels        not null
-deactivated_at / deactivated_by
-índices: client_id, owner_id, opportunity_status_id, contract_id, expected_close_on
-
-=====================================================================
-audit_sizing_questions                 (cadastrável) [v1]  [LEVANTAR: as 5 perguntas do DaaS]
+audit_sizing_questions                 (cadastrável) [v1]  semente = as 5 perguntas do DaaS (CRM-05)
 =====================================================================
 RN-CRM-07. Perguntas de dimensionamento que travam o ganho de auditoria.
 code                  varchar(40)      not null   unique
@@ -1265,16 +1216,13 @@ deactivated_at / deactivated_by
 =====================================================================
 audit_sizings                          [v1]
 =====================================================================
-1 dimensionamento por lead OU oportunidade de auditoria.
-lead_id               fk leads           null      on delete restrict  (restrict: coluna usada no CHECK)
-opportunity_id        fk opportunities   null      on delete restrict
+1 dimensionamento por lead de auditoria (D-CRM-01: sizing obrigatório para ganhar).
+lead_id               fk leads           not null  unique  on delete cascade
 industry_id           fk industries      not null  on delete restrict  (setor)
 proposed_price        money              not null
 completed_at          timestamp          null      (todas as obrigatórias respondidas)
 filled_by             fk users           not null  on delete restrict
-check: (lead_id is null) <> (opportunity_id is null)   -- exatamente um
-unique: lead_id, opportunity_id   (cada um no máximo 1; null não colide)
-Regra do Service: ganhar lead/oportunidade com contract_type = audit exige completed_at not null.
+Regra do Service: ganhar lead com contract_type = audit exige completed_at not null.
 
 =====================================================================
 audit_sizing_answers                   [v1]
@@ -1303,7 +1251,7 @@ entra aqui depois da prova de conceito.
 #  Serve para provar que o Núcleo aguenta o módulo sem migração destrutiva.
 #####################################################################
 Já pronto no Núcleo, sem mudança:
-- clients, client_contacts (email indexado para casar remetente, RN-CHM-01)
+- clients, contacts (email indexado para casar remetente, RN-CHM-01)
 - contracts.contracted_hours + hours_period + hourly_rate → banco de horas (RN-CHM-08)
 - attachments e comments (is_internal = RN-CHM-05) polimórficos
 - audit_logs com canal 'email'; ai_scopes tickets:read/tickets:write; roles.support
@@ -1319,13 +1267,23 @@ Chamados criará no próprio domínio (app/Domains/Chamados/), só com FK para o
 - inbound_emails (fila de não identificados, RN-CHM-01)
 - ticket_time_entries: horas do chamado contra o contrato (banco de horas é de Chamados, não de
   Projetos, D-PRJ-18) · ticket_travels (RN-CHM-10)
-- login do contato (NUC-02: fora da v1): coluna nula client_contacts.user_id (fk users, unique)
+- login do contato (NUC-02: fora da v1): coluna nula contacts.user_id (fk users, unique)
   + papel client_contact em roles. Coluna nova e valor novo: sem migração destrutiva.
 - colunas em contracts, se confirmadas: auto_close_days (RN-CHM-09), travel_policy (RN-CHM-10)
   → entram como coluna nula (banco.md §5), sem quebrar nada.
-Portal do contato: RN-NUC-03 exige escopo por client_id derivado de client_contacts.user_id.
+Portal do contato: RN-NUC-03 exige escopo por client_id derivado de contacts.user_id.
 Se o GLPI for adotado (D-CHM-01 B/C), estas tabelas não existem e o Núcleo vira fonte de
 sincronização (necessidade, "Pontos de atenção").
+
+
+#####################################################################
+#  5.1 OPORTUNIDADES PÓS-AUDITORIA (DEPOIS DA V1, CRM-04)
+#####################################################################
+RN-CRM-10/11 ficam para depois. Na v1, venda nova para quem já é cliente é um LEAD novo com
+client_id preenchido (CRM-02), no mesmo funil. Quando voltar, a origem "roadmap de auditoria"
+entra como lead_sources.audit_roadmap + referência da auditoria, ou como entidade própria
+(opportunities: origem, tipo projeto/recorrente, valor mensal) — decidir com o fluxo real do DaaS.
+Contratos continuam no Núcleo como única fonte (D-CRM-04).
 
 
 #####################################################################
@@ -1343,8 +1301,9 @@ sincronização (necessidade, "Pontos de atenção").
      histórico é indicador (task_stage_movements, lead_stage_movements).
 6.5  Chave da tarefa: key gravada e imutável + contador por projeto com lockForUpdate + unique
      (project_id, number). Consequência: key_prefix congela após a primeira tarefa.
-6.6  Contato de lead separado de contato de cliente, para não criar FK do Núcleo para o CRM.
-     A conversão copia (e liga lead_contacts.client_contact_id). Custo: duas tabelas parecidas.
+6.6  Contato é um cadastro só, no Núcleo (contacts, client_id opcional). O CRM liga lead a contato
+     por lead_contacts, então o Núcleo continua sem FK para o CRM (D-GER-15). Conversão = preencher
+     client_id; nada é copiado.
 6.7  Estimativa e horas por pessoa, sem coluna de total: previsto e realizado são somas derivadas.
      Única "foto" gravada: tasks.due_on (data prevista), porque depende da carga do dev no dia
      do cálculo (RN-PRJ-17).
@@ -1379,7 +1338,7 @@ DB-03  [RESPONDIDA 24/09, Lucas Scholz] Padrão U1 com coluna gerada: a trava fi
 NÚCLEO
 NUC-01 [RESPONDIDA 24/09, Lucas Scholz] Empresa estrangeira precisa ser cadastrável (casos
        pequenos; hoje 2 projetos). Feito: clients.country + document varchar(30) opcional fora do
-       BR + document_label; unique (country, document); leads iguais; contracts e opportunities
+       BR + document_label; unique (country, document); leads iguais; contracts e leads
        ganham currency (BRL padrão). Pessoa física continua fora.
 NUC-02 [RESPONDIDA 24/09, Lucas Scholz] Cliente não tem login na v1. Saíram client_contacts.user_id
        e o papel client_contact (campo sem tela sai do schema, banco.md §3); voltam com Chamados
@@ -1420,17 +1379,13 @@ PRJ-13 [RESPONDIDA 24/09, Lucas Scholz] Equipe do cliente no Histórico de Desen
        documento (a maioria dos projetos não terá). Nenhuma tabela.
 
 CRM
-CRM-01 Um funil só (proposto) ou funis por tipo de venda (auditoria × projeto × alocação)?
-       Se vários: funnels + funnel_stages.funnel_id.
-CRM-02 Dois leads abertos com o mesmo CNPJ: recusar (proposto) ou só avisar? RN-CRM-05 fala em
-       evitar prospecção dupla, mas o comercial pode ter bons motivos (filiais).
-CRM-03 Contato único para lead e cliente (uma tabela contacts com client_id/lead_id) ou separado
-       (proposto, decisão 6.6)? A tabela única quebra D-GER-15 (Núcleo apontando para o CRM).
-CRM-04 Oportunidade de cliente tem funil com etapas (como o lead) ou só status aberta/ganha/perdida
-       (proposto)? No DaaS era como?
-CRM-05 As 5 perguntas de sizing e a lista de setores: copiar do DaaS (wcj-ui) como semente?
-       Proposta: sim, só a estrutura (não é migração de dado, D-CRM-03).
-CRM-06 Compromisso só com lead (v1) ou também com cliente e oportunidade (proposto já com colunas
-       nulas)? Afeta o check e as ferramentas MCP.
-CRM-07 Participantes da reunião além do responsável (outro comercial, o Lucas) recebem convite?
-       Se sim: appointment_attendees (appointment_id, user_id | email).
+CRM-01 [RESPONDIDA 24/09, Lucas Scholz] Um funil só.
+CRM-02 [RESPONDIDA 24/09, Lucas Scholz] Permite: cliente pode ter projeto novo e diferente. Sem unique; o sistema
+       avisa se já há cliente ou lead aberto com o mesmo documento. Lead de cliente existente
+       nasce com client_id.
+CRM-03 [RESPONDIDA 24/09, Lucas Scholz] Contato único (contacts no Núcleo) + vínculo lead_contacts no CRM. Decisão 6.6.
+CRM-04 [RESPONDIDA 24/09, Lucas Scholz] Oportunidades pós-auditoria ficam para depois da v1 (seção 5.1). Saíram
+       opportunities, opportunity_origins, opportunity_types, opportunity_statuses.
+CRM-05 [RESPONDIDA 24/09, Lucas Scholz] Copiar do DaaS as 5 perguntas e os setores como semente (só a lista).
+CRM-06 [RESPONDIDA 24/09, Lucas Scholz] Compromisso com lead ou com cliente (oportunidade saiu com a CRM-04).
+CRM-07 [RESPONDIDA 24/09, Lucas Scholz] Convite só para o responsável. Participantes são convocados por ele no Teams.
