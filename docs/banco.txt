@@ -819,7 +819,7 @@ notes                       text                        null
 removed_at / removed_by
 índices: task_id, task_acceptance_criterion_id, test_item_status_id
 unique U1: (task_id, task_acceptance_criterion_id)
-Rodada nova de QA depois de retrabalho: ver dúvida PRJ-05 (reaproveita os itens ou abre rodada).
+Depois de retrabalho, os itens voltam a pending e o QA reaproveita o roteiro (PRJ-05).
 
 =====================================================================
 validation_types                       (fechado) [v1]
@@ -1403,9 +1403,8 @@ PRJ-01 [RESPONDIDA 24/09, Lucas Scholz] Contrato no projeto é opcional (só ref
 PRJ-02 [RESPONDIDA 24/09, Lucas Scholz] Prefixo congela depois da 1ª tarefa; key gravada.
 PRJ-03 [RESPONDIDA 24/09, Lucas Scholz] Contador em projects com lockForUpdate + unique (project_id, number).
 PRJ-04 [RESPONDIDA 24/09, Lucas Scholz] Horas previstas por tarefa × pessoa (task_estimates).
-PRJ-05 Depois de retrabalho, o QA reaproveita os test_items (volta tudo a pending) ou abre uma
-       rodada nova (test_runs → test_items)? Proposta: reaproveita e usa task_validations.round
-       + audit_logs; rodada nova só se o Rafael quiser comparar rodadas lado a lado.
+PRJ-05 [RESPONDIDA 24/09, Lucas Scholz] QA reaproveita os test_items (voltam a pending); a rodada
+       fica em task_validations.round e o resultado anterior em audit_logs. Sem test_runs.
 PRJ-06 [RESPONDIDA 24/09, Lucas Scholz] Calendário de feriados FORA da v1 (D-PRJ-22). Dias úteis = seg a sex.
        Saíram holidays e holiday_scopes. Entrar depois = tabela nova, sem migração destrutiva.
 PRJ-07 [RESPONDIDA 24/09, Lucas Scholz] Tarefa tem prioridade (baixa, normal, alta, urgente).
