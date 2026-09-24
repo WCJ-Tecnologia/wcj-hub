@@ -96,7 +96,7 @@ Marcação de entrega
    · rework_origins · rework_reasons · pause_reasons · task_acceptance_criteria · test_items
    · test_item_statuses · validation_types · validation_results · task_validations
    · pull_request_statuses · task_pull_requests · time_entries · package_status_roles
-   · package_statuses · packages · package_tasks · sprint_statuses · sprints · sprint_tasks
+   · package_statuses · packages · package_tasks · sprint_statuses · sprints · sprint_members · sprint_tasks
 3. CRM
    lead_statuses · funnel_stage_roles · funnel_stages · lead_sources · lost_reasons · leads
    · lead_contacts · lead_stage_movements · interaction_channels · lead_interactions
@@ -500,6 +500,9 @@ require_pr_for_code_review       boolean  not null  default false  (RN-PRJ-23)
 restrict_stage_moves             boolean  not null  default false  (RN-PRJ-27; true = valem as
                                                                     board_stage_rules)
 require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
+default_sprint_working_days      smallint not null  default 10     (D-PRJ-24: 2 semanas, seg a sex)
+enforce_sprint_capacity          boolean  not null  default true   (D-PRJ-24: estimado precisa caber
+                                                                    na capacidade; false = só avisa)
 created_by                  fk users              not null  on delete restrict
 índices: client_id, contract_id, manager_id, project_status_id, key_prefix (unique)
 fk composta: (contract_id, client_id) → contracts (id, client_id)
@@ -981,7 +984,10 @@ goal                  text                null      (objetivo; vira o título da
 number                smallint unsigned   not null  (ordem no projeto; 1, 2, 3…)
 sprint_status_id      fk sprint_statuses  not null  on delete restrict  default 1
 starts_on             date                not null
+working_days          smallint unsigned   not null  (dias úteis seg–sex; padrão do projeto, 10)
 ends_on               date                not null  check (ends_on >= starts_on)
+                                                    calculado: starts_on + working_days dias úteis;
+                                                    o gestor pode ajustar
 closed_at             timestamp           null
 closed_by             fk users            null      on delete restrict
 created_by            fk users            not null  on delete restrict
@@ -989,6 +995,22 @@ created_by            fk users            not null  on delete restrict
 unique: (project_id, number), (project_id, name)
 unique [MY] coluna gerada active_project = IF(sprint_status_id = 2, project_id, NULL)
             + unique(active_project)   → no máximo 1 sprint em andamento por projeto
+
+=====================================================================
+sprint_members                         [v1]
+=====================================================================
+Time da sprint (D-PRJ-24): o gestor monta o time e cada pessoa tem uma capacidade em horas.
+sprint_id             fk sprints       not null   on delete cascade
+user_id               fk users         not null   on delete restrict
+daily_hours           hours            not null   FOTO de users.daily_hours ao entrar na sprint
+                                                  (mudança de carga depois não mexe na sprint, RN-PRJ-17)
+available_days        decimal(4,1)     not null   dias disponíveis na sprint; padrão = working_days,
+                                                  o gestor reduz por férias, folga ou dedicação parcial
+added_by              fk users         not null   on delete restrict
+índices: sprint_id, user_id
+unique: (sprint_id, user_id)
+Capacidade da pessoa = daily_hours × available_days (derivada, sem coluna).
+Regra do Service: user_id precisa estar em project_members ativo do projeto.
 
 =====================================================================
 sprint_tasks                           [v1]
@@ -1004,10 +1026,18 @@ removed_by            fk users         null       on delete restrict
 removed_reason        varchar(20)      null       check in ('carried_over','descoped','other')
 índices: sprint_id, task_id
 unique U1: (task_id)   → uma tarefa está em no máximo 1 sprint ativa
-Regras do Service: sprint encerrada não recebe tarefa; ao encerrar, as tarefas fora de done são
-listadas para o gestor levar à próxima sprint ou devolver ao backlog.
-Sprint × coluna "To do": a coluna (papel sprint) é o estado da tarefa no fluxo; a sprint é o
-período. Colocar tarefa na sprint em andamento não move a coluna sozinho (ver dúvida PRJ-14).
+Regras do Service:
+- A sprint é montada com tarefas da coluna To do (papel sprint), que é o estoque pronto para
+  entrar numa sprint. Entrar na sprint não move a tarefa de coluna (PRJ-14).
+- CAPACIDADE (D-PRJ-24): para cada membro, a soma das estimativas vigentes (task_estimates) dele
+  nas tarefas da sprint não passa de daily_hours × available_days. Com
+  projects.enforce_sprint_capacity = true, a tarefa que estoura é recusada e a tela mostra quanto
+  sobra de cada pessoa; com false, só avisa. Tarefa sem estimativa não entra (não dá para saber
+  se cabe). Estimativa de quem não está no time da sprint também recusa.
+- Mudar estimativa de tarefa já na sprint reconfere a capacidade e avisa o gestor se estourou
+  (não tira a tarefa sozinha).
+- Sprint encerrada não recebe tarefa; ao encerrar, as tarefas fora de done são listadas para o
+  gestor levar à próxima sprint ou devolver ao To do.
 Sprint × pacote: independentes. Uma sprint pode gerar mais de um pacote e um pacote pode juntar
 tarefas de sprints diferentes; o relatório cruza os dois pelas tarefas.
 
@@ -1414,8 +1444,10 @@ PRJ-12 [RESPONDIDA 24/09, Lucas Scholz; revista no mesmo dia] A "Fase" do Histó
        Desenvolvimento É a sprint, e sprints serão criadas no sistema. Entraram sprint_statuses,
        sprints e sprint_tasks; saiu project_phases. (A primeira resposta, "sprint = só a coluna
        To do", foi substituída.)
-PRJ-14 [ABERTA] Colocar tarefa na sprint em andamento deve movê-la sozinha de Backlog para To do?
-       Proposta: sim, se estiver numa etapa de papel queue; nas outras etapas não mexe.
+PRJ-14 [RESPONDIDA 24/09, Lucas Scholz] O gestor (Rafael) monta a sprint com um time, juntando
+       tarefas do To do; 2 semanas = 10 dias úteis; o estimado das tarefas tem que caber. Entraram
+       sprint_members (capacidade por pessoa) e os padrões do projeto default_sprint_working_days
+       e enforce_sprint_capacity. Entrar na sprint não move coluna.
 PRJ-13 [RESPONDIDA 24/09, Lucas Scholz] Equipe do cliente no Histórico de Desenvolvimento é texto livre na geração do
        documento (a maioria dos projetos não terá). Nenhuma tabela.
 
