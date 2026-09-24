@@ -71,33 +71,58 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 
 ## Módulo Projetos
 
-### Fluxo principal *(proposta, validar contra o Trello)*
+Base: quadro Trello "Wpay" (análise em [`levantamento/trello-wpay.md`](levantamento/trello-wpay.md)). Os outros quadros ainda não foram vistos.
+
+### Fluxo principal *(o que o quadro Wpay mostra; validar com Rafael Garcia)*
 
 1. Gestor cria o projeto vinculado a um cliente e a um contrato.
-2. Gestor define as etapas (colunas) e cria as tarefas.
-3. Tarefa recebe responsável, prazo e prioridade.
-4. Responsável move a tarefa entre as etapas e registra comentários.
-5. Gestor acompanha o andamento por projeto, por cliente e por pessoa.
-6. Projeto é encerrado; o histórico fica consultável.
+2. A demanda entra como **tarefa** no `Backlog`, com tipo (melhoria, correção de bug, sustentação, mudança/GMUD) e área do produto.
+3. A tarefa priorizada vai para a `Esteira` e depois para `Em desenvolvimento` (hoje `Doing`).
+4. O dev termina e manda para `Revisão técnica`.
+5. A revisão aprova e manda para `Teste (QA)`, que executa o roteiro de teste (checklist), anexando prints como evidência.
+6. O QA aprova (`Pronto`) ou **devolve** para `Em desenvolvimento`, com o motivo.
+7. O que está pronto entra numa **versão** e vai para produção. A versão tem número e data.
+8. A qualquer momento a tarefa pode ir para `Impedimento/Pausa`, com o motivo.
+9. Projeto é encerrado; o histórico fica consultável.
 
-### Regras de negócio *(proposta)*
+### Regras de negócio
 
-- **RN-PRJ-01** Todo projeto pertence a um cliente e a um contrato. Projeto interno da WCJ usa o cliente "WCJ".
-- **RN-PRJ-02** Tarefa sem responsável não sai da primeira etapa. [DECIDIR]
+- **RN-PRJ-01** Todo projeto pertence a um cliente e a um contrato. Projeto interno ou produto da WCJ (ex.: Wpay) usa o cliente "WCJ".
+- **RN-PRJ-02** Tarefa sem responsável não sai do `Backlog`. [DECIDIR]
 - **RN-PRJ-03** Projeto encerrado não recebe tarefa nova; reabrir exige Gestor ou Administrador.
 - **RN-PRJ-04** Dev só vê projetos em que está alocado. [DECIDIR]
 - **RN-PRJ-05** Todo projeto tem um gestor responsável. Gestor vê e edita os projetos que gere; Administrador vê todos.
 - **RN-PRJ-06** Projeto tem **modalidade**: `tradicional` ou `100% IA` (D-GER-02). [LEVANTAR com Lucas Scholz] se a modalidade 100% IA muda o fluxo, por exemplo com etapas fixas espelhando o playbook `aplicacao-nova` (necessidade → banco → escopo → fatias → verificação → publicação) e as paradas obrigatórias como marcos do projeto.
+- **RN-PRJ-07** **Tipo** e **área** da tarefa são dois campos separados, cada um com lista fechada. As áreas são cadastradas por projeto (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial). Texto livre não entra (no Trello, "ANCORA" e "ÂNCORA" viraram duas etiquetas).
+- **RN-PRJ-08** Toda devolução do QA para desenvolvimento exige motivo e **conta um ciclo de retrabalho** na tarefa.
+- **RN-PRJ-09** Pular a revisão técnica (dev → QA direto) é permitido só para os tipos que o projeto definir [LEVANTAR com Rafael] e fica registrado.
+- **RN-PRJ-10** Tarefa só entra numa versão se estiver `Pronto`. Versão publicada (com data) não recebe tarefa nova.
+- **RN-PRJ-11** Mudança de etapa sempre grava quem, quando, de onde e para onde (RN-NUC-04). É daí que saem os indicadores.
+- **RN-PRJ-12** Ir para `Impedimento/Pausa` exige motivo; o tempo parado é contado à parte.
 
-### A levantar no Trello
+### O que o Trello não faz e o sistema passa a fazer *(candidatas; confirmar nas reuniões)*
 
-- [ ] Quadros existentes: um por cliente, um por projeto ou um geral?
-- [ ] Listas de cada quadro, que viram etapas e status.
-- [ ] Etiquetas em uso, que viram tipos, prioridades ou tags.
-- [ ] Campos personalizados, checklists e anexos que a equipe usa de fato.
-- [ ] Power-ups e automações ativas.
+| # | Funcionalidade | Por quê (evidência no quadro Wpay) |
+|---|---|---|
+| F-PRJ-01 | **Indicador de retrabalho**: devoluções do QA por tarefa, por dev e por projeto | 46 de 69 saídas do QA voltaram ao dev; o Trello não mostra |
+| F-PRJ-02 | **Tempo por etapa** e tempo total até pronto (lead time) | Só se consegue hoje reconstruindo o histórico à mão |
+| F-PRJ-03 | **Versão** como entidade, com **notas de versão** geradas a partir das tarefas | Hoje cada versão é uma lista criada à mão (5 listas, 71 cards) |
+| F-PRJ-04 | **Roteiro de teste padrão** por tipo e por perfil do produto, copiado ao criar a tarefa | 175 checklists, muitos repetidos ("Testes", "Âncora", "Financiador", "Fornecedor") |
+| F-PRJ-05 | **Modelo de tarefa**: história de usuário + critérios Dado/Quando/Então | Alguns cards já usam "Como/Quero/Para"; a maioria não |
+| F-PRJ-06 | **Vínculo com PR do GitHub** (automático pela branch ou pelo número) | PRs anexados à mão como link |
+| F-PRJ-07 | **Evidência de teste** anexada ao item do roteiro, não solta no card | 90 prints soltos |
+| F-PRJ-08 | **Chamado vira tarefa**: o chamado do cliente gera tarefa no projeto e as duas ficam ligadas | Sustentação e GMUD hoje estão misturadas no quadro de projeto |
+| F-PRJ-09 | **Prazo e atraso** visíveis por projeto e por pessoa | 1 card com prazo em 116 [LEVANTAR se a equipe quer prazo] |
+| F-PRJ-10 | **Impedimentos**: lista do que está parado, há quanto tempo e por quê | Lista `Impedimento/Pausa` sem motivo estruturado |
+
+Pela IA (acrescenta às ferramentas do bloco MCP): `retrabalho_do_projeto`, `tarefas_paradas`, `notas_da_versao` (leitura) e `devolver_para_desenvolvimento` (escrita, exige motivo).
+
+### A levantar
+
+- [ ] Os outros quadros do Trello: seguem o mesmo fluxo do Wpay ou cada um tem o seu? [pedido de acesso ao Rafael]
+- [ ] As perguntas do fim de [`levantamento/trello-wpay.md`](levantamento/trello-wpay.md).
 - [ ] O que a equipe faz fora do Trello porque ele não atende.
-- [ ] **[DECIDIR]** Migrar o histórico do Trello ou começar do zero com os projetos ativos.
+- [ ] **[DECIDIR]** Migrar o histórico do Trello ou começar do zero com os projetos ativos. Se migrar: o export tem só as últimas 1.000 ações, então o histórico antigo exige a API do Trello.
 
 ---
 
@@ -322,6 +347,9 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Follow-up | Próximo contato agendado, com data e responsável |
 | Projeto | Trabalho com início e fim para um cliente |
 | Tarefa | Item de trabalho dentro de um projeto (o "card" do Trello) [LEVANTAR termo que a equipe usa] |
+| Versão | Pacote de tarefas prontas publicado em produção, com número e data (hoje: lista "Produção 1.0.9 10/07/2026") |
+| Retrabalho | Devolução de uma tarefa do QA para desenvolvimento |
+| GMUD | Gestão de mudança: alteração de configuração ou ambiente em produção |
 | Chamado | Solicitação de um cliente sobre um sistema ou contrato |
 | SLA | Prazo de atendimento do chamado, definido pelo contrato e pela prioridade |
 | Assistente / IA | Claude ou ChatGPT do próprio usuário, conectado pelo MCP |
@@ -369,6 +397,6 @@ Perguntas que valem para as três:
 
 - 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-GER-01 a 03 e D-IA-01 a 04.
 - 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro registrada em R-IA-01. Codex: OpenAI Developers ("Model Context Protocol", Codex).
-- Trello da WCJ: pendente (export JSON dos quadros).
+- 24/09/2026: export JSON do quadro Trello "Wpay" → `levantamento/trello-wpay.md`. Demais quadros pendentes.
 - Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
 - Atas do Comitê de IA: `docs/atas/`.
