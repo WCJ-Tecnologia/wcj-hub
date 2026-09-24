@@ -49,7 +49,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
 | D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. |
 | D-IA-07 | 24/09/2026 | Limite por token: leitura 60/min, escrita 20/min, ajustáveis. Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
-| D-NUC-01 | 24/09/2026 | Cliente pode ser **empresa estrangeira** (casos pequenos; hoje 2 projetos): país + identificador fiscal do país, opcional; contrato com moeda própria. Pessoa física continua fora. |
+| D-NUC-01 | 24/09/2026 | Cliente pode ser **empresa estrangeira** (casos pequenos; hoje 2 projetos): país + identificador fiscal do país, opcional. Pessoa física continua fora. |
 | D-NUC-02 | 24/09/2026 | **Contato do cliente não tem login na v1.** O acesso do contato entra com o módulo Chamados. |
 | D-PRJ-18 | 24/09/2026 | Projetos **gerencia o projeto**, não o contrato: projeto fechado é contrato de entrega, não de horas. Horas previstas e realizadas servem a prazo, previsto × realizado e produtividade; **não são comparadas com horas de contrato** no módulo Projetos. Contrato no projeto é opcional. |
 | D-PRJ-19 | 24/09/2026 | **Teste cruzado livre:** não é atribuído; qualquer dev alocado puxa, menos quem desenvolveu a tarefa. |
@@ -60,7 +60,8 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-24 | 24/09/2026 | **Montagem da sprint:** o gestor monta a sprint com um **time** e junta tarefas do `To do`. Padrão de **2 semanas = 10 dias úteis**, ajustável por projeto. A soma das horas estimadas de cada pessoa **tem que caber** na capacidade dela na sprint (carga diária × dias disponíveis); por padrão o sistema recusa o que estoura, e o projeto pode trocar para só avisar. |
 | D-CRM-06 | 24/09/2026 | O mesmo CNPJ pode ter **vários leads** (cliente pode comprar projeto novo e diferente): o sistema avisa, não recusa. Um funil só. **Contato é um cadastro único** para cliente e lead: a pessoa não é redigitada na conversão. |
 | D-CRM-07 | 24/09/2026 | **Oportunidades pós-auditoria ficam para depois da v1** (RN-CRM-10, RN-CRM-11). Na v1, venda nova para cliente existente é lead ligado ao cliente. Sizing continua obrigatório para ganhar lead de auditoria (D-CRM-01). |
-| D-CRM-08 | 24/09/2026 | Convite de calendário vai **só para o responsável** do compromisso; participantes (dev, outro comercial) são convocados por ele no **Teams**. Perguntas de sizing e setores copiados do DaaS como lista inicial. |
+| D-CRM-08 | 24/09/2026 | Convite de calendário vai **só para o responsável** do compromisso; participantes (dev, outro comercial) são convocados por ele no **Teams**. Sizing copiado do DaaS: setor em texto livre, as 5 perguntas com as mesmas opções e o preço. |
+| D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.txt` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo. Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
