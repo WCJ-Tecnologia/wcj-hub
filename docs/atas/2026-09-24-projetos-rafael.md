@@ -29,7 +29,7 @@ Fonte: transcrição automática da chamada. Trechos ambíguos na transcrição 
 | 14 | IA avançando cards e escrevendo documentação | Aprovado ("automatizado seria bem top"). Hoje a documentação só é feita em projeto de cliente, porque é trabalhosa. |
 | 15 | Documento de requisição | Quer preencher os requisitos e o sistema **gerar o documento padrão WCJ** e anexar à tarefa. Modelos enviados (SGM-13/17/22). |
 | 16 | Requisito → teste | Cada requisito (critério de aceite) inserido **vira item do checklist de teste** automaticamente, como caixa de marcar para o QA. |
-| 17 | PR | O dev abre o PR; a ideia é a IA anexar o link do PR à tarefa e outra pessoa aprovar. Fluxo de PR atual **[confirmar com Lucas Alencar]** (resposta inaudível na transcrição). |
+| 17 | PR | O dev abre o PR; a ideia é a IA anexar o link do PR à tarefa e outra pessoa aprovar. Fluxo atual (confirmado depois por Lucas Scholz): o dev termina a tarefa e abre PR para o **Tech Lead** aprovar. |
 | 18 | O que fica fora do Trello | **Apresentações para cliente** (histórico de versões e entregas). |
 | 19 | Produtividade por dev | Quer ver, por dev, entrega no prazo e retrabalho. Exemplos citados: um dev costuma entregar antes do prazo; outro volta do QA em média 7 vezes. |
 | 20 | O que se esquece | Problema identificado numa demanda era avisado a outra pessoa, que esquecia, e isso gerou vários chamados. Pediu **notificação ao atribuir** uma tarefa. |
@@ -54,8 +54,8 @@ Fonte: transcrição automática da chamada. Trechos ambíguos na transcrição 
 |---|---|---|
 | P-01 | Enviar modelo do relatório de fechamento para pagamento | Rafael |
 | P-02 | Enviar a lista de pontos que o relatório de fechamento precisa ter | Rafael |
-| P-03 | Gestor de projetos vê o pipeline comercial e os valores de proposta? (resposta "sim" ambígua na transcrição) | Rafael → comitê |
-| P-04 | Fluxo atual de PR e merge dos devs | Lucas Alencar |
+| P-03 | ~~Gestor de projetos vê o pipeline comercial?~~ **Resolvido 24/09 (Lucas Scholz): não vê.** | — |
+| P-04 | ~~Fluxo atual de PR e merge dos devs~~ **Resolvido 24/09 (Lucas Scholz): o dev termina a tarefa e abre PR para o Tech Lead aprovar.** | — |
 | P-05 | Mandar esta ata ao Rafael para validação | Lucas Scholz |
 
 ## Sugestão registrada
