@@ -374,7 +374,7 @@ Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem del
 ### Como funciona
 
 - O sistema publica um **servidor MCP remoto** (HTTP). Os dois assistentes suportam conector MCP remoto.
-- O usuário conecta o assistente pela tela de perfil. A autenticação é **OAuth 2.1** (exigido pela especificação MCP para servidor remoto): o usuário faz login no sistema e autoriza o assistente. Não há chave colada à mão.
+- O usuário conecta o assistente pela tela de perfil. A autenticação é **OAuth 2.1** (obrigatório no padrão da casa; na especificação MCP a autorização é opcional e este é o fluxo recomendado para servidor HTTP): o usuário faz login no sistema e autoriza o assistente. Não há chave colada à mão.
 - Cada autorização gera um token **por usuário, por assistente**, com escopos por módulo e por tipo de acesso (`projetos:ler`, `projetos:escrever`, `crm:ler`, `crm:escrever`, `chamados:ler`, `chamados:escrever`).
 - As ferramentas MCP chamam **a mesma camada de serviço** que as telas. Não existe regra de negócio só no MCP nem só na tela.
 
@@ -445,6 +445,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ### A levantar
 
 - [ ] Perguntas e ações que cada papel faria pela IA, uma lista curta por dono de módulo. Ela confirma ou corta as ferramentas acima.
+- [ ] Na prova de conceito, conferir **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico o nome é declarado pelo próprio cliente: o canal `ia:claude`/`ia:chatgpt` da RN-IA-03 e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (RN-IA-02). Ver `core/mcp.md` do padrão, seção 3.
 - [ ] Enquete interna de ferramentas (em andamento): para cada pessoa, **qual assistente** (Claude, ChatGPT, outro), **qual plano** e **onde usa** (app web/desktop, celular, Claude Code, Codex). A superfície decide quem cai no R-IA-01: o comercial que usa o app ChatGPT é afetado; o dev que usa Codex, não.
 
 ---
