@@ -4,6 +4,16 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 
 **Situação:** rascunho para o Comitê de IA. Itens marcados **[LEVANTAR]** dependem do dono do módulo; itens marcados **[DECIDIR]** dependem do comitê. Regras marcadas *(proposta)* ainda não foram validadas por quem usa.
 
+### Decisões registradas
+
+| # | Data | Decisão |
+|---|---|---|
+| D-GER-01 | 24/09/2026 | Pessoa técnica que aprova o banco (etapa 2): **Lucas Alencar**. |
+| D-GER-02 | 24/09/2026 | Gestor de projetos: **Rafael Garcia**. Projetos feitos 100% com IA são geridos por **Lucas Scholz**. |
+| D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
+| D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
+| D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
+
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
 ---
@@ -15,7 +25,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Módulo | Substitui | Problema de hoje |
 |---|---|---|
 | **Projetos** | Trello | [LEVANTAR] o que o Trello não resolve hoje (visão por cliente, prazos, carga por pessoa, histórico). |
-| **CRM** | [LEVANTAR] planilha / WhatsApp / memória / funil do DaaS | Lead e tratativa não ficam registrados num lugar só; follow-up depende de alguém lembrar. |
+| **CRM** | Funil de prospecção do DaaS (D-GER-03) + [LEVANTAR] planilha / WhatsApp | Lead e tratativa não ficam registrados num lugar só; follow-up depende de alguém lembrar. |
 | **Chamados** | [LEVANTAR] WhatsApp / e-mail direto com o técnico | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
 
 **Base comum (núcleo):** usuários, papéis, clientes (empresas), contatos e contratos. É o que liga os três módulos: o lead ganho no CRM vira cliente; o cliente tem contratos; o contrato tem projetos e dá direito a abrir chamados.
@@ -29,7 +39,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Papel | Quem é | O que faz no sistema | O que não pode ver ou fazer |
 |---|---|---|---|
 | Administrador | Sócios | Tudo; gerencia usuários, papéis, clientes e contratos | — |
-| Gestor de projetos | [LEVANTAR] | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | Pipeline comercial e valores de proposta [DECIDIR] |
+| Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | Pipeline comercial e valores de proposta [DECIDIR] |
 | Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado [DECIDIR] |
 | Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; conteúdo dos chamados [DECIDIR] |
 | Suporte / sustentação | [LEVANTAR] quem faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
@@ -75,6 +85,8 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 - **RN-PRJ-02** Tarefa sem responsável não sai da primeira etapa. [DECIDIR]
 - **RN-PRJ-03** Projeto encerrado não recebe tarefa nova; reabrir exige Gestor ou Administrador.
 - **RN-PRJ-04** Dev só vê projetos em que está alocado. [DECIDIR]
+- **RN-PRJ-05** Todo projeto tem um gestor responsável. Gestor vê e edita os projetos que gere; Administrador vê todos.
+- **RN-PRJ-06** Projeto tem **modalidade**: `tradicional` ou `100% IA` (D-GER-02). [LEVANTAR com Lucas Scholz] se a modalidade 100% IA muda o fluxo, por exemplo com etapas fixas espelhando o playbook `aplicacao-nova` (necessidade → banco → escopo → fatias → verificação → publicação) e as paradas obrigatórias como marcos do projeto.
 
 ### A levantar no Trello
 
@@ -112,7 +124,17 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 - [ ] Etapas do funil e o critério para passar de uma para outra.
 - [ ] Campos mínimos do lead e da tratativa.
 - [ ] Origens de lead (indicação, LinkedIn, grupos, site, evento…).
-- [ ] **[DECIDIR]** O funil de prospecção do DaaS (`wcj-ui`, tabelas `lead`/`lead_evento`) migra para cá, continua lá ou é aposentado. Hoje o "ganhar lead" dele cria auditoria no DaaS.
+
+### Migração do funil do DaaS (D-GER-03)
+
+O funil de prospecção vive hoje no DaaS (`wcj-ui`, tabelas `lead` e `lead_evento`, kanban em `/console/comercial/prospeccao`). Ele vem para cá; no DaaS fica só a auditoria.
+
+- **RN-CRM-06** Leads e eventos do DaaS entram por **importação única e idempotente**: casa por CNPJ antes de nome e não sobrescreve campo já preenchido (`core/banco.md` seção 9). Evento do DaaS vira tratativa. Roda primeiro em modo simulado.
+- **RN-CRM-07** Os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço) viram campos do lead com oportunidade de **auditoria**. [LEVANTAR com Lucas Scholz] se continuam obrigatórios para ganhar.
+- **RN-CRM-08** Hoje "ganhar lead" no DaaS cria a auditoria em pré-venda. Aqui, lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. [DECIDIR] se a integração automática CRM → DaaS entra numa versão seguinte.
+- **RN-CRM-09** Depois da importação conferida (contagem de leads e eventos batendo com a origem), o funil sai do DaaS. A remoção no DaaS é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio: tira a tela, a rota e as RPCs de escrita e mantém as tabelas como histórico somente leitura até a pessoa técnica liberar a exclusão.
+- [ ] [LEVANTAR] O DaaS também tem um CRM pós-auditoria (anterior ao funil). Confirmar se ele fica no DaaS, como parte da auditoria, ou se vem junto.
+- [ ] O assistente de voz do funil do DaaS (F2) é IA embutida e **não vem** na v1 (D-IA-02).
 
 ---
 
@@ -154,6 +176,23 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 | D-IA-01 | Na v1, **somente usuários internos** conectam IA. Contato do cliente não conecta. |
 | D-IA-02 | **Sem IA embutida** na v1. O sistema não chama nenhum modelo por conta própria; toda IA é a do usuário, paga pelo usuário. |
 | D-IA-03 | Assistentes homologados: **Claude** e **ChatGPT**. |
+
+### Disponibilidade nos planos (D-IA-04: todos em Pro ou superior)
+
+Levantamento de 24/09/2026:
+
+| Assistente | Conector MCP remoto no plano Pro+ | Escrita | Situação |
+|---|---|---|---|
+| Claude (Pro, Max) | Sim: "Customize → Connectors", com OAuth e registro dinâmico de cliente | Sim | Atende |
+| ChatGPT (Plus, Pro) | Sim, pelo **modo desenvolvedor** (web) | **Incerto** | **Risco** |
+
+**Risco R-IA-01:** a documentação de desenvolvedor da OpenAI diz que o modo desenvolvedor dá suporte completo de leitura e escrita no Plus e no Pro. Fontes de terceiros afirmam que a central de ajuda restringe a escrita em conector próprio a Business, Enterprise e Edu, deixando Plus e Pro só com leitura. As fontes divergem, e a central de ajuda não pôde ser consultada diretamente.
+
+**Mitigação: prova de conceito antes da etapa 4.** Um servidor MCP mínimo, publicado em HTTPS público, com OAuth, uma ferramenta de leitura e uma de escrita, testado num Claude Pro e num ChatGPT Plus/Pro reais. Resultado possível:
+- escrita funciona nos dois: segue como está;
+- ChatGPT só lê: o ChatGPT entra na v1 **só com escopos de leitura** e a escrita fica para Claude, até a OpenAI liberar ou a WCJ ter um workspace Business. [DECIDIR] no comitê, com o resultado em mãos.
+
+Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem deles**, não da máquina do usuário. O servidor precisa estar na internet pública com HTTPS. Isso vale também para homologação: dev local testa por túnel ou por ambiente de homologação publicado.
 
 ### Como funciona
 
@@ -225,7 +264,6 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 ### A levantar
 
-- [ ] Em quais planos do Claude e do ChatGPT o conector MCP personalizado está disponível hoje (cada dev paga o próprio plano; se exigir plano Team/Enterprise, isso muda a decisão).
 - [ ] Perguntas e ações que cada papel faria pela IA, uma lista curta por dono de módulo. Ela confirma ou corta as ferramentas acima.
 
 ---
@@ -236,7 +274,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 |---|---|---|
 | Claude e ChatGPT via MCP | entrada (consulta e escrita pelo usuário) | **Sim** |
 | Trello | importação única | [DECIDIR] |
-| Funil de prospecção do DaaS | importação única ou convivência | [DECIDIR] |
+| Funil de prospecção do DaaS | importação única (RN-CRM-06) | **Sim** (D-GER-03) |
+| DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
 | E-mail (notificação de chamado ao cliente e ao responsável) | saída | [DECIDIR] |
 | WhatsApp | — | Não (ver abaixo) |
 
@@ -244,7 +283,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 ## Fora da primeira versão
 
-- IA embutida no sistema (sugestão de follow-up, triagem automática, resumo automático). D-IA-02.
+- IA embutida no sistema (sugestão de follow-up, triagem automática, resumo automático), inclusive o assistente de voz do funil do DaaS. D-IA-02.
+- Criação automática de auditoria no DaaS quando o lead é ganho. RN-CRM-08.
 - Contato do cliente conectando a própria IA. D-IA-01.
 - Assistentes além de Claude e ChatGPT. D-IA-03.
 - Abertura de chamado por WhatsApp.
@@ -284,7 +324,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ## Restrições
 
 - Stack: template da casa (`stacks/laravel-inertia.md`). [DECIDIR confirmação no comitê]
-- Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na etapa 4.
+- Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito do R-IA-01.
+- Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
 - Uso principal: desktop no escritório; chamados e follow-ups também pelo celular [LEVANTAR].
 - Volume: [LEVANTAR] nº de usuários internos, clientes com contrato ativo, chamados/mês, leads/mês.
 - Segurança: fatia de segurança obrigatória (`core/seguranca.md` seção 11) **incluindo o servidor MCP e o OAuth**.
@@ -295,15 +336,16 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Parte | Dono (ouve o usuário, valida esta seção) |
 |---|---|
 | Núcleo | [DECIDIR] |
-| Projetos | [LEVANTAR] quem administra o Trello hoje |
+| Projetos | Rafael Garcia (modalidade 100% IA: Lucas Scholz) |
 | CRM | Lucas Scholz |
 | Chamados | [LEVANTAR] responsável pela sustentação |
 | Interface de IA | [DECIDIR] |
-| **Pessoa técnica que aprova o banco (etapa 2)** | [DECIDIR] |
+| **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
 
 ## Fontes
 
-- 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-IA-01 a D-IA-03.
+- 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-GER-01 a 03 e D-IA-01 a 04.
+- 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro registrada em R-IA-01.
 - Trello da WCJ: pendente (export JSON dos quadros).
 - Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
 - Atas do Comitê de IA: `docs/atas/`.
