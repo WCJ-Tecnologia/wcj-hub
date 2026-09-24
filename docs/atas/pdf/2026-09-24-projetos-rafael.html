@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Ata · Projetos (validação do Trello) · 24/09/2026</title>
+<style>
+  :root {
+    --blue: #1A6CF3; --blue-deep: #0F4FC4; --tint: #E9F1FE;
+    --ink: #0C0E13; --navy: #070B16; --cool: #F5F7FB; --muted: #5B6273; --line: #DDE2EC;
+  }
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; }
+  body { font-family: "Hanken Grotesk", system-ui, sans-serif; color: var(--ink); font-size: 9.6pt; line-height: 1.45; }
+  h1, h2, h3 { font-family: "Space Grotesk", sans-serif; letter-spacing: -.02em; margin: 0; }
+  code { font-family: "Space Mono", monospace; font-size: 8.3pt; background: var(--cool); border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; white-space: nowrap; }
+  .mono { font-family: "Space Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+
+  header.top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+  header.top img { width: 110px; height: 44px; object-fit: contain; }
+  header.top .tag { font-size: 7.5pt; color: var(--muted); text-align: right; line-height: 1.6; }
+  header.top .tag b { color: var(--blue); font-weight: 700; }
+
+  .title { margin: 18px 0 4px; }
+  .eyebrow { font-size: 7.5pt; color: var(--blue); display: flex; align-items: center; gap: 8px; }
+  .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  h1 { font-size: 22pt; font-weight: 700; line-height: 1.1; margin-top: 6px; }
+  .subtitle { color: var(--muted); margin-top: 4px; font-size: 9.5pt; }
+
+  .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 14px 0 14px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .meta div { padding: 8px 10px; border-right: 1px solid var(--line); }
+  .meta div:last-child { border-right: 0; }
+  .meta .k { font-size: 6.8pt; color: var(--muted); display: block; margin-bottom: 2px; }
+  .meta .v { font-weight: 600; font-size: 9pt; }
+
+  .validate { background: var(--navy); color: #fff; border-radius: 12px; padding: 12px 16px; display: flex; gap: 14px; align-items: flex-start; }
+  .validate .node { width: 12px; height: 12px; border-radius: 50%; background: #4D90FF; box-shadow: 0 0 0 5px rgba(77,144,255,.25); margin-top: 4px; flex: none; }
+  .validate b { font-family: "Space Grotesk", sans-serif; font-size: 10.5pt; }
+  .validate p { margin: 3px 0 0; color: #C9D3E6; font-size: 9pt; }
+
+  section { margin-top: 18px; }
+  h2 { font-size: 12.5pt; font-weight: 700; display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  h2 .n { font-family: "Space Mono", monospace; font-size: 8.5pt; color: var(--blue); font-weight: 700; }
+  h2 small { font-family: "Hanken Grotesk", sans-serif; font-weight: 400; font-size: 8.5pt; color: var(--muted); letter-spacing: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
+  thead th { font-family: "Space Mono", monospace; font-size: 6.8pt; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: left; font-weight: 400; padding: 5px 8px; border-bottom: 1.5px solid var(--ink); }
+  tbody td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr { break-inside: avoid; }
+  td.id { font-family: "Space Mono", monospace; font-size: 7.6pt; color: var(--blue-deep); white-space: nowrap; width: 1%; }
+  td.subj { font-weight: 600; width: 22%; }
+  b.hl { color: var(--ink); background: linear-gradient(transparent 60%, var(--tint) 60%); }
+
+  .prio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .prio .col { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; break-inside: avoid; }
+  .prio .col.v1 { border-color: var(--blue); background: linear-gradient(180deg, var(--tint), #fff 60%); }
+  .prio h3 { font-size: 9.5pt; margin-bottom: 6px; }
+  .prio .col .mono { font-size: 6.8pt; color: var(--muted); display: block; margin-bottom: 4px; }
+  .prio ul { margin: 0; padding: 0; list-style: none; }
+  .prio li { padding-left: 14px; position: relative; margin: 4px 0; font-size: 8.6pt; line-height: 1.35; }
+  .prio li::before { content: ""; position: absolute; left: 0; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px var(--tint); }
+  .prio .col:not(.v1) li::before { background: #9AA3B5; box-shadow: 0 0 0 2px var(--cool); }
+
+  .flow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 6px 0 2px; }
+  .flow span { font-family: "Space Mono", monospace; font-size: 7.4pt; background: var(--cool); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+  .flow i { color: var(--muted); font-style: normal; font-size: 8pt; }
+
+  .note { color: var(--muted); font-size: 8.4pt; margin-top: 6px; }
+  .avoid { break-inside: avoid; }
+  footer { margin-top: 22px; padding-top: 8px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 7pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <img src="logo_wcj_fundo_branco.png" alt="WCJ Tecnologia">
+  <div class="tag mono"><b>Ata de reunião</b><br>WCJ Central · etapa 1</div>
+</header>
+
+<div class="title">
+  <div class="eyebrow mono">Módulo Projetos</div>
+  <h1>Validação do Trello</h1>
+  <div class="subtitle">Levantamento do módulo de Projetos do WCJ Central (nome provisório), o sistema interno que reúne gestão de projetos, CRM e chamados.</div>
+</div>
+
+<div class="meta">
+  <div><span class="k mono">Data</span><span class="v">24/09/2026</span></div>
+  <div><span class="k mono">Duração</span><span class="v">32 min (chamada)</span></div>
+  <div><span class="k mono">Participantes</span><span class="v">Rafael Garcia, Lucas Scholz</span></div>
+  <div><span class="k mono">Material recebido</span><span class="v">Requisições SGM-13/17/22 e histórico Tecsolution</span></div>
+</div>
+
+<div class="validate">
+  <div class="node"></div>
+  <div>
+    <b>Rafael, confira as seções 1 e 2.</b>
+    <p>Elas registram o que foi dito na reunião. Se algo estiver errado, faltando ou mal interpretado, responda ao Lucas Scholz com o número do item. As seções 3 e 4 são para ciência e também aceitam comentários.</p>
+  </div>
+</div>
+
+<section>
+  <h2><span class="n">01</span> O que foi confirmado</h2>
+  <table>
+    <thead><tr><th>#</th><th>Assunto</th><th>O que foi dito</th></tr></thead>
+    <tbody>
+      <tr><td class="id">1</td><td class="subj">Fluxo de etapas</td><td>É <b class="hl">personalizado por projeto</b>.</td></tr>
+      <tr><td class="id">2</td><td class="subj">Esteira</td><td>É a <b class="hl">sprint</b>: o que está pronto para desenvolver.</td></tr>
+      <tr><td class="id">3</td><td class="subj">Devoluções do QA</td><td>No quadro Wpay foram 46 devoluções contra 21 aprovações em 2 meses. Boa parte são ajustes visuais pequenos. O indicador precisa separar devolução trivial de devolução séria.</td></tr>
+      <tr><td class="id">4</td><td class="subj">Causa do retrabalho</td><td>"Muita coisa volta quando a gente documenta mal alguma demanda." Projeto refinado antes (ex.: gestão de multas, futuro PTA) volta menos.</td></tr>
+      <tr><td class="id">5</td><td class="subj">Revisão técnica pulada</td><td>Não é esquecimento. Há tarefa sem nada para testar em tela (ex.: Swagger): tem revisão técnica e não tem QA. <b class="hl">A tarefa define quais validações se aplicam.</b></td></tr>
+      <tr><td class="id">6</td><td class="subj">2 pessoas por card</td><td>São back-end e front-end. QA e gestor não se colocam no card, mas acompanham tudo. <b class="hl">Atribuir pessoas por função</b> (back, front, QA) foi aprovado, principalmente para projeto de cliente.</td></tr>
+      <tr><td class="id">7</td><td class="subj">Prazo</td><td>O Wpay não segue o modelo de gestão; projetos de cliente têm início e fim. <b class="hl">Prazo tem que existir.</b></td></tr>
+      <tr><td class="id">8</td><td class="subj">Horas</td><td>O Trello pago (cerca de R$ 500,00 por mês) só registra início e fim e <b class="hl">não compara previsto × realizado</b>. A ideia é lançar a previsão e acompanhar o realizado.</td></tr>
+      <tr><td class="id">9</td><td class="subj">Estimativa pelo dev</td><td>O dev analisa o documento e o card e informa as horas por item ("isso aqui eu demoro 8 horas").</td></tr>
+      <tr><td class="id">10</td><td class="subj">Horas em dias</td><td>Hoje a conversão é manual, e feriados atrapalham. Precisa considerar <b class="hl">dias úteis, feriados e a carga de cada dev</b>: 16 h são 2 dias para quem trabalha 8 h por dia e 4 dias para quem trabalha 4 h.</td></tr>
+      <tr><td class="id">11</td><td class="subj">Versão (release)</td><td>A data é definida por projeto. Em projeto de cliente: fecha a sprint, valida e planeja a subida, e muitas vezes o cliente decide quando. Em projeto interno: acumula demandas e sobe quando convém.</td></tr>
+      <tr><td class="id">12</td><td class="subj">Cronologia de entregas</td><td>A linha do tempo da Tecsolution foi montada à mão, lista por lista. Deve ser <b class="hl">gerada pelo sistema</b>, em linha do tempo, para apresentar ao cliente.</td></tr>
+      <tr><td class="id">13</td><td class="subj">Chamado no projeto</td><td>Uma <b class="hl">coluna "Chamados"</b> no quadro do projeto. O cliente abre o chamado no portal, escolhe o projeto (ex.: PDV, KDS) e a categoria "desenvolvimento", e o chamado aparece como card, com notificação.</td></tr>
+      <tr><td class="id">14</td><td class="subj">IA no fluxo</td><td>Aprovado: a IA avança os cards e escreve a documentação. Hoje a documentação só é feita em projeto de cliente, porque é trabalhosa.</td></tr>
+      <tr><td class="id">15</td><td class="subj">Documento de requisição</td><td>Preencher os requisitos e o sistema <b class="hl">gerar o documento padrão WCJ</b> e anexar à tarefa, no modelo das requisições SGM.</td></tr>
+      <tr><td class="id">16</td><td class="subj">Requisito vira teste</td><td>Cada critério de aceite inserido <b class="hl">vira item do checklist de teste</b>, como caixa de marcar para o QA.</td></tr>
+      <tr><td class="id">17</td><td class="subj">PR</td><td>O dev abre o PR; a IA anexa o link à tarefa e outra pessoa aprova.</td></tr>
+      <tr><td class="id">18</td><td class="subj">O que fica fora do Trello</td><td>Apresentações para o cliente (histórico de versões e entregas).</td></tr>
+      <tr><td class="id">19</td><td class="subj">Produtividade por dev</td><td>Ver, por dev, entrega no prazo e retrabalho.</td></tr>
+      <tr><td class="id">20</td><td class="subj">O que se esquece</td><td>Problema avisado a outra pessoa era esquecido e gerava chamados. Pedido: <b class="hl">notificar ao atribuir</b> uma tarefa.</td></tr>
+      <tr><td class="id">21</td><td class="subj">O que pediria à IA</td><td>Criar cards e automatizar o relatório para o cliente.</td></tr>
+      <tr><td class="id">22</td><td class="subj">Fechamento para pagamento</td><td>Relatório de tudo o que foi entregue no período, com detalhe, para o cliente (ex.: PTA) aprovar antes de pagar e a WCJ emitir nota.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="avoid">
+  <h2><span class="n">02</span> Decisões da reunião</h2>
+  <table>
+    <thead><tr><th>#</th><th>Decisão</th></tr></thead>
+    <tbody>
+      <tr><td class="id">D-PRJ-01</td><td>Fluxo de etapas configurável por projeto.</td></tr>
+      <tr><td class="id">D-PRJ-02</td><td>Nenhuma tarefa sai do Backlog sem responsável.</td></tr>
+      <tr><td class="id">D-PRJ-03</td><td>Dev vê só os projetos em que está alocado.</td></tr>
+      <tr><td class="id">D-PRJ-04</td><td>Não migrar o histórico do Trello na v1: começar do zero com os projetos ativos. A migração pode vir depois.</td></tr>
+      <tr><td class="id">D-PRJ-05</td><td>A v1 de Projetos são <b class="hl">"as funcionalidades do Trello com a adição do controle do tempo"</b>: tempo por etapa e horas previstas × realizadas.</td></tr>
+      <tr><td class="id">D-PRJ-06</td><td>Cada módulo tem a sua v1 (Projetos, Chamados, CRM).</td></tr>
+      <tr><td class="id">D-PRJ-07</td><td>Nomenclatura indiferente para a equipe; o sistema usa "tarefa".</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2><span class="n">03</span> Definido depois da reunião <small>por Lucas Scholz e Lucas Alencar, no mesmo dia</small></h2>
+  <table>
+    <thead><tr><th>#</th><th>Decisão</th></tr></thead>
+    <tbody>
+      <tr><td class="id">D-PRJ-08</td><td>Gestor de projetos não vê o pipeline comercial nem valores de proposta.</td></tr>
+      <tr><td class="id">D-PRJ-09</td><td>Revisão técnica é a aprovação do PR pelo Tech Lead.</td></tr>
+      <tr><td class="id">D-PRJ-10</td><td>O Tech Lead varia por projeto.</td></tr>
+      <tr><td class="id">D-PRJ-11</td><td>
+        Colunas padrão do quadro:
+        <div class="flow"><span>Backlog</span><i>→</i><span>To do</span><i>→</i><span>Doing</span><i>→</i><span>Code-review</span><i>→</i><span>In test</span><i>→</i><span>Done</span><i>·</i><span>Paused</span></div>
+        Fluxo da tarefa: desenvolve → abre PR → code review → teste cruzado (outro dev) → QA → merge → entra no pacote → homologação do pacote → produção.
+      </td></tr>
+      <tr><td class="id">D-PRJ-12</td><td>O QA testa no ambiente local dele; o Tech Lead faz o merge.</td></tr>
+      <tr><td class="id">D-PRJ-13</td><td>O cliente não participa da homologação do pacote: a equipe WCJ testa tudo junto.</td></tr>
+      <tr><td class="id">D-PRJ-14</td><td>Colunas padrão em inglês, sempre editáveis por projeto.</td></tr>
+      <tr><td class="id">D-PRJ-15</td><td>Teste cruzado ligado por padrão em toda tarefa; quem não quiser desmarca.</td></tr>
+      <tr><td class="id">D-PRJ-16</td><td><b class="hl">Fluxo aberto.</b> Uma tarefa pode ter vários PRs; qualquer pessoa alocada move a tarefa; travas de PR e de função são opcionais por projeto. O sistema traz um padrão pronto e cada projeto se adapta.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="avoid">
+  <h2><span class="n">04</span> Prioridade proposta para o módulo Projetos</h2>
+  <div class="prio">
+    <div class="col v1">
+      <span class="mono">v1</span>
+      <h3>Trello + controle do tempo</h3>
+      <ul>
+        <li>Quadro com etapas configuráveis, tarefas, checklist, anexos e comentários</li>
+        <li>Tempo por etapa em linha do tempo, por tarefa</li>
+        <li>Horas previstas × realizadas por tarefa, pessoa e projeto</li>
+        <li>Data prevista em dias úteis (feriados e carga do dev)</li>
+        <li>Prazo e atraso por projeto e por pessoa</li>
+        <li>Atribuição por função e notificação ao atribuir</li>
+        <li>Chave por projeto (ex.: <code>SGM-17</code>)</li>
+        <li>Tarefa no modelo de requisição; critério de aceite vira item de teste</li>
+        <li>Links de PR na tarefa</li>
+      </ul>
+    </div>
+    <div class="col">
+      <span class="mono">Logo depois da v1</span>
+      <h3>Indicadores e relatórios</h3>
+      <ul>
+        <li>Indicador de retrabalho, com motivo e origem da devolução</li>
+        <li>Painel de produtividade por dev (visto pelo gestor; o dev vê só o próprio)</li>
+        <li>Versão com notas de versão</li>
+        <li>Histórico de desenvolvimento em linha do tempo, em PDF para o cliente</li>
+        <li>Relatório de fechamento para pagamento</li>
+        <li>Documento de requisição gerado a partir da tarefa</li>
+        <li>Coluna Chamados (junto com o módulo Chamados)</li>
+      </ul>
+    </div>
+    <div class="col">
+      <span class="mono">A priorizar</span>
+      <h3>Qualidade de teste</h3>
+      <ul>
+        <li>Roteiro de teste padrão por tipo e por perfil do produto</li>
+        <li>Evidência de teste presa a cada item do roteiro</li>
+        <li>Painel de impedimentos (o que está parado e por quê)</li>
+        <li>Status do PR lido direto do GitHub</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">Os dados de retrabalho e produtividade já são gravados desde a v1; as telas desses indicadores vêm depois sem perder histórico.</p>
+</section>
+
+<section class="avoid">
+  <h2><span class="n">05</span> Pendências</h2>
+  <table>
+    <thead><tr><th>#</th><th>Pendência</th><th>Com</th></tr></thead>
+    <tbody>
+      <tr><td class="id">P-01</td><td>Enviar o modelo do relatório de fechamento para pagamento.</td><td>Rafael</td></tr>
+      <tr><td class="id">P-02</td><td>Enviar a lista do que o relatório de fechamento precisa conter.</td><td>Rafael</td></tr>
+      <tr><td class="id">P-05</td><td>Validar esta ata.</td><td>Rafael</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><b>Sugestão registrada:</b> usar o Vitinho no desenvolvimento dos módulos, aproveitando a capacidade livre da equipe enquanto os projetos novos não entram. Vai para decisão do Comitê de IA.</p>
+</section>
+
+<footer>
+  <span class="mono">WCJ Tecnologia · wcjtecnologia.com.br</span>
+  <span class="mono">Documento interno · 24/09/2026</span>
+</footer>
+
+</body>
+</html>

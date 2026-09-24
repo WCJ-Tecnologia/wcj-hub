@@ -47,9 +47,22 @@ Fonte: transcrição automática da chamada. Trechos ambíguos na transcrição 
 | D-PRJ-05 | Prioridade da v1 de Projetos, nas palavras do Rafael: **"as funcionalidades do Trello com a adição do controle do tempo"** (tempo por etapa + horas previstas × realizadas). | Priorização F-PRJ |
 | D-PRJ-06 | Cada módulo tem a sua v1 (Projetos, Chamados, CRM). | Ordem das fatias |
 | D-PRJ-07 | Nomenclatura: indiferente para a equipe. O sistema usa **tarefa**. | Vocabulário |
+
+## Definido depois da reunião
+
+Por Lucas Scholz e Lucas Alencar, no mesmo dia. Registrado aqui para ciência do Rafael.
+
+| # | Decisão | Afeta |
+|---|---|---|
 | D-PRJ-08 | Gestor de projetos **não vê** pipeline comercial nem valores de proposta (confirmado por Lucas Scholz após a reunião). | Quem usa |
 | D-PRJ-09 | Revisão técnica = aprovação do PR pelo Tech Lead (fluxo atual, confirmado por Lucas Scholz após a reunião). | RN-PRJ-23, F-PRJ-06 |
 | D-PRJ-10 | O Tech Lead **varia por projeto** (confirmado por Lucas Scholz após a reunião). | RN-PRJ-24, RN-PRJ-25 |
+| D-PRJ-11 | Colunas padrão do quadro (Lucas Alencar): `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo da tarefa: desenvolve → abre PR → code review → teste cruzado (outro dev) → QA → merge → entra no pacote → homologação do pacote → produção. | Fluxo padrão |
+| D-PRJ-12 | O QA testa no ambiente local dele; o Tech Lead faz o merge. | Fluxo padrão |
+| D-PRJ-13 | O cliente não participa da homologação do pacote: a equipe WCJ testa tudo junto. | Pacote (versão) |
+| D-PRJ-14 | Colunas padrão em inglês, sempre editáveis por projeto. | Fluxo padrão |
+| D-PRJ-15 | Teste cruzado ligado por padrão em toda tarefa; quem não quiser desmarca. | Validações |
+| D-PRJ-16 | Fluxo aberto: uma tarefa pode ter vários PRs; qualquer pessoa alocada move a tarefa; travas de PR e de função são opcionais por projeto. | Fluxo padrão |
 
 ## Pendências
 
