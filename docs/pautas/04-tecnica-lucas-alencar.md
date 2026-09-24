@@ -13,7 +13,6 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 ## Antes da reunião
 
 - [ ] Lucas Alencar lê o `necessidade.md`, principalmente Núcleo, Interface de IA e RN-CRM-06 a 09.
-- [ ] Lucas Scholz separa o esquema atual de `lead` e `lead_evento` do DaaS (migrações 0047 e 0048 no `wcj-ui`).
 
 ## Roteiro
 
@@ -28,24 +27,20 @@ As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../le
 
 ### 2. Núcleo e banco (15 min)
 - Entidades do núcleo: usuários, papéis, clientes (CNPJ único), contatos, contratos.
-- Trilha de auditoria única para todos os módulos, com **canal** (`tela`, `ia:claude`, `ia:chatgpt`) (RN-NUC-04). Tabela genérica ou por módulo?
+- Trilha de auditoria em **tabela única** para todos os módulos, com canal (RN-NUC-04, D-GER-16).
 - Histórico de etapa das tarefas (RN-PRJ-11): é dele que saem retrabalho e tempo por etapa.
 - Numeração de chamado por sequência do banco (RN-CHM-02).
 - Contato externo só vê o próprio cliente (RN-NUC-03): Policy por cliente em toda rota com ID.
-- Combinar a dinâmica da etapa 2: IA propõe o `banco.txt` a partir do `necessidade.md` fechado, e Lucas Alencar revisa e aprova. Definir prazo da revisão.
+- Etapa 2 (D-GER-16): IA propõe o `banco.txt`, Lucas Alencar revisa e aprova, validação final no Comitê.
 
-### 3. Migração do funil do DaaS (10 min)
-- Mapeamento `lead` / `lead_evento` → lead / tratativa (RN-CRM-06).
-- Chave de casamento: CNPJ; o que fazer com lead sem CNPJ.
-- Modo simulado + contagem batendo com a origem antes de gravar.
-- Remoção no DaaS (RN-CRM-09): PR de manutenção no `wcj-ui`; tabelas ficam só leitura até liberar exclusão. Quando?
-- O CRM pós-auditoria do DaaS fica lá ou vem junto?
+### 3. DaaS
+Sem migração de dados (D-CRM-03). Só combinar: o DaaS passa a consultar contratos no Hub (D-CRM-04) e o funil sai do DaaS quando o CRM do Hub estiver no ar (RN-CRM-09).
 
 ### 4. Interface de IA (MCP) (20 min)
-- Pacote do servidor MCP: `laravel/mcp` ou outro.
+- Servidor MCP com `laravel/mcp` e login por OAuth 2.1 com Passport (D-IA-07): validar no teste técnico.
 - OAuth 2.1 com registro dinâmico de cliente (Passport?). Escopos por módulo e tipo de acesso.
 - Toda ferramenta chama a mesma camada de serviço da tela (sem regra só no MCP).
-- Limite de chamadas por token (RN-IA-06): qual valor?
+- Limite por token (RN-IA-06): leitura 60/min, escrita 20/min, ajustáveis (D-IA-07). Validar.
 - Conteúdo de cliente delimitado como dado (RN-IA-09): como devolver na resposta da ferramenta.
 - **Prova de conceito MCP** (validação técnica; a dúvida de plano do ChatGPT já foi resolvida: escrita só no Business, Pro só lê, Plus não conecta):
 

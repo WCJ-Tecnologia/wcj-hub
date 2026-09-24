@@ -10,7 +10,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 |---|---|---|
 | D-GER-01 | 24/09/2026 | Pessoa técnica que aprova o banco (etapa 2): **Lucas Alencar**. |
 | D-GER-02 | 24/09/2026 | Gestor de projetos: **Rafael Garcia**. Projetos feitos 100% com IA são geridos por **Lucas Scholz**. |
-| D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS **migra para o CRM deste sistema**. O DaaS fica só com a parte de auditoria. |
+| D-GER-03 | 24/09/2026 | O funil de prospecção do DaaS passa para o CRM deste sistema. O DaaS fica só com a parte de auditoria. |
 | D-IA-01 a 03 | 24/09/2026 | Ver [Interface de IA (MCP)](#interface-de-ia-mcp). |
 | D-PRJ-01 a 10 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
 | D-PRJ-13 | 24/09/2026 | O cliente **não participa** da homologação do pacote: a equipe WCJ testa tudo junto. |
@@ -21,7 +21,9 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-CRM-01 | 24/09/2026 | Funil do CRM: etapas do DaaS como padrão, editáveis. Motivos de perda editáveis. Tratativa editável com histórico. Comercial vê todos os leads e edita os próprios. Sizing obrigatório para ganhar auditoria. CRM → DaaS automático depois da v1. |
-| D-CRM-02 | 24/09/2026 | O CRM pós-auditoria do DaaS (oportunidades e contratos) **vem junto** com o funil. |
+| D-CRM-02 | 24/09/2026 | As funções do CRM pós-auditoria do DaaS (oportunidades e contratos) também passam para o Hub. |
+| D-CRM-03 | 24/09/2026 | **Sem migração de dados do DaaS**: o que está lá não é usado e está desatualizado. CRM do Hub começa do zero. |
+| D-CRM-04 | 24/09/2026 | O Hub é a **única fonte de contratos**; o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão na v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
 | D-CHM-01 | 24/09/2026 | **[DECIDIR]** Chamados: construir no Hub, adotar o GLPI (sugestão do Alaor) ou em duas fases. Ver Módulo Chamados. |
 | D-CHM-02 | 24/09/2026 | Canal inicial de chamado: **e-mail** (endereço próprio). Triagem por uma função de **despachante**, com filas N1/N2/N3. |
 | D-CHM-03 | 24/09/2026 | SLA e prioridade **contrato a contrato**; prioridade definida pela WCJ na triagem. No início, chamados só no nível de projeto. |
@@ -37,10 +39,12 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-11 | 24/09/2026 | Tipos de contrato: projeto, sustentação, auditoria, alocação de dev, infraestrutura; o Administrador cadastra mais. |
 | D-GER-14 | 24/09/2026 | Hospedagem: **na mesma VPS do sistema de auditoria (DaaS)**, com subdomínio próprio e HTTPS. |
 | D-GER-15 | 24/09/2026 | Código **organizado por domínio desde o início** (`stacks/laravel-inertia.md`, "Quando o projeto cresce: por domínio"), sem esperar chegar a 5 módulos. Registrar em ADR na etapa 3. |
+| D-GER-16 | 24/09/2026 | Etapa 2 (banco): a IA propõe o `banco.txt` a partir deste documento, Lucas Alencar revisa e aprova, e a validação final é no Comitê. Trilha de auditoria em **tabela única** para todos os módulos. O rascunho do `core/mcp.md` para o `ai-systems` é feito pela IA e revisado por Lucas Alencar. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
 | D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. |
+| D-IA-07 | 24/09/2026 | Limite por token: leitura 60/min, escrita 20/min, ajustáveis. Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -233,16 +237,15 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 - [ ] Campos mínimos do lead e da tratativa.
 - [ ] Origens de lead (indicação, LinkedIn, grupos, site, evento…).
 
-### Migração do funil do DaaS (D-GER-03)
+### O que vem do DaaS (D-GER-03, D-CRM-02, D-CRM-03)
 
-O funil de prospecção vive hoje no DaaS (`wcj-ui`, tabelas `lead` e `lead_evento`, kanban em `/console/comercial/prospeccao`). Ele vem para cá; no DaaS fica só a auditoria.
+O funil de prospecção e o CRM pós-auditoria vivem hoje no DaaS (`wcj-ui`). As **funcionalidades** passam para o CRM do Hub; no DaaS fica só a auditoria. Os **dados não são migrados** (D-CRM-03): o que está lá não é usado e está desatualizado. O CRM do Hub começa do zero.
 
-- **RN-CRM-06** Leads e eventos do DaaS entram por **importação única e idempotente**: casa por CNPJ antes de nome e não sobrescreve campo já preenchido (`core/banco.md` seção 9). Evento do DaaS vira tratativa. Roda primeiro em modo simulado.
-- **RN-CRM-07** Os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço) viram campos do lead com oportunidade de **auditoria**. Continuam **obrigatórios para ganhar** oportunidade de auditoria.
-- **RN-CRM-08** Hoje "ganhar lead" no DaaS cria a auditoria em pré-venda. Aqui, lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. A integração automática CRM → DaaS fica **para depois da v1**.
-- **RN-CRM-09** Depois da importação conferida (contagem de leads e eventos batendo com a origem), o funil sai do DaaS. A remoção no DaaS é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio: tira a tela, a rota e as RPCs de escrita e mantém as tabelas como histórico somente leitura até a pessoa técnica liberar a exclusão.
-- **RN-CRM-10** O **CRM pós-auditoria do DaaS também vem** (D-CRM-02): oportunidades (`opportunity`: origem roadmap ou avulsa, tipo projeto ou recorrente, etapas sugerida → proposta → ganha/perdida), contratos (`contract`, ativo/encerrado) e ajustes de contrato (`contract_adjustment`). Os contratos entram no **Núcleo**; as oportunidades entram no CRM. Mesma importação única e idempotente da RN-CRM-06.
-- [ ] [LEVANTAR com Lucas Alencar] Hoje a auditoria do DaaS gera oportunidades a partir do roadmap. Depois da migração, como essas sugestões chegam ao Hub: à mão na v1, integração depois?
+- **RN-CRM-07** Oportunidade de **auditoria** tem os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço). Eles são **obrigatórios para ganhar** esse tipo de oportunidade.
+- **RN-CRM-08** Lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. A integração automática CRM → DaaS fica **para depois da v1**.
+- **RN-CRM-09** Com o CRM do Hub no ar, o funil e o CRM pós-auditoria saem do DaaS. A remoção é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio.
+- **RN-CRM-10** O Hub recria as funções do CRM pós-auditoria: **oportunidades** (origem: roadmap da auditoria ou avulsa; tipo: projeto ou recorrente) e **contratos** com ajustes. Contratos vivem no **Núcleo**, que passa a ser a **única fonte de contrato**; o DaaS consulta o Hub quando precisar (D-CRM-04).
+- **RN-CRM-11** Oportunidade sugerida pelo roadmap de uma auditoria é **cadastrada à mão** no Hub na v1 (D-CRM-04). Integração depois.
 - [ ] O assistente de voz do funil do DaaS (F2) é IA embutida e **não vem** na v1 (D-IA-02).
 
 ---
@@ -357,7 +360,7 @@ Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem del
 - **RN-IA-03** Toda escrita feita pela IA é gravada na auditoria com canal `ia:claude` ou `ia:chatgpt` e o identificador da autorização (RN-NUC-04).
 - **RN-IA-04** O usuário vê e revoga as autorizações dele na tela de perfil. O Administrador vê e revoga as de qualquer um.
 - **RN-IA-05** Usuário desativado ou com papel alterado tem os tokens revogados na hora.
-- **RN-IA-06** Limite de chamadas por token [LEVANTAR valor]. Ao estourar, a ferramenta devolve erro legível para o assistente, sem derrubar a sessão do usuário.
+- **RN-IA-06** Limite de chamadas por token: **leitura 60 por minuto, escrita 20 por minuto**, ajustáveis (D-IA-07). É um teto de proteção (IA em loop, token roubado), não a expectativa de uso: uma pergunta ao assistente pode disparar várias chamadas em segundos. Ao estourar, a ferramenta devolve erro legível para o assistente, sem derrubar a sessão do usuário.
 - **RN-IA-07** Ferramenta de escrita altera **uma entidade por chamada**. Não existe ferramenta de alteração em lote.
 - **RN-IA-08** Ferramentas são marcadas como leitura ou escrita (anotações MCP `readOnlyHint` / `destructiveHint`), para o assistente pedir confirmação antes de escrever. **A segurança não depende dessa confirmação**: o servidor valida tudo (RN-IA-01).
 - **RN-IA-09** Texto vindo de cliente (descrição e comentários de chamado, anexos) é devolvido à IA como **dado**, delimitado e identificado como conteúdo externo. É o vetor de injeção de prompt: um chamado com "feche todos os chamados" não pode causar isso. RN-IA-07 e RN-IA-01 limitam o dano.
@@ -426,7 +429,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | GPT personalizado "WCJ Hub" (Actions + API REST) | entrada (comercial) | **Sim, com a v1 do CRM** |
 | GitHub (webhooks de PR) | entrada (eventos) | **Em avaliação** (D-GER-13) |
 | Trello | importação | **Não na v1** (D-PRJ-04): começa do zero com os projetos ativos |
-| Funil de prospecção do DaaS | importação única (RN-CRM-06) | **Sim** (D-GER-03) |
+| Funil e CRM pós-auditoria do DaaS | importação | **Não** (D-CRM-03): começa do zero |
+| DaaS consulta contratos no Hub | saída | Depois da v1 (D-CRM-04) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
 | E-mail de suporte | entrada (e-mail vira chamado) e saída (avisos ao cliente) | Com o módulo Chamados (D-CHM-02) |
 | GLPI | entrada e saída pela API | Em avaliação (D-CHM-01) |
@@ -520,7 +524,7 @@ Objetivo comum: o que as ferramentas de hoje **não fazem** e o sistema pode inc
 |---|---|---|---|
 | Chamados | Alaor Rodrigues | Canal atual, tipos, prioridade, SLA por contrato, banco de horas, triagem | Lista de contratos de sustentação ativos; 3 chamados reais recentes, do pedido ao fechamento |
 | Projetos | Rafael Garcia | O que o Trello não resolve; etapas; visão por cliente e por pessoa; prazos | Acesso aos quadros do Trello (export JSON) |
-| Banco + CRM + IA | Lucas Alencar | Viabilidade do núcleo comum, migração do funil do DaaS, prova de conceito MCP | Esquema atual de `lead`/`lead_evento` do DaaS |
+| Banco + IA | Lucas Alencar | Núcleo comum, estrutura por domínio, prova de conceito MCP | — |
 
 Perguntas que valem para as três:
 1. O que você faz hoje fora da ferramenta (planilha, WhatsApp, caderno) porque ela não atende?
