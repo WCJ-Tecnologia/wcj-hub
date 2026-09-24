@@ -34,22 +34,22 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 **Permissões (quem vê o quê)**
 | # | Decisão | Base |
 |---|---|---|
-| 4 | Gestor de projetos vê pipeline comercial e valores de proposta? | — |
-| 5 | Dev vê só os projetos em que está alocado? (RN-PRJ-04) | Pauta 01 |
+| 4 | Gestor de projetos vê pipeline comercial e valores de proposta? | Pauta 01: resposta ambígua (P-03 da ata) |
+| 5 | ~~Dev vê só os projetos em que está alocado?~~ **Resolvido: sim** (D-PRJ-03) | Ata 24/09 |
 | 6 | Comercial vê conteúdo de chamados? | — |
 | 7 | Comerciais veem os leads uns dos outros? (RN-CRM-05) | Pauta 03 |
 
 **Regras**
 | # | Decisão | Base |
 |---|---|---|
-| 8 | Tarefa sem responsável sai do Backlog? (RN-PRJ-02) | Pauta 01 |
+| 8 | ~~Tarefa sem responsável sai do Backlog?~~ **Resolvido: não** (D-PRJ-02) | Ata 24/09 |
 | 9 | Tratativa travada para edição depois de 24 h? (RN-CRM-03) | Pauta 03 |
 | 10 | Chamado fechado reabre ou gera outro? (RN-CHM-06) | Pauta 02 |
 
 **Escopo da v1**
 | # | Decisão | Base |
 |---|---|---|
-| 11 | Migrar histórico do Trello ou começar com os projetos ativos? | Pauta 01 |
+| 11 | ~~Migrar histórico do Trello?~~ **Resolvido: começar do zero; migração depois** (D-PRJ-04) | Ata 24/09 |
 | 12 | Canais de abertura de chamado: só portal ou também e-mail? | Pauta 02 |
 | 13 | Notificação por e-mail (chamado ao cliente e ao responsável) entra? | Pauta 02 |
 | 14 | Banco de horas / apontamento de tempo entra? | Pauta 02 |
@@ -62,7 +62,9 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 | 17 | Stack confirmada | Pauta 04 |
 | 18 | Dono do Núcleo | — |
 | 19 | Nome do sistema (hoje "WCJ Central", provisório) | — |
-| 20 | Prazo da v1 e ordem das fatias (sugestão: núcleo → Projetos → Chamados → CRM) | — |
+| 20 | Prazo da v1 e ordem das fatias (sugestão: núcleo → Projetos → Chamados → CRM; cada módulo com sua v1, D-PRJ-06) | — |
+| 21 | Usar o Vitinho no desenvolvimento dos módulos, aproveitando a capacidade livre (sugestão do Rafael) | Ata 24/09 |
+| 22 | Painel de produtividade por dev: quem vê (proposta RN-PRJ-22: gestor e Administrador; dev vê só o próprio) | Ata 24/09 |
 
 ### 3. Próximos passos (10 min)
 - Liberar a etapa 2: Lucas Alencar aprova o `banco.txt` (parada obrigatória).
