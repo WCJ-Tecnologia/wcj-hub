@@ -15,7 +15,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-01 a 10 | 24/09/2026 | Reunião de Projetos com Rafael Garcia. Ver [ata](atas/2026-09-24-projetos-rafael.md). |
 | D-PRJ-13 | 24/09/2026 | O cliente **não participa** da homologação do pacote: a equipe WCJ testa tudo junto. |
 | D-PRJ-14 | 24/09/2026 | Colunas padrão em **inglês**, sempre editáveis por projeto. |
-| D-PRJ-15 | 24/09/2026 | Teste cruzado **liga/desliga por tarefa** [validar com Lucas Alencar]. |
+| D-PRJ-15 | 24/09/2026 | Teste cruzado **ligado por padrão** em toda tarefa; quem não quiser desmarca na tarefa. |
 | D-PRJ-16 | 24/09/2026 | Lucas Alencar: "não fecha tanto o fluxo". Uma tarefa pode ter **vários PRs**. Por padrão, qualquer pessoa alocada move a tarefa; travas de PR e de função são **opcionais** por projeto. |
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
@@ -134,7 +134,7 @@ O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configura
 | # | Configuração | Padrão | O que pode mudar |
 |---|---|---|---|
 | RN-PRJ-30 | **Etapas do quadro** | `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` (D-PRJ-11), em inglês (D-PRJ-14) | Renomear, criar, remover, reordenar; nomes em qualquer idioma |
-| RN-PRJ-09 | **Validações da tarefa** | Code review **ligado**, QA **ligado**, teste cruzado conforme o padrão do projeto | Cada validação liga/desliga **por projeto** (padrão) e **por tarefa** (D-PRJ-15). Ex.: Swagger sem QA |
+| RN-PRJ-09 | **Validações da tarefa** | Code review, teste cruzado e QA **ligados** (D-PRJ-15) | Cada validação liga/desliga **por projeto** (padrão) e **por tarefa** (D-PRJ-15). Ex.: Swagger sem QA |
 | RN-PRJ-02 | Responsável obrigatório para sair do `Backlog` | Ligado (D-PRJ-02) | Desligar |
 | RN-PRJ-23 | **PRs da tarefa** | A tarefa aceita **nenhum, um ou vários PRs** vinculados (D-PRJ-16): demanda grande pode ter vários. Exigir PR para entrar em `Code-review`: **desligado** | Ligar a exigência de ao menos um PR |
 | RN-PRJ-24 | **Tech Lead** do projeto (D-PRJ-10) | Um Tech Lead definido pelo gestor. A mesma pessoa pode ser Tech Lead num projeto e dev em outro | Trocar a pessoa; ter mais de um |

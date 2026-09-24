@@ -44,6 +44,6 @@ A retirada de uma tarefa de `Code-review` ou de `In test` de volta para `Doing` 
 
 1. ~~Em qual ambiente o QA testa, antes do merge?~~ **Respondido 24/09: no ambiente local do próprio QA**, com a branch do PR. A v1 não precisa de ambiente por PR. A integração entre tarefas só é testada junto na homologação do pacote.
 2. ~~Quem faz o merge?~~ **Respondido 24/09: o Tech Lead** do projeto.
-3. ~~Teste cruzado vale para toda tarefa?~~ **24/09: liga/desliga por tarefa** (D-PRJ-15); validar com Lucas Alencar.
+3. ~~Teste cruzado vale para toda tarefa?~~ **24/09: ligado por padrão; desmarca na tarefa quem não quiser** (D-PRJ-15).
 4. ~~Quem homologa o pacote?~~ **24/09: a equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13).
 5. ~~Nomes das colunas?~~ **24/09: padrão em inglês, editável por projeto** (D-PRJ-14).
