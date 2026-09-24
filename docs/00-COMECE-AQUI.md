@@ -13,7 +13,7 @@ Atualizado em 2026-09-24.
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Fechada para Núcleo, Projetos e CRM**; aguarda validação no Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **Próximo passo**: IA propõe, Lucas Alencar revisa, Comitê valida (D-GER-16) | `docs/banco.txt` (a criar) |
+| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM, com 31 dúvidas na seção 7. Aguarda revisão do Lucas Alencar; depois, Comitê (D-GER-16) | `docs/banco.txt` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, Interface de IA |
 | `core/mcp.md` no padrão | A rascunhar, em **outra sessão**, no repositório `ai-systems` (D-GER-16) | `~/Documents/Projetos/WCJ/ai-systems` |
@@ -39,7 +39,7 @@ Aparecem em atas ou no histórico do git, mas **não valem mais**:
 
 ## Próximas sessões
 
-**Sessão A — `docs/banco.txt` (etapa 2).** Modelo sugerido: Opus, esforço alto. Prompt:
+**Sessão A — `docs/banco.txt` (etapa 2). FEITA em 24/09**: proposta em `docs/banco.txt`; falta a revisão do Lucas Alencar. Prompt usado:
 
 > Leia `docs/00-COMECE-AQUI.md` e `docs/necessidade.md` do repositório `~/Documents/Projetos/WCJ/wcj-hub`, e as regras de banco em `~/Documents/Projetos/WCJ/ai-systems/.ai/core/banco.md` e `.ai/playbooks/aplicacao-nova.md` (etapa 2). Proponha o `docs/banco.txt` do WCJ Hub para **Núcleo (Platform), Projetos e CRM**, com todas as tabelas, colunas, tipos, chaves, índices e valores de domínio, seguindo a estrutura por domínio (D-GER-15). Deixe Chamados de fora, mas garanta que o Núcleo comporte o módulo depois. Liste no fim as dúvidas para o Lucas Alencar. Não crie código nem migração.
 
