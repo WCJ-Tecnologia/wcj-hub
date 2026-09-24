@@ -26,7 +26,10 @@ Colunas padrão (omitidas nas tabelas abaixo para não repetir)
 - Exceção: tabelas de log imutável (audit_logs, *_movements, ai_tool_calls) só têm created_at.
 
 Tipos
-- timestamp  = data e hora em UTC. [MY] timestamp/datetime em UTC com APP_TIMEZONE na exibição. [PG] timestamptz.
+- timestamp  = data e hora em UTC. [MY] datetime (NÃO o tipo TIMESTAMP do MySQL, que acaba em
+               2038-01-19: contrato e compromisso futuros passam disso), gravado em UTC.
+               No Laravel: dateTime() em vez de timestamp(), inclusive em created_at/updated_at.
+               [PG] timestamptz.
 - date       = data de negócio sem hora (worked_on, due_on, feriado). Calculada com fuso explícito America/Sao_Paulo.
 - money      = decimal(15,2). Nunca float.
 - hours      = decimal(6,2). Horas decimais, sem arredondar para dia (RN-PRJ-15).
@@ -58,6 +61,8 @@ onDelete
 - Padrão: restrict. cascade só em filho que não existe sem o pai E cujo pai nunca é excluído
   depois de usado (na prática, o cascade só dispara em registro nunca usado, banco.md §4).
 - Nenhum cascade apaga arquivo: exclusão de pai com attachments passa pelo Service, que limpa o storage.
+- [MY] Coluna usada em CHECK não pode ter FK com cascade ou set null (erro 3823). Toda FK que
+  aparece num CHECK deste arquivo é restrict.
 
 Auditoria
 - Toda escrita de qualquer módulo grava 1 linha em audit_logs (tabela única, D-GER-16, RN-NUC-04),
@@ -252,6 +257,7 @@ created_by            fk users             not null   on delete restrict
 deactivated_at        timestamp            null
 deactivated_by        fk users             null       on delete restrict
 índices: client_id, contract_type_id, contract_status_id, (started_on, ended_on), code (unique)
+unique: (id, client_id)   (alvo da FK composta de projects: o banco garante contrato do mesmo cliente)
 Visibilidade: valores (amount, hourly_rate) NÃO aparecem para gestor de projetos nem dev
 (D-PRJ-08, papéis). A regra é da Policy/Resource; o banco não separa.
 
@@ -409,6 +415,10 @@ revoked_by            fk users          null       on delete restrict
 revoke_reason         varchar(20)       null       check in ('user','admin','user_deactivated',
                                                              'role_changed','expired')  (RN-IA-05)
 índices: user_id, ai_assistant_id, oauth_client_id, revoked_at
+unique U1 (revoked_at no lugar de removed_at): (user_id, oauth_client_id)
+  O GPT "WCJ Hub" usa UM client OAuth fixo para todos os usuários (Actions); o que identifica a
+  autorização é o par usuário × client, não o client sozinho. Vale também se o Claude registrar
+  1 client por conexão.
 Revogar = revoked_at aqui + revoke em oauth_access_tokens/oauth_refresh_tokens na mesma transação.
 
 =====================================================================
@@ -496,6 +506,8 @@ restrict_stage_moves             boolean  not null  default false  (RN-PRJ-27; t
 require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
 created_by                  fk users              not null  on delete restrict
 índices: client_id, contract_id, manager_id, project_status_id, key_prefix (unique)
+fk composta: (contract_id, client_id) → contracts (id, client_id)
+             sem ela, dá para ligar o projeto do cliente A ao contrato do cliente B.
 Projeto não se desativa: encerra ou cancela pelo status.
 
 =====================================================================
@@ -539,8 +551,9 @@ id   slug          label              etapa padrão (D-PRJ-11, D-PRJ-17)
 6    done          Pronto             Done
 7    paused        Pausa              Paused
 8    support       Suporte/chamados   Suporte
-Regra derivada: movimento para etapa de papel development vindo de code_review ou test = retrabalho
-(RN-PRJ-08). Vindo de done (reprovação na homologação) também, com origem homologation.
+Regra derivada (RN-PRJ-08): saída de code_review, test ou done para queue, sprint ou development
+= retrabalho. Pegar só "para development" deixava escapar a devolução para To do. Saída de done
+= reprovação na homologação (origem homologation).
 
 =====================================================================
 board_stages                           [v1]
@@ -660,10 +673,16 @@ requested_at          timestamp            null      (quando o pedido chegou)
 cancelled_at          timestamp            null
 cancelled_by          fk users             null      on delete restrict
 cancel_reason         varchar(240)         null
+origin_task_id        fk tasks             null      on delete restrict
+                                                     bug achado DEPOIS de publicado vira tarefa nova
+                                                     (tipo bug) apontando para a original. Reabrir a
+                                                     original a tiraria do pacote já em produção e
+                                                     falsificaria a versão (package_tasks). Indicador
+                                                     "bug de produção" = contagem por origin_task_id.
 created_by            fk users             not null  on delete restrict
 audit_channel_id      fk audit_channels    not null  (canal de criação; a IA escreve tarefa, F-PRJ-05)
 índices: project_id, (project_id, board_stage_id), board_stage_id, task_type_id, project_area_id,
-         contract_id, requester_contact_id, due_on, done_at, created_by
+         contract_id, requester_contact_id, origin_task_id, due_on, done_at, created_by
 unique: (project_id, number), key
 [PG] opcional: índice GIN de texto em (title, story_want, description) para busca.
 [MY] opcional: FULLTEXT (title, description).
@@ -733,7 +752,6 @@ id   slug          label
 2    cross_test    Teste cruzado
 3    qa            QA
 4    homologation  Homologação
-5    production    Produção        (bug achado depois de publicado; proposta, ver dúvida PRJ-08)
 
 =====================================================================
 rework_reasons                         (cadastrável: padrão global + por projeto) [v1]
@@ -1255,8 +1273,8 @@ deactivated_at / deactivated_by
 audit_sizings                          [v1]
 =====================================================================
 1 dimensionamento por lead OU oportunidade de auditoria.
-lead_id               fk leads           null      on delete cascade
-opportunity_id        fk opportunities   null      on delete cascade
+lead_id               fk leads           null      on delete restrict  (restrict: coluna usada no CHECK)
+opportunity_id        fk opportunities   null      on delete restrict
 industry_id           fk industries      not null  on delete restrict  (setor)
 proposed_price        money              not null
 completed_at          timestamp          null      (todas as obrigatórias respondidas)
@@ -1385,9 +1403,9 @@ IA-01  Relação papel × escopo de IA: regra no código (proposto) ou tabela ro
        (RN-IA-02). Proposta: código.
 IA-02  ai_tool_calls (log de LEITURA pela IA) entra? Retenção de 180 dias? Guarda argumentos?
        Proposta: sim, 180 dias, só ids e filtros (sem texto livre).
-IA-03  O laravel/mcp e o registro dinâmico de cliente do Claude criam 1 oauth_client por conexão?
-       Se sim, ai_authorizations 1:1 com oauth_client funciona; se o cliente é compartilhado,
-       a chave passa a ser (user_id, oauth_client_id). Resolver na prova de conceito.
+IA-03  Reconectar o mesmo assistente cria autorização nova (proposto: revoga a anterior e abre
+       outra, histórico preservado) ou reaproveita a linha? Conferir na prova de conceito se o
+       laravel/mcp registra 1 client por conexão no Claude; o modelo aguenta os dois casos.
 
 PROJETOS
 PRJ-01 Projeto interno (Wpay) precisa de contrato? Proposta: contract_id not null e um contrato
@@ -1405,7 +1423,9 @@ PRJ-05 Depois de retrabalho, o QA reaproveita os test_items (volta tudo a pendin
 PRJ-06 Feriado municipal vale para todos (empresa em Mogi) ou depende da cidade de cada dev (PJ
        remotos)? Proposta: vale para todos; users.city fica para depois.
 PRJ-07 task_priorities: entra (proposto) ou sai? Não está no requisito de Projetos.
-PRJ-08 Origem de retrabalho "produção" (bug depois de publicado) entra? Proposta: sim.
+PRJ-08 Bug achado depois de publicado: tarefa nova ligada à original (tasks.origin_task_id,
+       proposto) conta como retrabalho do dev original no painel de produtividade, ou só como
+       indicador de qualidade do projeto?
 PRJ-09 "Autor" da tarefa para o teste cruzado (RN-PRJ-26) = quem está atribuído como back/front?
        Proposta: sim, derivado de task_assignments; sem coluna author_id.
 PRJ-10 Etapa padrão "Suporte" em português ou "Support", já que as outras são em inglês (D-PRJ-14)?
