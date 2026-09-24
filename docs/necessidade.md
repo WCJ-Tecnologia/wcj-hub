@@ -378,7 +378,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 ## Reuniões de levantamento (planejadas)
 
-Objetivo comum: o que as ferramentas de hoje **não fazem** e o sistema pode incluir. Cada reunião vira uma ata em `docs/atas/` e atualiza a seção do módulo correspondente.
+Objetivo comum: o que as ferramentas de hoje **não fazem** e o sistema pode incluir. Pautas detalhadas em [`pautas/`](pautas/README.md). Cada reunião vira uma ata em `docs/atas/` e atualiza a seção do módulo correspondente.
 
 | Reunião | Com | Foco | Traz para a reunião |
 |---|---|---|---|
