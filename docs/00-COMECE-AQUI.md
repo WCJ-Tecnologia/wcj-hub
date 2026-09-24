@@ -14,7 +14,7 @@ Atualizado em 2026-09-24.
 |---|---|---|
 | 1. Necessidade | **Fechada para Núcleo, Projetos e CRM**; aguarda validação no Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
 | 2. Banco | **Próximo passo**: IA propõe, Lucas Alencar revisa, Comitê valida (D-GER-16) | `docs/banco.txt` (a criar) |
-| 3. Repositório | Ainda não: hoje este repo só tem `docs/` e não tem remoto. Na etapa 3 entra o template e o remoto na organização WCJ | — |
+| 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, Interface de IA |
 | `core/mcp.md` no padrão | A rascunhar, em **outra sessão**, no repositório `ai-systems` (D-GER-16) | `~/Documents/Projetos/WCJ/ai-systems` |
 
