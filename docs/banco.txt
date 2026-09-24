@@ -96,7 +96,7 @@ Marcação de entrega
    · rework_origins · rework_reasons · pause_reasons · task_acceptance_criteria · test_items
    · test_item_statuses · validation_types · validation_results · task_validations
    · pull_request_statuses · task_pull_requests · time_entries · package_status_roles
-   · package_statuses · packages · package_tasks · project_phases [?]
+   · package_statuses · packages · package_tasks · sprint_statuses · sprints · sprint_tasks
 3. CRM
    lead_statuses · funnel_stage_roles · funnel_stages · lead_sources · lost_reasons · leads
    · lead_contacts · lead_stage_movements · interaction_channels · lead_interactions
@@ -933,7 +933,6 @@ packages                               [v1]
 =====================================================================
 Pacote = versão (vocabulário). Estados em package_statuses; mudança de estado em audit_logs.
 project_id            fk projects          not null  on delete restrict
-project_phase_id      fk project_phases    null      on delete restrict  [?] (dúvida PRJ-12)
 name                  varchar(40)          not null  ("1.0.9")
 package_status_id     fk package_statuses  not null  on delete restrict
 planned_release_on    date                 null
@@ -963,16 +962,54 @@ Regras do Service: só entra tarefa com etapa de papel done; pacote com papel ho
 posterior não recebe tarefa (RN-PRJ-10).
 
 =====================================================================
-project_phases                         [?]  (só se a dúvida PRJ-12 confirmar)
+sprint_statuses                        (fechado) [v1]
 =====================================================================
-"Fase" do Histórico de Desenvolvimento Tecsolution: agrupa pacotes com período (F-PRJ-15).
-project_id            fk projects      not null   on delete cascade
-name                  varchar(80)      not null
-position              smallint         not null
-started_on            date             null
-ended_on              date             null
-índices: project_id
-unique: (project_id, name)
+id   slug       label
+1    planned    Planejada
+2    active     Em andamento
+3    closed     Encerrada
+
+=====================================================================
+sprints                                [v1]
+=====================================================================
+Período do projeto que agrupa tarefas (PRJ-12, D-PRJ-23). É a "Fase" do Histórico de
+Desenvolvimento (F-PRJ-15): cada sprint vira uma página com período e entregas.
+Uso opcional por projeto (D-GER-05): projeto sem sprint funciona só com o quadro.
+project_id            fk projects         not null  on delete restrict
+name                  varchar(80)         not null  ("Sprint 3", "Fase 1 — Rastreamento")
+goal                  text                null      (objetivo; vira o título da fase no relatório)
+number                smallint unsigned   not null  (ordem no projeto; 1, 2, 3…)
+sprint_status_id      fk sprint_statuses  not null  on delete restrict  default 1
+starts_on             date                not null
+ends_on               date                not null  check (ends_on >= starts_on)
+closed_at             timestamp           null
+closed_by             fk users            null      on delete restrict
+created_by            fk users            not null  on delete restrict
+índices: project_id, sprint_status_id, (project_id, starts_on)
+unique: (project_id, number), (project_id, name)
+unique [MY] coluna gerada active_project = IF(sprint_status_id = 2, project_id, NULL)
+            + unique(active_project)   → no máximo 1 sprint em andamento por projeto
+
+=====================================================================
+sprint_tasks                           [v1]
+=====================================================================
+Tarefa dentro da sprint. Pivot com histórico, como package_tasks: tarefa não concluída quando a
+sprint encerra sai (removed_reason = 'carried_over') e entra na seguinte, sem perder o rastro.
+Indicador "tarefas que passaram de sprint" sai daqui.
+sprint_id             fk sprints       not null   on delete cascade
+task_id               fk tasks         not null   on delete restrict
+added_by              fk users         not null   on delete restrict
+removed_at            timestamp        null
+removed_by            fk users         null       on delete restrict
+removed_reason        varchar(20)      null       check in ('carried_over','descoped','other')
+índices: sprint_id, task_id
+unique U1: (task_id)   → uma tarefa está em no máximo 1 sprint ativa
+Regras do Service: sprint encerrada não recebe tarefa; ao encerrar, as tarefas fora de done são
+listadas para o gestor levar à próxima sprint ou devolver ao backlog.
+Sprint × coluna "To do": a coluna (papel sprint) é o estado da tarefa no fluxo; a sprint é o
+período. Colocar tarefa na sprint em andamento não move a coluna sozinho (ver dúvida PRJ-14).
+Sprint × pacote: independentes. Uma sprint pode gerar mais de um pacote e um pacote pode juntar
+tarefas de sprints diferentes; o relatório cruza os dois pelas tarefas.
 
 
 #####################################################################
@@ -1373,8 +1410,12 @@ PRJ-09 [RESPONDIDA 24/09, Lucas Scholz] Teste cruzado fica livre para qualquer d
        Mantida a RN-PRJ-26: quem desenvolveu (atribuído como back/front/full-stack) não puxa.
 PRJ-10 [RESPONDIDA 24/09, Lucas Scholz] "Support".
 PRJ-11 [RESPONDIDA 24/09, Lucas Scholz] Horas lançadas à mão.
-PRJ-12 [RESPONDIDA 24/09, Lucas Scholz] Sprint = coluna "To do", sem entidade. Fase (project_phases) segue
-       pendente de confirmação do Rafael.
+PRJ-12 [RESPONDIDA 24/09, Lucas Scholz; revista no mesmo dia] A "Fase" do Histórico de
+       Desenvolvimento É a sprint, e sprints serão criadas no sistema. Entraram sprint_statuses,
+       sprints e sprint_tasks; saiu project_phases. (A primeira resposta, "sprint = só a coluna
+       To do", foi substituída.)
+PRJ-14 [ABERTA] Colocar tarefa na sprint em andamento deve movê-la sozinha de Backlog para To do?
+       Proposta: sim, se estiver numa etapa de papel queue; nas outras etapas não mexe.
 PRJ-13 [RESPONDIDA 24/09, Lucas Scholz] Equipe do cliente no Histórico de Desenvolvimento é texto livre na geração do
        documento (a maioria dos projetos não terá). Nenhuma tabela.
 

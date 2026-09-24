@@ -54,8 +54,9 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-18 | 24/09/2026 | Projetos **gerencia o projeto**, não o contrato: projeto fechado é contrato de entrega, não de horas. Horas previstas e realizadas servem a prazo, previsto × realizado e produtividade; **não são comparadas com horas de contrato** no módulo Projetos. Contrato no projeto é opcional. |
 | D-PRJ-19 | 24/09/2026 | **Teste cruzado livre:** não é atribuído; qualquer dev alocado puxa, menos quem desenvolveu a tarefa. |
 | D-PRJ-20 | 24/09/2026 | Coluna padrão de suporte se chama **`Support`**, em inglês como as demais (D-PRJ-14). Substitui o nome `Suporte` de D-PRJ-17. |
-| D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. Sprint é a coluna `To do`, não entidade. |
+| D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. |
 | D-PRJ-22 | 24/09/2026 | **Feriados fora da v1:** data prevista em dias úteis de segunda a sexta. Horas previstas por tarefa × pessoa. Equipe do cliente no Histórico de Desenvolvimento é texto livre no documento gerado. |
+| D-PRJ-23 | 24/09/2026 | **Sprint é cadastro** (nome, objetivo, início e fim), criada pelo gestor; tarefa não concluída passa para a sprint seguinte com histórico. A "Fase" do Histórico de Desenvolvimento é a sprint. Uso opcional por projeto. |
 | D-CRM-06 | 24/09/2026 | O mesmo CNPJ pode ter **vários leads** (cliente pode comprar projeto novo e diferente): o sistema avisa, não recusa. Um funil só. **Contato é um cadastro único** para cliente e lead: a pessoa não é redigitada na conversão. |
 | D-CRM-07 | 24/09/2026 | **Oportunidades pós-auditoria ficam para depois da v1** (RN-CRM-10, RN-CRM-11). Na v1, venda nova para cliente existente é lead ligado ao cliente. Sizing continua obrigatório para ganhar lead de auditoria (D-CRM-01). |
 | D-CRM-08 | 24/09/2026 | Convite de calendário vai **só para o responsável** do compromisso; participantes (dev, outro comercial) são convocados por ele no **Teams**. Perguntas de sizing e setores copiados do DaaS como lista inicial. |
@@ -219,7 +220,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 
 - [ ] Os outros quadros do Trello, em especial um de projeto de cliente com prazo (ex.: gestão de multas), para comparar com o Wpay.
 - [ ] Modelo do relatório de fechamento para pagamento (P-01, P-02).
-- [ ] Fase × sprint × versão: a "fase" do histórico Tecsolution é um nível acima da versão? ([`modelos-rafael.md`](levantamento/modelos-rafael.md))
+- [x] Fase × sprint × versão: a "fase" do histórico Tecsolution **é a sprint** (D-PRJ-23). ([`modelos-rafael.md`](levantamento/modelos-rafael.md))
 - [ ] Horas previstas por **tarefa** ou por **item do roteiro**? (Rafael citou as duas formas)
 - [ ] Canal de notificação (RN-PRJ-21).
 - [ ] Lista de motivos de devolução (RN-PRJ-08).
@@ -517,7 +518,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Follow-up | Próximo contato agendado, com data e responsável |
 | Projeto | Trabalho com início e fim para um cliente |
 | Tarefa | Item de trabalho dentro de um projeto (o "card" do Trello; a equipe também diz "task" e "demanda"). Termo do sistema: **tarefa** (D-PRJ-07) |
-| To do / Esteira | A sprint: tarefas prontas para desenvolver (`Esteira` era o nome no Trello) |
+| To do / Esteira | Coluna das tarefas prontas para desenvolver (`Esteira` era o nome no Trello) |
+| Sprint | Período do projeto, com início e fim, que agrupa tarefas. No Histórico de Desenvolvimento aparece como "Fase" (D-PRJ-23) |
 | Teste cruzado | Teste da tarefa feito por outro dev, antes do QA |
 | Pacote | Conjunto de tarefas em `Done` que vai junto para homologação e produção; o mesmo que versão |
 | Homologação | Validação do pacote antes da produção |
