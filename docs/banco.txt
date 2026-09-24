@@ -1,6 +1,7 @@
 MODELO DE DADOS — WCJ Hub
-Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.2.1). PROPOSTA DA IA (D-GER-16), com as
-decisões do Lucas Scholz de 24/09 e a revisão de enxugamento de 24/09 (seção 8).
+Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.3.0). PROPOSTA DA IA (D-GER-16), com as
+decisões do Lucas Scholz de 24/09, a revisão de enxugamento de 24/09 (seção 8) e as respostas da
+revisão da etapa 2 (24/09: D-PRJ-26 a 31, D-CRM-09/10, D-IA-08 a 10, D-NUC-03/04, D-GER-21).
 Revisão técnica: Lucas Alencar (D-GER-01). Validação final: Comitê de IA.
 Regras: .ai/core/banco.md. Fonte do requisito: docs/necessidade.md (RN-/D-/F- apontam para lá).
 Escopo: Núcleo (Platform), Projetos e CRM. Chamados fica fora; a seção 5 mostra o que ele acrescenta
@@ -52,7 +53,7 @@ Desativar, não excluir (banco.md §4, RN-NUC-02)
 - Cadastro com histórico: deactivated_at datetime null + deactivated_by fk users null.
 - "Ativo" = deactivated_at is null, numa consulta única que toda tela e ferramenta MCP herda.
 - Etapa e estado configuráveis que já foram usados: archived_at (RN-PRJ-29).
-- Vínculo (alocação, atribuição, contato do lead) é removido de verdade; o histórico está em audit_logs.
+- Vínculo (alocação, contato do lead) é removido de verdade; o histórico está em audit_logs.
 
 Domínios
 - (fechado)     valores fixos, semeados, sem tela de edição. Colunas: id, slug, label.
@@ -68,14 +69,14 @@ onDelete
 
 
 =====================================================================
-ÍNDICE (51 tabelas + framework)
+ÍNDICE (48 tabelas + framework)
 =====================================================================
 1. PLATFORM   roles · users · clients · contacts · contract_types · contracts · contact_channels
               · audit_channels · audit_logs · ai_assistants · ai_scopes · ai_authorizations
               · ai_authorization_scopes · ai_tool_calls
-2. PROJETOS   projects · project_members · work_functions · stage_roles · board_stages
+2. PROJETOS   projects · project_members · stage_roles · board_stages
               · task_types · project_areas · task_priorities · tasks
-              · task_assignments · task_estimates · task_stage_movements · rework_origins
+              · task_stage_movements · rework_origins
               · rework_reasons · task_acceptance_criteria · test_results · validation_types
               · validation_results · task_validations · task_pull_requests · task_comments
               · task_attachments · time_entries · package_status_roles · package_statuses
@@ -85,9 +86,10 @@ onDelete
 4. FRAMEWORK
 5. O QUE CHAMADOS ACRESCENTA
 6. DECISÕES DE MODELAGEM
-7. RESPOSTAS DO LUCAS SCHOLZ (24/09)
-8. REVISÃO DE ENXUGAMENTO (o que saiu e por quê)
-9. ESCOLHAS TÉCNICAS (revisáveis pelo Lucas Alencar)
+7. RESPOSTAS DO LUCAS SCHOLZ → onde estão na necessidade
+8. REVISÃO DE ENXUGAMENTO (o que saiu e por quê; sai na aprovação)
+9. ESCOLHAS TÉCNICAS e PERGUNTAS ABERTAS para o Lucas Alencar
+10. DIFERENÇA PARA O TEMPLATE ai-systems
 
 
 #####################################################################
@@ -168,6 +170,9 @@ contracts
 =====================================================================
 Única fonte de contrato (D-CRM-04). Na v1 é referência: o cliente tem contratos, o projeto pode
 apontar um (D-PRJ-18), e o resumo do cliente lista os ativos (ferramenta resumo_do_cliente).
+Lead ganho NÃO cria contrato (D-CRM-10). [DECIDIR, Lucas Scholz] se esta tabela fica na v1 (cadastro
+manual pelo admin) ou sai da v1 inteira. Se sair: sai também projects.contract_id; contract_types
+fica, porque o lead usa o slug 'audit' (RN-CRM-07).
 client_id             fk clients         not null  restrict
 contract_type_id      fk contract_types  not null  restrict
 name                  varchar(160)       not null           (identifica o contrato nas listas)
@@ -265,8 +270,8 @@ pk (ai_authorization_id, ai_scope_id)      (pivot puro, sem id nem timestamps)
 =====================================================================
 ai_tool_calls
 =====================================================================
-Chamadas de ferramenta, inclusive LEITURA (IA-02: 180 dias, só ids e filtros). A escrita já está
-em audit_logs. O limite 60/20 por minuto (RN-IA-06) roda no cache, por autorização (escolha T5).
+Chamadas de ferramenta, inclusive LEITURA (D-IA-08: 180 dias, só ids e filtros). A escrita já está
+em audit_logs. O admin consulta por usuário, assistente e período (RN-IA-10). O limite 60/20 por minuto (RN-IA-06) roda no cache, por autorização (escolha T5).
 ai_authorization_id   fk ai_authorizations  not null  restrict
 tool_name             varchar(80)           not null
 arguments             json                  null      (só ids e filtros, nunca texto livre)
@@ -286,8 +291,11 @@ projects
 client_id                        fk clients    not null  restrict  (RN-PRJ-01)
 contract_id                      fk contracts  null      restrict  referência opcional (D-PRJ-18)
 manager_id                       fk users      not null  restrict  (RN-PRJ-05)
-key_prefix                       varchar(10)   not null  unique    (RN-PRJ-19; congela após a 1ª tarefa, PRJ-02)
+key_prefix                       varchar(10)   not null  unique    (RN-PRJ-19; congela após a 1ª tarefa, D-PRJ-26)
 name                             varchar(160)  not null
+starts_on                        date          not null            início (D-PRJ-29)
+due_on                           date          not null            entrega (D-PRJ-29): sprints que cabem e
+                                                                   "fora do cronograma" (RN-PRJ-33)
 ai_full                          boolean       not null  default false  modalidade "100% IA" (RN-PRJ-06)
 finished_at                      datetime      null      encerrado não recebe tarefa (RN-PRJ-03)
 last_task_number                 int unsigned  not null  default 0
@@ -300,6 +308,10 @@ default_requires_qa              boolean  not null  default true   (RN-PRJ-09, D
 require_pr_for_code_review       boolean  not null  default false  (RN-PRJ-23)
 require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
 enforce_sprint_capacity          boolean  not null  default true   (D-PRJ-24; false = só avisa)
+sprint_days                      smallint unsigned  not null  default 10
+                                                         duração da sprint em dias úteis (D-PRJ-24,
+                                                         RN-PRJ-35); base do "quantas sprints cabem"
+check: due_on >= starts_on;  sprint_days > 0
 fk composta: (contract_id, client_id) → contracts (id, client_id)   (contrato do mesmo cliente)
 índices: client_id, manager_id
 Reabrir (RN-PRJ-03) = finished_at volta a null, só gestor ou admin.
@@ -314,17 +326,6 @@ user_id               fk users      not null  restrict
 is_tech_lead          boolean       not null  default false
 unique: (project_id, user_id)
 índices: user_id
-
-=====================================================================
-work_functions                         (cadastrável)
-=====================================================================
-Função da pessoa na tarefa; lista editável (RN-PRJ-14). O código depende do slug 'qa': quem está
-na tarefa com outra função "desenvolveu" e não faz o teste cruzado (RN-PRJ-26).
-slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
-     backend    Back-end
-     frontend   Front-end
-     qa         QA
-     other      Outra
 
 =====================================================================
 stage_roles                            (fechado)
@@ -397,6 +398,13 @@ board_stage_id        fk board_stages       not null  restrict  (etapa atual)
 task_type_id          fk task_types         not null  restrict  (RN-PRJ-07)
 project_area_id       fk project_areas      null      restrict  (RN-PRJ-07; null = nenhuma)
 task_priority_id      fk task_priorities    not null  restrict  (D-PRJ-21)
+developer_id          fk users              null      restrict  o dev da tarefa, um só (D-PRJ-27, RN-PRJ-14).
+                                                      Null só no Backlog (RN-PRJ-02)
+qa_id                 fk users              null      restrict  o QA da tarefa (D-PRJ-27); obrigatório
+                                                      quando requires_qa (Service)
+estimated_hours       hours                 not null  horas previstas da tarefa inteira, desenvolvimento
+                                                      + testes, informadas pelo gestor ao criar
+                                                      (D-PRJ-27, RN-PRJ-15). check (> 0)
 title                 varchar(200)          not null
 -- Documento de requisição (F-PRJ-05, modelos SGM)
 story_as              varchar(200)          null                ("Sendo")
@@ -407,9 +415,12 @@ description           text                  null                (informações a
 requires_code_review  boolean               not null
 requires_cross_test   boolean               not null
 requires_qa           boolean               not null
-due_on                date                  null      data prevista em dias úteis seg–sex
-                                                      (RN-PRJ-16, D-PRJ-22). Foto: recalcula quando a
-                                                      estimativa muda, não quando muda a carga (RN-PRJ-17)
+due_on                date                  null      data prevista da TAREFA INTEIRA (D-PRJ-28, RN-PRJ-16):
+                                                      na 1ª entrada em etapa de papel development,
+                                                      estimated_hours ÷ users.daily_hours do dev, em dias
+                                                      úteis seg–sex (D-PRJ-22). Null antes de Doing.
+                                                      Foto: recalcula só quando estimated_hours muda,
+                                                      nunca quando muda a carga (RN-PRJ-17)
 sprint_id             fk sprints            null      restrict  sprint atual (D-PRJ-23)
 package_id            fk packages           null      restrict  pacote (RN-PRJ-10); reprovada na
                                                       homologação volta a null
@@ -419,33 +430,18 @@ origin_task_id        fk tasks              null      restrict  bug achado em pr
 requester_contact_id  fk contacts           null      restrict  (quem pediu)
 contact_channel_id    fk contact_channels   null      restrict  (por onde)
 requested_at          datetime              null                (quando o pedido chegou)
+-- Arquivamento de tarefa abandonada (D-PRJ-31, RN-PRJ-34)
+archived_at           datetime              null
+archive_reason        varchar(500)          null                motivo obrigatório ao arquivar
+check: (archived_at is null) = (archive_reason is null)
 unique: (project_id, number), key
-índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, sprint_id,
-         package_id, origin_task_id, requester_contact_id, contact_channel_id, due_on
+índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, developer_id,
+         qa_id, sprint_id, package_id, origin_task_id, requester_contact_id, contact_channel_id,
+         due_on, archived_at
 Regras do Service: só tarefa em etapa de papel done entra em pacote; pacote em homologação ou depois
-não recebe tarefa (RN-PRJ-10).
-
-=====================================================================
-task_assignments
-=====================================================================
-Pessoa + função; mais de uma pessoa por função (RN-PRJ-14). Inserir notifica a pessoa (RN-PRJ-21).
-task_id               fk tasks            not null  cascade
-user_id               fk users            not null  restrict
-work_function_id      fk work_functions   not null  restrict
-unique: (task_id, user_id, work_function_id)
-índices: user_id, work_function_id
-Regra do Service: user_id alocado no projeto (project_members).
-
-=====================================================================
-task_estimates
-=====================================================================
-Horas previstas por pessoa (RN-PRJ-15, PRJ-04). Base da data prevista (RN-PRJ-16) e da capacidade
-da sprint (D-PRJ-24). Reestimar = editar (antes/depois em audit_logs).
-task_id               fk tasks     not null  cascade
-user_id               fk users     not null  restrict
-hours                 hours        not null  check (> 0)
-unique: (task_id, user_id)
-índices: user_id
+não recebe tarefa (RN-PRJ-10). developer_id e qa_id alocados no projeto (project_members); definir
+um deles notifica a pessoa (RN-PRJ-21). Arquivar: só gestor do projeto ou admin; tarefa arquivada
+sai do quadro e das contas de prazo e capacidade; desarquivar volta ao Backlog (RN-PRJ-34).
 
 =====================================================================
 task_stage_movements                   — fonte dos indicadores
@@ -539,7 +535,7 @@ Parecer de cada validação (fluxo de desenvolvimento: aprovação do Tech Lead,
 e do QA). Uma linha por tentativa; a vigente é a mais recente do tipo. Reprovar grava o movimento de
 retrabalho na mesma transação.
 Teste cruzado fica livre para qualquer dev alocado puxar (PRJ-09, D-PRJ-19): validated_by +
-claimed_at. Não puxa quem está na tarefa com função diferente de 'qa' (RN-PRJ-26).
+claimed_at. Não puxa o dev da tarefa (tasks.developer_id, RN-PRJ-26).
 Escolha T2: puxar trava a linha (lockForUpdate) e recusa se validated_by já estiver preenchido;
 linha nova do mesmo tipo só nasce depois que a anterior foi reprovada.
 task_id               fk tasks               not null  cascade
@@ -631,18 +627,21 @@ unique: (project_id, name)
 sprints
 =====================================================================
 Sprint = a "Fase" do Histórico de Desenvolvimento (D-PRJ-23). O gestor monta com tarefas do To do e
-um time (D-PRJ-24). Padrão de 2 semanas: ao criar, ends_on vem proposto como starts_on + 10 dias
-úteis (seg–sex); o gestor pode mudar. Uso opcional por projeto.
+um time (D-PRJ-24). Ao criar, ends_on vem proposto como starts_on + projects.sprint_days dias úteis
+(seg–sex; padrão 10, RN-PRJ-35); o gestor pode mudar. Uso opcional por projeto.
 project_id            fk projects   not null  restrict
 name                  varchar(80)   not null            (título da fase no relatório)
+goal                  varchar(500)  not null            objetivo da sprint (D-PRJ-23)
 starts_on             date          not null
 ends_on               date          not null
 check: ends_on >= starts_on
 unique: (project_id, name)
 Regras do Service (D-PRJ-24):
-- entra na sprint tarefa da coluna To do, com estimativa, e só de gente do time da sprint;
-- por pessoa, a soma das estimativas nas tarefas da sprint não passa de daily_hours ×
-  available_days; com enforce_sprint_capacity = true recusa, com false avisa. A conferência roda em
+- entra na sprint tarefa da coluna To do cujo dev (tasks.developer_id) está no time da sprint;
+- por dev, a soma das HORAS QUE FALTAM das tarefas dele na sprint não passa de daily_hours ×
+  available_days (D-PRJ-30). Horas que faltam = estimated_hours − todas as horas lançadas na tarefa
+  (time_entries), nunca abaixo de 0. Tarefa arquivada não conta (RN-PRJ-34). Com
+  enforce_sprint_capacity = true recusa, com false avisa. A conferência roda em
   transação com as linhas de sprint_members travadas (lockForUpdate), para duas inclusões ao mesmo
   tempo não estourarem a capacidade (banco.md §8, escolha T1);
 - tarefa não concluída no fim é levada pelo gestor à próxima sprint (troca de sprint_id; o rastro
@@ -832,36 +831,35 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 
 
 #####################################################################
-#  7. RESPOSTAS DO LUCAS SCHOLZ (24/09)
+#  7. RESPOSTAS DO LUCAS SCHOLZ → onde estão na necessidade
+#  A regra de negócio mora em docs/necessidade.md (tabela "Decisões registradas"). Aqui só o mapa,
+#  para os códigos citados neste arquivo continuarem rastreáveis. Técnicas ficam na seção 9.
 #####################################################################
-DB-01  MySQL 8.                      DB-02  Collation ai_ci.
-DB-03  Unique "só entre ativos" no banco, por coluna gerada. Usado em funnel_stages.final_key (T1).
-NUC-01 Empresa estrangeira cadastrável (country + document opcional fora do BR).
-NUC-02 Sem login de cliente na v1.   NUC-03 Papéis fixos.   NUC-04 Auditoria guarda tudo.
-NUC-05 Endereço dentro do cliente. Depois do enxugamento o endereço SAIU: nenhuma regra usa.
-IA-01  Papel × escopo no código.     IA-02  Log de leitura 180 dias.   IA-03  Reconectar revoga e cria.
-PRJ-01 Contrato opcional no projeto (D-PRJ-18).   PRJ-02 Prefixo congela.   PRJ-03 Contador com lock.
-PRJ-04 Estimativa por tarefa × pessoa.   PRJ-05 Roteiro reaproveitado.   PRJ-06 Feriados fora (D-PRJ-22).
-PRJ-07 Prioridade na tarefa.   PRJ-08 Bug de produção = qualidade do projeto.
-PRJ-09 Teste cruzado livre.    PRJ-10 "Support".   PRJ-11 Horas à mão.
-PRJ-12 Fase do relatório = sprint (D-PRJ-23).   PRJ-13 Equipe do cliente = texto no documento.
-PRJ-14 Sprint montada do To do com time e capacidade por pessoa, recusando por padrão (D-PRJ-24).
-CRM-01 Um funil.   CRM-02 Vários leads por CNPJ, com aviso.   CRM-03 Contato único.
-CRM-04 Oportunidades pós-auditoria depois da v1 (D-CRM-07).
-CRM-05 Copiar do DaaS: as 5 perguntas sim; "lista de setores" não existe lá (setor é texto livre).
-CRM-06 Compromisso com lead ou cliente.   CRM-07 Convite só para o responsável.
-Revisão de enxugamento, validada pelo Lucas Scholz em 24/09:
-- contato com e-mail e telefone; contrato com nome e datas de início e fim;
-- tarefa não tem cancelamento: tarefa nunca usada se exclui, a usada fica no Backlog;
-- restringir etapa a função (RN-PRJ-27, RN-PRJ-25) é v1+ (D-PRJ-25): saiu board_stage_rules e
-  projects.restrict_stage_moves;
-- lead sem valor e sem previsão de fechamento até o comercial definir os campos mínimos.
+DB-01  → D-GER-21 (MySQL 8)             DB-02  → técnica: collation ai_ci (seção 0)
+DB-03  → técnica: unique "só entre ativos" por coluna gerada (T1)
+NUC-01 → D-NUC-01    NUC-02 → D-NUC-02    NUC-03 → D-NUC-03    NUC-04 → D-NUC-04
+NUC-05 → saiu no enxugamento (endereço: nenhuma regra usa)
+IA-01  → técnica: papel × escopo no código    IA-02 → D-IA-08, RN-IA-10    IA-03 → D-IA-09
+PRJ-01 → D-PRJ-18    PRJ-02 → D-PRJ-26    PRJ-03 → técnica (T4)
+PRJ-04 → D-PRJ-22, SUBSTITUÍDA por D-PRJ-27 (horas da tarefa inteira, pelo gestor)
+PRJ-05 → RN-PRJ-20 (roteiro reaproveitado)   PRJ-06 → D-PRJ-22    PRJ-07/08/11 → D-PRJ-21
+PRJ-09 → D-PRJ-19    PRJ-10 → D-PRJ-20    PRJ-12 → D-PRJ-23    PRJ-13 → D-PRJ-22    PRJ-14 → D-PRJ-24
+CRM-01/02/03 → D-CRM-06    CRM-04 → D-CRM-07    CRM-05/07 → D-CRM-08    CRM-06 → D-CRM-09
+Enxugamento validado (D-GER-20): contato com e-mail e telefone; contrato com nome e datas; restringir
+etapa a função é v1+ (D-PRJ-25); lead sem valor e sem previsão até o comercial definir os campos
+mínimos. "Tarefa usada fica no Backlog" foi SUBSTITUÍDO por arquivar com motivo (D-PRJ-31).
+Revisão da etapa 2 (24/09): 1 dev + QA e horas pelo gestor (D-PRJ-27), data da tarefa inteira
+(D-PRJ-28), datas do projeto (D-PRJ-29), capacidade pelas horas que faltam (D-PRJ-30), arquivar
+tarefa (D-PRJ-31), lead ganho sem contrato (D-CRM-10), resumo_do_cliente por papel (D-IA-10).
 
 
 #####################################################################
 #  8. REVISÃO DE ENXUGAMENTO (24/09) — o que saiu e por quê
+#  Fica até a aprovação do Lucas Alencar, para ele ver o que saiu. Depois sai: o git guarda.
 #####################################################################
 Critério: saiu tudo o que nenhuma regra do requisito lê ou grava. Volta com pedido e motivo.
+Voltaram depois, com regra: projects.starts_on/due_on (D-PRJ-29), sprints.goal (D-PRJ-23),
+arquivamento de tarefa com motivo (D-PRJ-31, no lugar do cancelamento).
 
 Saiu porque ninguém pediu o dado
 - users: phone, avatar_path, last_login_at (o login está em audit_logs), email_verified_at e
@@ -871,17 +869,18 @@ Saiu porque ninguém pediu o dado
 - contacts: job_title, mobile, is_primary, notes, unique de e-mail.
 - contracts: code, billing_cycle, currency, amount, hourly_rate, notes, contract_statuses
   (faturamento está fora da v1; "ativo" sai das datas). Horas contratadas vão para Chamados.
-- projects: description, started_on, due_on (atraso do projeto sai das tarefas, F-PRJ-09),
-  project_statuses (só "encerrado" foi pedido: finished_at), project_modalities (virou boolean).
+- projects: description, project_statuses (só "encerrado" foi pedido: finished_at), project_modalities (virou boolean).
 - board_stages e funnel_stages: color, wip_limit.
-- tasks: cancelamento (cancelled_at/by/reason), stage_entered_at, started_at, done_at,
+- tasks: cancelamento (cancelled_at/by/reason; voltou como arquivamento), stage_entered_at, started_at, done_at,
   due_on_calculated_at (tudo derivável dos movimentos).
-- time_entries: função e descrição. task_estimates: função e histórico de reestimativa.
+- time_entries: função e descrição.
+- task_estimates, task_assignments e work_functions inteiras: a tarefa tem 1 dev e 1 QA e as horas
+  previstas são da tarefa (D-PRJ-27) → tasks.developer_id, tasks.qa_id, tasks.estimated_hours.
 - task_pull_requests: provider, repositório, número, título e status do PR (só entram com o
   webhook, D-GER-13). Saiu pull_request_statuses.
 - packages: datas de homologação, homologado por, notas de versão (F-PRJ-03 é v1+). Estado
   "cancelado" do pacote.
-- sprints: número, objetivo, dias úteis, encerramento, status (tabela sprint_statuses) e a regra
+- sprints: número, dias úteis, encerramento, status (tabela sprint_statuses) e a regra
   "1 sprint em andamento por projeto" — nada disso foi pedido.
 - leads: nome fantasia, setor, site, cidade, UF, detalhe da origem, valor estimado, moeda,
   previsão de fechamento, datas de ganho/perda, data da situação, contrato gerado, arquivamento.
@@ -891,7 +890,6 @@ Saiu porque ninguém pediu o dado
   último convite, quem cancelou.
 - audit_logs: context, ip, user_agent, request_id. ai_authorizations: apelido, último uso, motivo e
   autor da revogação. ai_tool_calls: user_id (sai da autorização), kind, duration_ms.
-- work_functions: Full-stack e DevOps (o requisito lista back-end, front-end, QA e outra).
 - Todas as colunas created_by, added_by, assigned_by, estimated_by, removed_by, closed_by e
   sort_order (seção 0).
 
@@ -937,3 +935,71 @@ T5  ai_tool_calls: limpeza de 180 dias pelo prune agendado do Laravel (Prunable 
     180 dias de retenção, horário do resumo diário do CRM.
     Limite de chamadas contado por autorização de IA (ai_authorization_id), não por usuário: um
     conector em loop não bloqueia os outros assistentes da mesma pessoa.
+
+PERGUNTAS ABERTAS para o Lucas Alencar (revisão da etapa 2, 24/09). Não decididas; recomendação ao
+lado de cada uma.
+T6  MySQL em produção × SQLite nos testes do template (stacks/laravel-inertia.md: "SQLite nos
+    testes"). Três pontos só existem no MySQL: a coluna gerada com IF() em funnel_stages.final_key,
+    o LAST_INSERT_ID(expr) do T4 e os unique que ignoram acento (collation ai_ci). O teste que prova
+    essas travas não roda o que vai para produção.
+    Recomendo: testes de banco em MySQL no CI (container), ou implementação que rode nos dois.
+T7  Integridade por projeto. Nada no banco garante que etapa, sprint, pacote e área da tarefa, as
+    etapas do movimento, o motivo de retrabalho e o estado do pacote são do MESMO projeto. É o mesmo
+    problema que projects × contracts resolveu com FK composta.
+    Recomendo: unique (id, project_id) em board_stages, sprints, packages, project_areas,
+    rework_reasons e package_statuses, e FK composta a partir de tasks, task_stage_movements e
+    packages. Com 1 dev por tarefa, dá também (project_id, developer_id) e (project_id, qa_id) →
+    project_members (project_id, user_id).
+T8  IP na auditoria. audit_logs perdeu ip e user_agent no enxugamento; o template tem os dois.
+    RN-NUC-03 registra tentativa negada e RN-IA-06 fala em "token roubado": sem IP não há como
+    investigar. Recomendo: manter ip varchar(45) null (user_agent opcional).
+T9  Código CA_n estável. Hoje sai de task_acceptance_criteria.position: reordenar ou excluir
+    renumera, e o "CA_3" do documento de requisição e da evidência passa a apontar outro critério.
+    Recomendo: coluna number gravada + unique (task_id, parent_id, number).
+T10 Dados duplicados. Recomendo tirar ou travar:
+    - tasks.key: o prefixo congela (D-PRJ-26), então key = prefixo + number. "SGM-17" se acha por
+      key_prefix (unique) + (project_id, number). Recomendo tirar a coluna.
+    - leads.company_name/country/document com client_id preenchido repetem o cliente. Recomendo:
+      definir se é foto do momento ou se some quando há client_id.
+    - appointments.lead_id + client_id: com lead de cliente, o cliente se repete. Recomendo check
+      "um OU outro" (D-CRM-09).
+    - audit_logs.audit_channel_id sai de ai_authorization_id (null = tela). task_stage_movements
+      .moved_by e .audit_channel_id repetem o audit_logs do mesmo movimento. Recomendo: uma fonte só
+      para "quem moveu".
+    - Domínios gêmeos: test_results ≈ validation_results; rework_origins = validation_types +
+      homologação; ai_assistants ↔ audit_channels (1:1). Recomendo juntar, a critério.
+T11 contacts sem índice em email: o "cadastro único" (D-CRM-06) depende só da busca. Recomendo índice
+    em email (sem unique) e aviso de possível duplicado no Service.
+
+
+#####################################################################
+#  10. DIFERENÇA PARA O TEMPLATE ai-systems (v0.3.0)
+#  O Hub nasce clonando o template (etapa 3). Estas são as tabelas que o template já traz e o que
+#  acontece com cada uma. O código do template que lê essas colunas muda junto na etapa 3:
+#  models User e Enterprise, EnterprisePolicy, Scoping, DashboardService, HandleInertiaRequests,
+#  controllers e requests de Admin, CreateAdminCommand, seeders e e2e.
+#####################################################################
+user_types                → vira roles (id, slug, label): 4 papéis fixos (D-NUC-03).
+users                     user_type_id → role_id.
+                          Saem: document, phone, email_verified_at, last_login_at, remember_token
+                          (seção 8; o login fica em audit_logs).
+                          active (boolean) + deleted_at (softDeletes) → deactivated_at +
+                          deactivated_by (banco.md §4, RN-NUC-02).
+                          email e password: de null para not null (usuário é convidado pelo admin).
+                          Ficam: name, must_change_password. Entra: daily_hours.
+enterprises               → SAI. Single-tenant (6.1). A tela de empresas do template (o gabarito de
+                          CRUD) serve de base para a de clients; parent_enterprise_id, nickname e
+                          active não passam.
+user_has_enterprises      → SAI (sem escopo por empresa; o escopo é papel + alocação, 6.1).
+audit_logs                before_data + after_data → changes {"campo": [antes, depois]}.
+                          Entram: audit_channel_id, ai_authorization_id, outcome.
+                          auditable_id: de not null para null (negação antes de achar o registro).
+                          user_id: de nullOnDelete para restrict (usuário não se exclui, RN-NUC-02).
+                          ip_address e user_agent: saem nesta proposta; ver T8.
+password_reset_tokens,
+sessions, cache,
+cache_locks, jobs,
+job_batches, failed_jobs  → ficam como estão.
+Todas as colunas de data e hora, inclusive created_at/updated_at do template: TIMESTAMP → DATETIME
+(seção 0; TIMESTAMP acaba em 2038).
+Entram do zero: notifications (Laravel) e as tabelas do Passport (seção 4).

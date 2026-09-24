@@ -13,7 +13,7 @@ Atualizado em 2026-09-24.
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Fechada para Núcleo, Projetos e CRM**; aguarda validação no Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM. Todas as dúvidas (seção 7) respondidas pelo Lucas Scholz em 24/09, inclusive sprint com time e capacidade por pessoa (D-PRJ-23, D-PRJ-24). Aguarda revisão do Lucas Alencar; depois, Comitê (D-GER-16) | `docs/banco.txt` |
+| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM. Dúvidas respondidas pelo Lucas Scholz em 24/09. **Revisão da etapa 2 (24/09):** contradições entre necessidade e banco corrigidas; 1 dev + QA por tarefa com horas estimadas pelo gestor (D-PRJ-27), data da tarefa inteira (D-PRJ-28), datas do projeto (D-PRJ-29), capacidade pelas horas que faltam (D-PRJ-30), arquivar tarefa (D-PRJ-31). **Pendente com o Lucas Scholz:** se o cadastro de contrato fica na v1 (D-CRM-10). **Para o Lucas Alencar:** perguntas técnicas T6–T11 (seção 9) e diferença para o template (seção 10). Depois, Comitê (D-GER-16) | `docs/banco.txt` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, Interface de IA |
 | `core/mcp.md` no padrão | A rascunhar, em **outra sessão**, no repositório `ai-systems` (D-GER-16) | `~/Documents/Projetos/WCJ/ai-systems` |
@@ -36,6 +36,9 @@ Aparecem em atas ou no histórico do git, mas **não valem mais**:
 - Ordem Núcleo → Projetos → Chamados → CRM → **Núcleo → Projetos → CRM → Chamados** (D-GER-12).
 - Fluxo travado (PR obrigatório, só Tech Lead move) → **fluxo aberto, travas opcionais** (D-GER-05, D-PRJ-16).
 - Dev vê o próprio painel de produtividade → **só gestor e Administrador** (RN-PRJ-22).
+- Horas previstas informadas pelo dev, por pessoa, e várias pessoas por função na tarefa → **1 dev + QA; o gestor estima as horas da tarefa inteira** (D-PRJ-27).
+- Tarefa usada e abandonada fica no Backlog → **arquivada com motivo** (D-PRJ-31).
+- Projeto sem datas (atraso só pelas tarefas) → **projeto com início e entrega** (D-PRJ-29).
 
 ## Próximas sessões
 

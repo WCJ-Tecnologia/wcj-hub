@@ -1,6 +1,6 @@
 # Necessidade: WCJ Hub
 
-Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada para o modelo de banco (etapa 2) e para o escopo (etapa 4).
+Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.3.0). Entrada para o modelo de banco (etapa 2) e para o escopo (etapa 4).
 
 **Situação:** rascunho para o Comitê de IA. Nome definido: **WCJ Hub** (D-GER-06). Itens marcados **[LEVANTAR]** dependem do dono do módulo; itens marcados **[DECIDIR]** dependem do comitê. Regras marcadas *(proposta)* ainda não foram validadas por quem usa.
 
@@ -21,10 +21,10 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-12 | 24/09/2026 | O QA testa no **ambiente local dele**; o **Tech Lead faz o merge** (Lucas Alencar, via Lucas Scholz). |
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-CRM-01 | 24/09/2026 | Funil do CRM: etapas do DaaS como padrão, editáveis. Motivos de perda editáveis. Tratativa editável com histórico. Comercial vê todos os leads e edita os próprios. Sizing obrigatório para ganhar auditoria. CRM → DaaS automático depois da v1. |
-| D-CRM-02 | 24/09/2026 | As funções do CRM pós-auditoria do DaaS (oportunidades e contratos) também passam para o Hub. |
+| D-CRM-02 | 24/09/2026 | As funções do CRM pós-auditoria do DaaS (oportunidades e contratos) também passam para o Hub. Oportunidades: **depois da v1** (D-CRM-07). |
 | D-CRM-05 | 24/09/2026 | Uso do Wilson: pela IA, avançar leads, registrar tratativas e a situação da conversa, agendar follow-ups e reuniões e consultar a agenda, **por chat e por áudio** no GPT "WCJ Hub". Lembretes chegam por **convite de calendário por e-mail** e **resumo diário**, sem IA embutida. |
 | D-CRM-03 | 24/09/2026 | **Sem migração de dados do DaaS**: o que está lá não é usado e está desatualizado. CRM do Hub começa do zero. |
-| D-CRM-04 | 24/09/2026 | O Hub é a **única fonte de contratos**; o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão na v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
+| D-CRM-04 | 24/09/2026 | O Hub é a **única fonte de contratos**; o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão depois da v1 (D-CRM-07). O funil sai do DaaS quando o CRM do Hub estiver no ar. |
 | D-CHM-01 | 24/09/2026 | **[DECIDIR]** Chamados: construir no Hub, adotar o GLPI (sugestão do Alaor) ou em duas fases. Ver Módulo Chamados. |
 | D-CHM-02 | 24/09/2026 | Canal inicial de chamado: **e-mail** (endereço próprio). Triagem por uma função de **despachante**, com filas N1/N2/N3. |
 | D-CHM-03 | 24/09/2026 | SLA e prioridade **contrato a contrato**; prioridade definida pela WCJ na triagem. No início, chamados só no nível de projeto. |
@@ -55,14 +55,29 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-19 | 24/09/2026 | **Teste cruzado livre:** não é atribuído; qualquer dev alocado puxa, menos quem desenvolveu a tarefa. |
 | D-PRJ-20 | 24/09/2026 | Coluna padrão de suporte se chama **`Support`**, em inglês como as demais (D-PRJ-14). Substitui o nome `Suporte` de D-PRJ-17. |
 | D-PRJ-21 | 24/09/2026 | **Bug achado em produção** vira tarefa nova ligada à original e conta como **indicador de qualidade do projeto**, não como retrabalho do dev. Tarefa tem **prioridade** (baixa, normal, alta, urgente). Horas lançadas **à mão**, sem cronômetro. |
-| D-PRJ-22 | 24/09/2026 | **Feriados fora da v1:** data prevista em dias úteis de segunda a sexta. Horas previstas por tarefa × pessoa. Equipe do cliente no Histórico de Desenvolvimento é texto livre no documento gerado. |
+| D-PRJ-22 | 24/09/2026 | **Feriados fora da v1:** data prevista em dias úteis de segunda a sexta. ~~Horas previstas por tarefa × pessoa~~ (substituído por D-PRJ-27). Equipe do cliente no Histórico de Desenvolvimento é texto livre no documento gerado. |
 | D-PRJ-23 | 24/09/2026 | **Sprint é cadastro** (nome, objetivo, início e fim), criada pelo gestor; tarefa não concluída passa para a sprint seguinte com histórico. A "Fase" do Histórico de Desenvolvimento é a sprint. Uso opcional por projeto. |
-| D-PRJ-24 | 24/09/2026 | **Montagem da sprint:** o gestor monta a sprint com um **time** e junta tarefas do `To do`. Padrão de **2 semanas = 10 dias úteis**, ajustável por projeto. A soma das horas estimadas de cada pessoa **tem que caber** na capacidade dela na sprint (carga diária × dias disponíveis); por padrão o sistema recusa o que estoura, e o projeto pode trocar para só avisar. |
+| D-PRJ-24 | 24/09/2026 | **Montagem da sprint:** o gestor monta a sprint com um **time** e junta tarefas do `To do`. Padrão de **2 semanas = 10 dias úteis**, ajustável por projeto. A soma das horas estimadas de cada pessoa **tem que caber** na capacidade dela na sprint (carga diária × dias disponíveis). A tarefa conta na capacidade do dev dela, pelas horas que faltam (D-PRJ-27, D-PRJ-30). Por padrão o sistema recusa o que estoura, e o projeto pode trocar para só avisar. |
 | D-CRM-06 | 24/09/2026 | O mesmo CNPJ pode ter **vários leads** (cliente pode comprar projeto novo e diferente): o sistema avisa, não recusa. Um funil só. **Contato é um cadastro único** para cliente e lead: a pessoa não é redigitada na conversão. |
 | D-CRM-07 | 24/09/2026 | **Oportunidades pós-auditoria ficam para depois da v1** (RN-CRM-10, RN-CRM-11). Na v1, venda nova para cliente existente é lead ligado ao cliente. Sizing continua obrigatório para ganhar lead de auditoria (D-CRM-01). |
 | D-CRM-08 | 24/09/2026 | Convite de calendário vai **só para o responsável** do compromisso; participantes (dev, outro comercial) são convocados por ele no **Teams**. Sizing copiado do DaaS: setor em texto livre, as 5 perguntas com as mesmas opções e o preço. |
 | D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.txt` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo. Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
-| D-PRJ-25 | 24/09/2026 | **Restringir etapas a funções** (RN-PRJ-27) e a aprovação pelo gestor quando o Tech Lead é o próprio dev (RN-PRJ-25) ficam para **v1+**. Na v1, qualquer pessoa alocada move a tarefa. Tarefa não tem cancelamento: a nunca usada se exclui, a usada fica no Backlog. |
+| D-PRJ-25 | 24/09/2026 | **Restringir etapas a funções** (RN-PRJ-27) e a aprovação pelo gestor quando o Tech Lead é o próprio dev (RN-PRJ-25) ficam para **v1+**. Na v1, qualquer pessoa alocada move a tarefa. Tarefa não tem cancelamento: a nunca usada se exclui; a usada e abandonada se arquiva com motivo (D-PRJ-31). |
+| D-IA-05 | 24/09/2026 | Consequência do R-IA-01 na v1: **Claude** lê e escreve; **ChatGPT Pro** entra só com escopos de leitura (o servidor emite token só de leitura); **ChatGPT Plus** não conecta; **ChatGPT Business** fica fora da v1. Detalhe em [Interface de IA (MCP)](#interface-de-ia-mcp). |
+| D-IA-08 | 24/09/2026 | Toda chamada de ferramenta da IA, **inclusive de leitura**, fica registrada por **180 dias**, só com ids e filtros, nunca texto livre. O Administrador consulta esse registro numa tela própria (RN-IA-10). |
+| D-IA-09 | 24/09/2026 | Reconectar um assistente revoga a autorização anterior e cria outra. |
+| D-IA-10 | 24/09/2026 | `resumo_do_cliente` devolve só o que o papel vê: contratos para Administrador e Gestor; último contato comercial para Administrador e Comercial; projetos só os que o papel vê (RN-PRJ-04). |
+| D-NUC-03 | 24/09/2026 | **Papéis fixos:** Administrador, Gestor de projetos, Desenvolvedor, Comercial. O Administrador atribui o papel; não cria papel novo. |
+| D-NUC-04 | 24/09/2026 | A auditoria guarda tudo, sem limpeza por prazo. |
+| D-PRJ-26 | 24/09/2026 | O **prefixo** do projeto (a parte `SGM` da chave) não muda depois da primeira tarefa. |
+| D-PRJ-27 | 24/09/2026 | **Uma tarefa = 1 dev + QA.** Cada tarefa é dividida para um só dev desenvolver e depois o QA revisar. O **gestor estima as horas ao criar a tarefa**, junto com o diretor de tecnologia: um total só, **desenvolvimento + testes**. Substitui a estimativa feita pelo dev e por pessoa (D-PRJ-22). |
+| D-PRJ-28 | 24/09/2026 | A **data prevista é da tarefa inteira**, nunca por pessoa: contada em dias úteis a partir da entrada em `Doing`, pelas horas previstas da tarefa ÷ carga diária do dev dela. |
+| D-PRJ-29 | 24/09/2026 | Projeto tem **data de início e data de entrega**. Com elas o gestor vê quantas sprints cabem até a entrega e se o projeto está no cronograma (RN-PRJ-33). |
+| D-PRJ-30 | 24/09/2026 | A capacidade da sprint conta só as **horas que faltam** de cada tarefa: previstas − já lançadas, nunca abaixo de zero. |
+| D-PRJ-31 | 24/09/2026 | Tarefa abandonada pode ser **arquivada, com motivo obrigatório** (RN-PRJ-34). |
+| D-CRM-09 | 24/09/2026 | Compromisso é com um **lead** ou com um **cliente**. |
+| D-CRM-10 | 24/09/2026 | Lead ganho vira cliente **sem contrato**; a parte de contrato entra depois. **[DECIDIR]** se o cadastro manual de contrato fica na v1 ou sai da v1 inteira. |
+| D-GER-21 | 24/09/2026 | Banco de dados: **MySQL 8**, o mesmo do template da casa. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -90,9 +105,9 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 
 | Papel | Quem é | O que faz no sistema | O que não pode ver ou fazer |
 |---|---|---|---|
-| Administrador | Sócios | Tudo; gerencia usuários, papéis, clientes e contratos | — |
+| Administrador | Sócios | Tudo; gerencia usuários (atribui o papel, D-NUC-03), clientes e contratos | — |
 | Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Cria e acompanha projetos, distribui tarefas, vê chamados dos clientes dos seus projetos | **Pipeline comercial e valores de proposta** (D-PRJ-08) |
-| Tech Lead | **Definido por projeto** (D-PRJ-10): é uma função no projeto, não um papel fixo do usuário | Aprova o PR no `Code-review` **dos projetos em que é Tech Lead** | Aprovar code review em projeto em que não é Tech Lead |
+| Tech Lead | **Definido por projeto** (D-PRJ-10): é uma função no projeto, não um papel fixo do usuário | Aprova o PR no `Code-review` **dos projetos em que é Tech Lead** | Na prática, aprovar code review em projeto em que não é Tech Lead. O sistema não trava isso na v1 (D-PRJ-25) |
 | Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado (D-PRJ-03) |
 | Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; **conteúdo dos chamados** (na ficha do cliente vê só a quantidade de chamados abertos e o status) |
 | Suporte / sustentação | Alaor Rodrigues (dono); função **despachante** + filas N1/N2/N3 (D-CHM-02) | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
@@ -107,9 +122,9 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 ### Fluxo principal
 
 1. Administrador cadastra usuários internos e define o papel de cada um.
-2. Cliente nasce de duas formas: cadastro direto ou conversão de lead ganho no CRM.
+2. Cliente nasce de duas formas: cadastro direto ou conversão de lead ganho no CRM. Nos dois casos, nasce sem contrato (D-CRM-10).
 3. Cliente recebe contratos. Tipo de contrato é **lista cadastrável** pelo Administrador (D-GER-11); padrão inicial: **projeto, sustentação, auditoria, alocação de dev, infraestrutura**. O Administrador cadastra novos tipos conforme a empresa cresce.
-4. Contatos do cliente são cadastrados e, se autorizados, recebem acesso ao portal de chamados.
+4. Contatos do cliente são cadastrados. O acesso do contato ao portal de chamados entra com o módulo Chamados (D-NUC-02).
 
 ### Regras de negócio
 
@@ -129,13 +144,13 @@ Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-
 
 ### Fluxo principal
 
-1. Gestor cria o projeto vinculado a um cliente e a um contrato, com **prefixo** (ex.: `SGM`) e **etapas próprias** (D-PRJ-01). Modelo padrão (D-PRJ-11): `Backlog → To do (sprint) → Doing → Code-review → In test → Done`, mais `Paused` e `Support` (D-PRJ-17). Detalhe em [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md).
-2. Gestor (ou a IA dele) escreve a tarefa no **modelo de requisição**: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`. Cada critério vira item do roteiro de teste.
-3. Gestor atribui pessoas **por função** (back-end, front-end, QA) e define quais validações a tarefa exige: **code review**, **teste cruzado** e/ou **QA** (RN-PRJ-09).
+1. Gestor cria o projeto vinculado a um cliente (contrato opcional, D-PRJ-18), com **data de início e de entrega** (D-PRJ-29), **prefixo** (ex.: `SGM`) e **etapas próprias** (D-PRJ-01). Modelo padrão (D-PRJ-11): `Backlog → To do (sprint) → Doing → Code-review → In test → Done`, mais `Paused` e `Support` (D-PRJ-17). Detalhe em [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md).
+2. Gestor (ou a IA dele) escreve a tarefa no **modelo de requisição**: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`. Cada critério vira item do roteiro de teste. Ao criar, o gestor **estima as horas da tarefa inteira** (desenvolvimento + testes) junto com o diretor de tecnologia (D-PRJ-27).
+3. Gestor atribui **o dev** e **o QA** da tarefa (D-PRJ-27) e define quais validações ela exige: **code review**, **teste cruzado** e/ou **QA** (RN-PRJ-09).
 4. Tarefa sem responsável não sai do Backlog (D-PRJ-02). Quem é atribuído é notificado.
-5. O dev analisa a tarefa e **informa as horas previstas** (por tarefa ou por item). O sistema converte em **data prevista** considerando dias úteis (segunda a sexta) e a carga diária do dev.
+5. Quando a tarefa entra em `Doing`, o sistema calcula a **data prevista da tarefa inteira**: horas previstas ÷ carga diária do dev, em dias úteis de segunda a sexta (D-PRJ-28).
 6. A tarefa entra em `To do` (a sprint; no Trello, `Esteira`) e segue as etapas. Cada mudança de etapa é registrada com data e hora. Em `Doing` o dev desenvolve e faz commits e pushes na branch. Ao terminar, **abre um ou mais PRs para a `main`** e a tarefa vai para `Code-review`, onde normalmente o **Tech Lead** do projeto revisa (D-PRJ-09, D-PRJ-16).
-7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. O dev lança as **horas realizadas**.
+7. Em `In test` acontecem, nesta ordem, o **teste cruzado** (outro dev, nunca o autor) e o **QA**, que executa o roteiro, marca os itens e anexa a evidência em cada um. Quem trabalhou na tarefa lança as **horas realizadas**.
 8. Aprovado no QA, é feito o merge (normalmente pelo Tech Lead) e a tarefa vai para `Done`. Reprovado no code review, no teste cruzado ou no QA, volta para `Doing` com motivo de lista fechada.
 9. Tarefas em `Done` entram num **pacote (versão)**. O pacote é liberado em **homologação**, homologado e publicado em produção; aí está finalizado. A data é definida por projeto; em projeto de cliente, geralmente pelo cliente.
 10. Quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail), o gestor registra um **card de suporte** na coluna `Support` do quadro (D-PRJ-17). Quando o módulo Chamados existir, os chamados de projeto passam a cair nessa mesma coluna.
@@ -156,18 +171,20 @@ O que mantém os indicadores funcionando mesmo com o fluxo mudando: cada etapa t
 - **RN-PRJ-11** Mudança de etapa sempre grava quem, quando, de onde e para onde (RN-NUC-04). É daí que saem tempo por etapa e retrabalho.
 - **RN-PRJ-13** Toda etapa tem um **papel**: fila, sprint, desenvolvimento, code review, teste, pronto, pausa, chamados. Nome, ordem e quantidade de etapas são livres (D-PRJ-01); o papel é obrigatório.
 - **RN-PRJ-08** Toda volta para uma etapa de desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA, homologação) e **motivo**. A lista de motivos é editável por projeto e sempre tem "outro" com texto. Motivos iniciais [validar com Rafael]: ajuste visual, regra de negócio, erro/bug, **requisito incompleto ou mal documentado** (a principal causa de retrabalho, segundo o Rafael).
-- **RN-PRJ-14** Pessoa é atribuída à tarefa **com uma função** (back-end, front-end, QA, outra). Pode haver mais de uma pessoa por função. A lista de funções é editável.
-- **RN-PRJ-15** Horas previstas e realizadas são registradas **por pessoa**. Horas são decimais; não há arredondamento para dia.
-- **RN-PRJ-16** A data prevista é calculada em **dias úteis**: horas previstas ÷ carga diária do dev, pulando fins de semana. Feriados ficam fora da v1 (D-PRJ-22). Ex.: 16 h = 2 dias úteis para 8 h/dia e 4 dias úteis para 4 h/dia.
+- **RN-PRJ-14** Toda tarefa tem **um dev** e, quando o QA está ligado, **um QA** (D-PRJ-27). O teste cruzado não é atribuído (RN-PRJ-26).
+- **RN-PRJ-15** As horas previstas são **da tarefa**: um total só (desenvolvimento + testes), informado pelo gestor ao criar a tarefa (D-PRJ-27); reestimar fica no histórico. As horas realizadas são lançadas **por pessoa**. Horas são decimais; não há arredondamento para dia.
+- **RN-PRJ-16** A data prevista é **da tarefa inteira** (D-PRJ-28), calculada na primeira entrada em `Doing`: horas previstas ÷ carga diária do dev da tarefa, em **dias úteis**, pulando fins de semana. Só é recalculada quando as horas previstas mudam. Feriados ficam fora da v1 (D-PRJ-22). Ex.: 16 h = 2 dias úteis para 8 h/dia e 4 dias úteis para 4 h/dia.
 - **RN-PRJ-17** Cada usuário interno tem **carga diária** cadastrada (ex.: 8 h ou 4 h). Mudança de carga vale dali para a frente; não recalcula o passado.
 - **RN-PRJ-18** ~~Calendário de feriados mantido pelo Administrador~~ **fora da v1** (D-PRJ-22).
 - **RN-PRJ-19** Tarefa tem **chave** `<prefixo do projeto>-<número>` (ex.: `SGM-17`). O número é sequencial por projeto, gerado por sequência do banco, e nunca é reutilizado.
-- **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico.
+- **RN-PRJ-20** Critério de aceite da tarefa gera item no roteiro de teste. Editar o critério atualiza o item enquanto ele não foi testado; depois de testado, a alteração reabre o item e fica no histórico. Depois de um retrabalho, o QA refaz o mesmo roteiro: os itens voltam a "a testar".
 - **RN-PRJ-21** Atribuir pessoa a uma tarefa **notifica** a pessoa, no sistema e por e-mail.
 - **RN-PRJ-22** Indicadores de produtividade por dev (prazo, retrabalho, previsto × realizado) são vistos **só pelo gestor e pelo Administrador**. O dev não tem acesso a esse painel.
-- **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele **não é atribuído de antemão**: qualquer dev alocado no projeto puxa, desde que **não seja quem desenvolveu** (atribuído como back-end, front-end ou full-stack) (D-PRJ-19).
+- **RN-PRJ-26** Quando o teste cruzado está ligado na tarefa, ele **não é atribuído de antemão**: qualquer dev alocado no projeto puxa, desde que **não seja o dev da tarefa** (D-PRJ-19, D-PRJ-27).
 - **RN-PRJ-29** Mudar a configuração de um projeto vale **dali para a frente**, fica no histórico e **nunca apaga** registro já feito. Remover uma etapa com tarefas dentro exige escolher para qual etapa elas vão.
 - **RN-PRJ-32** **Card de suporte** (D-PRJ-17): tarefa do tipo `suporte`, criada pelo gestor (ou pela IA dele) quando o cliente aciona a WCJ direto. Além dos campos da tarefa, registra **quem pediu** (contato do cliente), **por onde** (WhatsApp, telefone, e-mail, reunião, outro) e **quando o pedido chegou**. As horas apontadas nele servem à gestão do projeto como as de qualquer tarefa; o banco de horas é do módulo Chamados (D-PRJ-18). Quando o módulo Chamados entrar, esses cards podem ser vinculados ou convertidos em chamado, sem perder o histórico.
+- **RN-PRJ-33** Projeto tem **data de início e data de entrega** (D-PRJ-29). O sistema mostra quantas sprints cabem até a entrega (dias úteis até a entrega ÷ duração da sprint do projeto, RN-PRJ-35). *(proposta)* O projeto fica **fora do cronograma** quando a data prevista de alguma tarefa aberta passa da entrega, ou quando a entrega passou com tarefa aberta.
+- **RN-PRJ-34** Tarefa abandonada é **arquivada** pelo gestor do projeto ou pelo Administrador, com **motivo obrigatório** (D-PRJ-31). Sai do quadro e das contas de prazo e de capacidade; as horas já lançadas continuam valendo. Desarquivar devolve a tarefa ao `Backlog`. Tarefa nunca usada continua podendo ser excluída (D-PRJ-25).
 
 ### Padrões configuráveis por projeto
 
@@ -186,6 +203,7 @@ O projeto nasce com o padrão abaixo. O gestor muda o que precisar nas configura
 | RN-PRJ-10 | **Estados do pacote (versão)** | `em montagem → em homologação → homologado → em produção`. Só tarefa em `Done` entra. Pacote em homologação não recebe tarefa nova; reprovação devolve as tarefas afetadas com retrabalho de origem homologação. **Homologação feita pela equipe WCJ, testando tudo junto; o cliente não participa** (D-PRJ-13) | Renomear, criar ou remover estados |
 | RN-PRJ-07 | **Tipo** e **área** da tarefa (campos separados, lista fechada) | Tipos: melhoria, correção de bug, **suporte**, mudança (GMUD). Áreas: nenhuma, o gestor cadastra (no Wpay: Admin, Geral, FDIC, Âncora, Fornecedores, Comercial) | Editar as duas listas |
 | RN-PRJ-06 | **Modalidade** do projeto | `tradicional` (D-GER-02) | `100% IA`. Na v1 é só uma marcação no projeto, com o mesmo fluxo aberto |
+| RN-PRJ-35 | **Duração da sprint** | 10 dias úteis (D-PRJ-24) | Mudar por projeto |
 | RN-PRJ-31 | Coluna `Support` | **Ligada desde a v1** (D-PRJ-17): recebe os cards de suporte registrados pelo gestor. Com o módulo Chamados, recebe também os chamados de projeto (F-PRJ-08) | Renomear, desligar |
 
 Observação (D-PRJ-12): o QA testa a branch do PR **no próprio ambiente local**; o sistema não cria nem exige ambiente por PR. Como as tarefas só se encontram depois do merge, a **homologação do pacote** é o primeiro teste integrado.
@@ -197,10 +215,10 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | # | Funcionalidade | Origem | Prioridade |
 |---|---|---|---|
 | F-PRJ-02 | **Tempo por etapa em linha do tempo**, por tarefa, e tempo total até pronto | Trello Wpay + Rafael | **v1** |
-| F-PRJ-11 | **Horas previstas × realizadas** por tarefa, pessoa e projeto | Rafael | **v1** |
+| F-PRJ-11 | **Horas previstas × realizadas** por tarefa e projeto; realizadas também por pessoa (RN-PRJ-15) | Rafael | **v1** |
 | F-PRJ-12 | **Data prevista em dias úteis** pela carga diária do dev (feriados fora da v1, D-PRJ-22) | Rafael | **v1** |
-| F-PRJ-09 | **Prazo e atraso** visíveis por projeto e por pessoa | Rafael | **v1** |
-| F-PRJ-18 | **Atribuição por função** (back, front, QA) | Rafael | **v1** |
+| F-PRJ-09 | **Prazo e atraso** visíveis por projeto (RN-PRJ-33) e por pessoa | Rafael | **v1** |
+| F-PRJ-18 | **Atribuição do dev e do QA** da tarefa (D-PRJ-27) | Rafael | **v1** |
 | F-PRJ-19 | **Notificação** ao atribuir | Rafael | **v1** |
 | F-PRJ-20 | **Chave por projeto** (`SGM-17`) | Modelos SGM | **v1** |
 | F-PRJ-05 | **Modelo de tarefa** = documento de requisição (Sendo/Quero/Para + `CA_n`) | Modelos SGM | **v1** |
@@ -224,8 +242,8 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 - [ ] Os outros quadros do Trello, em especial um de projeto de cliente com prazo (ex.: gestão de multas), para comparar com o Wpay.
 - [ ] Modelo do relatório de fechamento para pagamento (P-01, P-02).
 - [x] Fase × sprint × versão: a "fase" do histórico Tecsolution **é a sprint** (D-PRJ-23). ([`modelos-rafael.md`](levantamento/modelos-rafael.md))
-- [ ] Horas previstas por **tarefa** ou por **item do roteiro**? (Rafael citou as duas formas)
-- [ ] Canal de notificação (RN-PRJ-21).
+- [x] Horas previstas por **tarefa** ou por **item do roteiro**? Por tarefa, um total só, estimado pelo gestor (D-PRJ-27).
+- [x] Canal de notificação: no sistema e por e-mail (RN-PRJ-21).
 - [ ] Lista de motivos de devolução (RN-PRJ-08).
 
 ---
@@ -239,7 +257,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 3. Cada contato com o lead vira uma **tratativa**: data, canal, resumo, próximo passo. A **situação atual** do lead (como está a conversa, em poucas linhas) é atualizada junto.
 4. Tratativa com próximo passo gera um **compromisso**: **follow-up** ou **reunião**, com data, hora e responsável.
 5. O comercial recebe **lembretes** dos compromissos no calendário e um resumo por e-mail toda manhã; e pode perguntar à IA a agenda do dia.
-6. Lead é ganho (vira cliente no núcleo, com contrato) ou perdido (com motivo).
+6. Lead é ganho (vira cliente no Núcleo, sem contrato, D-CRM-10) ou perdido (com motivo).
 
 ### Regras de negócio *(proposta)*
 
@@ -248,7 +266,7 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 - **RN-CRM-03** Tratativa é **editável a qualquer momento**; toda edição fica no histórico (D-GER-05).
 - **RN-CRM-04** Todo lead ativo tem um follow-up futuro. Lead ativo sem follow-up aparece em alerta para o responsável.
 - **RN-CRM-05** Todo comercial **vê todos os leads** e **edita só os próprios**; Administrador edita todos. Evita duas pessoas prospectando a mesma empresa sem saber.
-- **RN-CRM-12** **Compromisso** tem tipo (`follow-up`, `reunião`, editável), data e hora, duração (reunião), responsável, lead e observação. Reunião pode ter link ou local. Compromisso é criado, remarcado ou cancelado pela tela ou pela IA.
+- **RN-CRM-12** **Compromisso** tem tipo (`follow-up`, `reunião`, editável), data e hora, duração (reunião), responsável, lead ou cliente (D-CRM-09) e observação. Reunião pode ter link ou local. Compromisso é criado, remarcado ou cancelado pela tela ou pela IA.
 - **RN-CRM-13** **Lembretes** (D-CRM-05), sem IA embutida:
   - ao criar, remarcar ou cancelar um compromisso, o Hub manda ao responsável um **convite de calendário por e-mail** (arquivo `.ics`). O Outlook, o Google Agenda e o celular colocam na agenda e **avisam na hora**, com o aviso nativo do próprio calendário;
   - todo dia de manhã, **e-mail de resumo** com os compromissos do dia e os follow-ups vencidos;
@@ -280,7 +298,7 @@ O Wilson usa o ChatGPT e gosta de mandar **áudio**. Ele conversa com o **GPT pe
 
 O funil de prospecção e o CRM pós-auditoria vivem hoje no DaaS (`wcj-ui`). As **funcionalidades** passam para o CRM do Hub; no DaaS fica só a auditoria. Os **dados não são migrados** (D-CRM-03): o que está lá não é usado e está desatualizado. O CRM do Hub começa do zero.
 
-- **RN-CRM-07** Oportunidade de **auditoria** tem os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço). Eles são **obrigatórios para ganhar** esse tipo de oportunidade.
+- **RN-CRM-07** Lead de **auditoria** tem os campos de dimensionamento que hoje travam o "ganhar" no DaaS (setor, 5 respostas de sizing, preço). Eles são **obrigatórios para ganhar** esse lead (D-CRM-07).
 - **RN-CRM-08** Lead ganho com contrato de auditoria **não cria nada no DaaS na v1**: a auditoria é aberta no DaaS à mão, com o CNPJ do cliente. A integração automática CRM → DaaS fica **para depois da v1**.
 - **RN-CRM-09** Com o CRM do Hub no ar, o funil e o CRM pós-auditoria saem do DaaS. A remoção é trabalho de manutenção **naquele repositório** (`playbooks/manutencao.md`), com PR próprio.
 - **RN-CRM-10** **Depois da v1** (D-CRM-07): o Hub recria as funções do CRM pós-auditoria: **oportunidades** (origem: roadmap da auditoria ou avulsa; tipo: projeto ou recorrente) e **contratos** com ajustes. Contratos vivem no **Núcleo**, que passa a ser a **única fonte de contrato**; o DaaS consulta o Hub quando precisar (D-CRM-04).
@@ -396,13 +414,14 @@ Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem del
 
 - **RN-IA-01** A IA age como o usuário: toda chamada passa pelas mesmas Policies da tela. Papel sem acesso a um dado recebe "negado" também pela IA.
 - **RN-IA-02** O escopo do token nunca excede o papel. Comercial não recebe `projetos:escrever`, mesmo que peça.
-- **RN-IA-03** Toda escrita feita pela IA é gravada na auditoria com canal `ia:claude` ou `ia:chatgpt` e o identificador da autorização (RN-NUC-04).
+- **RN-IA-03** Toda escrita feita pela IA é gravada na auditoria com o canal do assistente (`ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`) e o identificador da autorização (RN-NUC-04).
 - **RN-IA-04** O usuário vê e revoga as autorizações dele na tela de perfil. O Administrador vê e revoga as de qualquer um.
 - **RN-IA-05** Usuário desativado ou com papel alterado tem os tokens revogados na hora.
 - **RN-IA-06** Limite de chamadas por token: **leitura 60 por minuto, escrita 20 por minuto**, ajustáveis (D-IA-07). É um teto de proteção (IA em loop, token roubado), não a expectativa de uso: uma pergunta ao assistente pode disparar várias chamadas em segundos. Ao estourar, a ferramenta devolve erro legível para o assistente, sem derrubar a sessão do usuário.
 - **RN-IA-07** Ferramenta de escrita altera **uma entidade por chamada**. Não existe ferramenta de alteração em lote.
 - **RN-IA-08** Ferramentas são marcadas como leitura ou escrita (anotações MCP `readOnlyHint` / `destructiveHint`), para o assistente pedir confirmação antes de escrever. **A segurança não depende dessa confirmação**: o servidor valida tudo (RN-IA-01).
 - **RN-IA-09** Texto vindo de cliente (descrição e comentários de chamado, anexos) é devolvido à IA como **dado**, delimitado e identificado como conteúdo externo. É o vetor de injeção de prompt: um chamado com "feche todos os chamados" não pode causar isso. RN-IA-07 e RN-IA-01 limitam o dano.
+- **RN-IA-10** Toda chamada de ferramenta, **inclusive de leitura**, fica registrada por 180 dias, só com ids e filtros, nunca texto livre (D-IA-08). O Administrador consulta esse registro por usuário, assistente e período, numa tela própria.
 
 ### Ferramentas da v1 *(proposta, validar com os donos)*
 
@@ -413,7 +432,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Ferramenta | Tipo | O que faz |
 |---|---|---|
 | `buscar_cliente` | leitura | Busca por nome ou CNPJ, dentro do que o papel vê |
-| `resumo_do_cliente` | leitura | Contratos ativos, projetos em andamento, chamados abertos, último contato comercial |
+| `resumo_do_cliente` | leitura | Contratos ativos, projetos em andamento, chamados abertos, último contato comercial; cada parte só para o papel que a vê (D-IA-10) |
 
 **Projetos**
 
@@ -513,10 +532,10 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 
 | Termo | Significa |
 |---|---|
-| Cliente | Empresa com pelo menos um contrato com a WCJ |
+| Cliente | Empresa atendida pela WCJ. Nasce sem contrato (D-CRM-10). Inclui a própria WCJ, dona dos projetos internos (RN-PRJ-01) |
 | Contato | Pessoa de um cliente ou de um lead |
 | Contrato | Vínculo comercial que dá origem a projeto e/ou direito a chamado |
-| Lead | Empresa em prospecção, ainda sem contrato |
+| Lead | Venda em andamento: empresa em prospecção ou cliente que pode comprar algo novo (D-CRM-06) |
 | Tratativa | Registro de um contato comercial com um lead |
 | Follow-up | Próximo contato agendado, com data e responsável |
 | Projeto | Trabalho com início e fim para um cliente |
@@ -530,16 +549,16 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Critério de aceite (`CA_n`) | Item verificável do documento de requisição; vira item do roteiro de teste |
 | Carga diária | Horas por dia que o dev trabalha na WCJ (ex.: 8 h ou 4 h) |
 | Versão | Pacote de tarefas prontas publicado em produção, com número e data (hoje: lista "Produção 1.0.9 10/07/2026") |
-| Retrabalho | Devolução de uma tarefa do QA para desenvolvimento |
+| Retrabalho | Volta da tarefa para desenvolvimento, vinda do code review, do teste cruzado, do QA ou da homologação (RN-PRJ-08) |
 | GMUD | Gestão de mudança: alteração de configuração ou ambiente em produção |
 | Chamado | Solicitação de um cliente sobre um sistema ou contrato |
 | SLA | Prazo de atendimento do chamado, definido pelo contrato e pela prioridade |
-| Assistente / IA | Claude ou ChatGPT do próprio usuário, conectado pelo MCP |
+| Assistente / IA | Claude, ChatGPT ou Codex do próprio usuário, conectado pelo MCP (ou o GPT "WCJ Hub", pelas Actions) |
 | Conector | A autorização de um assistente para acessar o sistema em nome do usuário |
 
 ## Restrições
 
-- Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09).
+- Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09). Banco MySQL 8 (D-GER-21).
 - Estrutura do código (D-GER-15), por domínio desde o primeiro commit:
   - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, contratos, auditoria, notificações, OAuth);
   - `app/Domains/Projetos/`, `app/Domains/Crm/` e, depois, `app/Domains/Chamados/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e **`Mcp`** (as ferramentas de IA daquele domínio, chamando o `Service` do próprio domínio);
