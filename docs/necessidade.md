@@ -22,6 +22,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-CRM-01 | 24/09/2026 | Funil do CRM: etapas do DaaS como padrão, editáveis. Motivos de perda editáveis. Tratativa editável com histórico. Comercial vê todos os leads e edita os próprios. Sizing obrigatório para ganhar auditoria. CRM → DaaS automático depois da v1. |
 | D-CRM-02 | 24/09/2026 | As funções do CRM pós-auditoria do DaaS (oportunidades e contratos) também passam para o Hub. |
+| D-CRM-05 | 24/09/2026 | Uso do Wilson: pela IA, avançar leads, registrar tratativas e a situação da conversa, agendar follow-ups e reuniões e consultar a agenda, **por chat e por áudio** no GPT "WCJ Hub". Lembretes chegam por **convite de calendário por e-mail** e **resumo diário**, sem IA embutida. |
 | D-CRM-03 | 24/09/2026 | **Sem migração de dados do DaaS**: o que está lá não é usado e está desatualizado. CRM do Hub começa do zero. |
 | D-CRM-04 | 24/09/2026 | O Hub é a **única fonte de contratos**; o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão na v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
 | D-CHM-01 | 24/09/2026 | **[DECIDIR]** Chamados: construir no Hub, adotar o GLPI (sugestão do Alaor) ou em duas fases. Ver Módulo Chamados. |
@@ -221,9 +222,9 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 
 1. Comercial cadastra o lead (empresa, contato, origem).
 2. Lead avança pelas etapas do funil. Padrão = etapas do funil do DaaS: `Prospecção → Contato → Reunião → Proposta → Ganhou / Perdido`. **Editáveis** como no quadro de projetos: criar, renomear, remover, reordenar (D-CRM-01).
-3. Cada contato com o lead vira uma **tratativa**: data, canal, resumo, próximo passo.
-4. Tratativa com próximo passo gera um **follow-up** com data e responsável.
-5. Comercial vê, todo dia, os follow-ups vencidos e os do dia.
+3. Cada contato com o lead vira uma **tratativa**: data, canal, resumo, próximo passo. A **situação atual** do lead (como está a conversa, em poucas linhas) é atualizada junto.
+4. Tratativa com próximo passo gera um **compromisso**: **follow-up** ou **reunião**, com data, hora e responsável.
+5. O comercial recebe **lembretes** dos compromissos no calendário e um resumo por e-mail toda manhã; e pode perguntar à IA a agenda do dia.
 6. Lead é ganho (vira cliente no núcleo, com contrato) ou perdido (com motivo).
 
 ### Regras de negócio *(proposta)*
@@ -233,6 +234,27 @@ Pela IA (acrescenta às ferramentas do bloco MCP): leitura: `linha_do_tempo_da_t
 - **RN-CRM-03** Tratativa é **editável a qualquer momento**; toda edição fica no histórico (D-GER-05).
 - **RN-CRM-04** Todo lead ativo tem um follow-up futuro. Lead ativo sem follow-up aparece em alerta para o responsável.
 - **RN-CRM-05** Todo comercial **vê todos os leads** e **edita só os próprios**; Administrador edita todos. Evita duas pessoas prospectando a mesma empresa sem saber.
+- **RN-CRM-12** **Compromisso** tem tipo (`follow-up`, `reunião`, editável), data e hora, duração (reunião), responsável, lead e observação. Reunião pode ter link ou local. Compromisso é criado, remarcado ou cancelado pela tela ou pela IA.
+- **RN-CRM-13** **Lembretes** (D-CRM-05), sem IA embutida:
+  - ao criar, remarcar ou cancelar um compromisso, o Hub manda ao responsável um **convite de calendário por e-mail** (arquivo `.ics`). O Outlook, o Google Agenda e o celular colocam na agenda e **avisam na hora**, com o aviso nativo do próprio calendário;
+  - todo dia de manhã, **e-mail de resumo** com os compromissos do dia e os follow-ups vencidos;
+  - no Hub, a lista de compromissos do dia e dos vencidos.
+- **RN-CRM-14** **Situação atual do lead**: texto curto, sempre o mais recente, que diz como está a conversa ("aguardando retorno da diretoria sobre a proposta"). É atualizado a cada tratativa, pela tela ou pela IA, e o histórico das versões fica guardado.
+
+### Uso pelo comercial com IA (Wilson, D-CRM-05)
+
+O Wilson usa o ChatGPT e gosta de mandar **áudio**. Ele conversa com o **GPT personalizado "WCJ Hub"** (D-IA-06) e o GPT faz no Hub:
+
+| O Wilson diz (exemplo) | O GPT faz |
+|---|---|
+| "Falei com a Fulana da Empresa X, ela pediu a proposta até sexta" | `registrar_tratativa` + atualiza a situação atual + `agendar_compromisso` (follow-up na sexta) |
+| "Passa a Empresa X para Proposta" | `mover_lead` |
+| "Marca reunião com a Empresa Y terça às 10h" | `agendar_compromisso` (reunião); o convite chega no calendário dele |
+| "O que eu tenho hoje?" / "Quem eu preciso cobrar?" | `minha_agenda` e `meus_followups` |
+| "Como está a conversa com a Empresa X?" | `historico_do_lead` (com a situação atual no topo) |
+
+- **Áudio:** o ChatGPT transcreve a fala do próprio usuário (ditado no campo de mensagem, no celular e no computador). O Hub recebe só o texto e não precisa de IA embutida (D-IA-02). [Testar no teste técnico] se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.
+- **Lembrete não vem pelo chat:** o ChatGPT não inicia conversa sozinho. O lembrete chega pelo calendário e pelo e-mail (RN-CRM-13), e o Wilson pergunta a agenda ao GPT quando quiser.
 
 ### A levantar
 
@@ -396,8 +418,11 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | `meus_followups` | leitura | Vencidos, de hoje e da semana |
 | `historico_do_lead` | leitura | Tratativas em ordem, etapa atual, próximo passo |
 | `cadastrar_lead` | escrita | Cria lead (com checagem de CNPJ duplicado) |
-| `registrar_tratativa` | escrita | Registra contato e, opcionalmente, o próximo follow-up |
+| `minha_agenda` | leitura | Compromissos do dia ou da semana (follow-ups e reuniões) |
+| `registrar_tratativa` | escrita | Registra contato, atualiza a situação atual do lead e, opcionalmente, agenda o próximo compromisso |
 | `mover_lead` | escrita | Muda a etapa do funil (ganho e perdido seguem RN-CRM-01/02) |
+| `agendar_compromisso` | escrita | Cria, remarca ou cancela follow-up ou reunião; dispara o convite de calendário (RN-CRM-13) |
+| `atualizar_situacao_do_lead` | escrita | Reescreve a situação atual do lead (RN-CRM-14) |
 
 **Chamados**
 
@@ -436,6 +461,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | DaaS consulta contratos no Hub | saída | Depois da v1 (D-CRM-04) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
 | E-mail de suporte | entrada (e-mail vira chamado) e saída (avisos ao cliente) | Com o módulo Chamados (D-CHM-02) |
+| E-mail interno (convites de calendário `.ics` e resumo diário) | saída | **Sim, com a v1 do CRM** (RN-CRM-13); também usado pela notificação de tarefa (RN-PRJ-21) |
 | GLPI | entrada e saída pela API | Em avaliação (D-CHM-01) |
 | WhatsApp | — | Não (ver abaixo) |
 

@@ -49,7 +49,7 @@ Sem migração de dados (D-CRM-03). Só combinar: o DaaS passa a consultar contr
 | Item | Definição |
 |---|---|
 | Escopo | Servidor MCP mínimo, HTTPS público, OAuth, 1 ferramenta de leitura + 1 de escrita |
-| Testes | Claude (app); Codex no app do ChatGPT (Plus) e no CLI; Claude Code; ChatGPT Pro só leitura. Em paralelo: GPT com Actions + OAuth (comercial) |
+| Testes | Claude (app); Codex no app do ChatGPT (Plus) e no CLI; Claude Code; ChatGPT Pro só leitura. Em paralelo: GPT com Actions + OAuth (comercial), **incluindo ditado e modo de voz** chamando as Actions (D-CRM-05) |
 | Perguntas a responder | OAuth e registro dinâmico funcionam nos quatro clientes? Token só de leitura para o ChatGPT Pro funciona? Codex e Claude Code escrevem sem restrição de plano? |
 | Quem faz | **Lucas Scholz** (D-GER-17) |
 | Prazo | [definir] |
