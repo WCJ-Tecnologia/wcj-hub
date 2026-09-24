@@ -410,8 +410,7 @@ id   slug                label                     roles que podem receber
 5    crm:write           CRM: escrever             admin, sales
 6    tickets:read        Chamados: ler             (reservado, seção 5)
 7    tickets:write       Chamados: escrever        (reservado, seção 5)
-A coluna "roles que podem receber" é regra do código (Policy), documentada aqui para revisão.
-Ver dúvida IA-01 sobre tabela role_ai_scopes.
+A coluna "roles que podem receber" é regra do código (Policy), documentada aqui para revisão (IA-01).
 
 =====================================================================
 ai_authorizations                      [v1]
@@ -442,7 +441,7 @@ ai_scope_id           fk ai_scopes          not null  on delete restrict
 pk (ai_authorization_id, ai_scope_id)   (sem id/timestamps: pivot puro)
 
 =====================================================================
-ai_tool_calls                          [v1]  (recomendado; ver dúvida IA-02)
+ai_tool_calls                          [v1]  (IA-02)
 =====================================================================
 Toda chamada de ferramenta MCP/Action, INCLUSIVE leitura. A escrita já vai para audit_logs; esta
 tabela responde "o que a IA do fulano andou consultando" e dá o dado para calibrar o limite
@@ -1413,14 +1412,11 @@ NUC-04 [RESPONDIDA 24/09, Lucas Scholz] audit_logs guarda tudo, sem partição; 
 NUC-05 [RESPONDIDA 24/09, Lucas Scholz] Endereço dentro de clients.
 
 INTERFACE DE IA
-IA-01  Relação papel × escopo de IA: regra no código (proposto) ou tabela role_ai_scopes?
-       Tabela deixa o admin mudar sem deploy, mas abre espaço para dar escopo acima do papel
-       (RN-IA-02). Proposta: código.
-IA-02  ai_tool_calls (log de LEITURA pela IA) entra? Retenção de 180 dias? Guarda argumentos?
-       Proposta: sim, 180 dias, só ids e filtros (sem texto livre).
-IA-03  Reconectar o mesmo assistente cria autorização nova (proposto: revoga a anterior e abre
-       outra, histórico preservado) ou reaproveita a linha? Conferir na prova de conceito se o
-       laravel/mcp registra 1 client por conexão no Claude; o modelo aguenta os dois casos.
+IA-01  [RESPONDIDA 24/09, Lucas Scholz] Papel × escopo de IA fica no código (Policy), sem tabela.
+IA-02  [RESPONDIDA 24/09, Lucas Scholz] ai_tool_calls entra: 180 dias, só ids e filtros.
+IA-03  [RESPONDIDA 24/09, Lucas Scholz] Reconectar revoga a autorização anterior e abre outra
+       (histórico preservado). O comportamento do laravel/mcp com o Claude se confere na prova de
+       conceito; o modelo aguenta os dois casos.
 
 PROJETOS
 PRJ-01 Projeto interno (Wpay) precisa de contrato? Proposta: contract_id not null e um contrato
