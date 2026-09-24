@@ -14,7 +14,7 @@ Objetivo: fechar a etapa 1. Ao final, todo **[DECIDIR]** do documento tem respos
 ## Antes da reunião
 
 - [ ] Atas das pautas 01 a 04 aprovadas e incorporadas ao `necessidade.md`.
-- [ ] Resultado da prova de conceito MCP (R-IA-01).
+- [ ] Resultado da prova de conceito MCP (validação técnica).
 - [ ] Resultado da enquete interna de ferramentas: assistente, plano e **onde cada pessoa usa** (app, celular, Codex, Claude Code).
 
 ## Roteiro
@@ -27,7 +27,7 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 **Interface de IA**
 | # | Decisão | Base |
 |---|---|---|
-| 1 | Se o app ChatGPT só lê: ChatGPT entra na v1 só com leitura? | Resultado da prova de conceito + enquete |
+| 1 | Confirmado que o app ChatGPT só escreve no Business (Pro lê, Plus não conecta). Aprovar a proposta D-IA-05: Claude lê e escreve; ChatGPT Pro só leitura; Plus sem conector; Business fora da v1? | Enquete de ferramentas |
 | 2 | ~~Dono da Interface de IA~~ **Resolvido: Lucas Scholz (produto) + Lucas Alencar (técnico)** (D-GER-07) | — |
 | 3 | ~~`core/mcp.md` no padrão?~~ **Resolvido: sim, principalmente para sistemas 100% IA** (D-GER-09) | — |
 

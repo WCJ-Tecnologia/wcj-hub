@@ -47,13 +47,13 @@ As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../le
 - Toda ferramenta chama a mesma camada de serviço da tela (sem regra só no MCP).
 - Limite de chamadas por token (RN-IA-06): qual valor?
 - Conteúdo de cliente delimitado como dado (RN-IA-09): como devolver na resposta da ferramenta.
-- **Prova de conceito R-IA-01**, a definir aqui:
+- **Prova de conceito MCP** (validação técnica; a dúvida de plano do ChatGPT já foi resolvida: escrita só no Business, Pro só lê, Plus não conecta):
 
 | Item | Definição |
 |---|---|
 | Escopo | Servidor MCP mínimo, HTTPS público, OAuth, 1 ferramenta de leitura + 1 de escrita |
-| Testes | Claude Pro (app), ChatGPT Plus/Pro (app, modo desenvolvedor), Codex, Claude Code |
-| Pergunta a responder | O app ChatGPT Plus/Pro consegue **escrever** pelo conector? |
+| Testes | Claude (app) leitura e escrita; ChatGPT Pro (app) só leitura; Codex e Claude Code leitura e escrita |
+| Perguntas a responder | OAuth e registro dinâmico funcionam nos quatro clientes? Token só de leitura para o ChatGPT Pro funciona? Codex e Claude Code escrevem sem restrição de plano? |
 | Quem faz | [definir] |
 | Prazo | [definir] |
 | Resultado vai para | Pauta 05 (comitê) |

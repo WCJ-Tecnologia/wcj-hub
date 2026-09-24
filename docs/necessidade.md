@@ -27,8 +27,10 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-08 | 24/09/2026 | Prazo: o mais rápido possível. Ordem das entregas: Núcleo → Projetos → Chamados → CRM. |
 | D-GER-09 | 24/09/2026 | Stack: template da casa (Laravel + Inertia). As regras do padrão `ai-systems` (incluindo o futuro `core/mcp.md`) valem **principalmente para sistemas 100% IA**, como o WCJ Hub; projetos com time mais sênior têm liberdade de stack e template. |
 | D-GER-10 | 24/09/2026 | Volume: até **14 usuários internos**, **6 clientes ativos**, cerca de **10 leads por mês**. |
+| D-GER-11 | 24/09/2026 | Tipos de contrato: projeto, sustentação, auditoria, alocação de dev, infraestrutura; o Administrador cadastra mais. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
+| D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -74,7 +76,7 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 
 1. Administrador cadastra usuários internos e define o papel de cada um.
 2. Cliente nasce de duas formas: cadastro direto ou conversão de lead ganho no CRM.
-3. Cliente recebe contratos. Tipo de contrato é **lista cadastrável** pelo Administrador; padrão inicial: projeto, sustentação, auditoria, alocação de dev, infraestrutura, outro. A lista cresce com a empresa.
+3. Cliente recebe contratos. Tipo de contrato é **lista cadastrável** pelo Administrador (D-GER-11); padrão inicial: **projeto, sustentação, auditoria, alocação de dev, infraestrutura**. O Administrador cadastra novos tipos conforme a empresa cresce.
 4. Contatos do cliente são cadastrados e, se autorizados, recebem acesso ao portal de chamados.
 
 ### Regras de negócio
@@ -280,17 +282,26 @@ Levantamento de 24/09/2026:
 | Assistente | Conector MCP remoto no plano Pro+ | Escrita | Situação |
 |---|---|---|---|
 | Claude (Pro, Max) | Sim: "Customize → Connectors", com OAuth e registro dinâmico de cliente | Sim | Atende |
-| ChatGPT (Plus, Pro), app web | Sim, pelo **modo desenvolvedor** | **Incerto** | **Risco** |
+| ChatGPT Business / Enterprise, app | Sim | Sim | Atende (plano de empresa) |
+| ChatGPT Pro, app | Sim, pelo modo desenvolvedor | **Não: só leitura** | Atende só leitura |
+| ChatGPT Plus, app | **Não** | — | Não conecta |
 | Claude Code (CLI/IDE/desktop) | Sim, conector local do usuário, HTTP + OAuth | Sim | Atende |
 | Codex (CLI/IDE/app) | Sim: `codex mcp add <nome> --url <URL>` + `codex mcp login <nome>` (HTTP + OAuth) | Sim | Atende |
 
-O R-IA-01 é do **app ChatGPT**, não do Codex. No Codex e no Claude Code o conector é configurado pelo próprio usuário no cliente dele e não passa pela regra de conector do workspace do ChatGPT. Só que esses dois são agentes de código: servem para quem já trabalha no terminal ou na IDE (devs), não para o comercial no dia a dia.
+A restrição é do **app ChatGPT**, não do Codex. No Codex e no Claude Code o conector é configurado pelo próprio usuário no cliente dele e não passa pela regra de conector do workspace do ChatGPT; confirmar na prova de conceito. Codex e Claude Code servem para quem trabalha no terminal ou na IDE (devs), não para o uso do dia a dia do comercial.
 
-**Risco R-IA-01:** a documentação de desenvolvedor da OpenAI diz que o modo desenvolvedor dá suporte completo de leitura e escrita no Plus e no Pro. Fontes de terceiros afirmam que a central de ajuda restringe a escrita em conector próprio a Business, Enterprise e Edu, deixando Plus e Pro só com leitura. As fontes divergem, e a central de ajuda não pôde ser consultada diretamente.
+**R-IA-01 confirmado (24/09/2026, conferido no próprio ChatGPT):** escrita por conector próprio só no **ChatGPT Business** (e superiores). O **Pro só lê**. O **Plus não conecta**.
 
-**Mitigação: prova de conceito antes da etapa 4.** Um servidor MCP mínimo, publicado em HTTPS público, com OAuth, uma ferramenta de leitura e uma de escrita, testado num Claude Pro e num ChatGPT Plus/Pro reais. Resultado possível:
-- escrita funciona nos dois: segue como está;
-- ChatGPT só lê: o ChatGPT entra na v1 **só com escopos de leitura** e a escrita fica para Claude, até a OpenAI liberar ou a WCJ ter um workspace Business. [DECIDIR] no comitê, com o resultado em mãos.
+**Consequência para a v1 (proposta D-IA-05, [DECIDIR] no comitê):**
+- **Claude (Pro ou superior):** leitura e escrita. É o assistente de referência para quem precisa alterar dados pela IA.
+- **ChatGPT Pro:** entra só com **escopos de leitura**. O servidor emite token só de leitura para esse cliente, não depende de o ChatGPT se limitar.
+- **ChatGPT Plus:** sem conector. Quem usa Plus e precisa da IA no Hub usa Claude, ou fica sem IA no Hub.
+- **ChatGPT Business:** só se a WCJ decidir assinar um workspace; fora da v1.
+- **Codex e Claude Code:** liberados para leitura e escrita, confirmados na prova de conceito.
+
+A enquete interna de ferramentas diz quantas pessoas ficam em cada caso.
+
+**Prova de conceito antes da etapa 4** (agora é validação técnica, não mais dúvida de plano): servidor MCP mínimo, HTTPS público, OAuth, uma ferramenta de leitura e uma de escrita, testado no Claude (app), no ChatGPT Pro (leitura), no Codex e no Claude Code.
 
 Observação: os dois assistentes acessam o servidor MCP **a partir da nuvem deles**, não da máquina do usuário. O servidor precisa estar na internet pública com HTTPS. Isso vale também para homologação: dev local testa por túnel ou por ambiente de homologação publicado.
 
@@ -437,7 +448,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 ## Restrições
 
 - Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09).
-- Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito do R-IA-01.
+- Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito.
 - Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
 - Uso principal: computador. Web responsiva; quais telas e funções serão realmente usadas no celular será validado depois.
 - Volume (D-GER-10): até 14 usuários internos, 6 clientes ativos, cerca de 10 leads por mês. [LEVANTAR com Alaor] chamados por mês.
@@ -463,7 +474,7 @@ Objetivo comum: o que as ferramentas de hoje **não fazem** e o sistema pode inc
 |---|---|---|---|
 | Chamados | Alaor Rodrigues | Canal atual, tipos, prioridade, SLA por contrato, banco de horas, triagem | Lista de contratos de sustentação ativos; 3 chamados reais recentes, do pedido ao fechamento |
 | Projetos | Rafael Garcia | O que o Trello não resolve; etapas; visão por cliente e por pessoa; prazos | Acesso aos quadros do Trello (export JSON) |
-| Banco + CRM + IA | Lucas Alencar | Viabilidade do núcleo comum, migração do funil do DaaS, prova de conceito MCP (R-IA-01) | Esquema atual de `lead`/`lead_evento` do DaaS |
+| Banco + CRM + IA | Lucas Alencar | Viabilidade do núcleo comum, migração do funil do DaaS, prova de conceito MCP | Esquema atual de `lead`/`lead_evento` do DaaS |
 
 Perguntas que valem para as três:
 1. O que você faz hoje fora da ferramenta (planilha, WhatsApp, caderno) porque ela não atende?
@@ -475,7 +486,7 @@ Perguntas que valem para as três:
 ## Fontes
 
 - 24/09/2026: conversa de concepção (Lucas Scholz), incluindo as decisões D-GER-01 a 03 e D-IA-01 a 04.
-- 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro registrada em R-IA-01. Codex: OpenAI Developers ("Model Context Protocol", Codex).
+- 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro resolvida em 24/09 conferindo no próprio ChatGPT (R-IA-01). Codex: OpenAI Developers ("Model Context Protocol", Codex).
 - 24/09/2026: export JSON do quadro Trello "Wpay" → `levantamento/trello-wpay.md`. Demais quadros pendentes.
 - 24/09/2026: reunião de Projetos com Rafael Garcia → `atas/2026-09-24-projetos-rafael.md`.
 - 24/09/2026: fluxo de desenvolvimento e colunas do quadro enviados por Lucas Alencar → `levantamento/fluxo-desenvolvimento.md`.
