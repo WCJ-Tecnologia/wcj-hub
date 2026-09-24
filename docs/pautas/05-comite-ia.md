@@ -50,10 +50,11 @@ Um resumo por frente: o que foi confirmado, o que mudou, o que surgiu de novo.
 | # | Decisão | Base |
 |---|---|---|
 | 11 | ~~Migrar histórico do Trello?~~ **Resolvido: começar do zero; migração depois** (D-PRJ-04) | Ata 24/09 |
-| 12 | Canais de abertura de chamado | **Adiado com o módulo Chamados** |
+| 12 | ~~Canais de abertura~~ **Respondido: e-mail** (D-CHM-02) | Ata Alaor 24/09 |
 | 13 | Notificação de chamado por e-mail | **Adiado com o módulo Chamados** |
-| 14 | Banco de horas da sustentação | **Adiado com o módulo Chamados** |
+| 14 | ~~Banco de horas~~ **Respondido: sim, com hora extra** (D-CHM-04) | Ata Alaor 24/09 |
 | 15 | ~~Integração CRM → DaaS~~ **Resolvido: depois da v1** (D-CRM-01) | — |
+| 15b | **Chamados: construir no Hub, GLPI ou em duas fases?** (D-CHM-01). Pode esperar Chamados entrar na fila | Ata Alaor 24/09 |
 | 16 | Priorização final das candidatas F-PRJ (e das que surgirem em Chamados e CRM) | Pautas 01 a 03 |
 
 **Projeto**

@@ -21,6 +21,10 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-PRJ-11 | 24/09/2026 | Colunas padrão do quadro, propostas por Lucas Alencar: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done`. Fluxo de desenvolvimento em 11 passos, também dele. Ver [`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md). |
 | D-CRM-01 | 24/09/2026 | Funil do CRM: etapas do DaaS como padrão, editáveis. Motivos de perda editáveis. Tratativa editável com histórico. Comercial vê todos os leads e edita os próprios. Sizing obrigatório para ganhar auditoria. CRM → DaaS automático depois da v1. |
 | D-CRM-02 | 24/09/2026 | O CRM pós-auditoria do DaaS (oportunidades e contratos) **vem junto** com o funil. |
+| D-CHM-01 | 24/09/2026 | **[DECIDIR]** Chamados: construir no Hub, adotar o GLPI (sugestão do Alaor) ou em duas fases. Ver Módulo Chamados. |
+| D-CHM-02 | 24/09/2026 | Canal inicial de chamado: **e-mail** (endereço próprio). Triagem por uma função de **despachante**, com filas N1/N2/N3. |
+| D-CHM-03 | 24/09/2026 | SLA e prioridade **contrato a contrato**; prioridade definida pela WCJ na triagem. No início, chamados só no nível de projeto. |
+| D-CHM-04 | 24/09/2026 | **Banco de horas**: contrato com horas contratadas; excedente contabilizado como hora extra. Chamado resolvido fecha sozinho sem resposta do cliente. |
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
 | D-GER-06 | 24/09/2026 | Nome do sistema: **WCJ Hub**. |
 | D-GER-07 | 24/09/2026 | Donos: **Núcleo** = Lucas Scholz; **Interface de IA** = Lucas Scholz (produto) + Lucas Alencar (técnico). |
@@ -47,7 +51,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 |---|---|---|
 | **Projetos** | Trello (cerca de R$ 500,00 por mês, segundo a ata de 24/09) | No quadro Wpay: retrabalho do QA invisível (2 em 3 entregas voltam), versões controladas como listas criadas à mão, prazo quase não usado, chamado misturado com projeto. Rafael: sem tempo por etapa nem previsto × realizado de horas; cronologia de entregas para o cliente montada à mão. |
 | **CRM** | Funil de prospecção do DaaS (D-GER-03) + [LEVANTAR] planilha / WhatsApp | Lead e tratativa não ficam registrados num lugar só; follow-up depende de alguém lembrar. |
-| **Chamados** | [LEVANTAR] WhatsApp / e-mail direto com o técnico | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
+| **Chamados** (último, D-GER-12) | Nada formal; GLPI em avaliação (D-CHM-01) | Cliente de sustentação e de projeto em andamento não tem canal formal; não há prazo de atendimento medido nem histórico por cliente. |
 
 **Base comum (núcleo):** usuários, papéis, clientes (empresas), contatos e contratos. É o que liga os três módulos: o lead ganho no CRM vira cliente; o cliente tem contratos; o contrato tem projetos e dá direito a abrir chamados.
 
@@ -66,7 +70,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Tech Lead | **Definido por projeto** (D-PRJ-10): é uma função no projeto, não um papel fixo do usuário | Aprova o PR no `Code-review` **dos projetos em que é Tech Lead** | Aprovar code review em projeto em que não é Tech Lead |
 | Desenvolvedor / técnico | Devs (PJ) | Trabalha nas tarefas atribuídas, atende chamados atribuídos | CRM; contratos e valores; projetos em que não está alocado (D-PRJ-03) |
 | Comercial | Equipe comercial | Cadastra leads, registra tratativas, agenda follow-ups, converte lead em cliente | Tarefas internas de projeto; **conteúdo dos chamados** (na ficha do cliente vê só a quantidade de chamados abertos e o status) |
-| Suporte / sustentação | Alaor Rodrigues (dono); [LEVANTAR] quem mais faz a triagem | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
+| Suporte / sustentação | Alaor Rodrigues (dono); função **despachante** + filas N1/N2/N3 (D-CHM-02) | Recebe, classifica e distribui chamados; acompanha prazo | CRM |
 | Contato do cliente (externo) | Pessoa indicada pelo cliente | Abre e acompanha os chamados **da própria empresa** | Qualquer dado de outro cliente; CRM; projetos internos; **não conecta IA na v1** |
 
 Regra geral: o que o papel não vê na tela, a IA dele também não vê.
@@ -241,32 +245,52 @@ O funil de prospecção vive hoje no DaaS (`wcj-ui`, tabelas `lead` e `lead_even
 
 ## Módulo Chamados
 
-**Último módulo (D-GER-12):** ainda não há demanda. Esta seção fica como rascunho até o levantamento com o Alaor, sem data. O Núcleo já nasce com o que Chamados vai precisar (clientes, contatos, contratos), para o módulo entrar depois sem refazer a base.
+**Último módulo (D-GER-12):** ainda não há volume de chamados. Vira necessidade quando entrarem contratos de **sustentação de infraestrutura**. Base: reunião com Alaor Rodrigues em 24/09/2026 ([ata](atas/2026-09-24-chamados-alaor.md)). O Núcleo já nasce com o que Chamados vai precisar (clientes, contatos, contratos).
 
-### Fluxo principal *(proposta)*
+### Construir no Hub ou adotar o GLPI (D-CHM-01, [DECIDIR])
 
-1. Contato do cliente abre chamado no portal: sistema/contrato, tipo, descrição, anexos.
-2. Suporte faz a triagem: confirma tipo e prioridade e atribui um responsável.
-3. Responsável atende, registra interações e muda o status.
-4. Cliente acompanha pelo portal e responde quando solicitado.
-5. Chamado é resolvido; cliente confirma ou o chamado fecha sozinho após [LEVANTAR] dias.
+O Alaor recomenda o **GLPI**, ferramenta de ITSM open source, sem licença, hospedada pela própria WCJ. Ela já traz o que dá mais trabalho num módulo de chamados: entrada por e-mail, filas N1/N2/N3, catálogo de serviços, SLA, regras de distribuição e inventário de máquinas.
+
+| | A. Construir no Hub | B. GLPI integrado ao Hub | C. Em duas fases (recomendada) |
+|---|---|---|---|
+| O que é | Módulo próprio, como Projetos e CRM | GLPI hospedado pela WCJ; Hub e GLPI conversam pela API do GLPI | **Agora:** chamado de projeto dentro do Hub (coluna `Chamados` no quadro, entrada por e-mail). **Quando entrar sustentação de infra:** avaliar o GLPI para o ITSM completo |
+| A favor | Tudo num lugar só: mesmo login, mesma auditoria, IA pelo mesmo MCP, chamado vira tarefa sem integração | ITSM completo pronto e maduro; inventário; comunidade grande; Alaor já conhece | Resolve o pedido do Rafael (coluna Chamados) sem construir ITSM antes de ter demanda; decide o GLPI com demanda real |
+| Contra | ITSM é trabalhoso (filas, SLA, regras, e-mail); construir antes de ter volume | Mais um sistema para hospedar, atualizar e proteger; clientes e contratos duplicados (sincronizar do Núcleo); a IA do Hub não enxerga o GLPI sem integração própria; cliente com dois portais | Se o GLPI for adotado depois, o chamado de projeto do Hub precisa conversar com ele |
+
+Pontos de atenção se o GLPI entrar:
+- **Segurança:** servidor exposto à internet, atualização de versão em dia, backup e HTTPS, pelo mesmo checklist do padrão (`core/seguranca.md`, `core/deploy.md`).
+- **Fonte única de cliente e contrato:** o Núcleo do Hub. O GLPI recebe as entidades por sincronização, nunca é cadastrado à mão em paralelo (`core/banco.md` seção 9).
+- **IA:** as ferramentas MCP de Chamados passariam a chamar a API do GLPI, com as mesmas regras RN-IA.
+
+### Fluxo principal *(proposta, vale para a opção A ou para a primeira fase da C)*
+
+1. Cliente manda **e-mail** para o endereço de suporte (D-CHM-02; `ticket@` ou `suporte@wcjtecnologia.com.br`, a definir). O e-mail vira chamado, ligado ao cliente pelo endereço do remetente.
+2. O **despachante** faz a triagem: confirma cliente, contrato e projeto, define **tipo, área e prioridade** (a prioridade é definida pela WCJ, não pelo cliente) e coloca na **fila** certa.
+3. **N1** tenta resolver. Se não resolve, escala para **N2 / N3**. Chamado de desenvolvimento ligado a projeto cai na coluna `Chamados` do quadro do projeto como tarefa (F-PRJ-08).
+4. O responsável atende, registra as interações e **aponta as horas**.
+5. Chamado resolvido: o cliente confirma, ou o chamado **fecha sozinho** se o cliente não responder no prazo.
 
 ### Regras de negócio *(proposta)*
 
-- **RN-CHM-01** Chamado só pode ser aberto contra contrato ativo do próprio cliente.
+- **RN-CHM-01** Chamado é ligado a cliente e contrato. E-mail de remetente desconhecido entra numa fila de **não identificados** para o despachante vincular; não é descartado.
 - **RN-CHM-02** Número do chamado é sequencial por sequência do banco, nunca `max + 1` (`core/banco.md` seção 8).
-- **RN-CHM-03** Prazo de atendimento (SLA) vem do contrato e da prioridade [LEVANTAR tabela de SLA por tipo de contrato].
-- **RN-CHM-04** Chamado com prazo estourado aparece em destaque para Suporte e Administrador.
+- **RN-CHM-03** **SLA e prioridade são definidos contrato a contrato** (D-CHM-03). A prioridade do chamado é definida pela WCJ na triagem. [LEVANTAR] tabela de SLA de cada contrato de sustentação.
+- **RN-CHM-04** Chamado com prazo estourado aparece em destaque para o despachante e o Administrador.
 - **RN-CHM-05** Comentário interno (entre a equipe) nunca aparece para o cliente.
 - **RN-CHM-06** Chamado fechado não é reaberto; o cliente abre outro, vinculado ao anterior. [DECIDIR]
+- **RN-CHM-07** **Filas** configuráveis. Padrão: `N1`, `N2`, `N3`. Função **despachante** atribuída a pessoas (D-CHM-02). Como no resto do Hub, filas, tipos e áreas são editáveis (D-GER-05).
+- **RN-CHM-08** **Banco de horas** (D-CHM-04): contrato pode ter horas contratadas por período. As horas apontadas nos chamados descontam do saldo; o que passar é **hora extra**, contabilizada à parte para cobrança.
+- **RN-CHM-09** Chamado resolvido sem resposta do cliente **fecha sozinho** após N dias, configurável por contrato. [LEVANTAR] padrão de N (P-03 da ata).
+- **RN-CHM-10** **Viagem** (deslocamento para atendimento no local) é registrada no chamado conforme o contrato. [confirmar] o que o contrato prevê (P-02 da ata).
 
 ### A levantar
 
-- [ ] Tipos de chamado (incidente, dúvida, melhoria, acesso…).
-- [ ] Prioridades e o que define cada uma.
-- [ ] SLA por contrato; se existe banco de horas de sustentação a descontar.
-- [ ] Quais sistemas vendidos entram na v1 (lista de contratos de sustentação ativos).
-- [ ] **[DECIDIR]** Canais de abertura na v1: só portal (proposta) ou também e-mail/WhatsApp.
+- [ ] Decisão D-CHM-01 (construir, GLPI ou em duas fases), quando Chamados entrar na fila.
+- [ ] Endereço do e-mail de suporte (P-01).
+- [ ] Tipos de chamado e áreas.
+- [ ] SLA de cada contrato de sustentação; quais contratos entram primeiro.
+- [ ] Portal do cliente: entra junto do e-mail ou depois?
+- [ ] Inventário de máquinas (GLPI Agent) é necessário para os contratos de sustentação de infraestrutura?
 
 ---
 
@@ -400,7 +424,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Trello | importação | **Não na v1** (D-PRJ-04): começa do zero com os projetos ativos |
 | Funil de prospecção do DaaS | importação única (RN-CRM-06) | **Sim** (D-GER-03) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
-| E-mail (notificação de chamado ao cliente e ao responsável) | saída | [DECIDIR] |
+| E-mail de suporte | entrada (e-mail vira chamado) e saída (avisos ao cliente) | Com o módulo Chamados (D-CHM-02) |
+| GLPI | entrada e saída pela API | Em avaliação (D-CHM-01) |
 | WhatsApp | — | Não (ver abaixo) |
 
 ---
@@ -413,7 +438,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 - Assistentes além de Claude e ChatGPT. D-IA-03.
 - Abertura de chamado por WhatsApp.
 - Faturamento, cobrança, emissão de nota.
-- Apontamento de horas / timesheet [DECIDIR se banco de horas da sustentação entra].
+- Banco de horas da sustentação: entra com o módulo Chamados (D-CHM-04), não na v1 de Projetos.
 - Aplicativo móvel nativo (a v1 é web responsiva).
 
 ## O que não pode
@@ -501,6 +526,7 @@ Perguntas que valem para as três:
 - 24/09/2026: disponibilidade de conector MCP: Claude Help Center ("Get started with custom connectors using remote MCP") e OpenAI Developers ("ChatGPT Developer mode"); divergência sobre escrita no Plus/Pro resolvida em 24/09 conferindo no próprio ChatGPT (R-IA-01). Codex: OpenAI Developers ("Model Context Protocol", Codex).
 - 24/09/2026: export JSON do quadro Trello "Wpay" → `levantamento/trello-wpay.md`. Demais quadros pendentes.
 - 24/09/2026: reunião de Projetos com Rafael Garcia → `atas/2026-09-24-projetos-rafael.md`.
+- 24/09/2026: reunião de Chamados com Alaor Rodrigues → `atas/2026-09-24-chamados-alaor.md` (inclui resumo do vídeo de referência do GLPI).
 - 24/09/2026: fluxo de desenvolvimento e colunas do quadro enviados por Lucas Alencar → `levantamento/fluxo-desenvolvimento.md`.
 - 24/09/2026: documentos de requisição SGM-13/17/22 e "Histórico de Desenvolvimento" Tecsolution → `levantamento/modelos-rafael.md` (originais fora do git).
 - Funil de prospecção do DaaS: repositório `wcj-ui`, tabelas `lead` e `lead_evento`.
