@@ -7,7 +7,7 @@ Versão 4, de 24/09/2026. É a versão para a reescrita da `necessidade.md` e do
 A gestão de projetos da v1 é um **kanban simples, como o Trello de hoje**. O time é pequeno e respeita o fluxo, então **o sistema não trava o fluxo**:
 
 - **Administrador e gestor** mexem em tudo, a qualquer momento: criam, editam e excluem card; põem e tiram card da sprint; montam pacote; mudam a configuração do projeto.
-- **O dev** só não exclui card e não mexe na sprint, no pacote nem na configuração. Todo o resto ele faz.
+- **O dev** executa o que está no quadro. Ele não cria nem exclui card e não mexe na sprint, no pacote nem na configuração. As demandas nascem do gestor.
 - Número de controle, como horas × capacidade da sprint, é **referência para o gestor, nunca impeditivo**.
 - Regra nova só entra se for simples. Na dúvida, fica a opção mais aberta.
 
@@ -20,7 +20,7 @@ As 17 lacunas da revisão 3 foram fechadas assim, sem rodada de perguntas:
 3. O gestor e o Admin põem e tiram card da sprint quando quiserem. Isso inclui card de suporte, bug urgente e tarefa devolvida pela homologação.
 4. O card de suporte segue o mesmo quadro, com as validações que o gestor deixar ligadas.
 5. A pausa não empurra a data prevista. **Tarefa atrasada** = passou da data prevista sem chegar em `Done`.
-6. **Qualquer pessoa alocada cria card** no Backlog, como no Trello.
+6. **Só o gestor e o Administrador criam card.** As demandas nascem do gestor, e os devs executam o que está no quadro. *(corrigido pelo Lucas Scholz)*
 7. Horas realizadas: cada um lança e corrige as próprias; o gestor e o Admin corrigem qualquer uma.
 8. O pacote é **opcional**. O gestor e o Admin montam o pacote e mudam o estado dele, sem trava.
 9. O gestor encerra o projeto quando quiser, mesmo com tarefa aberta. Tirar um dev do projeto deixa as tarefas dele sem dev.
@@ -51,7 +51,7 @@ As 17 lacunas da revisão 3 foram fechadas assim, sem rodada de perguntas:
 |---|---|---|---|
 | Administrador | Sócios, inclusive o Wilson | Tudo | — |
 | Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Tudo nos projetos que gere | Pipeline comercial e valores de proposta |
-| Desenvolvedor | Devs PJ | Projetos em que está alocado e todas as tarefas deles: cria card, move, edita, comenta, anexa, lança horas, puxa teste cruzado | CRM; painel de produtividade. Não exclui card e não mexe em sprint, pacote nem configuração |
+| Desenvolvedor | Devs PJ | Projetos em que está alocado e todas as tarefas deles: move, edita, comenta, anexa, lança horas, puxa teste cruzado | CRM; painel de produtividade. Não cria nem exclui card e não mexe em sprint, pacote nem configuração |
 | Comercial | Ninguém no início | Todos os leads; edita os próprios; converte lead em cliente | Tarefas internas de projeto |
 
 - O papel Comercial fica pronto para quando houver comercial. Hoje o Wilson é sócio e entra como Administrador.
@@ -111,7 +111,7 @@ As 17 lacunas da revisão 3 foram fechadas assim, sem rodada de perguntas:
 - **P24** A tarefa tem anexos e comentários.
 - **P25** Bug achado em produção vira tarefa nova, ligada à original. Conta como indicador de qualidade do projeto, não como retrabalho do dev.
 - **P26** O gestor e o Administrador **excluem** qualquer card, a qualquer momento; a exclusão fica na auditoria. Card abandonado também pode ser **arquivado**, com motivo; desarquivar devolve ao Backlog. O dev não exclui nem arquiva. *(revisado)*
-- **P56** Qualquer pessoa alocada cria card no Backlog. *(novo)*
+- **P56** Só o gestor e o Administrador criam card. As demandas nascem do gestor; o dev executa o que está no quadro. Vale também pela IA (G4). *(novo)*
 
 ### 3.4 Horas e prazo
 
