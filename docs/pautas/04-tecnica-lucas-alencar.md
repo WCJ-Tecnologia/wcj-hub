@@ -21,7 +21,7 @@ Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova
 - Confirmar o template da casa (`stacks/laravel-inertia.md`).
 - Um sistema com três módulos sobre um núcleo comum: separar por módulo de código (pastas/domínios) ou por pacote?
 - PR: fluxo atual é dev abre PR → Tech Lead aprova (D-PRJ-09). Tech Lead é definido por projeto (D-PRJ-10). Confirmar se a v1 lê o status do PR do GitHub ou só guarda o link (F-PRJ-06).
-- Onde publicar: VPS própria ou ambiente já existente? Precisa de HTTPS público desde a homologação (os assistentes chamam o MCP a partir da nuvem deles).
+- Hospedagem decidida: VPS do DaaS (D-GER-14). Confirmar capacidade (memória, disco), subdomínio, e banco do Hub separado do Supabase do DaaS (instância própria ou banco separado).
 
 ### 1b. Fluxo de desenvolvimento (dele, D-PRJ-11)
 As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../levantamento/fluxo-desenvolvimento.md), todas respondidas (D-PRJ-12 a 16).
