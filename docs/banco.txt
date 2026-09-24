@@ -32,7 +32,7 @@ Tipos
                2038-01-19: contrato e compromisso futuros passam disso), gravado em UTC.
                No Laravel: dateTime() em vez de timestamp(), inclusive em created_at/updated_at.
                [PG] timestamptz.
-- date       = data de negócio sem hora (worked_on, due_on, feriado). Calculada com fuso explícito America/Sao_Paulo.
+- date       = data de negócio sem hora (worked_on, due_on). Calculada com fuso explícito America/Sao_Paulo.
 - money      = decimal(15,2). Nunca float.
 - hours      = decimal(6,2). Horas decimais, sem arredondar para dia (RN-PRJ-15).
 - cnpj       = char(14), só dígitos.
@@ -86,7 +86,7 @@ Marcação de entrega
 =====================================================================
 1. PLATFORM (Núcleo)
    roles · users · clients · client_contacts · industries · contract_types · contract_statuses
-   · billing_cycles · contracts · attachments · comments · holidays · holiday_scopes · settings
+   · billing_cycles · contracts · attachments · comments · settings
    · audit_logs · audit_channels · ai_assistants · ai_scopes · ai_authorizations
    · ai_authorization_scopes · ai_tool_calls · notifications (framework)
 2. PROJETOS
@@ -307,30 +307,6 @@ edited_at             timestamp        null
 removed_at            timestamp        null       (autor ou admin remove; texto some da tela,
 removed_by            fk users         null        o conteúdo antigo fica em audit_logs)
 índices: (commentable_type, commentable_id, created_at), user_id
-
-=====================================================================
-holiday_scopes                         (fechado) [v1]
-=====================================================================
-id   slug      label
-1    national  Nacional
-2    state     Estadual
-3    city      Municipal
-4    company   Da empresa   (recesso, ponte decidida pela WCJ)
-
-=====================================================================
-holidays                               [v1]
-=====================================================================
-RN-PRJ-18. Mantido pelo Administrador. Usado no cálculo de dias úteis (RN-PRJ-16).
-date                  date             not null
-name                  varchar(120)     not null
-holiday_scope_id      fk holiday_scopes not null  on delete restrict
-state                 char(2)          not null   default ''   ('' = não se aplica)
-city                  varchar(80)      not null   default ''
-deactivated_at / deactivated_by
-índices: date
-unique: (date, holiday_scope_id, state, city)
-         ('' em vez de null de propósito: null não colide em unique e deixaria duplicar)
-Feriado vale para todos os usuários, independente da cidade do dev (PRJ-06).
 
 =====================================================================
 settings                               [v1]
@@ -671,8 +647,9 @@ requires_cross_test   boolean              not null
 requires_qa           boolean              not null
 -- Prazo (RN-PRJ-16, F-PRJ-12)
 due_on                date                 null      data prevista calculada em dias úteis. É
-                                                     SNAPSHOT: recalcula só quando a estimativa
-                                                     muda, não quando muda carga ou feriado.
+                                                     Dias úteis = seg a sex; feriado fora da v1
+                                                     (PRJ-06). SNAPSHOT: recalcula só quando a
+                                                     estimativa muda, não quando muda a carga.
 due_on_calculated_at  timestamp            null
 -- Marcos (gravados pelo Service no 1º movimento para o papel; indicador rápido, F-PRJ-02)
 started_at            timestamp            null      (1ª entrada em development)
@@ -730,8 +707,7 @@ estimated_by          fk users            not null  on delete restrict
 superseded_at         timestamp           null      (null = estimativa vigente)
 índices: task_id, user_id
 unique U1 (superseded_at no lugar de removed_at): (task_id, user_id)
-Previsto da tarefa = soma das vigentes (derivado; sem coluna de total). Ver dúvida PRJ-04
-(estimativa por tarefa ou por item do roteiro).
+Previsto da tarefa = soma das vigentes (derivado; sem coluna de total). Por tarefa × pessoa (PRJ-04).
 
 =====================================================================
 task_stage_movements                   [v1]  — fonte dos indicadores (RN-PRJ-11, F-PRJ-01/02/17)
@@ -1370,7 +1346,7 @@ sincronização (necessidade, "Pontos de atenção").
 6.6  Contato de lead separado de contato de cliente, para não criar FK do Núcleo para o CRM.
      A conversão copia (e liga lead_contacts.client_contact_id). Custo: duas tabelas parecidas.
 6.7  Estimativa e horas por pessoa, sem coluna de total: previsto e realizado são somas derivadas.
-     Única "foto" gravada: tasks.due_on (data prevista), porque depende de carga e feriados do dia
+     Única "foto" gravada: tasks.due_on (data prevista), porque depende da carga do dev no dia
      do cálculo (RN-PRJ-17).
 6.8  Projetos não confere horas contra contrato (D-PRJ-18). Contrato no projeto é referência
      opcional; banco de horas nasce com Chamados, com apontamento próprio.
@@ -1426,11 +1402,12 @@ PRJ-01 [RESPONDIDA 24/09, Lucas Scholz] Contrato no projeto é opcional (só ref
        Saíram tasks.contract_id e time_entries.contract_id (D-PRJ-18).
 PRJ-02 [RESPONDIDA 24/09, Lucas Scholz] Prefixo congela depois da 1ª tarefa; key gravada.
 PRJ-03 [RESPONDIDA 24/09, Lucas Scholz] Contador em projects com lockForUpdate + unique (project_id, number).
-PRJ-04 Horas previstas por tarefa×pessoa (proposto) ou por item do roteiro? (Rafael citou as duas)
+PRJ-04 [RESPONDIDA 24/09, Lucas Scholz] Horas previstas por tarefa × pessoa (task_estimates).
 PRJ-05 Depois de retrabalho, o QA reaproveita os test_items (volta tudo a pending) ou abre uma
        rodada nova (test_runs → test_items)? Proposta: reaproveita e usa task_validations.round
        + audit_logs; rodada nova só se o Rafael quiser comparar rodadas lado a lado.
-PRJ-06 [RESPONDIDA 24/09, Lucas Scholz] Feriado vale para todos.
+PRJ-06 [RESPONDIDA 24/09, Lucas Scholz] Calendário de feriados FORA da v1 (D-PRJ-22). Dias úteis = seg a sex.
+       Saíram holidays e holiday_scopes. Entrar depois = tabela nova, sem migração destrutiva.
 PRJ-07 [RESPONDIDA 24/09, Lucas Scholz] Tarefa tem prioridade (baixa, normal, alta, urgente).
 PRJ-08 [RESPONDIDA 24/09, Lucas Scholz] Bug em produção = tarefa nova (origin_task_id) e indicador de qualidade do
        projeto. Não entra no retrabalho nem na produtividade do dev.
@@ -1440,9 +1417,8 @@ PRJ-10 [RESPONDIDA 24/09, Lucas Scholz] "Support".
 PRJ-11 [RESPONDIDA 24/09, Lucas Scholz] Horas lançadas à mão.
 PRJ-12 [RESPONDIDA 24/09, Lucas Scholz] Sprint = coluna "To do", sem entidade. Fase (project_phases) segue
        pendente de confirmação do Rafael.
-PRJ-13 Equipe do cliente por fase no Histórico de Desenvolvimento (F-PRJ-15): basta listar
-       client_contacts do projeto (tabela project_client_contacts) ou é texto no relatório?
-       Proposta: v1+, decidir com o relatório.
+PRJ-13 [RESPONDIDA 24/09, Lucas Scholz] Equipe do cliente no Histórico de Desenvolvimento é texto livre na geração do
+       documento (a maioria dos projetos não terá). Nenhuma tabela.
 
 CRM
 CRM-01 Um funil só (proposto) ou funis por tipo de venda (auditoria × projeto × alocação)?
