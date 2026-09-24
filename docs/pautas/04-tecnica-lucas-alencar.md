@@ -10,6 +10,8 @@
 
 Esta reunião não fecha o banco. Fecha **como** o banco vai ser feito e a prova de conceito que tira o risco do ChatGPT (R-IA-01). Pode acontecer em paralelo às reuniões de Projetos e Chamados.
 
+> **Atualização 24/09/2026:** a maior parte desta pauta foi resolvida sem reunião. Lucas Scholz aprovou a estrutura por domínio, o limite de 60/20 por minuto e `laravel/mcp` + Passport (D-GER-18) e vai fazer ele mesmo o teste técnico da IA (D-GER-17). A infraestrutura da VPS fica com o Alaor (D-GER-19). **Para o Lucas Alencar ficam:** (1) revisar e aprovar o `banco.txt` na etapa 2 (D-GER-01, D-GER-16); (2) revisar o rascunho do `core/mcp.md`; (3) opinar, se quiser, sobre as decisões técnicas acima.
+
 ## Antes da reunião
 
 - [ ] Lucas Alencar lê o `necessidade.md`, principalmente Núcleo, Interface de IA e a estrutura por domínio.
@@ -49,7 +51,7 @@ Sem migração de dados (D-CRM-03). Só combinar: o DaaS passa a consultar contr
 | Escopo | Servidor MCP mínimo, HTTPS público, OAuth, 1 ferramenta de leitura + 1 de escrita |
 | Testes | Claude (app); Codex no app do ChatGPT (Plus) e no CLI; Claude Code; ChatGPT Pro só leitura. Em paralelo: GPT com Actions + OAuth (comercial) |
 | Perguntas a responder | OAuth e registro dinâmico funcionam nos quatro clientes? Token só de leitura para o ChatGPT Pro funciona? Codex e Claude Code escrevem sem restrição de plano? |
-| Quem faz | [definir] |
+| Quem faz | **Lucas Scholz** (D-GER-17) |
 | Prazo | [definir] |
 | Resultado vai para | Pauta 05 (comitê) |
 

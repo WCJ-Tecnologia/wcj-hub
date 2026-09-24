@@ -40,6 +40,9 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-14 | 24/09/2026 | Hospedagem: **na mesma VPS do sistema de auditoria (DaaS)**, com subdomínio próprio e HTTPS. |
 | D-GER-15 | 24/09/2026 | Código **organizado por domínio desde o início** (`stacks/laravel-inertia.md`, "Quando o projeto cresce: por domínio"), sem esperar chegar a 5 módulos. Registrar em ADR na etapa 3. |
 | D-GER-16 | 24/09/2026 | Etapa 2 (banco): a IA propõe o `banco.txt` a partir deste documento, Lucas Alencar revisa e aprova, e a validação final é no Comitê. Trilha de auditoria em **tabela única** para todos os módulos. O rascunho do `core/mcp.md` para o `ai-systems` é feito pela IA e revisado por Lucas Alencar. |
+| D-GER-17 | 24/09/2026 | **Execução:** Lucas Scholz e Cauã, com Claude. O WCJ Hub é um projeto **100% IA** (D-GER-02, D-GER-09): o padrão `ai-systems` vale por inteiro. Lucas Scholz faz também o **teste técnico da IA**. |
+| D-GER-18 | 24/09/2026 | Validações técnicas aprovadas por Lucas Scholz, revisáveis se precisar: estrutura por domínio (D-GER-15), limite de 60/20 por minuto e `laravel/mcp` + Passport (D-IA-07). |
+| D-GER-19 | 24/09/2026 | Capacidade da VPS e separação do banco do Hub: definir com **Alaor Rodrigues** na hora de subir o ambiente de teste. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
@@ -499,7 +502,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
   - um domínio não lê nem grava a tabela de outro: chama o `Service` dele (ex.: o chamado cria a tarefa de suporte pelo `Service` de Projetos; o lead ganho cria o cliente pelo `Service` do Platform).
 - Pacote MCP do lado do servidor: avaliar `laravel/mcp` (oficial) na prova de conceito.
 - Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
-- Hospedagem (D-GER-14): **VPS do DaaS** (`auditoria.wcjtecnologia.com.br`), que já roda o app do DaaS e o Supabase em Docker atrás do Nginx. O Hub entra como **mais um conjunto de containers**, com subdomínio próprio (ex.: `hub.wcjtecnologia.com.br`), **banco de dados separado** do Supabase do DaaS, backup próprio e entrada no Nginx. [LEVANTAR com Lucas Alencar] se a VPS tem memória e disco para os dois, e se o banco do Hub fica numa instância Postgres própria ou num banco separado da instância existente.
+- Hospedagem (D-GER-14): **VPS do DaaS** (`auditoria.wcjtecnologia.com.br`), que já roda o app do DaaS e o Supabase em Docker atrás do Nginx. O Hub entra como **mais um conjunto de containers**, com subdomínio próprio (ex.: `hub.wcjtecnologia.com.br`), **banco de dados separado** do Supabase do DaaS, backup próprio e entrada no Nginx. Capacidade da VPS e forma de separar o banco: definir com **Alaor Rodrigues** ao subir o ambiente de teste (D-GER-19).
 - Uso principal: computador. Web responsiva; quais telas e funções serão realmente usadas no celular será validado depois.
 - Volume (D-GER-10): até 14 usuários internos, 6 clientes ativos, cerca de 10 leads por mês. [LEVANTAR com Alaor] chamados por mês.
 - Segurança: fatia de segurança obrigatória (`core/seguranca.md` seção 11) **incluindo o servidor MCP e o OAuth**.
@@ -515,6 +518,8 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 | Chamados | Alaor Rodrigues (D-GER-04) |
 | Interface de IA | Lucas Scholz (produto) + Lucas Alencar (técnico) (D-GER-07) |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
+| **Execução** | Lucas Scholz e Cauã, com Claude (D-GER-17) |
+| Infraestrutura (VPS) | Alaor Rodrigues (D-GER-19) |
 
 ## Reuniões de levantamento (planejadas)
 
