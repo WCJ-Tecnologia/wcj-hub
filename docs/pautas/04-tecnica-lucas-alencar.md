@@ -58,8 +58,6 @@ As 5 perguntas abertas no fim de [`levantamento/fluxo-desenvolvimento.md`](../le
 | Prazo | [definir] |
 | Resultado vai para | Pauta 05 (comitê) |
 
-- Webhook do GitHub (F-PRJ-06): app do GitHub da organização ou webhook por repositório? Convenção da chave da tarefa no título ou na branch do PR.
-
 ### 5. Fechamento (5 min)
 - Ler em voz alta as decisões e pendências.
 - Proposta de `core/mcp.md` no `ai-systems`: as regras do MCP viram padrão da casa para todo sistema futuro? Quem escreve?

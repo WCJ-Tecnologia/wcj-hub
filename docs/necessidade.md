@@ -24,14 +24,16 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.2.1). Entrada 
 | D-GER-04 | 24/09/2026 | Dono do módulo Chamados (sustentação): **Alaor Rodrigues**. |
 | D-GER-06 | 24/09/2026 | Nome do sistema: **WCJ Hub**. |
 | D-GER-07 | 24/09/2026 | Donos: **Núcleo** = Lucas Scholz; **Interface de IA** = Lucas Scholz (produto) + Lucas Alencar (técnico). |
-| D-GER-08 | 24/09/2026 | Prazo: o mais rápido possível. Ordem das entregas: Núcleo → Projetos → Chamados → CRM. |
+| D-GER-08 | 24/09/2026 | Prazo: o mais rápido possível. Ordem das entregas: **Núcleo → Projetos → CRM → Chamados** (revisada em D-GER-12). |
+| D-GER-12 | 24/09/2026 | **Prioridade: Projetos, depois CRM, por último Chamados.** Chamados (ITSM) fica para o fim porque ainda não há demanda. O levantamento com o Alaor não tem data. |
+| D-GER-13 | 24/09/2026 | Integração com o GitHub (webhooks de PR) **fora da v1, em avaliação** por Lucas Scholz. |
 | D-GER-09 | 24/09/2026 | Stack: template da casa (Laravel + Inertia). As regras do padrão `ai-systems` (incluindo o futuro `core/mcp.md`) valem **principalmente para sistemas 100% IA**, como o WCJ Hub; projetos com time mais sênior têm liberdade de stack e template. |
 | D-GER-10 | 24/09/2026 | Volume: até **14 usuários internos**, **6 clientes ativos**, cerca de **10 leads por mês**. |
 | D-GER-11 | 24/09/2026 | Tipos de contrato: projeto, sustentação, auditoria, alocação de dev, infraestrutura; o Administrador cadastra mais. |
 | D-GER-05 | 24/09/2026 | **Padrão que se ajusta:** o sistema traz um padrão pronto e cada projeto pode ser adaptado. Fluxo travado torna a ferramenta descartável. Vale para os três módulos: só é fixo o que protege segurança, histórico e indicadores. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-04b | 24/09/2026 | Conferido no ChatGPT: escrita por conector só no **Business**; **Pro só lê**; **Plus não conecta** (R-IA-01 confirmado). |
-| D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. O Hub também **lê os eventos do GitHub** para mover tarefas pelos PRs, independente da IA. |
+| D-IA-06 | 24/09/2026 | Quem usa o quê: **devs** conectam por **Codex ou Claude** (MCP, leitura e escrita). **Comercial (Wilson)** usa ChatGPT: acesso por um **GPT personalizado "WCJ Hub" com Actions**, entregue junto com a v1 do CRM. |
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (Trello é ferramenta genérica). Logo: regras e fluxo primeiro, IA propõe o modelo de dados, pessoa técnica valida na etapa 2.
 
@@ -85,7 +87,7 @@ Regra geral: o que o papel não vê na tela, a IA dele também não vê.
 - **RN-NUC-01** Cliente é identificado pelo CNPJ. Dois clientes com o mesmo CNPJ são recusados.
 - **RN-NUC-02** Cliente, contato e usuário não são excluídos depois de usados. São desativados (`deactivated_at`, `deactivated_by`), conforme `core/banco.md` seção 4.
 - **RN-NUC-03** Contato externo só enxerga dados do próprio cliente. Tentativa de acessar outro cliente por ID é negada e registrada.
-- **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`, `github`).
+- **RN-NUC-04** Toda alteração em registro de qualquer módulo grava trilha de auditoria: quem, quando, antes/depois e **canal** (`tela`, `ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`).
 - **RN-NUC-05** Usuário desativado perde acesso imediatamente, inclusive os tokens de IA dele.
 
 ---
@@ -181,7 +183,7 @@ Legenda: **v1** = entra na primeira versão; **v1+** = logo depois da v1; **?** 
 | F-PRJ-16 | **Relatório de fechamento** do período para aprovação do cliente antes do pagamento | Rafael | v1+ (aguarda modelo, P-01) |
 | F-PRJ-13 | **Gerar o documento de requisição** (Word/PDF padrão WCJ) a partir da tarefa e anexar | Rafael | v1+ |
 | F-PRJ-04 | **Roteiro de teste padrão** por tipo e perfil do produto, incluindo bloco CRUD reutilizável | Trello Wpay + Modelos SGM | ? |
-| F-PRJ-06 | **Vínculo com PRs do GitHub** (um ou vários por tarefa): link manual ou pela IA, e **vínculo automático por webhook** pela chave da tarefa no PR (abre → `Code-review`; integrado → merge registrado) | Trello Wpay + D-IA-06 | **v1** |
+| F-PRJ-06 | **Vínculo com PRs do GitHub** (um ou vários por tarefa): link colado na tarefa, à mão ou pela IA. Vínculo automático por webhook **em avaliação** (D-GER-13) | Trello Wpay | **v1** (link) / em avaliação (automático) |
 | F-PRJ-07 | **Evidência de teste** presa ao item do roteiro | Trello Wpay | ? |
 | F-PRJ-10 | **Painel de impedimentos** | Trello Wpay | ? |
 
@@ -238,6 +240,8 @@ O funil de prospecção vive hoje no DaaS (`wcj-ui`, tabelas `lead` e `lead_even
 ---
 
 ## Módulo Chamados
+
+**Último módulo (D-GER-12):** ainda não há demanda. Esta seção fica como rascunho até o levantamento com o Alaor, sem data. O Núcleo já nasce com o que Chamados vai precisar (clientes, contatos, contratos), para o módulo entrar depois sem refazer a base.
 
 ### Fluxo principal *(proposta)*
 
@@ -304,7 +308,6 @@ A restrição é do **app ChatGPT**, não do Codex. No Codex e no Claude Code o 
   - escopo inicial: **CRM** (leitura e escrita) e **Núcleo** (leitura), as ferramentas de CRM do bloco MCP;
   - toda ação de escrita marcada como "consequencial", para o ChatGPT pedir confirmação antes;
   - entregue **junto com a v1 do CRM** (último módulo da ordem), não antes.
-- **GitHub como fonte de eventos (todos os devs, qualquer IA):** o Hub recebe os webhooks do GitHub. PR aberto com a chave da tarefa no título ou na branch (ex.: `SGM-17`) vincula o PR e move a tarefa para `Code-review`; PR integrado registra o merge. A ação no Hub fica registrada como **evento do GitHub, com o autor do PR**, e nunca como se o usuário tivesse feito na tela. Isso não substitui a IA: automatiza o quadro para quem usa qualquer ferramenta.
 
 A enquete interna de ferramentas diz quantas pessoas ficam em cada caso.
 
@@ -393,7 +396,7 @@ A regra é: ferramenta de negócio, com nome do vocabulário do produto. Nada de
 |---|---|---|
 | Claude, Codex e ChatGPT Pro via MCP | entrada (consulta e escrita pelo usuário; ChatGPT Pro só consulta) | **Sim** |
 | GPT personalizado "WCJ Hub" (Actions + API REST) | entrada (comercial) | **Sim, com a v1 do CRM** |
-| GitHub (webhooks de PR) | entrada (eventos) | **Sim** (F-PRJ-06) |
+| GitHub (webhooks de PR) | entrada (eventos) | **Em avaliação** (D-GER-13) |
 | Trello | importação | **Não na v1** (D-PRJ-04): começa do zero com os projetos ativos |
 | Funil de prospecção do DaaS | importação única (RN-CRM-06) | **Sim** (D-GER-03) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | Não (RN-CRM-08) |
