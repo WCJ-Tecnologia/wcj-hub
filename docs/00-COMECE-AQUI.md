@@ -4,7 +4,7 @@ Documento de entrada. Quem abre este repositório, pessoa ou IA, lê isto antes 
 
 ## O produto em um parágrafo
 
-Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **Projetos** (substitui o Trello, com controle de tempo), **CRM** (leads, tratativas, compromissos) e **Chamados** (último, sem demanda ainda). Cada usuário interno conecta a **própria IA** (Claude, Codex; ChatGPT pelo GPT personalizado) para consultar e alterar dados com as mesmas permissões da tela. Projeto **100% IA**: executado por Lucas Scholz e Cauã com Claude, seguindo o padrão `ai-systems` por inteiro.
+Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **Projetos** (substitui o Trello, com controle de tempo, num kanban sem trava no fluxo), **CRM** (leads, tratativas, compromissos) e **Chamados** (último, sem demanda ainda). Cada usuário interno conecta a **própria IA** (Claude, Codex; ChatGPT pelo GPT personalizado) para consultar e alterar dados com as mesmas permissões da tela. Projeto **100% IA**: executado por Lucas Scholz e Cauã com Claude, seguindo o padrão `ai-systems` (0.4.0) por inteiro.
 
 ## Estado atual
 
@@ -12,45 +12,58 @@ Atualizado em 2026-09-24.
 
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
-| 1. Necessidade | **Fechada para Núcleo, Projetos e CRM**; aguarda validação no Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **Proposta da IA pronta (24/09)** para Núcleo, Projetos e CRM. Dúvidas respondidas pelo Lucas Scholz em 24/09. **Revisão da etapa 2 (24/09):** contradições entre necessidade e banco corrigidas; 1 dev + QA por tarefa com horas estimadas pelo gestor (D-PRJ-27), data da tarefa inteira (D-PRJ-28), datas do projeto (D-PRJ-29), capacidade pelas horas que faltam (D-PRJ-30), arquivar tarefa (D-PRJ-31). Contrato fora da v1 (D-CRM-10); produto contínuo sem data de entrega (D-PRJ-29). **Para o Lucas Alencar:** perguntas técnicas T6–T11 (seção 9) e diferença para o template (seção 10). Depois, Comitê (D-GER-16) | `docs/banco.txt` |
-| Revisão das regras | **Pronta (24/09), revisão 4.** Premissa do Lucas Scholz: Projetos v1 é kanban simples como o Trello, **sem trava no fluxo**; admin e gestor mexem em tudo, o dev não mexe em sprint; capacidade é só referência. As lacunas da revisão 3 foram fechadas pela premissa (lista no topo do arquivo, para veto). Próximo passo: **Sessão C** (abaixo). **Até lá, as regras deste arquivo valem mais que as da `necessidade.md`** | `docs/regras-para-revisao.md` |
+| 1. Necessidade | **Reescrita na Sessão C (24/09)** com as regras aprovadas por Lucas Scholz na revisão 4: códigos G, N, P, C e IA, e a tabela de decisões só com decisões de projeto. **Para o Lucas Scholz:** vetar ou confirmar a lista "Fechado na Sessão C", no topo do arquivo. **Para Lucas Scholz e Cauã:** o [DECIDIR] da IA14. Depois, Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
+| 2. Banco | **Atualizado na Sessão C (24/09)** com os códigos novos, o anexo da revisão 4 e a exclusão pelo padrão 0.4.0 (sem `deleted_at`). **Para o Lucas Alencar:** perguntas técnicas T6–T10 (seção 8) e diferença para o template 0.4.0 (seção 9). Depois, Comitê (D-GER-16) | `docs/banco.txt` |
+| Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
-| Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, Interface de IA |
-| `core/mcp.md` no padrão | A rascunhar, em **outra sessão**, no repositório `ai-systems` (D-GER-16) | `~/Documents/Projetos/WCJ/ai-systems` |
+| Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
+| `core/mcp.md` no padrão | **Publicado** no `ai-systems` 0.3.0 (PR #4) | `~/Documents/Projetos/WCJ/ai-systems/.ai/core/mcp.md` |
 
 ## Hierarquia dos documentos
 
-1. **Tabela "Decisões registradas"** no topo do `docs/necessidade.md`: vence qualquer texto mais abaixo e qualquer ata.
-2. **`docs/necessidade.md`**: o requisito consolidado.
-3. **`docs/atas/`**: o que foi dito em cada reunião (fonte, não resumo final).
-4. **`docs/levantamento/`**: análises de apoio (Trello, modelos, fluxo de desenvolvimento).
-5. **`docs/pautas/`**: histórico de preparação; não é requisito.
+1. **Tabela "Decisões registradas"** no topo do `docs/necessidade.md`: vence qualquer texto mais abaixo e qualquer ata. Guarda só decisões de projeto.
+2. **`docs/necessidade.md`**: o requisito consolidado. As regras de produto são as G, N, P, C e IA; em Projetos, a premissa (kanban sem trava) vale acima de todas.
+3. **`docs/banco.txt`**: o modelo de dados; cada coluna aponta para a regra que a usa.
+4. **`docs/atas/`**: o que foi dito em cada reunião (fonte, não resumo final).
+5. **`docs/levantamento/`**: análises de apoio (Trello, modelos, fluxo de desenvolvimento).
+6. **`docs/pautas/`**: histórico de preparação; não é requisito. Os códigos antigos citados lá (RN-…, D-PRJ-…) não valem mais.
 
 ## Decisões que foram revertidas (não usar)
 
-Aparecem em atas ou no histórico do git, mas **não valem mais**:
+Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 
 - Nome "WCJ Central" → **WCJ Hub** (D-GER-06).
-- Integração com GitHub por webhook na v1 → **fora da v1, em avaliação** (D-GER-13). PR entra só como link.
-- Migração de dados do DaaS (leads, oportunidades, contratos) → **sem migração** (D-CRM-03). As funções vêm; os dados, não.
+- Integração com GitHub por webhook na v1 → **fora da v1, em avaliação** (D-GER-13). O PR entra só como link (P23).
+- Migração de dados do DaaS (leads, oportunidades, contratos) → **sem migração** (C15). As funções vêm; os dados, não.
 - Ordem Núcleo → Projetos → Chamados → CRM → **Núcleo → Projetos → CRM → Chamados** (D-GER-12).
-- Fluxo travado (PR obrigatório, só Tech Lead move) → **fluxo aberto, travas opcionais** (D-GER-05, D-PRJ-16).
-- Dev vê o próprio painel de produtividade → **só gestor e Administrador** (RN-PRJ-22).
-- Horas previstas informadas pelo dev, por pessoa, e várias pessoas por função na tarefa → **1 dev + QA; o gestor estima as horas da tarefa inteira** (D-PRJ-27).
-- Tarefa usada e abandonada fica no Backlog → **arquivada com motivo** (D-PRJ-31).
-- Projeto sem datas (atraso só pelas tarefas) → **projeto com início e entrega** (D-PRJ-29).
+- Fluxo travado (PR obrigatório, só o Tech Lead move) e depois "travas opcionais por projeto" → **kanban sem trava**: qualquer pessoa alocada move a partir do `To do`, e não há opção de exigir PR (premissa, P13, P23).
+- Tarefa sem responsável não sai do Backlog → **tarefa sem dev, sem QA ou sem horas entra na sprint** (P20, P27).
+- Capacidade da sprint recusa o que estoura → **só referência para o gestor** (P49).
+- Sprint opcional por projeto → **sprint obrigatória**, única saída do Backlog, uma aberta por projeto (P45).
+- Projeto "fora do cronograma" e "quantas sprints cabem" → **prazo do projeto pelo sistema fora da v1**; a data de entrega é só informação (P2, P9).
+- Aviso por e-mail ao atribuir → **só no sistema** (P22).
+- Qualquer um cria card → **só o gestor e o Administrador** (P56).
+- Excluir card por `deleted_at` (anexo da revisão 4) → **padrão 0.4.0**: card nunca usado se exclui; com histórico, se arquiva (P26). Lead se desativa (C16).
+- Dev vê o próprio painel de produtividade → **só gestor e Administrador** (P54).
+- Horas previstas informadas pelo dev, por pessoa, e várias pessoas por função na tarefa → **1 dev + QA; horas da tarefa inteira, opcionais ao criar, definidas ou validadas pelo gestor na sprint** (P20, P27).
+- Tarefa usada e abandonada fica no Backlog → **arquivada com motivo** (P26).
+- Preço da auditoria no sizing → **é o valor do lead**, obrigatório para ganhar (C2, C12).
+- "Tipos de contrato" → **tipos de serviço**; contrato fora da v1 (N10).
 
 ## Próximas sessões
 
-**Sessão A — `docs/banco.txt` (etapa 2). FEITA em 24/09**: proposta em `docs/banco.txt`; falta a revisão do Lucas Alencar. Prompt usado:
+**Sessão A — `docs/banco.txt` (etapa 2). FEITA em 24/09.** Proposta em `docs/banco.txt`, atualizada na Sessão C.
 
-> Leia `docs/00-COMECE-AQUI.md` e `docs/necessidade.md` do repositório `~/Documents/Projetos/WCJ/wcj-hub`, e as regras de banco em `~/Documents/Projetos/WCJ/ai-systems/.ai/core/banco.md` e `.ai/playbooks/aplicacao-nova.md` (etapa 2). Proponha o `docs/banco.txt` do WCJ Hub para **Núcleo (Platform), Projetos e CRM**, com todas as tabelas, colunas, tipos, chaves, índices e valores de domínio, seguindo a estrutura por domínio (D-GER-15). Deixe Chamados de fora, mas garanta que o Núcleo comporte o módulo depois. Liste no fim as dúvidas para o Lucas Alencar. Não crie código nem migração.
+**Sessão B — `core/mcp.md` no padrão. FEITA:** publicado no `ai-systems` 0.3.0 (PR #4).
 
-**Sessão C — reescrever `necessidade.md` e `banco.txt` a partir das regras aprovadas.** Pronta para rodar. Modelo sugerido: Opus, esforço alto. Prompt:
+**Sessão C — reescrever `necessidade.md` e `banco.txt` a partir das regras aprovadas. FEITA em 24/09** (commits `070f138` e `357a3f2`). Prompt usado:
 
 > No repositório `~/Documents/Projetos/WCJ/wcj-hub` (faça `git fetch` antes), leia `docs/00-COMECE-AQUI.md` e `docs/regras-para-revisao.md` (revisão 4), que tem as regras aprovadas pelo Lucas Scholz. Respeite a premissa do topo do arquivo: Projetos v1 é kanban simples, sem trava no fluxo; não crie regra nem estrutura de banco que trave. Etapa 1: reescreva `docs/necessidade.md` a partir dele. As regras de cada módulo passam a ser as do arquivo, com os mesmos códigos (G, N, P, C, IA), e substituem os antigos (RN-…, D-PRJ-…, D-CRM-…, D-NUC-…, D-IA-… de produto). A tabela de decisões fica só com as decisões de projeto (D-GER, D-IA-04, D-IA-07, D-CRM-04, D-CHM). Chamados continua como rascunho. Siga a estrutura do template `~/Documents/Projetos/WCJ/ai-systems/.ai/templates/necessidade.md`. Etapa 2: atualize `docs/banco.txt`. Troque as referências pelos códigos novos e aplique o anexo "O que muda no banco.txt" do arquivo de regras. Não decida as perguntas técnicas T6–T11, que são do Lucas Alencar. Não invente regra: o que faltar, pergunte. No fim, apague `docs/regras-para-revisao.md` (o git guarda) para não haver duas fontes, e atualize este arquivo. Um commit por etapa.
 
-**Sessão B — `core/mcp.md` no padrão.** Modelo sugerido: Opus, esforço médio. Prompt:
+**Próximos passos, nesta ordem:**
 
-> No repositório `~/Documents/Projetos/WCJ/ai-systems` (compartilhado: faça `git fetch` e confira `origin/main` antes), rascunhe `.ai/core/mcp.md`: regras da casa para sistemas que expõem servidor MCP às IAs dos usuários. Base: a seção "Interface de IA (MCP)" de `~/Documents/Projetos/WCJ/wcj-hub/docs/necessidade.md` (RN-IA-01 a 09, D-IA-01 a 07). Generalize para qualquer sistema, sem citar o WCJ Hub nas regras. Siga o tom e o formato dos outros arquivos de `.ai/core/`. Branch nova e PR; revisor: Lucas Alencar. Vale principalmente para sistemas 100% IA (D-GER-09).
+1. Lucas Scholz veta ou confirma a lista "Fechado na Sessão C" da `necessidade.md`; Lucas Scholz e Cauã fecham o [DECIDIR] da IA14.
+2. Lucas Alencar revisa o `banco.txt`: T6–T10 (seção 8) e seção 9. Aprovado, as seções 7 e 8 saem do arquivo.
+3. Comitê de IA valida necessidade e banco (D-GER-16).
+4. Lucas Scholz faz a prova de conceito do MCP (D-GER-17), antes da etapa 4.
+5. Etapa 3: repositório na organização WCJ, a partir do template `ai-systems` 0.4.0.
