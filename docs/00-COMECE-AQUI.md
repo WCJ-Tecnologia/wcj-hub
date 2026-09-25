@@ -13,7 +13,7 @@ Atualizado em 2026-09-24.
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Reescrita na Sessão C (24/09)** com as regras aprovadas por Lucas Scholz na revisão 4: códigos G, N, P, C e IA, e a tabela de decisões só com decisões de projeto. As lacunas fechadas pela premissa foram confirmadas por Lucas Scholz em 24/09. Próximo: Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **Atualizado na Sessão C (24/09)** com os códigos novos, o anexo da revisão 4 e a exclusão pelo padrão 0.4.0 (sem `deleted_at`). **Para o Lucas Alencar:** perguntas técnicas T6–T10 (seção 8) e diferença para o template 0.4.0 (seção 9). Depois, Comitê (D-GER-16) | `docs/banco.txt` |
+| 2. Banco | **Atualizado na Sessão C (24/09)** com os códigos novos, o anexo da revisão 4 e a exclusão pelo padrão 0.4.0 (sem `deleted_at`). **T6–T10 respondidas por Lucas Scholz em 24/09 e aplicadas:** testes em MySQL (D-GER-22), FK composta por projeto, IP na auditoria, `CA_n` estável e sem dado repetido (44 tabelas). **Próximo:** revisão do Lucas Scholz (Sessão D, abaixo), depois aprovação do Lucas Alencar (D-GER-01) e Comitê (D-GER-16) | `docs/banco.txt` |
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
@@ -49,6 +49,7 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 - Tarefa usada e abandonada fica no Backlog → **arquivada com motivo** (P26).
 - Preço da auditoria no sizing → **é o valor do lead**, obrigatório para ganhar (C2, C12).
 - "Tipos de contrato" → **tipos de serviço**; contrato fora da v1 (N10).
+- Testes em SQLite, como no template → **MySQL 8 em tudo**, local e no CI (D-GER-22).
 
 ## Próximas sessões
 
@@ -60,9 +61,14 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 
 > No repositório `~/Documents/Projetos/WCJ/wcj-hub` (faça `git fetch` antes), leia `docs/00-COMECE-AQUI.md` e `docs/regras-para-revisao.md` (revisão 4), que tem as regras aprovadas pelo Lucas Scholz. Respeite a premissa do topo do arquivo: Projetos v1 é kanban simples, sem trava no fluxo; não crie regra nem estrutura de banco que trave. Etapa 1: reescreva `docs/necessidade.md` a partir dele. As regras de cada módulo passam a ser as do arquivo, com os mesmos códigos (G, N, P, C, IA), e substituem os antigos (RN-…, D-PRJ-…, D-CRM-…, D-NUC-…, D-IA-… de produto). A tabela de decisões fica só com as decisões de projeto (D-GER, D-IA-04, D-IA-07, D-CRM-04, D-CHM). Chamados continua como rascunho. Siga a estrutura do template `~/Documents/Projetos/WCJ/ai-systems/.ai/templates/necessidade.md`. Etapa 2: atualize `docs/banco.txt`. Troque as referências pelos códigos novos e aplique o anexo "O que muda no banco.txt" do arquivo de regras. Não decida as perguntas técnicas T6–T11, que são do Lucas Alencar. Não invente regra: o que faltar, pergunte. No fim, apague `docs/regras-para-revisao.md` (o git guarda) para não haver duas fontes, e atualize este arquivo. Um commit por etapa.
 
+**Sessão D — revisão do `banco.txt` pelo Lucas Scholz.** Pronta para rodar. Modelo sugerido: Opus, esforço médio. Prompt:
+
+> No repositório `~/Documents/Projetos/WCJ/wcj-hub` (faça `git fetch` antes), leia `docs/00-COMECE-AQUI.md`, as regras de `docs/necessidade.md` (a premissa de Projetos e as regras G, N, P, C e IA) e `docs/banco.txt`. Vou revisar o banco antes de ele ir para o Lucas Alencar. Conduza a revisão por domínio, na ordem Platform, Projetos, CRM. Para cada tabela, em linguagem simples, diga para que serve, quais regras a usam e o que chama atenção: coluna sem regra que a use, trava que contradiga a premissa, dado repetido. Mostre um domínio por vez e espere a minha resposta antes de seguir. Não reabra o que já está decidido (tabela de decisões da `necessidade.md` e T1–T11 do banco), a não ser que eu peça. No fim, aplique no `banco.txt` o que eu mudar, atualize este arquivo e faça um commit.
+
 **Próximos passos, nesta ordem:**
 
-1. Lucas Alencar revisa o `banco.txt`: T6–T10 (seção 8) e seção 9. Aprovado, as seções 7 e 8 saem do arquivo.
-2. Comitê de IA valida necessidade e banco (D-GER-16).
-3. Lucas Scholz faz a prova de conceito do MCP (D-GER-17), antes da etapa 4.
-4. Etapa 3: repositório na organização WCJ, a partir do template `ai-systems` 0.4.0.
+1. Lucas Scholz revisa o `banco.txt` (Sessão D).
+2. Lucas Alencar revisa e aprova o `banco.txt` (D-GER-01). As perguntas T6–T10 já foram respondidas por Lucas Scholz; ele corrige se discordar. Aprovado, as seções 7 e 8 saem do arquivo.
+3. Comitê de IA valida necessidade e banco (D-GER-16).
+4. Lucas Scholz faz a prova de conceito do MCP (D-GER-17), antes da etapa 4.
+5. Etapa 3: repositório na organização WCJ, a partir do template `ai-systems` 0.4.0.

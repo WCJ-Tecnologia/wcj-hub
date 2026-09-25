@@ -2,7 +2,8 @@ MODELO DE DADOS — WCJ Hub
 Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.4.0). PROPOSTA DA IA (D-GER-16), atualizada
 na Sessão C (24/09) com as regras aprovadas pelo Lucas Scholz (revisão 4 das regras).
 Códigos: G, N, P, C e IA são as regras de docs/necessidade.md; D-GER, D-IA-04, D-IA-07, D-CRM-04 e
-D-CHM, a tabela de decisões dela; T1 a T11, as escolhas e perguntas técnicas da seção 8.
+D-CHM, a tabela de decisões dela; T1 a T11, as escolhas técnicas da seção 8 (T6 a T10
+respondidas pelo Lucas Scholz em 24/09).
 Premissa de Projetos: kanban simples, sem trava no fluxo. Número de controle é referência, nunca recusa.
 Contrato fica FORA DA V1 (N10): não há tabela contracts; a seção 5 mostra como ela entra.
 Revisão técnica: Lucas Alencar (D-GER-01). Validação final: Comitê de IA.
@@ -23,7 +24,8 @@ requisito diz "referência", o sistema mostra e não recusa.
 
 Banco
 - MySQL 8 (D-GER-21), container próprio na VPS do DaaS, separado do Supabase (D-GER-14).
-- Collation utf8mb4_0900_ai_ci: nome com unique ignora acento e caixa (escolha técnica; ver T6).
+- Collation utf8mb4_0900_ai_ci: nome com unique ignora acento e caixa (escolha técnica).
+- Testes também em MySQL 8, nunca SQLite: o teste roda o mesmo banco da produção (T6, D-GER-22).
 
 Nomes
 - Inglês, plural, snake_case. FK = <singular>_id.
@@ -42,17 +44,29 @@ Tipos
 - money    = decimal(15,2).
 
 Quem fez e quando
-- Fica em audit_logs (tabela única, D-GER-16, G3): usuário, canal, antes/depois.
+- Fica em audit_logs (tabela única, D-GER-16, G3): usuário, autorização de IA (o canal), antes/depois
+  e IP.
 - Coluna *_by só existe quando uma regra lê a pessoa: deactivated_by (banco.md §4: a tela mostra quem
   desativou), validated_by (P34: o dev da tarefa não dá o parecer do teste cruzado), tested_by (P36: o
-  QA que marcou o item), moved_by (P14), owner_id (C4), manager_id (P1).
+  QA que marcou o item), owner_id (C4), manager_id (P1).
+- Quem moveu o card (P14) não se repete no movimento: task_stage_movements aponta para a linha de
+  audit_logs do movimento (T10).
 - Nada de created_by, added_by, assigned_by, estimated_by: é audit_logs.
 
 Derivar, não guardar
 - Não há coluna de cache. Status que se deduz de outra coluna é deduzido (lead ganho = etapa com
   outcome "won"; sprint aberta = closed_at nulo; follow-up vencido = consulta, ver appointments).
-- Exceções, cada uma com regra: tasks.key (busca direta "SGM-17", imutável; ver T10), tasks.due_on e
-  sprint_members.daily_hours (fotos: mudar a carga vale dali para a frente, N3).
+- Também se deduz: a chave "SGM-17" = projects.key_prefix + tasks.number (T10); o canal da auditoria
+  = ia:<slug do assistente> da autorização, ou tela quando ela é nula (T10).
+- Exceções, cada uma com regra: tasks.due_on e sprint_members.daily_hours (fotos: mudar a carga vale
+  dali para a frente, N3).
+
+Integridade por projeto (T7)
+- Tabela de projeto para a qual outra aponta tem unique (id, project_id), e a FK chega composta com
+  project_id: etapa, sprint, pacote, área, motivo de retrabalho, estado do pacote, e o dev e o QA
+  (project_members) são sempre do mesmo projeto da tarefa. FK composta com coluna nula não é
+  conferida no MySQL (MATCH SIMPLE): tarefa sem sprint, sem dev ou sem área passa. A FK composta
+  substitui a simples da mesma coluna.
 
 Desativar, arquivar, excluir (banco.md §4, G2). Nada de deleted_at.
 - Cadastro com histórico se desativa: deactivated_at datetime null + deactivated_by fk users null.
@@ -81,16 +95,16 @@ onDelete
 
 
 =====================================================================
-ÍNDICE (47 tabelas + framework)
+ÍNDICE (44 tabelas + framework)
 =====================================================================
 1. PLATFORM   roles · users · clients · contacts · service_types · contact_channels
-              · audit_channels · audit_logs · ai_assistants · ai_scopes · ai_authorizations
+              · audit_logs · ai_assistants · ai_scopes · ai_authorizations
               · ai_authorization_scopes · ai_tool_calls
 2. PROJETOS   projects · project_members · stage_roles · board_stages
               · task_types · project_areas · task_priorities · tasks
-              · task_stage_movements · rework_origins
-              · rework_reasons · task_acceptance_criteria · test_results · validation_types
-              · validation_results · task_validations · task_pull_requests · task_comments
+              · task_stage_movements · rework_reasons · task_acceptance_criteria
+              · test_results · validation_types · task_validations · task_pull_requests
+              · task_comments
               · task_attachments · time_entries · package_status_roles · package_statuses
               · packages · sprints · sprint_members
 3. CRM        funnel_stages · lead_sources · lost_reasons · leads · lead_contacts
@@ -99,7 +113,7 @@ onDelete
 5. O QUE CHAMADOS ACRESCENTA
 6. DECISÕES DE MODELAGEM
 7. REVISÃO DE ENXUGAMENTO (o que saiu e por quê; sai na aprovação)
-8. ESCOLHAS TÉCNICAS e PERGUNTAS ABERTAS para o Lucas Alencar
+8. ESCOLHAS TÉCNICAS (T1 a T11)
 9. DIFERENÇA PARA O TEMPLATE ai-systems (0.4.0)
 
 
@@ -198,46 +212,38 @@ id   slug       label
 5    other      Outro
 
 =====================================================================
-audit_channels                         (fechado)
-=====================================================================
-G3 (por onde: tela ou qual IA) e IA11 (ia:claude, ia:chatgpt, ia:codex, ia:gpt).
-id   slug         label
-1    web          Tela
-2    ia_claude    IA: Claude
-3    ia_chatgpt   IA: ChatGPT
-4    ia_codex     IA: Codex
-5    ia_gpt       IA: GPT "WCJ Hub"
-
-=====================================================================
 audit_logs                             — tabela única (D-GER-16)
 =====================================================================
 Toda alteração em qualquer módulo e toda tentativa negada (G3). Só created_at. Nenhuma rota edita nem
 exclui; a auditoria nunca é apagada e não tem partição (G3). Única exceção: a anonimização do contato
 limpa os dados pessoais dele em changes (N12).
 user_id               fk users              null      restrict  (null = token inválido, sem usuário)
-audit_channel_id      fk audit_channels     not null  restrict  (G3, IA11)
-ai_authorization_id   fk ai_authorizations  null      restrict  (IA11)
+ai_authorization_id   fk ai_authorizations  null      restrict  o canal (G3, IA11): null = tela;
+                                                                preenchido = ia:<slug do assistente>
+                                                                (T10)
 action                varchar(40)           not null  (created, updated, deleted, moved, deactivated,
                                                        archived, anonymized…)
 outcome               varchar(10)           not null  check in ('success','denied')  (G3)
 auditable_type        varchar(120)          not null  (alias do morph map)
 auditable_id          bigint unsigned       null      (null quando a negação vem antes de achar o registro)
 changes               json                  null      {"campo": [antes, depois]} (G3)
+ip_address            varchar(45)           null      investigar tentativa negada (G3) e conexão de IA
+                                                      roubada (T8)
 created_at            datetime              not null
-índices: (auditable_type, auditable_id, created_at), user_id, audit_channel_id, ai_authorization_id
+índices: (auditable_type, auditable_id, created_at), user_id, ai_authorization_id
 Senha e token nunca entram em changes.
 
 =====================================================================
 ai_assistants                          (fechado)
 =====================================================================
 IA3 (quem usa o quê) e IA4 (uma autorização por assistente). write_allowed = false emite token só de
-leitura (ChatGPT Pro, IA3).
-id   slug         label            audit_channel_id  write_allowed
-1    claude       Claude           2                 true      (app e Claude Code)
-2    chatgpt      ChatGPT          3                 false
-3    codex        Codex            4                 true
-4    custom_gpt   GPT "WCJ Hub"    5                 true
-colunas: audit_channel_id fk audit_channels not null · write_allowed boolean not null
+leitura (ChatGPT Pro, IA3). O slug dá o canal da auditoria: ia:<slug> (IA11, T10).
+id   slug         label            write_allowed
+1    claude       Claude           true      (app e Claude Code)
+2    chatgpt      ChatGPT          false
+3    codex        Codex            true
+4    gpt          GPT "WCJ Hub"    true
+colunas: write_allowed boolean not null
 
 =====================================================================
 ai_scopes                              (fechado)
@@ -286,7 +292,7 @@ created_at            datetime              not null
 
 #####################################################################
 #  2. PROJETOS — app/Domains/Projetos/
-#  FKs para fora: users, clients, contacts, contact_channels, audit_channels.
+#  FKs para fora: users, clients, contacts, contact_channels, audit_logs.
 #  Premissa: kanban sem trava. Admin e gestor mexem em tudo; o dev executa (P13, P56).
 #####################################################################
 
@@ -355,6 +361,7 @@ name                  varchar(60)      not null
 position              smallint         not null            (ordem no quadro)
 archived_at           datetime         null                "remover" arquiva: a etapa segue nos
                                                            movimentos antigos (P8, P12)
+unique: (id, project_id)   (alvo das FKs compostas, T7)
 Qualquer pessoa alocada move o card a partir do To do (P13). Restrição de etapa por função fica fora
 da v1.
 índices: project_id, stage_role_id
@@ -379,7 +386,7 @@ P18: área do produto, lista do projeto, nasce vazia. O gestor edita (G7).
 project_id            fk projects      not null  cascade
 name                  varchar(60)      not null
 deactivated_at / deactivated_by
-unique: (project_id, name)
+unique: (project_id, name), (id, project_id)   (T7)
 
 =====================================================================
 task_priorities                        (fechado)
@@ -395,9 +402,9 @@ id   slug     label
 tasks
 =====================================================================
 project_id            fk projects           not null  restrict
-number                int unsigned          not null            (sequencial por projeto, P16)
-key                   varchar(24)           not null  unique    ("SGM-17", imutável; busca pela IA e
-                                                                tela; ver T10)
+number                int unsigned          not null            sequencial por projeto (P16). A chave
+                                                                "SGM-17" = projects.key_prefix + number,
+                                                                sem coluna gravada (T10)
 board_stage_id        fk board_stages       not null  restrict  (etapa atual)
 task_type_id          fk task_types         not null  restrict  (P18)
 project_area_id       fk project_areas      null      restrict  (P18; null = nenhuma)
@@ -444,14 +451,23 @@ archived_at           datetime              null
 archive_reason        varchar(500)          null                motivo obrigatório ao arquivar
 check: estimated_hours is null or estimated_hours > 0
 check: (archived_at is null) = (archive_reason is null)
-unique: (project_id, number), key
+unique: (project_id, number), (id, project_id)
+FKs compostas (T7), todas restrict:
+  (board_stage_id, project_id)  → board_stages (id, project_id)
+  (sprint_id, project_id)       → sprints (id, project_id)
+  (package_id, project_id)      → packages (id, project_id)
+  (project_area_id, project_id) → project_areas (id, project_id)
+  (project_id, developer_id)    → project_members (project_id, user_id)
+  (project_id, qa_id)           → project_members (project_id, user_id)
 índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, developer_id,
          qa_id, sprint_id, package_id, origin_task_id, requester_contact_id, contact_channel_id,
          due_on, archived_at
 Regras do Service:
 - criar card: só gestor e admin (P56), também pela IA (G4);
-- developer_id e qa_id são pessoas alocadas no projeto (project_members); definir um deles gera o
-  aviso no sistema (P22);
+- developer_id e qa_id são pessoas alocadas no projeto (FK composta, T7); definir um deles gera o
+  aviso no sistema (P22). Tirar a pessoa do projeto: o Service limpa developer_id e qa_id antes de
+  apagar a alocação (a FK é restrict, P5);
+- buscar "SGM-17" (IA e tela): projects.key_prefix (unique) + tasks (project_id, number);
 - entrar e sair do Backlog é pôr e tirar da sprint (P45), só gestor e admin: pôr preenche sprint_id e
   leva o card à etapa de papel sprint (To do); tirar limpa sprint_id e devolve à etapa de papel queue
   (Backlog);
@@ -472,30 +488,26 @@ Regras do Service:
 task_stage_movements                   — fonte dos indicadores
 =====================================================================
 Toda mudança de etapa: quem, quando, de onde e para onde (P14, fixa). Dá o tempo por etapa (P53), o
-tempo parado (P15) e o retrabalho (P39). Mostra o canal no histórico da tarefa (IA11; cenário de
-aceite "tarefa movida pela IA"). Só created_at, imutável.
+tempo parado (P15) e o retrabalho (P39). Quem moveu e o canal vêm da linha de audit_logs do
+movimento, gravada na mesma transação (uma fonte só, T10); aparecem no histórico da tarefa (IA11;
+cenário de aceite "tarefa movida pela IA"). Só created_at, imutável.
+project_id            fk projects         not null            (só para as FKs compostas, T7)
 task_id               fk tasks            not null  cascade
+audit_log_id          fk audit_logs       not null  restrict  quem moveu e por onde (P14, IA11, T10)
 from_board_stage_id   fk board_stages     null      restrict  (null = criação)
 to_board_stage_id     fk board_stages     not null  restrict
-moved_by              fk users            not null  restrict
-audit_channel_id      fk audit_channels   not null  restrict
-rework_origin_id      fk rework_origins   null      restrict  preenchido = é retrabalho (P39)
+rework_origin_id      fk validation_types null      restrict  preenchido = é retrabalho; a origem
+                                                              (P39)
 rework_reason_id      fk rework_reasons   null      restrict  (P40)
 reason_text           varchar(500)        null      motivo da pausa (P15) ou texto do "outro" (P40)
 created_at            datetime            not null  (= momento do movimento)
 check: (rework_origin_id is null) = (rework_reason_id is null)
-índices: (task_id, created_at), from_board_stage_id, to_board_stage_id, moved_by, audit_channel_id,
+unique: audit_log_id
+FKs compostas (T7): (task_id, project_id) → tasks (id, project_id) cascade;
+  (from_board_stage_id, project_id) e (to_board_stage_id, project_id) → board_stages (id, project_id);
+  (rework_reason_id, project_id) → rework_reasons (id, project_id). As três últimas restrict.
+índices: (task_id, created_at), project_id, from_board_stage_id, to_board_stage_id,
          rework_origin_id, rework_reason_id
-
-=====================================================================
-rework_origins                         (fechado)
-=====================================================================
-P39.
-id   slug          label
-1    code_review   Code review
-2    cross_test    Teste cruzado
-3    qa            QA
-4    homologation  Homologação
 
 =====================================================================
 rework_reasons                         (cadastrável por projeto)
@@ -506,7 +518,7 @@ project_id            fk projects   not null  cascade
 label                 varchar(80)   not null
 requires_text         boolean       not null  default false   (o "outro")
 deactivated_at / deactivated_by
-unique: (project_id, label)
+unique: (project_id, label), (id, project_id)   (T7)
 Lista padrão (P40): Ajuste visual · Regra de negócio · Erro / bug ·
 Requisito incompleto ou mal documentado · Outro (requires_text).
 
@@ -519,14 +531,22 @@ P37: editar um critério já testado volta o resultado para pending (o antigo fi
 Depois de retrabalho, todos os itens voltam a pending e o roteiro é o mesmo (P37).
 task_id               fk tasks                     not null  cascade
 parent_id             fk task_acceptance_criteria  null      cascade  (subitem CA_4.1, modelos SGM)
-position              smallint                     not null           (o código "CA_4.1" sai da posição;
-                                                                       ver T9)
+number                smallint unsigned            not null           o n do CA_n, gravado ao criar e
+                                                                       estável: reordenar ou excluir não
+                                                                       renumera (T9). Subitem: CA_<n do
+                                                                       pai>.<number>
+parent_key            bigint unsigned  GENERATED ALWAYS AS (IFNULL(parent_id, 0)) STORED
+                                                                       só para o unique: no MySQL, null
+                                                                       não colide em unique (T9)
+position              smallint                     not null           (ordem de exibição)
 description           text                         not null
 test_result_id        fk test_results              not null  restrict  default 1
 tested_by             fk users                     null      restrict  (QA que marcou, P36)
 tested_at             datetime                     null
+unique: (task_id, parent_key, number)
 índices: task_id, parent_id, test_result_id, tested_by
-Excluir critério: só enquanto não testado (T1).
+Número novo = maior number da tarefa no mesmo pai + 1, com a linha da tarefa travada (lockForUpdate,
+banco.md §8). Excluir critério: só enquanto não testado (T1).
 
 =====================================================================
 test_results                           (fechado)
@@ -540,19 +560,13 @@ id   slug      label
 =====================================================================
 validation_types                       (fechado)
 =====================================================================
-P32: as três validações da tarefa.
+As validações da tarefa (P32: code_review, cross_test, qa) e a homologação do pacote (P43). As quatro
+são as origens de retrabalho (P39): a antiga rework_origins juntou aqui (T10).
 id   slug          label
 1    code_review   Code review
 2    cross_test    Teste cruzado
 3    qa            QA
-
-=====================================================================
-validation_results                     (fechado)
-=====================================================================
-O parecer de uma validação (P33, P34, P36).
-id   slug       label
-1    approved   Aprovado
-2    rejected   Reprovado
+4    homologation  Homologação
 
 =====================================================================
 task_validations
@@ -561,14 +575,16 @@ Parecer de cada validação: code review (P33), teste cruzado (P34) e QA (P36). 
 a vigente é a mais recente do tipo (T2). Reprovar grava o movimento de retrabalho na mesma transação
 (P39).
 Sem trava de "puxar" (revisão 4): a linha nasce com o parecer e guarda só quem validou e quando
-(created_at). O Service recusa só o parecer de teste cruzado dado pelo dev da tarefa
-(tasks.developer_id, P34). Validação ainda devida é consulta: requires_* ligado e nenhum parecer
-approved do tipo depois da última volta para desenvolvimento. Não impede mover o card (premissa).
+(created_at). O Service recusa o parecer de teste cruzado dado pelo dev da tarefa (tasks.developer_id,
+P34) e o tipo homologation, que é do pacote (P43). Validação ainda devida é consulta: requires_*
+ligado e nenhum parecer aprovado do tipo depois da última volta para desenvolvimento. Não impede
+mover o card (premissa).
 task_id               fk tasks               not null  cascade
 validation_type_id    fk validation_types    not null  restrict
-validation_result_id  fk validation_results  not null  restrict
+approved              boolean                not null            aprovado ou reprovado (T10: a antiga
+                                                                 validation_results virou esta coluna)
 validated_by          fk users               not null  restrict  (quem deu o parecer)
-índices: (task_id, validation_type_id, created_at), validation_result_id, validated_by
+índices: (task_id, validation_type_id, created_at), validated_by
 
 =====================================================================
 task_pull_requests
@@ -631,6 +647,7 @@ package_status_role_id  fk package_status_roles  not null  restrict
 label                   varchar(60)              not null
 position                smallint                 not null
 archived_at             datetime                 null      (estado já usado não se exclui)
+unique: (id, project_id)   (T7)
 índices: project_id, package_status_role_id
 
 =====================================================================
@@ -646,7 +663,8 @@ package_status_id     fk package_statuses  not null  restrict
 planned_release_on    date                 null      data planejada, definida por projeto, em geral
                                                      pelo cliente (P44)
 released_at           datetime             null      a data da versão: quando entrou em produção (P44)
-unique: (project_id, name)
+unique: (project_id, name), (id, project_id)   (T7)
+FK composta (T7): (package_status_id, project_id) → package_statuses (id, project_id) restrict
 índices: package_status_id
 
 =====================================================================
@@ -663,7 +681,7 @@ starts_on             date          not null
 ends_on               date          not null
 closed_at             datetime      null                o gestor encerra (P50). null = aberta
 check: ends_on >= starts_on
-unique: (project_id, name)
+unique: (project_id, name), (id, project_id)   (T7)
 Regras do Service:
 - uma sprint aberta (closed_at null) por projeto (P45): com uma aberta, não se cria outra; a próxima
   nasce no encerramento da atual (P50);
@@ -731,9 +749,10 @@ Semente (C11): Preço · Momento · Concorrente · Sem resposta · Sem perfil ·
 =====================================================================
 leads
 =====================================================================
-company_name          varchar(160)       not null           (C2: empresa)
-country               char(2)            not null  default 'BR'  ┐ conversão casa por país + documento
-document              varchar(30)        null                    ┘ (C2, C10, N5)
+company_name          varchar(160)       null      ┐ empresa do lead que ainda não é cliente (C2).
+country               char(2)            null      │ Com client_id, a empresa é a do cliente e os três
+document              varchar(30)        null      ┘ ficam vazios: sem dado repetido (T10). A conversão
+                                                     casa por país + documento (C10, N5)
 owner_id              fk users           not null  restrict  dono: edita só o dono (e o admin); todos
                                                              leem (C4). O admin troca o dono (C16)
 lead_source_id        fk lead_sources    null      restrict  (origem, C2)
@@ -751,15 +770,19 @@ client_id             fk clients         null      restrict  lead de quem já é
                                                              (C3); lead novo recebe na conversão (C10)
 deactivated_at        datetime           null                o "excluir" do Administrador (C16, G2)
 deactivated_by        fk users           null      restrict
+check: (client_id is null and company_name is not null and country is not null)
+    or (client_id is not null and company_name is null and country is null and document is null)
 índices: owner_id, funnel_stage_id, lead_source_id, service_type_id, lost_reason_id, client_id,
          (country, document), deactivated_at
 Regras do Service:
-- mesmo documento pode ter vários leads (C3): sem unique; o Service avisa se há cliente ou lead aberto
-  com o documento e mostra o dono;
+- mesmo documento pode ter vários leads (C3): sem unique; o Service avisa se há cliente
+  (clients.document) ou lead aberto (leads.document, ou leads do cliente) com o documento e mostra o
+  dono;
 - lead ativo = deactivated_at nulo e etapa open. Lead ativo sem follow-up futuro aparece em alerta
   para o dono (C8), por consulta;
 - ganhar (C10): valor preenchido (C2); com service_type 'audit', sizing completo (C12); cria o cliente
-  ou vincula ao existente pelo documento;
+  ou vincula ao existente pelo documento e, na mesma transação, preenche client_id e esvazia
+  company_name, country e document (o antes fica em audit_logs);
 - voltar do perdido para o funil (C11) limpa lost_reason_id e lost_note (o antigo fica em audit_logs);
 - desativar e reativar: só o admin (C16). Lead desativado sai das listas, da agenda e dos lembretes.
 
@@ -829,7 +852,7 @@ ics_sequence          int unsigned          not null  default 0
                                                       convite novo (C9). O UID sai do id.
 completed_at          datetime              null      feito: sai de "vencidos" (C8)
 cancelled_at          datetime              null      cancelado (C7)
-check: lead_id is not null or client_id is not null   (C7; ver T10)
+check: (lead_id is null) <> (client_id is null)   um OU outro (C7, T10)
 índices: (owner_id, starts_at), lead_id, client_id, appointment_type_id
 Follow-up vencido (C8, C9) é consulta: tipo follow_up, starts_at < agora, completed_at e cancelled_at
 nulos, e nenhuma tratativa do lead registrada (lead_interactions.created_at) depois de starts_at.
@@ -858,7 +881,8 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
   null com FK composta (contract_id, client_id) → contracts (id, client_id). Mais horas contratadas,
   período, SLA por prioridade, dias para fechar sozinho (RN-CHM-03, 08, 09): colunas ou tabela
   contract_slas. O Hub é a fonte única de contratos (D-CRM-04).
-- audit_channels: email.  ai_scopes: tickets:read, tickets:write.
+- audit_logs: o canal e-mail (chamado aberto por e-mail, sem usuário nem IA) entra como coluna nova
+  nula.  ai_scopes: tickets:read, tickets:write.
 - tickets (número por sequência, cliente, contrato, projeto, task_id → coluna Support, P52), filas
   N1/N2/N3 e despachante, mensagens (com a marca de interna, RN-CHM-05), anexos, e-mails não
   identificados, apontamento de horas contra o contrato (banco de horas, D-CHM-04).
@@ -872,17 +896,21 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 6.2  FKs só em uma direção: Projetos → Platform, CRM → Platform (D-GER-15).
 6.3  Etapa livre com papel fixo no quadro (P11), no funil (outcome, C1) e no pacote (P42): renomeia à
      vontade, o indicador lê o papel. O papel da etapa não muda depois de usada (T1).
-6.4  Quem fez = audit_logs (D-GER-20). Coluna de pessoa só quando uma regra a lê (seção 0).
+6.4  Quem fez = audit_logs (D-GER-20). Coluna de pessoa só quando uma regra a lê (seção 0). O
+     movimento do card aponta para a linha de audit_logs em vez de repetir quem e por onde (T10).
 6.5  Nada de cache: status e marcos se derivam. Fotos só onde a N3 manda.
 6.6  Contato é um cadastro só no Núcleo; o CRM liga lead a contato (N8).
 6.7  Tarefa aponta para sprint e pacote atuais (uma coluna cada). Troca de sprint e saída do
      pacote ficam em audit_logs: nenhuma regra pede a lista histórica em tabela (T3).
 6.8  Critério de aceite e item do roteiro são a mesma linha: 1 critério = 1 item (P36).
-6.9  Chave da tarefa: key gravada + contador atômico (T4) + unique (project_id, number).
+6.9  Chave da tarefa: projects.key_prefix + tasks.number, sem coluna gravada (T10); contador
+     atômico (T4) + unique (project_id, number).
 6.10 Sem trava no fluxo de Projetos (premissa): nenhuma coluna de configuração existe só para recusar
      movimento, e o Service não confere capacidade, dev, horas, PR nem parecer para mover card.
 6.11 Sem deleted_at (banco.md §4, G2): cadastro com histórico se desativa, card com histórico se
      arquiva, e só o que nunca foi usado se exclui de verdade.
+6.12 Integridade por projeto no banco: unique (id, project_id) + FK composta (T7, seção 0).
+6.13 Testes em MySQL 8, como a produção; nada de SQLite (T6, D-GER-22).
 
 
 #####################################################################
@@ -905,7 +933,7 @@ Saiu na Sessão C (premissa sem trava; padrão 0.4.0)
   lockForUpdate em sprint_members (P49).
 - task_validations: claimed_at, validated_at (é o created_at da linha) e a trava de "puxar" teste
   cruzado; a linha nasce com o parecer. validation_results: o valor pending, que só servia à linha
-  puxada e ainda sem parecer.
+  puxada e ainda sem parecer (depois a tabela inteira saiu, T10).
 - packages: "só tarefa em Done entra", "em homologação não recebe tarefa" (P41, P42) e "reprovada na
   homologação sai do pacote" (P43).
 - lead_audit_sizings: price (o preço é o valor do lead, C12).
@@ -913,6 +941,17 @@ Saiu na Sessão C (premissa sem trava; padrão 0.4.0)
   (banco.md §4). Decisão do Lucas Scholz na Sessão C: card com histórico se arquiva, e lead se
   desativa (G2, P26, C16).
 - rework_reasons: a marca "[validar com Rafael]" da lista padrão (P40).
+
+Saiu nas respostas do Lucas Scholz às perguntas técnicas (T10, 24/09)
+- tasks.key (é prefixo + número).
+- audit_logs.audit_channel_id e a tabela audit_channels (o canal sai da autorização de IA);
+  ai_assistants.audit_channel_id (o slug dá o canal).
+- task_stage_movements.moved_by e audit_channel_id (vêm da linha de audit_logs do movimento).
+- validation_results (o parecer virou task_validations.approved) e rework_origins (juntou com
+  validation_types).
+- leads: empresa repetida quando o lead já tem client_id.
+Voltou: audit_logs.ip_address (T8). Entraram: task_acceptance_criteria.number (T9) e o project_id
+das FKs compostas em task_stage_movements (T7).
 
 Saiu porque ninguém pediu o dado
 - users: phone, avatar_path, last_login_at (o login está em audit_logs), email_verified_at e
@@ -943,7 +982,7 @@ Saiu porque ninguém pediu o dado
   falou" voltou na Sessão C (C5).
 - appointments: título, status (virou completed_at/cancelled_at), UID gravado (sai do id), data do
   último convite, quem cancelou.
-- audit_logs: context, ip, user_agent, request_id (ver T8). ai_authorizations: apelido, último uso,
+- audit_logs: context, user_agent, request_id. O IP voltou (T8). ai_authorizations: apelido, último uso,
   motivo e autor da revogação. ai_tool_calls: user_id (sai da autorização), kind, duration_ms.
 - Todas as colunas created_by, added_by, assigned_by, estimated_by, removed_by, closed_by e
   sort_order (seção 0).
@@ -964,7 +1003,8 @@ Saiu porque era tabela para algo que uma coluna resolve
 
 #####################################################################
 #  8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
-#  Decididas para seguir. O Lucas Alencar corrige na revisão geral se discordar.
+#  T1–T5 decididas para seguir; T6–T10 eram perguntas para o Lucas Alencar e foram respondidas pelo
+#  Lucas Scholz. O Lucas Alencar corrige na revisão geral se discordar.
 #####################################################################
 T1  Regras que o banco não trava sozinho ficam no Service, cobertas por teste automatizado:
     papel da etapa não muda depois de usada; critério só se exclui antes de testado; uma sprint
@@ -991,40 +1031,31 @@ T5  ai_tool_calls: limpeza de 180 dias pelo prune agendado do Laravel (Prunable 
     Limite de chamadas contado por autorização de IA (ai_authorization_id), não por usuário: um
     conector em loop não bloqueia os outros assistentes da mesma pessoa.
 
-PERGUNTAS ABERTAS para o Lucas Alencar (revisão da etapa 2, 24/09). Não decididas; recomendação ao
-lado de cada uma.
-T6  MySQL em produção × SQLite nos testes do template (stacks/laravel-inertia.md: "SQLite nos
-    testes"). Três pontos só existem no MySQL: a coluna gerada com IF() em funnel_stages.final_key,
-    o LAST_INSERT_ID(expr) do T4 e os unique que ignoram acento (collation ai_ci). O teste que prova
-    essas travas não roda o que vai para produção.
-    Recomendo: testes de banco em MySQL no CI (container), ou implementação que rode nos dois.
-T7  Integridade por projeto. Nada no banco garante que etapa, sprint, pacote e área da tarefa, as
-    etapas do movimento, o motivo de retrabalho e o estado do pacote são do MESMO projeto. É o mesmo
-    desenho de FK composta que projects × contracts usava (contrato hoje fora da v1, seção 5).
-    Recomendo: unique (id, project_id) em board_stages, sprints, packages, project_areas,
-    rework_reasons e package_statuses, e FK composta a partir de tasks, task_stage_movements e
-    packages. Com 1 dev por tarefa, dá também (project_id, developer_id) e (project_id, qa_id) →
-    project_members (project_id, user_id).
-T8  IP na auditoria. audit_logs perdeu ip e user_agent no enxugamento; o template tem os dois.
-    A G3 registra tentativa negada; sem IP não há como investigar uma conexão de IA roubada.
-    Recomendo: manter ip varchar(45) null (user_agent opcional).
-T9  Código CA_n estável. Hoje sai de task_acceptance_criteria.position: reordenar ou excluir
-    renumera, e o "CA_3" do documento de requisição e da evidência passa a apontar outro critério.
-    Recomendo: coluna number gravada + unique (task_id, parent_id, number).
-T10 Dados duplicados. Recomendo tirar ou travar:
-    - tasks.key: o prefixo congela (P3), então key = prefixo + number. "SGM-17" se acha por
-      key_prefix (unique) + (project_id, number). Recomendo tirar a coluna.
-    - leads.company_name/country/document com client_id preenchido repetem o cliente. Recomendo:
-      definir se é foto do momento ou se some quando há client_id.
-    - appointments.lead_id + client_id: com lead de cliente, o cliente se repete. Recomendo check
-      "um OU outro" (C7).
-    - audit_logs.audit_channel_id sai de ai_authorization_id (null = tela). task_stage_movements
-      .moved_by e .audit_channel_id repetem o audit_logs do mesmo movimento. Recomendo: uma fonte só
-      para "quem moveu".
-    - Domínios gêmeos: test_results ≈ validation_results; rework_origins = validation_types +
-      homologação; ai_assistants ↔ audit_channels (1:1). Recomendo juntar, a critério.
+RESPONDIDAS pelo Lucas Scholz (24/09). Cada uma diz o que decidiu e onde está aplicada.
+T6  Testes em MySQL 8, como a produção; nada de SQLite (D-GER-22). O template roda PHPUnit em SQLite
+    (stacks/laravel-inertia.md); no Hub, phpunit.xml e o CI apontam para MySQL 8 (container no CI).
+    Motivo: a coluna gerada (funnel_stages.final_key, task_acceptance_criteria.parent_key), o
+    LAST_INSERT_ID(expr) do T4 e os unique que ignoram acento só existem no MySQL.
+T7  Integridade por projeto no banco: unique (id, project_id) em board_stages, sprints, packages,
+    project_areas, rework_reasons, package_statuses e tasks, e FK composta a partir de tasks,
+    task_stage_movements (que ganhou project_id) e packages. Dev e QA da tarefa por FK composta em
+    project_members (project_id, user_id). Aplicado na seção 0 e em cada tabela.
+T8  audit_logs.ip_address varchar(45) null, como no template. user_agent não entra.
+T9  task_acceptance_criteria.number gravado ao criar, estável, com unique (task_id, parent_key,
+    number). parent_key é coluna gerada IFNULL(parent_id, 0): no MySQL, null não colide em unique, e o
+    unique com parent_id não barraria número repetido entre os critérios de primeiro nível.
+T10 Dados duplicados, todos resolvidos:
+    - tasks.key saiu: "SGM-17" = projects.key_prefix + tasks.number.
+    - leads: company_name, country e document só existem enquanto o lead não tem client_id (check);
+      na conversão, o Service preenche client_id e esvazia os três.
+    - appointments: check "um OU outro" entre lead_id e client_id.
+    - audit_logs.audit_channel_id saiu (o canal sai de ai_authorization_id; null = tela), e com ele a
+      tabela audit_channels. task_stage_movements trocou moved_by e audit_channel_id por audit_log_id.
+    - Domínios gêmeos: validation_results virou task_validations.approved (boolean); rework_origins
+      juntou com validation_types (entrou homologation); ai_assistants perdeu audit_channel_id (o
+      slug dá o canal).
 T11 RESOLVIDA pelas regras (N8, revisão 4): contacts.email ganhou índice (sem unique) e o Service
-    avisa de possível duplicado. Sai na aprovação.
+    avisa de possível duplicado.
 
 
 #####################################################################
@@ -1048,14 +1079,15 @@ enterprises               → SAI. Single-tenant (6.1). A tela de empresas do te
                           parent_enterprise_id e nickname não passam.
 user_has_enterprises      → SAI (sem escopo por empresa; o escopo é papel + alocação, 6.1).
 audit_logs                before_data + after_data → changes {"campo": [antes, depois]}.
-                          Entram: audit_channel_id, ai_authorization_id, outcome.
+                          Entram: ai_authorization_id (dá o canal, T10), outcome.
                           auditable_id: de not null para null (negação antes de achar o registro).
                           user_id: de nullOnDelete para restrict (usuário com histórico não se
                           exclui, G2).
-                          ip_address e user_agent: saem nesta proposta; ver T8.
+                          ip_address fica (T8); user_agent sai.
 password_reset_tokens,
 sessions, cache,
 cache_locks, jobs,
 job_batches, failed_jobs  → ficam como estão (a 0.4.0 já usa datetime e Unix time em bigint).
 Entram do zero: notifications (Laravel) e as tabelas do Passport (seção 4), com as migrações
 publicadas e ajustadas para datetime (o DateTimeConventionsTest do template recusa timestamps()).
+Testes: o template roda PHPUnit em SQLite; o Hub roda em MySQL 8, local e no CI (T6, D-GER-22).

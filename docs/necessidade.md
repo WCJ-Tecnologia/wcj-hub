@@ -44,6 +44,7 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-19 | 24/09/2026 | Capacidade da VPS e separação do banco do Hub: definir com **Alaor Rodrigues** na hora de subir o ambiente de teste. |
 | D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.txt` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo (G5). Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
 | D-GER-21 | 24/09/2026 | Banco de dados: **MySQL 8**, o mesmo do template da casa. |
+| D-GER-22 | 24/09/2026 | **Testes também em MySQL 8**, local e no CI; nada de SQLite, embora o template use SQLite nos testes. O teste roda o mesmo banco da produção (T6 do `banco.txt`). |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
 | D-CRM-04 | 24/09/2026 | Quando o contrato entrar (fora da v1, N10), o Hub é a **única fonte de contratos** e o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão, também depois da v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
@@ -536,7 +537,7 @@ Consequência para a v1 (IA3):
 ## Em aberto
 
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
-- [ ] Lucas Alencar: perguntas técnicas do `banco.txt` (seção 8).
+- [ ] Lucas Scholz revisa o `banco.txt` (Sessão D, prompt no `00-COMECE-AQUI.md`); depois, Lucas Alencar aprova (D-GER-01). As perguntas técnicas T6–T10 foram respondidas por Lucas Scholz em 24/09.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
 - [ ] Prova de conceito: testar se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.
 - [ ] Enquete interna de ferramentas (em andamento): para cada pessoa, **qual assistente**, **qual plano** e **onde usa** (app web/desktop, celular, Claude Code, Codex).
