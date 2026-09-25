@@ -12,7 +12,7 @@ Atualizado em 2026-09-24.
 
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
-| 1. Necessidade | **Reescrita na Sessão C (24/09)** com as regras aprovadas por Lucas Scholz na revisão 4: códigos G, N, P, C e IA, e a tabela de decisões só com decisões de projeto. **Para o Lucas Scholz:** vetar ou confirmar a lista "Fechado na Sessão C", no topo do arquivo. **Para Lucas Scholz e Cauã:** o [DECIDIR] da IA14. Depois, Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
+| 1. Necessidade | **Reescrita na Sessão C (24/09)** com as regras aprovadas por Lucas Scholz na revisão 4: códigos G, N, P, C e IA, e a tabela de decisões só com decisões de projeto. As lacunas fechadas pela premissa foram confirmadas por Lucas Scholz em 24/09. **Para Lucas Scholz e Cauã:** o [DECIDIR] da IA14. Depois, Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
 | 2. Banco | **Atualizado na Sessão C (24/09)** com os códigos novos, o anexo da revisão 4 e a exclusão pelo padrão 0.4.0 (sem `deleted_at`). **Para o Lucas Alencar:** perguntas técnicas T6–T10 (seção 8) e diferença para o template 0.4.0 (seção 9). Depois, Comitê (D-GER-16) | `docs/banco.txt` |
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
@@ -62,7 +62,7 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 
 **Próximos passos, nesta ordem:**
 
-1. Lucas Scholz veta ou confirma a lista "Fechado na Sessão C" da `necessidade.md`; Lucas Scholz e Cauã fecham o [DECIDIR] da IA14.
+1. Lucas Scholz e Cauã fecham o [DECIDIR] da IA14 (`necessidade.md`).
 2. Lucas Alencar revisa o `banco.txt`: T6–T10 (seção 8) e seção 9. Aprovado, as seções 7 e 8 saem do arquivo.
 3. Comitê de IA valida necessidade e banco (D-GER-16).
 4. Lucas Scholz faz a prova de conceito do MCP (D-GER-17), antes da etapa 4.

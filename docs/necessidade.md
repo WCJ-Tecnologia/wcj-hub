@@ -2,7 +2,7 @@
 
 Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.4.0). Serve de entrada para o modelo de banco (etapa 2, `docs/banco.txt`) e para o escopo (etapa 4).
 
-**Situação:** as regras são as aprovadas por Lucas Scholz na revisão das regras de 24/09/2026 (revisão 4), reescritas aqui na Sessão C. O documento aguarda o Comitê de IA. Chamados continua em rascunho (D-GER-12). **[LEVANTAR]** marca o que depende do dono do módulo. **[DECIDIR]** marca o que depende do comitê ou de quem estiver indicado.
+**Situação:** as regras são as aprovadas por Lucas Scholz na revisão das regras de 24/09/2026 (revisão 4), reescritas aqui na Sessão C. As lacunas fechadas pela premissa nessa reescrita e a exclusão pelo padrão 0.4.0 foram confirmadas por ele no mesmo dia. O documento aguarda o Comitê de IA. Chamados continua em rascunho (D-GER-12). **[LEVANTAR]** marca o que depende do dono do módulo. **[DECIDIR]** marca o que depende do comitê ou de quem estiver indicado.
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (o Trello é ferramenta genérica). A ordem é: regras e fluxo primeiro; depois a IA propõe o modelo de dados; por fim a pessoa técnica valida, na etapa 2.
 
@@ -51,23 +51,6 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-CHM-02 | 24/09/2026 | Canal inicial de chamado: **e-mail** (endereço próprio). Triagem por uma função de **despachante**, com filas N1/N2/N3. |
 | D-CHM-03 | 24/09/2026 | SLA e prioridade **contrato a contrato**; a prioridade é definida pela WCJ na triagem. No início, chamados só no nível de projeto. |
 | D-CHM-04 | 24/09/2026 | **Banco de horas**: contrato com horas contratadas; o excedente é contabilizado como hora extra. Chamado resolvido fecha sozinho sem resposta do cliente. |
-
-## Fechado na Sessão C (para veto)
-
-**Decidido por Lucas Scholz na Sessão C:** a exclusão segue o padrão 0.4.0 (`core/banco.md` §4), sem `deleted_at`. Card de projeto só se exclui de verdade se nunca foi usado; se já tem histórico, é arquivado. Lead, o Administrador desativa, e fica gravado quem e quando. Está nas regras G2, P26 e C16.
-
-**Fechado pela premissa, sem rodada de perguntas (vete o que não quiser):**
-
-1. A tarefa pode ficar sem QA mesmo com a validação de QA ligada, do mesmo jeito que pode ficar sem dev ou sem horas (P20).
-2. A tarefa sem dev ou sem horas na entrada em `Doing` fica sem data prevista. A data é calculada quando tiver os dois e conta a partir da primeira entrada em `Doing` (P28).
-3. "Uma sprint em andamento" quer dizer uma sprint **aberta** (ainda não encerrada) por projeto. Por isso a próxima sprint é criada no encerramento da atual (P45, P50).
-4. Pôr o card na sprint leva o card do `Backlog` para o `To do`. Tirar da sprint devolve ao `Backlog` (P45).
-5. O card de suporte nasce na coluna `Support`, fora da sprint. Dali, qualquer pessoa alocada move o card, como faria a partir do `To do`. Pôr o card de suporte na sprint só o liga à sprint, sem trocar de coluna (P52).
-6. Card arquivado sai das contas de prazo, atraso e capacidade. As horas lançadas nele continuam nos indicadores de horas (P26). Isso veio da regra antiga de arquivamento.
-7. Quando uma pessoa sai do projeto, as tarefas dela ficam sem dev e, se ela era o QA, também sem QA (P5).
-8. A reprovação na homologação não tira a tarefa do pacote sozinha. Se quiser, o gestor tira (P43).
-9. Lead desativado sai das listas, da agenda e dos lembretes. O Administrador pode reativar (C16).
-10. Saiu a opção "exigir PR para entrar em `Code-review`": nenhuma regra a usa (P23, G5).
 
 ---
 
@@ -178,12 +161,12 @@ Pontos de atenção se o GLPI entrar:
 
 ## Regras de negócio
 
-Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interface de IA). Em Projetos, a premissa vale acima de todas. As marcadas *(Sessão C)* foram completadas na reescrita e estão na lista para veto do topo.
+Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interface de IA). Em Projetos, a premissa vale acima de todas.
 
 ### 0. Vale para todos os módulos
 
 - **G1** O sistema traz um padrão pronto que o gestor ajusta por projeto. Só é fixo o que protege segurança e auditoria.
-- **G2** Usuário, cliente, contato e lead já usados não são excluídos: são desativados, com quem e quando, e podem ser reativados. Card de projeto já usado é arquivado (P26). Só se exclui de verdade o que nunca foi usado, e só quem tem permissão exclui. Tudo fica na auditoria. *(Sessão C: padrão 0.4.0)*
+- **G2** Usuário, cliente, contato e lead já usados não são excluídos: são desativados, com quem e quando, e podem ser reativados. Card de projeto já usado é arquivado (P26). Só se exclui de verdade o que nunca foi usado, e só quem tem permissão exclui. Tudo fica na auditoria.
 - **G3** Toda alteração, em qualquer módulo, fica na auditoria: quem, quando, o antes e o depois, e por onde (tela ou qual IA). Tentativa negada também fica. A auditoria nunca é apagada.
 - **G4** O que o papel não vê na tela, a IA dele também não vê nem altera.
 - **G5** Dado sem regra que o use não entra no sistema. Volta quando alguém pedir, com o motivo.
@@ -215,7 +198,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
   - **produto contínuo** (ex.: Wpay): só tem data de início e fica em melhoria contínua. O prazo é o de cada sprint.
 - **P3** Cada projeto tem um prefixo (ex.: `SGM`), único no sistema, que não muda depois da primeira tarefa.
 - **P4** Modalidade tradicional ou 100% IA. Na v1 é só uma marcação.
-- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere; o Administrador, todos. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA. *(Sessão C)*
+- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere; o Administrador, todos. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA.
 - **P6** O Tech Lead é definido por projeto, um ou mais.
 - **P7** O gestor encerra o projeto quando quiser, mesmo com tarefa aberta. Projeto encerrado não recebe tarefa nova; o gestor ou o Administrador reabre.
 - **P8** Mudar a configuração do projeto vale dali para a frente e nunca apaga o que já foi registrado.
@@ -236,7 +219,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **P17** A tarefa é escrita no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
 - **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD) e área (lista do projeto, que nasce vazia).
 - **P19** Prioridade: baixa, normal, alta ou urgente.
-- **P20** A tarefa tem **um dev** e, quando a validação de QA está ligada, **um QA**. Os dois podem ficar vazios, como as horas (P27). *(Sessão C)*
+- **P20** A tarefa tem **um dev** e, quando a validação de QA está ligada, **um QA**. Os dois podem ficar vazios, como as horas (P27).
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).
 - **P22** Quem é atribuído à tarefa recebe aviso **no sistema**. É o único aviso da v1; não há e-mail.
 - **P23** A tarefa aceita nenhum, um ou vários PRs, colados como link.
@@ -246,13 +229,13 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
   - o card **nunca usado** (não saiu do `Backlog` e não tem horas, comentários, anexos nem PRs) pode ser **excluído** de verdade;
   - o card com histórico é **arquivado**, com motivo. Sai do quadro e das contas de prazo, atraso e capacidade; as horas lançadas nele continuam nos indicadores de horas. Desarquivar devolve ao `Backlog`.
 
-  O dev não exclui nem arquiva. Tudo fica na auditoria (G3). *(Sessão C: padrão 0.4.0)*
+  O dev não exclui nem arquiva. Tudo fica na auditoria (G3).
 - **P56** Só o gestor e o Administrador criam card. As demandas nascem do gestor; o dev executa o que está no quadro. Vale também pela IA (G4).
 
 #### 2.4 Horas e prazo
 
 - **P27** Horas previstas: **um total só, Dev + QA**, opcionais ao criar. Na montagem da sprint, o gestor, com o diretor de tecnologia, define ou valida as horas. Tarefa sem horas pode entrar na sprint: só fica sem data prevista. Reestimar fica no histórico.
-- **P28** A **data prevista** é calculada quando a tarefa entra em `Doing` pela primeira vez: horas previstas ÷ carga diária do dev, em dias úteis de segunda a sexta. Só muda se o gestor reestimar; nem retrabalho nem pausa empurram a data. Sem dev ou sem horas, a tarefa fica sem data prevista até ter os dois, e a conta parte da primeira entrada em `Doing`. *(Sessão C)*
+- **P28** A **data prevista** é calculada quando a tarefa entra em `Doing` pela primeira vez: horas previstas ÷ carga diária do dev, em dias úteis de segunda a sexta. Só muda se o gestor reestimar; nem retrabalho nem pausa empurram a data. Sem dev ou sem horas, a tarefa fica sem data prevista até ter os dois, e a conta parte da primeira entrada em `Doing`.
   Exemplo: 16 h com um dev de 8 h/dia = 2 dias úteis; com um dev de 4 h/dia = 4 dias úteis.
 - **P29** Feriados não contam na v1.
 - **P30** Horas realizadas: quem trabalhou lança à mão, por dia, em horas decimais, e corrige as próprias. O gestor e o Administrador corrigem qualquer uma. Não há cronômetro.
@@ -277,24 +260,24 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 - **P41** O pacote é a versão (ex.: `1.0.9`) e é **opcional**. O gestor e o Administrador montam o pacote com tarefas prontas e mudam o estado dele.
 - **P42** Estados do pacote: em montagem → em homologação → homologado → em produção. O gestor pode renomear, criar e remover estados no projeto.
-- **P43** A homologação é da equipe WCJ, testando tudo junto; o cliente não participa. Reprovação devolve as tarefas afetadas com retrabalho de origem homologação. A reprovação não tira a tarefa do pacote sozinha; o gestor tira, se quiser. *(Sessão C)*
+- **P43** A homologação é da equipe WCJ, testando tudo junto; o cliente não participa. Reprovação devolve as tarefas afetadas com retrabalho de origem homologação. A reprovação não tira a tarefa do pacote sozinha; o gestor tira, se quiser.
 - **P44** A data planejada de liberação é definida por projeto, em geral pelo cliente. A data da versão é quando ela entra em produção.
 
 Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do merge, a homologação do pacote é o primeiro teste integrado.
 
 #### 2.8 Sprint
 
-- **P45** A sprint é **obrigatória**: é por ela que o card sai do `Backlog`. O gestor e o Administrador criam a sprint (nome, objetivo, início e fim) e põem ou tiram card dela a qualquer momento; o dev não. Pôr na sprint leva o card para o `To do`; tirar devolve ao `Backlog`. **Uma sprint em andamento por projeto**: é a sprint aberta, ainda não encerrada. *(Sessão C)*
+- **P45** A sprint é **obrigatória**: é por ela que o card sai do `Backlog`. O gestor e o Administrador criam a sprint (nome, objetivo, início e fim) e põem ou tiram card dela a qualquer momento; o dev não. Pôr na sprint leva o card para o `To do`; tirar devolve ao `Backlog`. **Uma sprint em andamento por projeto**: é a sprint aberta, ainda não encerrada.
 - **P46** Duração padrão de 10 dias úteis (2 semanas), ajustável por projeto. **Padrão.**
 - **P47** A sprint tem um time, formado por quem tem carga diária (N3).
 - **P48** Capacidade de cada pessoa na sprint = carga diária × dias disponíveis. O gestor reduz os dias por férias ou folga.
 - **P49** O sistema mostra, por dev, as horas que faltam das tarefas dele na sprint (previstas − já lançadas) contra a capacidade dele. É **só referência** para o gestor: nunca impede nada. Tarefa sem dev ou sem horas aparece à parte. A capacidade do QA não entra na conta na v1.
-- **P50** O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog`, como o gestor decidir; fica o histórico. *(Sessão C)*
+- **P50** O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog`, como o gestor decidir; fica o histórico.
 - **P51** A sprint é a "Fase" do Histórico de Desenvolvimento entregue ao cliente.
 
 #### 2.9 Suporte
 
-- **P52** Enquanto o módulo Chamados não existe, quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail, reunião ou outro), o gestor registra um **card de suporte** na coluna `Support`, com quem pediu (contato), por onde e quando o pedido chegou. O card segue o mesmo quadro, com as validações que o gestor deixar ligadas. Ele nasce fora da sprint, e dali qualquer pessoa alocada o move, como a partir do `To do`. Se quiser, o gestor põe o card na sprint em andamento; isso só liga o card à sprint, sem trocar de coluna. *(Sessão C)*
+- **P52** Enquanto o módulo Chamados não existe, quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail, reunião ou outro), o gestor registra um **card de suporte** na coluna `Support`, com quem pediu (contato), por onde e quando o pedido chegou. O card segue o mesmo quadro, com as validações que o gestor deixar ligadas. Ele nasce fora da sprint, e dali qualquer pessoa alocada o move, como a partir do `To do`. Se quiser, o gestor põe o card na sprint em andamento; isso só liga o card à sprint, sem trocar de coluna.
 
 #### 2.10 Indicadores
 
@@ -322,7 +305,7 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 - **C13** Ganhar um lead de auditoria não cria nada no DaaS; a auditoria é aberta lá à mão.
 - **C14** O gestor de projetos não vê o pipeline comercial; o dev não vê o CRM. **Fixa.**
 - **C15** O CRM começa do zero, sem migração do DaaS.
-- **C16** O Administrador desativa o lead (o "excluir" da tela), com quem e quando, e pode reativá-lo. Lead desativado sai das listas, da agenda e dos lembretes. O Administrador também troca o dono do lead. Tudo fica na auditoria. *(Sessão C: padrão 0.4.0)*
+- **C16** O Administrador desativa o lead (o "excluir" da tela), com quem e quando, e pode reativá-lo. Lead desativado sai das listas, da agenda e dos lembretes. O Administrador também troca o dono do lead. Tudo fica na auditoria.
 
 ### 4. Interface de IA
 
@@ -552,7 +535,6 @@ Consequência para a v1 (IA3):
 
 ## Em aberto
 
-- [ ] Lucas Scholz: vetar ou confirmar a lista "Fechado na Sessão C", no topo.
 - [ ] **[DECIDIR]** Lucas Scholz e Cauã: `retrabalho_do_projeto` e `notas_da_versao` na v1 (IA14 × P54, P55).
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
 - [ ] Lucas Alencar: perguntas técnicas do `banco.txt` (seção 8).
