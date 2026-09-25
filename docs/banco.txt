@@ -1,6 +1,7 @@
 MODELO DE DADOS — WCJ Hub
 Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.4.0). PROPOSTA DA IA (D-GER-16), atualizada
-na Sessão C (24/09) com as regras aprovadas pelo Lucas Scholz (revisão 4 das regras).
+na Sessão C (24/09) com as regras aprovadas pelo Lucas Scholz (revisão 4 das regras) e revisada por
+ele na Sessão D (24/09), tabela por tabela (seção 7, "Sessão D").
 Códigos: G, N, P, C e IA são as regras de docs/necessidade.md; D-GER, D-IA-04, D-IA-07, D-CRM-04 e
 D-CHM, a tabela de decisões dela; T1 a T11, as escolhas técnicas da seção 8 (T6 a T10
 respondidas pelo Lucas Scholz em 24/09).
@@ -47,11 +48,11 @@ Quem fez e quando
 - Fica em audit_logs (tabela única, D-GER-16, G3): usuário, autorização de IA (o canal), antes/depois
   e IP.
 - Coluna *_by só existe quando uma regra lê a pessoa: deactivated_by (banco.md §4: a tela mostra quem
-  desativou), validated_by (P34: o dev da tarefa não dá o parecer do teste cruzado), tested_by (P36: o
-  QA que marcou o item), owner_id (C4), manager_id (P1).
+  desativou), validated_by (o parecer é um registro próprio e o autor faz parte dele, como o autor do
+  comentário; P33, P34), owner_id (C4), manager_id (P1).
 - Quem moveu o card (P14) não se repete no movimento: task_stage_movements aponta para a linha de
   audit_logs do movimento (T10).
-- Nada de created_by, added_by, assigned_by, estimated_by: é audit_logs.
+- Nada de created_by, added_by, assigned_by, estimated_by, tested_by: é audit_logs.
 
 Derivar, não guardar
 - Não há coluna de cache. Status que se deduz de outra coluna é deduzido (lead ganho = etapa com
@@ -63,10 +64,10 @@ Derivar, não guardar
 
 Integridade por projeto (T7)
 - Tabela de projeto para a qual outra aponta tem unique (id, project_id), e a FK chega composta com
-  project_id: etapa, sprint, pacote, área, motivo de retrabalho, estado do pacote, e o dev e o QA
-  (project_members) são sempre do mesmo projeto da tarefa. FK composta com coluna nula não é
-  conferida no MySQL (MATCH SIMPLE): tarefa sem sprint, sem dev ou sem área passa. A FK composta
-  substitui a simples da mesma coluna.
+  project_id: etapa, sprint, pacote, área, motivo de retrabalho, estado do pacote, a tarefa de origem
+  do bug, e o dev e o QA (project_members) são sempre do mesmo projeto da tarefa. FK composta com
+  coluna nula não é conferida no MySQL (MATCH SIMPLE): tarefa sem sprint, sem dev ou sem área passa.
+  A FK composta substitui a simples da mesma coluna.
 
 Desativar, arquivar, excluir (banco.md §4, G2). Nada de deleted_at.
 - Cadastro com histórico se desativa: deactivated_at datetime null + deactivated_by fk users null.
@@ -84,28 +85,30 @@ Domínios
 - (fechado)     valores fixos, semeados, sem tela de edição. Colunas: id, slug, label.
                 O código compara por slug.
 - (cadastrável) lista que o usuário edita (G1). Colunas: label + deactivated_at/by, mais slug
-                só nos itens de que o código depende. Quem edita (G7): listas gerais = Administrador;
-                listas do projeto = gestor do projeto.
+                só nos itens de que o código depende (os outros itens ficam com slug nulo). Quem
+                edita (G7): listas gerais = Administrador; listas do projeto = gestor do projeto.
 - Flag interna sem rótulo de tela = varchar + CHECK.
 
 onDelete
 - Padrão: restrict. cascade só em filho que não existe sem o pai (e o pai só é excluído se nunca
   foi usado). Nenhum cascade apaga arquivo: exclusão com anexo passa pelo Service.
 - MySQL: coluna usada em CHECK não pode ter FK com cascade ou set null (erro 3823).
+- MySQL: coluna-base de coluna gerada STORED também não pode ter FK com cascade (erro 1215, testado
+  no MySQL 8.4 na Sessão D). Quando a base tem cascade, a coluna gerada é VIRTUAL, com índice
+  (task_acceptance_criteria.parent_key). As demais colunas geradas são STORED.
 
 
 =====================================================================
-ÍNDICE (44 tabelas + framework)
+ÍNDICE (41 tabelas + framework)
 =====================================================================
 1. PLATFORM   roles · users · clients · contacts · service_types · contact_channels
-              · audit_logs · ai_assistants · ai_scopes · ai_authorizations
-              · ai_authorization_scopes · ai_tool_calls
+              · audit_logs · ai_assistants · ai_authorizations · ai_tool_calls
 2. PROJETOS   projects · project_members · stage_roles · board_stages
               · task_types · project_areas · task_priorities · tasks
               · task_stage_movements · rework_reasons · task_acceptance_criteria
               · test_results · validation_types · task_validations · task_pull_requests
               · task_comments
-              · task_attachments · time_entries · package_status_roles · package_statuses
+              · task_attachments · time_entries · package_statuses
               · packages · sprints · sprint_members
 3. CRM        funnel_stages · lead_sources · lost_reasons · leads · lead_contacts
               · lead_audit_sizings · lead_interactions · appointment_types · appointments
@@ -125,8 +128,9 @@ onDelete
 =====================================================================
 roles                                  (fechado)
 =====================================================================
-Papéis da v1: 4 fixos, atribuídos pelo Administrador; não se cria papel novo (N2). Tech Lead é
-função por projeto, não papel (P6). Suporte e Contato do cliente entram com Chamados (seção 5).
+Papéis da v1: 4 fixos, atribuídos pelo Administrador; não se cria papel novo (N2). Tech Lead não é
+papel nem fica no sistema (P6 saiu na Sessão D). Suporte e Contato do cliente entram com Chamados
+(seção 5).
 id   slug             label
 1    admin            Administrador
 2    project_manager  Gestor de projetos
@@ -160,8 +164,11 @@ clients
 Empresa atendida (N5). Inclui a própria WCJ, dona dos projetos internos e dos produtos (N7).
 name                  varchar(160)   not null             (como a WCJ chama o cliente)
 country               char(2)        not null  default 'BR'  (ISO 3166-1; N5)
-document              varchar(30)    null                 BR: CNPJ, 14 dígitos. Fora do BR:
-                                                          identificador fiscal do país, opcional (N5).
+document              varchar(30)    null                 BR: CNPJ, 14 caracteres. Desde jul/2026 o
+                                                          CNPJ novo pode ter letras (alfanumérico): o
+                                                          Service valida letras e números, não só
+                                                          dígitos. Fora do BR: identificador fiscal
+                                                          do país, opcional (N5).
 deactivated_at        datetime       null                 (N11: sem trava por ter algo aberto)
 deactivated_by        fk users       null      restrict
 check: country <> 'BR' or document is not null    (CNPJ obrigatório no BR, N5)
@@ -189,15 +196,15 @@ sem os dados.
 =====================================================================
 service_types                          (cadastrável)
 =====================================================================
-N10: o que o lead está vendendo (C2). O Administrador edita (G7). O código depende do slug 'audit'
-(sizing, C12). Contrato fica fora da v1 (N10).
+N10: o que o lead está vendendo (C2). O Administrador edita (G7). O código depende só do slug
+'audit' (sizing, C12); os outros itens nascem sem slug. Contrato fica fora da v1 (N10).
 slug varchar(40) null unique · label varchar(80) not null unique · deactivated_at/by
      slug              label
-     project           Projeto
-     support           Sustentação
+     —                 Projeto
+     —                 Sustentação
      audit             Auditoria
-     dev_allocation    Alocação de dev
-     infrastructure    Infraestrutura
+     —                 Alocação de dev
+     —                 Infraestrutura
 
 =====================================================================
 contact_channels                       (fechado)
@@ -241,21 +248,13 @@ leitura (ChatGPT Pro, IA3). O slug dá o canal da auditoria: ia:<slug> (IA11, T1
 id   slug         label            write_allowed
 1    claude       Claude           true      (app e Claude Code)
 2    chatgpt      ChatGPT          false
-3    codex        Codex            true
+3    codex        Codex            true      (CLI, IDE e app)
 4    gpt          GPT "WCJ Hub"    true
 colunas: write_allowed boolean not null
-
-=====================================================================
-ai_scopes                              (fechado)
-=====================================================================
-IA4: permissão por módulo, ler ou escrever. IA5: nunca acima do papel; a relação papel × escopo é
-regra do código.
-id   slug             label                 papéis que recebem
-1    core:read        Núcleo: ler           todos
-2    projects:read    Projetos: ler         admin, project_manager, developer
-3    projects:write   Projetos: escrever    admin, project_manager, developer
-4    crm:read         CRM: ler              admin, sales
-5    crm:write        CRM: escrever         admin, sales
+Claude app e Claude Code são o mesmo assistente, e o Codex CLI e o Codex no app também. Se cada um
+fizer a própria conexão, conectar um derruba o outro (uma conexão por assistente, IA4, IA6). Fica
+como está; a prova de conceito (D-GER-17) confere. Se o dev precisar dos dois, claude_code volta a
+ser um assistente separado (Sessão D).
 
 =====================================================================
 ai_authorizations
@@ -266,15 +265,22 @@ user_id               fk users           not null  restrict
 ai_assistant_id       fk ai_assistants   not null  restrict
 oauth_client_id       char(36)           not null            (oauth_clients.id do Passport)
 revoked_at            datetime           null                (IA6; N4)
-índices: user_id, ai_assistant_id, oauth_client_id
+active_assistant_id   bigint unsigned  GENERATED ALWAYS AS (IF(revoked_at IS NULL, ai_assistant_id,
+                                       NULL)) STORED
+unique: (user_id, active_assistant_id)   → uma conexão ativa por usuário e assistente (IA4, IA6),
+                                           travada no banco (T1); as revogadas não colidem
+índices: ai_assistant_id, oauth_client_id
 Revogar = revoked_at + revogar os tokens do Passport na mesma transação. Quem revogou: audit_logs.
-
-=====================================================================
-ai_authorization_scopes
-=====================================================================
-ai_authorization_id   fk ai_authorizations  not null  cascade
-ai_scope_id           fk ai_scopes          not null  restrict
-pk (ai_authorization_id, ai_scope_id)      (pivot puro, sem id nem timestamps)
+Escopos (IA4): sem tabela própria (Sessão D). O Passport já guarda: são definidos no código
+(Passport::tokensCan) e gravados em cada token com os que o usuário autorizou
+(oauth_access_tokens.scopes); a tela de conexões (IA6) lê de lá. A relação papel × escopo é regra do
+código e nunca passa do papel (IA5):
+  core:read        Núcleo: ler           todos
+  projects:read    Projetos: ler         admin, project_manager, developer
+  projects:write   Projetos: escrever    admin, project_manager, developer
+  crm:read         CRM: ler              admin, sales
+  crm:write        CRM: escrever         admin, sales
+ChatGPT (write_allowed = false) recebe só os escopos :read (IA3).
 
 =====================================================================
 ai_tool_calls
@@ -307,7 +313,6 @@ starts_on                        date          not null            início (P2)
 due_on                           date          null                entrega do projeto de entrega (P2), só
                                                                    informativa: nenhuma conta usa na v1 (P9).
                                                                    null = produto contínuo, sem entrega
-ai_full                          boolean       not null  default false  modalidade "100% IA" (P4)
 finished_at                      datetime      null      encerrado não recebe tarefa nova (P7)
 last_task_number                 int unsigned  not null  default 0
                                                          contador da chave (P16, T4)
@@ -328,10 +333,10 @@ project_members
 =====================================================================
 Alocação: o dev só vê projeto em que está (P5). O gestor põe e tira pessoas a qualquer momento (P5).
 Tirar a pessoa deixa sem dev (developer_id = null) e sem QA (qa_id = null) as tarefas do projeto em
-que ela estava, na mesma transação. Tech Lead por projeto, um ou mais (P6).
+que ela estava, na mesma transação. O Tech Lead não fica no sistema: a equipe combina e o gestor
+acompanha (P6 saiu na Sessão D).
 project_id            fk projects   not null  cascade
 user_id               fk users      not null  restrict
-is_tech_lead          boolean       not null  default false
 unique: (project_id, user_id)
 índices: user_id
 
@@ -348,7 +353,9 @@ id   slug          label              etapa padrão (P10)
 6    done          Pronto             Done
 7    paused        Pausa              Paused
 8    support       Suporte            Support
-Retrabalho (P39) = saída de code_review, test ou done para queue, sprint ou development.
+Retrabalho (P39) tem uma fonte só: o movimento com rework_origin_id preenchido (task_stage_movements).
+Queue, sprint e support existem sempre, uma etapa ativa de cada por projeto (board_stages, P11): são
+as etapas para onde o Service leva o card sozinho.
 
 =====================================================================
 board_stages
@@ -361,23 +368,32 @@ name                  varchar(60)      not null
 position              smallint         not null            (ordem no quadro)
 archived_at           datetime         null                "remover" arquiva: a etapa segue nos
                                                            movimentos antigos (P8, P12)
+single_role_key       bigint unsigned  GENERATED ALWAYS AS (IF(archived_at IS NULL AND stage_role_id IN
+                                       (1, 2, 8), stage_role_id, NULL)) STORED
+                                       → no máximo 1 etapa ativa de papel queue (1), sprint (2) e
+                                       support (8) por projeto, travado no banco (T1, P11). Compara
+                                       pelo id porque coluna gerada não lê outra tabela; os ids do
+                                       domínio fechado são fixos na semente
 unique: (id, project_id)   (alvo das FKs compostas, T7)
+unique: (project_id, single_role_key)
 Qualquer pessoa alocada move o card a partir do To do (P13). Restrição de etapa por função fica fora
 da v1.
 índices: project_id, stage_role_id
 Regras do Service: o papel não muda depois que a etapa tem movimento (os indicadores leem o papel
-atual da etapa, T1); arquivar etapa com tarefas exige escolher o destino delas (P12).
+atual da etapa, T1); arquivar etapa com tarefas exige escolher o destino delas (P12); as etapas de
+papel queue, sprint e support se renomeiam e reordenam, mas não se arquivam: "pelo menos 1" de cada
+fica no Service (P11), como no funil (C1).
 
 =====================================================================
 task_types                             (cadastrável)
 =====================================================================
-P18. Lista geral: o Administrador edita (G7). O código depende do slug 'support' (card de suporte,
-P52).
+P18. Lista geral: o Administrador edita (G7). O código depende só do slug 'support' (card de
+suporte, P52); os outros itens nascem sem slug.
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
-     improvement   Melhoria
-     bug           Correção de bug
+     —             Melhoria
+     —             Correção de bug
      support       Suporte
-     change        Mudança (GMUD)
+     —             Mudança (GMUD)
 
 =====================================================================
 project_areas                          (cadastrável por projeto)
@@ -440,8 +456,8 @@ sprint_id             fk sprints            null      restrict  sprint do card (
                                                       P52). Card pronto fica com a sprint em que foi feito
                                                       (P51)
 package_id            fk packages           null      restrict  pacote, opcional (P41)
-origin_task_id        fk tasks              null      restrict  bug achado em produção aponta a original
-                                                      (P25)
+origin_task_id        fk tasks              null      restrict  bug achado em produção aponta a original,
+                                                      do mesmo projeto (P25, FK composta T7)
 -- Card de suporte (P52), obrigatórios quando o tipo é 'support'
 requester_contact_id  fk contacts           null      restrict  (quem pediu)
 contact_channel_id    fk contact_channels   null      restrict  (por onde)
@@ -457,6 +473,7 @@ FKs compostas (T7), todas restrict:
   (sprint_id, project_id)       → sprints (id, project_id)
   (package_id, project_id)      → packages (id, project_id)
   (project_area_id, project_id) → project_areas (id, project_id)
+  (origin_task_id, project_id)  → tasks (id, project_id)
   (project_id, developer_id)    → project_members (project_id, user_id)
   (project_id, qa_id)           → project_members (project_id, user_id)
 índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, developer_id,
@@ -491,13 +508,19 @@ Toda mudança de etapa: quem, quando, de onde e para onde (P14, fixa). Dá o tem
 tempo parado (P15) e o retrabalho (P39). Quem moveu e o canal vêm da linha de audit_logs do
 movimento, gravada na mesma transação (uma fonte só, T10); aparecem no histórico da tarefa (IA11;
 cenário de aceite "tarefa movida pela IA"). Só created_at, imutável.
+Retrabalho = rework_origin_id preenchido, e só isso (fonte única, Sessão D). Quando uma pessoa move o
+card de etapa de papel code_review, test ou done para etapa de papel sprint ou development, o Service
+pede origem e motivo (P39: toda volta conta, com origem e motivo). O card se move do mesmo jeito; só
+pede os dois campos, como a pausa pede motivo (P15). Reprovar um parecer (task_validations) e a
+reprovação na homologação (P43) gravam o movimento já com a origem. Não contam: tirar da sprint,
+encerrar a sprint e desarquivar, que levam ao Backlog por decisão do gestor (P26, P45, P50).
 project_id            fk projects         not null            (só para as FKs compostas, T7)
 task_id               fk tasks            not null  cascade
 audit_log_id          fk audit_logs       not null  restrict  quem moveu e por onde (P14, IA11, T10)
 from_board_stage_id   fk board_stages     null      restrict  (null = criação)
 to_board_stage_id     fk board_stages     not null  restrict
-rework_origin_id      fk validation_types null      restrict  preenchido = é retrabalho; a origem
-                                                              (P39)
+rework_origin_id      fk validation_types null      restrict  preenchido = é retrabalho (fonte única);
+                                                              a origem (P39)
 rework_reason_id      fk rework_reasons   null      restrict  (P40)
 reason_text           varchar(500)        null      motivo da pausa (P15) ou texto do "outro" (P40)
 created_at            datetime            not null  (= momento do movimento)
@@ -526,25 +549,28 @@ Requisito incompleto ou mal documentado · Outro (requires_text).
 task_acceptance_criteria
 =====================================================================
 CA_1…CA_n do documento de requisição (P17). Cada critério é também o item do roteiro de teste (P36):
-o QA marca o resultado aqui, e a evidência vai em task_attachments.
+o QA marca o resultado aqui, e a evidência vai em task_attachments. Quem marcou e quando: audit_logs
+(D-GER-20), no histórico do critério.
 P37: editar um critério já testado volta o resultado para pending (o antigo fica em audit_logs).
 Depois de retrabalho, todos os itens voltam a pending e o roteiro é o mesmo (P37).
 task_id               fk tasks                     not null  cascade
 parent_id             fk task_acceptance_criteria  null      cascade  (subitem CA_4.1, modelos SGM)
 number                smallint unsigned            not null           o n do CA_n, gravado ao criar e
-                                                                       estável: reordenar ou excluir não
-                                                                       renumera (T9). Subitem: CA_<n do
-                                                                       pai>.<number>
-parent_key            bigint unsigned  GENERATED ALWAYS AS (IFNULL(parent_id, 0)) STORED
+                                                                       estável: excluir não renumera
+                                                                       (T9). Subitem: CA_<n do
+                                                                       pai>.<number>. É também a ordem
+                                                                       do roteiro: CA_1, CA_2…, com os
+                                                                       subitens abaixo do pai; critério
+                                                                       novo entra no fim
+parent_key            bigint unsigned  GENERATED ALWAYS AS (IFNULL(parent_id, 0)) VIRTUAL
                                                                        só para o unique: no MySQL, null
-                                                                       não colide em unique (T9)
-position              smallint                     not null           (ordem de exibição)
+                                                                       não colide em unique (T9).
+                                                                       VIRTUAL, não STORED: parent_id tem
+                                                                       FK com cascade (seção 0, onDelete)
 description           text                         not null
 test_result_id        fk test_results              not null  restrict  default 1
-tested_by             fk users                     null      restrict  (QA que marcou, P36)
-tested_at             datetime                     null
 unique: (task_id, parent_key, number)
-índices: task_id, parent_id, test_result_id, tested_by
+índices: task_id, parent_id, test_result_id
 Número novo = maior number da tarefa no mesmo pai + 1, com a linha da tarefa travada (lockForUpdate,
 banco.md §8). Excluir critério: só enquanto não testado (T1).
 
@@ -583,7 +609,8 @@ task_id               fk tasks               not null  cascade
 validation_type_id    fk validation_types    not null  restrict
 approved              boolean                not null            aprovado ou reprovado (T10: a antiga
                                                                  validation_results virou esta coluna)
-validated_by          fk users               not null  restrict  (quem deu o parecer)
+validated_by          fk users               not null  restrict  autor do parecer, que faz parte dele,
+                                                                 como o autor do comentário (P33, P34)
 índices: (task_id, validation_type_id, created_at), validated_by
 
 =====================================================================
@@ -628,27 +655,21 @@ hours                 hours         not null  check (> 0 and <= 24)
 índices: task_id, (user_id, worked_on)
 
 =====================================================================
-package_status_roles                   (fechado)
-=====================================================================
-P42: estados do pacote renomeáveis; o código lê o papel. Nenhum estado recusa tarefa (P41). Na v1 só
-o papel production é lido: entrar num estado com esse papel grava packages.released_at (P44).
-id   slug          label
-1    building      Em montagem
-2    homologation  Em homologação
-3    approved      Homologado
-4    production    Em produção
-
-=====================================================================
 package_statuses                       (cadastrável por projeto)
 =====================================================================
-P42: o gestor renomeia, cria e remove estados (G7). O projeto nasce com os 4 acima.
+P42: o gestor renomeia, cria e remove estados (G7). Nenhum estado recusa tarefa (P41). O código só
+lê se o estado é de produção: entrar num estado com is_production grava packages.released_at (P44).
+Por isso não há tabela de papéis do estado (Sessão D), como o funil tem outcome em vez de papéis.
 project_id              fk projects              not null  cascade
-package_status_role_id  fk package_status_roles  not null  restrict
 label                   varchar(60)              not null
 position                smallint                 not null
+is_production           boolean                  not null  default false   (P44)
 archived_at             datetime                 null      (estado já usado não se exclui)
 unique: (id, project_id)   (T7)
-índices: project_id, package_status_role_id
+índices: project_id
+Semente: Em montagem · Em homologação · Homologado · Em produção (is_production).
+Regra do Service: sempre existe pelo menos 1 estado ativo com is_production (P42); sem ele, a versão
+nunca ganha data (P44).
 
 =====================================================================
 packages
@@ -752,7 +773,8 @@ leads
 company_name          varchar(160)       null      ┐ empresa do lead que ainda não é cliente (C2).
 country               char(2)            null      │ Com client_id, a empresa é a do cliente e os três
 document              varchar(30)        null      ┘ ficam vazios: sem dado repetido (T10). A conversão
-                                                     casa por país + documento (C10, N5)
+                                                     casa por país + documento (C10, N5). CNPJ
+                                                     alfanumérico, como em clients.document
 owner_id              fk users           not null  restrict  dono: edita só o dono (e o admin); todos
                                                              leem (C4). O admin troca o dono (C16)
 lead_source_id        fk lead_sources    null      restrict  (origem, C2)
@@ -807,7 +829,7 @@ infra                 varchar(3)        null      check in ('ON','CLD','HIB')
 sites                 varchar(3)        null      check in ('1','2-5','>5')
 employees             varchar(9)        null      check in ('<=50','51-300','301-1000','>1000')
 development           varchar(10)       null      check in ('ativo','manutencao','nao')
-operation_24x7        varchar(3)        null      check in ('sim','nao')
+operation_24x7        boolean           null      (sim ou não; null = ainda sem resposta)
 
 =====================================================================
 lead_interactions
@@ -826,11 +848,11 @@ next_step             varchar(500)          null
 =====================================================================
 appointment_types                      (cadastrável)
 =====================================================================
-C7: follow-up e reunião, lista editável. Lista geral: o Administrador edita (G7). O código depende do
-slug 'follow_up' (C8).
+C7: follow-up e reunião, lista editável. Lista geral: o Administrador edita (G7). O código depende só
+do slug 'follow_up' (C8); os outros itens nascem sem slug.
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
      follow_up   Follow-up
-     meeting     Reunião
+     —           Reunião
 
 =====================================================================
 appointments
@@ -842,9 +864,10 @@ owner_id              fk users              not null  restrict  (responsável; r
 lead_id               fk leads              null      restrict
 client_id             fk clients            null      restrict
 starts_at             datetime              not null
-duration_minutes      smallint unsigned     null      (reunião)
-location              varchar(240)          null
-meeting_url           varchar(500)          null
+duration_minutes      smallint unsigned     null      opcional em qualquer tipo (a C7 cita na reunião);
+                                                      o código não depende do tipo reunião
+location              varchar(500)          null      local ou link, um campo só (C7); vai no LOCATION
+                                                      do convite .ics
 notes                 text                  null      (observação)
 ics_sequence          int unsigned          not null  default 0
                                                       SEQUENCE do iCalendar: +1 a cada remarcação ou
@@ -865,7 +888,8 @@ Compromisso de lead desativado não entra na agenda nem nos lembretes (C16).
 Laravel:   sessions · cache · cache_locks · jobs · job_batches · failed_jobs · password_reset_tokens
            · notifications (P22: aviso de atribuição, só no sistema)
 Passport:  oauth_clients · oauth_access_tokens · oauth_refresh_tokens · oauth_auth_codes
-           · oauth_device_codes (D-IA-07)
+           · oauth_device_codes (D-IA-07). Os escopos da IA (IA4) ficam aqui: definidos em
+           Passport::tokensCan e gravados em cada token (ver ai_authorizations)
 E-mail (convite .ics e resumo diário do CRM, C9) sai pelo Mail do Laravel, sem tabela.
 Colunas: as do pacote, com data e hora em datetime (banco.md §3). Os campos padrão do Laravel em users
 que o Hub não usa (email_verified_at, remember_token) NÃO entram.
@@ -882,7 +906,7 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
   período, SLA por prioridade, dias para fechar sozinho (RN-CHM-03, 08, 09): colunas ou tabela
   contract_slas. O Hub é a fonte única de contratos (D-CRM-04).
 - audit_logs: o canal e-mail (chamado aberto por e-mail, sem usuário nem IA) entra como coluna nova
-  nula.  ai_scopes: tickets:read, tickets:write.
+  nula.  Escopos novos no Passport::tokensCan: tickets:read, tickets:write.
 - tickets (número por sequência, cliente, contrato, projeto, task_id → coluna Support, P52), filas
   N1/N2/N3 e despachante, mensagens (com a marca de interna, RN-CHM-05), anexos, e-mails não
   identificados, apontamento de horas contra o contrato (banco de horas, D-CHM-04).
@@ -894,8 +918,10 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 #####################################################################
 6.1  Single-tenant: sem enterprise_id. Escopo por papel + vínculo (alocação, dono do lead).
 6.2  FKs só em uma direção: Projetos → Platform, CRM → Platform (D-GER-15).
-6.3  Etapa livre com papel fixo no quadro (P11), no funil (outcome, C1) e no pacote (P42): renomeia à
-     vontade, o indicador lê o papel. O papel da etapa não muda depois de usada (T1).
+6.3  Etapa livre com papel fixo no quadro (P11), no funil (outcome, C1) e no pacote (is_production,
+     P42): renomeia à vontade, o indicador lê o papel. O papel da etapa não muda depois de usada (T1).
+     As etapas para onde o sistema leva o card sozinho existem sempre, uma de cada: fila, sprint e
+     suporte no quadro (P11); ganho e perda no funil (C1); pelo menos um estado de produção (P42).
 6.4  Quem fez = audit_logs (D-GER-20). Coluna de pessoa só quando uma regra a lê (seção 0). O
      movimento do card aponta para a linha de audit_logs em vez de repetir quem e por onde (T10).
 6.5  Nada de cache: status e marcos se derivam. Fotos só onde a N3 manda.
@@ -911,6 +937,9 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
      arquiva, e só o que nunca foi usado se exclui de verdade.
 6.12 Integridade por projeto no banco: unique (id, project_id) + FK composta (T7, seção 0).
 6.13 Testes em MySQL 8, como a produção; nada de SQLite (T6, D-GER-22).
+6.14 Escopos da IA no Passport, sem tabela própria: o Passport já guarda os escopos de cada token
+     (Sessão D).
+6.15 Retrabalho tem uma fonte só: task_stage_movements.rework_origin_id preenchido (P39, Sessão D).
 
 
 #####################################################################
@@ -922,6 +951,43 @@ Voltaram depois, com regra: projects.starts_on/due_on (P2), sprints.goal (P45), 
 tarefa com motivo (P26, no lugar do cancelamento). Na Sessão C: sprints.closed_at e "uma sprint
 aberta por projeto" (P45, P50), leads.value (C2), leads.deactivated_at/by (C16),
 lead_interactions.contact_id (C5), semente de lead_sources (C2), índice em contacts.email (N8).
+
+Sessão D (24/09): revisão tabela por tabela do Lucas Scholz (44 → 41 tabelas)
+Saiu:
+- ai_scopes e ai_authorization_scopes: repetiam o Passport, que define os escopos em código
+  (Passport::tokensCan) e grava em cada token os que o usuário autorizou.
+- package_status_roles: dos 4 papéis, o código só lia o de produção → package_statuses.is_production.
+- projects.ai_full e project_members.is_tech_lead: a modalidade e o Tech Lead a equipe combina no dia a
+  dia, e o gestor acompanha (P4 e P6 saíram).
+- task_acceptance_criteria: tested_by e tested_at (quem e quando marcou é audit_logs, D-GER-20) e
+  position (nenhuma regra pede reordenar critério; a ordem é o number).
+- appointments.meeting_url: juntou com location ("local ou link", C7).
+- Slug dos itens cadastráveis que o código não lê: fica só 'audit' em service_types, 'support' em
+  task_types e 'follow_up' em appointment_types.
+Entrou ou mudou:
+- ai_authorizations.active_assistant_id + unique (user_id, active_assistant_id): uma conexão ativa
+  por usuário e assistente, travada no banco (IA4, IA6, T1).
+- board_stages.single_role_key + unique (project_id, single_role_key): uma etapa ativa de papel
+  queue, sprint e support por projeto (P11); "pelo menos 1" no Service.
+- tasks.origin_task_id com FK composta (T7): o bug aponta para a tarefa original do mesmo projeto (P25).
+- Retrabalho com fonte única: rework_origin_id preenchido. O padrão de etapas que estava em
+  stage_roles virou a regra de quando o Service pede origem e motivo (task_stage_movements).
+- lead_audit_sizings.operation_24x7: de 'sim'/'nao' para boolean.
+- clients.document e leads.document: CNPJ alfanumérico (em vigor desde jul/2026).
+- task_acceptance_criteria.parent_key: de STORED para VIRTUAL. A versão STORED não cria no MySQL
+  (erro 1215: a base parent_id tem FK com cascade); a VIRTUAL, testada no MySQL 8.4, mantém o unique
+  do T9 e os cascades.
+Ficou como está, com o motivo (para o Lucas Alencar não reabrir sem necessidade):
+- audit_logs.user_id repete o dono da autorização nas linhas de IA: as linhas de tela precisam dele.
+- Escrita e tentativa negada da IA aparecem em ai_tool_calls e em audit_logs: 180 dias × para sempre.
+- Parecer do QA (task_validations) e resultado por item convivem: o item é a evidência, o parecer é a
+  decisão, e serve também para tarefa sem critério.
+- lead_audit_sizings separada de leads: só o lead de auditoria usa as 6 colunas.
+- lead_interactions.contact_id conferido no Service, não por FK composta: a FK impediria tirar do lead
+  um contato com quem já se falou.
+- Com uma sprint aberta por projeto (P45), a próxima só nasce no encerramento da atual.
+- A anonimização (N12) não alcança texto livre (resumo de tratativa, comentário); se o nome estiver
+  digitado lá, o Administrador edita à mão.
 
 Saiu na Sessão C (premissa sem trava; padrão 0.4.0)
 - projects: require_assignee_out_of_backlog (tarefa sem dev entra na sprint, P20),
@@ -1011,6 +1077,10 @@ T1  Regras que o banco não trava sozinho ficam no Service, cobertas por teste a
     aberta por projeto (P45); card e cadastro só se excluem de verdade se nunca usados (banco.md §4).
     Onde dá para travar no banco, trava: no máximo 1 etapa won e 1 lost ativas no funil
     (funnel_stages.final_key, coluna gerada + unique). "Pelo menos 1" fica no Service.
+    Na Sessão D, pelo mesmo princípio: no máximo 1 etapa ativa de papel queue, sprint e support por
+    projeto (board_stages.single_role_key) e uma conexão ativa por usuário e assistente
+    (ai_authorizations.active_assistant_id); "pelo menos 1" etapa de cada um dos três papéis e 1
+    estado de produção do pacote ficam no Service. As travas novas foram testadas no MySQL 8.4.
     Saiu na Sessão C: a trava de capacidade da sprint com lockForUpdate (a capacidade é só
     referência, P49).
 T2  task_validations sem número de rodada: vale a linha mais recente de cada tipo. O indicador de
@@ -1034,16 +1104,21 @@ T5  ai_tool_calls: limpeza de 180 dias pelo prune agendado do Laravel (Prunable 
 RESPONDIDAS pelo Lucas Scholz (24/09). Cada uma diz o que decidiu e onde está aplicada.
 T6  Testes em MySQL 8, como a produção; nada de SQLite (D-GER-22). O template roda PHPUnit em SQLite
     (stacks/laravel-inertia.md); no Hub, phpunit.xml e o CI apontam para MySQL 8 (container no CI).
-    Motivo: a coluna gerada (funnel_stages.final_key, task_acceptance_criteria.parent_key), o
-    LAST_INSERT_ID(expr) do T4 e os unique que ignoram acento só existem no MySQL.
+    Motivo: as colunas geradas (funnel_stages.final_key, task_acceptance_criteria.parent_key,
+    board_stages.single_role_key, ai_authorizations.active_assistant_id), o LAST_INSERT_ID(expr) do
+    T4 e os unique que ignoram acento só existem no MySQL.
 T7  Integridade por projeto no banco: unique (id, project_id) em board_stages, sprints, packages,
     project_areas, rework_reasons, package_statuses e tasks, e FK composta a partir de tasks,
     task_stage_movements (que ganhou project_id) e packages. Dev e QA da tarefa por FK composta em
-    project_members (project_id, user_id). Aplicado na seção 0 e em cada tabela.
+    project_members (project_id, user_id). Aplicado na seção 0 e em cada tabela. Na Sessão D,
+    também tasks.origin_task_id (a tarefa de origem do bug é do mesmo projeto).
 T8  audit_logs.ip_address varchar(45) null, como no template. user_agent não entra.
 T9  task_acceptance_criteria.number gravado ao criar, estável, com unique (task_id, parent_key,
     number). parent_key é coluna gerada IFNULL(parent_id, 0): no MySQL, null não colide em unique, e o
     unique com parent_id não barraria número repetido entre os critérios de primeiro nível.
+    Correção da Sessão D: parent_key é VIRTUAL, não STORED. Com STORED o MySQL recusa a FK com cascade
+    em parent_id (erro 1215); VIRTUAL com índice cria, barra o número repetido e deixa os cascades
+    apagarem subitens e critérios (testado no MySQL 8.4).
 T10 Dados duplicados, todos resolvidos:
     - tasks.key saiu: "SGM-17" = projects.key_prefix + tasks.number.
     - leads: company_name, country e document só existem enquanto o lead não tem client_id (check);
