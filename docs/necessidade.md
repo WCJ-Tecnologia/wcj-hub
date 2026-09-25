@@ -282,8 +282,8 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 #### 2.10 Indicadores
 
 - **P53** Na v1: tempo por etapa, horas previstas × realizadas, data prevista e atraso das tarefas, somados por projeto e por pessoa. Tarefa atrasada = passou da data prevista sem chegar em `Done`.
-- **P54** Depois da v1, com os dados já gravados desde a v1: painel de produtividade por dev e indicador de retrabalho. Só o gestor e o Administrador veem.
-- **P55** Depois da v1: histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição.
+- **P54** Depois da v1, com os dados já gravados desde a v1: painel de produtividade por dev e indicador de retrabalho. Só o gestor e o Administrador veem. Na v1, os dados de retrabalho já saem pela IA (`retrabalho_do_projeto`, IA14).
+- **P55** Depois da v1: histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição. Na v1, a IA lista as tarefas do pacote para quem quiser redigir as notas (`notas_da_versao`, IA14).
 
 ### 3. CRM
 
@@ -336,9 +336,9 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
   | Projetos | `status_do_projeto` | leitura | Etapas, tarefas atrasadas e próximas datas previstas |
   | Projetos | `linha_do_tempo_da_tarefa` | leitura | Etapas por onde a tarefa passou, com o tempo em cada uma (P53) |
   | Projetos | `horas_do_projeto` | leitura | Horas previstas × realizadas, por tarefa e por pessoa (P53) |
-  | Projetos | `retrabalho_do_projeto` | leitura | Voltas para desenvolvimento, com origem e motivo (P39). Ver [DECIDIR] abaixo |
+  | Projetos | `retrabalho_do_projeto` | leitura | Voltas para desenvolvimento, com origem e motivo, sem painel (P39). Só gestor e Administrador (P54) |
   | Projetos | `tarefas_paradas` | leitura | Tarefas em pausa, com o motivo (P15) |
-  | Projetos | `notas_da_versao` | leitura | Tarefas do pacote (P41). Ver [DECIDIR] abaixo |
+  | Projetos | `notas_da_versao` | leitura | Tarefas do pacote, para a IA redigir as notas (P41). O documento de notas de versão fica para depois da v1 (P55) |
   | Projetos | `escrever_tarefa` | escrita | Cria o card no modelo de requisição, com os critérios (P17). Só para gestor e Administrador (P56) |
   | Projetos | `mover_tarefa` | escrita | Muda a etapa (P13) |
   | Projetos | `comentar_tarefa` | escrita | Adiciona comentário (P24) |
@@ -354,7 +354,7 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
   | CRM | `agendar_compromisso` | escrita | Cria, remarca ou cancela follow-up ou reunião e dispara o convite (C7, C9) |
   | CRM | `atualizar_situacao_do_lead` | escrita | Reescreve a situação atual (C6) |
 
-  **[DECIDIR] Lucas Scholz e Cauã:** a lista põe `retrabalho_do_projeto` e `notas_da_versao` na v1, mas a P54 deixa o indicador de retrabalho para depois da v1, e a P55 faz o mesmo com as notas de versão. Falta dizer se essas duas ferramentas saem da v1 ou se entram só como leitura dos dados crus, para o gestor e o Administrador.
+  Decidido por Lucas Scholz em 24/09: `retrabalho_do_projeto` e `notas_da_versao` ficam na v1, lendo os dados que a v1 já grava. O painel de retrabalho (P54) e o documento de notas de versão (P55) continuam depois da v1.
 
   Caso de uso citado pelo Rafael: a IA do gestor escreve as tarefas detalhadas a partir do escopo (P56), e a do dev avança as tarefas e documenta enquanto ele trabalha.
 
@@ -535,7 +535,6 @@ Consequência para a v1 (IA3):
 
 ## Em aberto
 
-- [ ] **[DECIDIR]** Lucas Scholz e Cauã: `retrabalho_do_projeto` e `notas_da_versao` na v1 (IA14 × P54, P55).
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
 - [ ] Lucas Alencar: perguntas técnicas do `banco.txt` (seção 8).
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
