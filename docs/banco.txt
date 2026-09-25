@@ -1,10 +1,12 @@
 MODELO DE DADOS — WCJ Hub
-Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.3.0). PROPOSTA DA IA (D-GER-16), com as
-decisões do Lucas Scholz de 24/09, a revisão de enxugamento de 24/09 (seção 8) e as respostas da
-revisão da etapa 2 (24/09: D-PRJ-26 a 31, D-CRM-09/10, D-IA-08 a 10, D-NUC-03/04, D-GER-21).
-Contrato fica FORA DA V1 (D-CRM-10): saiu a tabela contracts; volta pela seção 5.
+Etapa 2 do playbook de aplicação nova (padrão ai-systems v0.4.0). PROPOSTA DA IA (D-GER-16), atualizada
+na Sessão C (24/09) com as regras aprovadas pelo Lucas Scholz (revisão 4 das regras).
+Códigos: G, N, P, C e IA são as regras de docs/necessidade.md; D-GER, D-IA-04, D-IA-07, D-CRM-04 e
+D-CHM, a tabela de decisões dela; T1 a T11, as escolhas e perguntas técnicas da seção 8.
+Premissa de Projetos: kanban simples, sem trava no fluxo. Número de controle é referência, nunca recusa.
+Contrato fica FORA DA V1 (N10): não há tabela contracts; a seção 5 mostra como ela entra.
 Revisão técnica: Lucas Alencar (D-GER-01). Validação final: Comitê de IA.
-Regras: .ai/core/banco.md. Fonte do requisito: docs/necessidade.md (RN-/D-/F- apontam para lá).
+Regras: .ai/core/banco.md (0.4.0). Fonte do requisito: docs/necessidade.md.
 Escopo: Núcleo (Platform), Projetos e CRM. Chamados fica fora; a seção 5 mostra o que ele acrescenta
 sem migração destrutiva.
 Situação: PROPOSTA, NÃO APROVADA. Nada de código nem de migração antes da aprovação.
@@ -15,11 +17,13 @@ Aprovado por: ____________  em: ____-__-__
 0. CONVENÇÕES
 =====================================================================
 Princípio desta versão: cada tabela e cada coluna existe porque uma regra do requisito lê ou grava
-aquele dado. O motivo está ao lado (RN-/D-/F-). Sem motivo, não entra.
+aquele dado (G5, D-GER-20). O motivo está ao lado. Sem motivo, não entra.
+Premissa de Projetos: nenhuma coluna nem regra do Service existe só para travar o fluxo. Onde o
+requisito diz "referência", o sistema mostra e não recusa.
 
 Banco
-- MySQL 8, container próprio na VPS do DaaS, separado do Supabase (DB-01, D-GER-14).
-- Collation utf8mb4_0900_ai_ci: nome com unique ignora acento e caixa (DB-02).
+- MySQL 8 (D-GER-21), container próprio na VPS do DaaS, separado do Supabase (D-GER-14).
+- Collation utf8mb4_0900_ai_ci: nome com unique ignora acento e caixa (escolha técnica; ver T6).
 
 Nomes
 - Inglês, plural, snake_case. FK = <singular>_id.
@@ -32,35 +36,42 @@ Colunas padrão (omitidas abaixo)
 
 Tipos
 - datetime = data e hora em UTC. NÃO usar o tipo TIMESTAMP do MySQL (acaba em 2038-01-19).
-             No Laravel: dateTime(), inclusive em created_at/updated_at.
+             No Laravel: datetimes() e dateTime(), inclusive em created_at/updated_at (banco.md §3).
 - date     = data de negócio sem hora, calculada no fuso America/Sao_Paulo.
-- hours    = decimal(6,2). Horas decimais, sem arredondar para dia (RN-PRJ-15).
+- hours    = decimal(6,2). Horas decimais, sem arredondar para dia (P30).
 - money    = decimal(15,2).
 
 Quem fez e quando
-- Fica em audit_logs (tabela única, D-GER-16, RN-NUC-04): usuário, canal, antes/depois.
-- Coluna *_by só existe quando uma regra lê a pessoa: deactivated_by (banco.md §4), validated_by
-  (teste cruzado, RN-PRJ-26), tested_by (roteiro do QA), moved_by (histórico da tarefa, cenário de
-  aceite de IA), owner_id (RN-CRM-05), manager_id (RN-PRJ-05).
+- Fica em audit_logs (tabela única, D-GER-16, G3): usuário, canal, antes/depois.
+- Coluna *_by só existe quando uma regra lê a pessoa: deactivated_by (banco.md §4: a tela mostra quem
+  desativou), validated_by (P34: o dev da tarefa não dá o parecer do teste cruzado), tested_by (P36: o
+  QA que marcou o item), moved_by (P14), owner_id (C4), manager_id (P1).
 - Nada de created_by, added_by, assigned_by, estimated_by: é audit_logs.
 
 Derivar, não guardar
-- Não há coluna de cache. Status que se deduz de outra coluna é deduzido (lead ganho = etapa de
-  resultado "won"; sprint em andamento = hoje entre as datas).
-- Exceções, cada uma com regra: tasks.key (busca direta "SGM-17", imutável), tasks.due_on e
-  sprint_members.daily_hours (fotos que a RN-PRJ-17 manda não recalcular).
+- Não há coluna de cache. Status que se deduz de outra coluna é deduzido (lead ganho = etapa com
+  outcome "won"; sprint aberta = closed_at nulo; follow-up vencido = consulta, ver appointments).
+- Exceções, cada uma com regra: tasks.key (busca direta "SGM-17", imutável; ver T10), tasks.due_on e
+  sprint_members.daily_hours (fotos: mudar a carga vale dali para a frente, N3).
 
-Desativar, não excluir (banco.md §4, RN-NUC-02)
-- Cadastro com histórico: deactivated_at datetime null + deactivated_by fk users null.
+Desativar, arquivar, excluir (banco.md §4, G2). Nada de deleted_at.
+- Cadastro com histórico se desativa: deactivated_at datetime null + deactivated_by fk users null.
+  Vale para users, clients, contacts e leads (N11, C16) e para os itens das listas cadastráveis.
+  Reativar limpa os dois; a ida e a volta ficam em audit_logs.
 - "Ativo" = deactivated_at is null, numa consulta única que toda tela e ferramenta MCP herda.
-- Etapa e estado configuráveis que já foram usados: archived_at (RN-PRJ-29).
+- Card de projeto com histórico se arquiva (tasks.archived_at, P26).
+- Etapa e estado configuráveis que já foram usados: archived_at (P8, P12).
+- Exclusão de verdade só do que nunca foi usado, por quem tem permissão, conferida no Service com a
+  linha travada (hasHistory do Deactivatable, banco.md §4). "Já usado" = alguma FK aponta para a linha
+  ou ela é autora em audit_logs; tasks tem a regra própria (P26, ver lá).
 - Vínculo (alocação, contato do lead) é removido de verdade; o histórico está em audit_logs.
 
 Domínios
 - (fechado)     valores fixos, semeados, sem tela de edição. Colunas: id, slug, label.
                 O código compara por slug.
-- (cadastrável) lista que o usuário edita (D-GER-05). Colunas: label + deactivated_at/by, mais slug
-                só nos itens de que o código depende.
+- (cadastrável) lista que o usuário edita (G1). Colunas: label + deactivated_at/by, mais slug
+                só nos itens de que o código depende. Quem edita (G7): listas gerais = Administrador;
+                listas do projeto = gestor do projeto.
 - Flag interna sem rótulo de tela = varchar + CHECK.
 
 onDelete
@@ -72,7 +83,7 @@ onDelete
 =====================================================================
 ÍNDICE (47 tabelas + framework)
 =====================================================================
-1. PLATFORM   roles · users · clients · contacts · contract_types · contact_channels
+1. PLATFORM   roles · users · clients · contacts · service_types · contact_channels
               · audit_channels · audit_logs · ai_assistants · ai_scopes · ai_authorizations
               · ai_authorization_scopes · ai_tool_calls
 2. PROJETOS   projects · project_members · stage_roles · board_stages
@@ -87,10 +98,9 @@ onDelete
 4. FRAMEWORK
 5. O QUE CHAMADOS ACRESCENTA
 6. DECISÕES DE MODELAGEM
-7. RESPOSTAS DO LUCAS SCHOLZ → onde estão na necessidade
-8. REVISÃO DE ENXUGAMENTO (o que saiu e por quê; sai na aprovação)
-9. ESCOLHAS TÉCNICAS e PERGUNTAS ABERTAS para o Lucas Alencar
-10. DIFERENÇA PARA O TEMPLATE ai-systems
+7. REVISÃO DE ENXUGAMENTO (o que saiu e por quê; sai na aprovação)
+8. ESCOLHAS TÉCNICAS e PERGUNTAS ABERTAS para o Lucas Alencar
+9. DIFERENÇA PARA O TEMPLATE ai-systems (0.4.0)
 
 
 #####################################################################
@@ -101,64 +111,72 @@ onDelete
 =====================================================================
 roles                                  (fechado)
 =====================================================================
-Papéis da v1 (necessidade, "Quem usa"). Tech Lead é marcação por projeto, não papel (D-PRJ-10).
-Suporte e Contato do cliente entram com Chamados (seção 5).
+Papéis da v1: 4 fixos, atribuídos pelo Administrador; não se cria papel novo (N2). Tech Lead é
+função por projeto, não papel (P6). Suporte e Contato do cliente entram com Chamados (seção 5).
 id   slug             label
 1    admin            Administrador
 2    project_manager  Gestor de projetos
-3    developer        Desenvolvedor / técnico
+3    developer        Desenvolvedor
 4    sales            Comercial
 
 =====================================================================
 users
 =====================================================================
-role_id               fk roles       not null  restrict
+role_id               fk roles       not null  restrict   (N2)
 name                  varchar(120)   not null
 email                 varchar(160)   not null  unique     (login)
 password              varchar(255)   not null             (Hash::make)
 must_change_password  boolean        not null  default true
-                                                          convite com senha aleatória e troca no
-                                                          1º acesso (seguranca.md §3)
-daily_hours           hours          not null  check (> 0 and <= 24)
-                                                          carga diária (RN-PRJ-17): data prevista
-                                                          (RN-PRJ-16) e capacidade da sprint (D-PRJ-24)
-deactivated_at        datetime       null                 (RN-NUC-02; RN-NUC-05 revoga sessão e tokens)
+                                                          convite com senha provisória trocada no
+                                                          1º acesso (N1, seguranca.md §3)
+daily_hours           hours          null                 carga diária (N3): obrigatória para o
+                                                          papel developer (Service), opcional para os
+                                                          outros. Data prevista (P28) e capacidade da
+                                                          sprint (P48); sem carga, não entra no time
+                                                          da sprint (N3, P47)
+deactivated_at        datetime       null                 (N11; N4: perde o acesso na hora, e o Service
+                                                          revoga sessões e conexões de IA, IA6)
 deactivated_by        fk users       null      restrict
+check: daily_hours is null or (daily_hours > 0 and daily_hours <= 24)
 índices: role_id, deactivated_at
 
 =====================================================================
 clients
 =====================================================================
-Empresa atendida (RN-NUC-01). Brasileira ou estrangeira (NUC-01, D-NUC-01).
+Empresa atendida (N5). Inclui a própria WCJ, dona dos projetos internos e dos produtos (N7).
 name                  varchar(160)   not null             (como a WCJ chama o cliente)
-country               char(2)        not null  default 'BR'  (ISO 3166-1; D-NUC-01)
+country               char(2)        not null  default 'BR'  (ISO 3166-1; N5)
 document              varchar(30)    null                 BR: CNPJ, 14 dígitos. Fora do BR:
-                                                          identificador fiscal do país, opcional.
-deactivated_at        datetime       null
+                                                          identificador fiscal do país, opcional (N5).
+deactivated_at        datetime       null                 (N11: sem trava por ter algo aberto)
 deactivated_by        fk users       null      restrict
-check: country <> 'BR' or document is not null    (CNPJ obrigatório no BR, RN-NUC-01)
-unique: (country, document)                      (CNPJ repetido recusado, RN-NUC-01; null não colide)
+check: country <> 'BR' or document is not null    (CNPJ obrigatório no BR, N5)
+unique: (country, document)                      (CNPJ repetido recusado, N5; null não colide)
 índices: deactivated_at
 
 =====================================================================
 contacts
 =====================================================================
-Pessoa de um cliente ou de um lead (vocabulário "Contato"; CRM-03, D-CRM-06). Um cadastro por
-pessoa: o lead liga por lead_contacts; na conversão só se preenche client_id (RN-CRM-01).
-Também é "quem pediu" no card de suporte (RN-PRJ-32).
+Pessoa de um cliente ou de um lead (N8). Um cadastro por pessoa: o lead liga por lead_contacts; na
+conversão só se preenche client_id (C10). Também é "quem pediu" no card de suporte (P52) e "com quem
+falou" na tratativa (C5). Cadastram: Administrador, gestor (clientes dos projetos dele) e o CRM (N8).
 client_id             fk clients     null      restrict   (null = pessoa de lead que ainda não é cliente)
 name                  varchar(120)   not null
 email                 varchar(160)   null
 phone                 varchar(20)    null                 (o comercial liga ou chama no WhatsApp)
-deactivated_at        datetime       null                 (RN-NUC-02)
+deactivated_at        datetime       null                 (N11)
 deactivated_by        fk users       null      restrict
-índices: client_id
+índices: client_id, email   (email sem unique: o Service avisa de possível duplicado e não recusa, N8)
+Anonimizar (N12, só Administrador), numa transação: name vira "removido a pedido do titular", email e
+phone ficam nulos (o texto não cabe em phone; a tela mostra o nome), e o Service limpa os mesmos dados
+em audit_logs.changes das linhas do contato. A anonimização fica em audit_logs (action anonymized),
+sem os dados.
 
 =====================================================================
-contract_types                         (cadastrável)
+service_types                          (cadastrável)
 =====================================================================
-D-GER-11. O Administrador cadastra novos tipos. O código depende do slug 'audit' (sizing, RN-CRM-07).
-Na v1 só o lead usa ("o que está sendo vendido"): contrato fica fora da v1 (D-CRM-10).
+N10: o que o lead está vendendo (C2). O Administrador edita (G7). O código depende do slug 'audit'
+(sizing, C12). Contrato fica fora da v1 (N10).
 slug varchar(40) null unique · label varchar(80) not null unique · deactivated_at/by
      slug              label
      project           Projeto
@@ -170,8 +188,8 @@ slug varchar(40) null unique · label varchar(80) not null unique · deactivated
 =====================================================================
 contact_channels                       (fechado)
 =====================================================================
-Por onde o contato aconteceu. Usado no card de suporte (RN-PRJ-32: "WhatsApp, telefone, e-mail,
-reunião, outro") e na tratativa do CRM (fluxo do CRM: "data, canal, resumo, próximo passo").
+Por onde o contato aconteceu. Card de suporte (P52: "WhatsApp, telefone, e-mail, reunião ou outro")
+e tratativa (C5: canal).
 id   slug       label
 1    whatsapp   WhatsApp
 2    phone      Telefone
@@ -182,7 +200,7 @@ id   slug       label
 =====================================================================
 audit_channels                         (fechado)
 =====================================================================
-RN-NUC-04: tela, ia:claude, ia:chatgpt, ia:codex, ia:gpt.
+G3 (por onde: tela ou qual IA) e IA11 (ia:claude, ia:chatgpt, ia:codex, ia:gpt).
 id   slug         label
 1    web          Tela
 2    ia_claude    IA: Claude
@@ -193,16 +211,18 @@ id   slug         label
 =====================================================================
 audit_logs                             — tabela única (D-GER-16)
 =====================================================================
-Toda alteração em qualquer módulo (RN-NUC-04) e toda tentativa negada (RN-NUC-03). Só created_at;
-nenhuma rota edita nem exclui. Guarda tudo, sem partição (NUC-04).
+Toda alteração em qualquer módulo e toda tentativa negada (G3). Só created_at. Nenhuma rota edita nem
+exclui; a auditoria nunca é apagada e não tem partição (G3). Única exceção: a anonimização do contato
+limpa os dados pessoais dele em changes (N12).
 user_id               fk users              null      restrict  (null = token inválido, sem usuário)
-audit_channel_id      fk audit_channels     not null  restrict  (RN-NUC-04)
-ai_authorization_id   fk ai_authorizations  null      restrict  (RN-IA-03)
-action                varchar(40)           not null  (created, updated, deleted, moved, deactivated…)
-outcome               varchar(10)           not null  check in ('success','denied')  (RN-NUC-03)
+audit_channel_id      fk audit_channels     not null  restrict  (G3, IA11)
+ai_authorization_id   fk ai_authorizations  null      restrict  (IA11)
+action                varchar(40)           not null  (created, updated, deleted, moved, deactivated,
+                                                       archived, anonymized…)
+outcome               varchar(10)           not null  check in ('success','denied')  (G3)
 auditable_type        varchar(120)          not null  (alias do morph map)
 auditable_id          bigint unsigned       null      (null quando a negação vem antes de achar o registro)
-changes               json                  null      {"campo": [antes, depois]} (RN-NUC-04)
+changes               json                  null      {"campo": [antes, depois]} (G3)
 created_at            datetime              not null
 índices: (auditable_type, auditable_id, created_at), user_id, audit_channel_id, ai_authorization_id
 Senha e token nunca entram em changes.
@@ -210,8 +230,8 @@ Senha e token nunca entram em changes.
 =====================================================================
 ai_assistants                          (fechado)
 =====================================================================
-D-IA-03, D-IA-06. Token por usuário e por assistente ("Como funciona"). write_allowed = false emite
-token só de leitura (ChatGPT Pro, D-IA-04b).
+IA3 (quem usa o quê) e IA4 (uma autorização por assistente). write_allowed = false emite token só de
+leitura (ChatGPT Pro, IA3).
 id   slug         label            audit_channel_id  write_allowed
 1    claude       Claude           2                 true      (app e Claude Code)
 2    chatgpt      ChatGPT          3                 false
@@ -222,8 +242,8 @@ colunas: audit_channel_id fk audit_channels not null · write_allowed boolean no
 =====================================================================
 ai_scopes                              (fechado)
 =====================================================================
-"Como funciona": escopos por módulo e tipo de acesso. RN-IA-02: nunca acima do papel; a relação
-papel × escopo é regra do código (IA-01).
+IA4: permissão por módulo, ler ou escrever. IA5: nunca acima do papel; a relação papel × escopo é
+regra do código.
 id   slug             label                 papéis que recebem
 1    core:read        Núcleo: ler           todos
 2    projects:read    Projetos: ler         admin, project_manager, developer
@@ -234,12 +254,12 @@ id   slug             label                 papéis que recebem
 =====================================================================
 ai_authorizations
 =====================================================================
-O "conector" (vocabulário): o usuário vê e revoga na tela de perfil; o admin vê e revoga de todos
-(RN-IA-04). Reconectar revoga a anterior e cria outra (IA-03).
+O "conector" (IA4): o usuário vê e revoga as próprias; o admin, as de todos (IA6). Reconectar revoga
+a anterior e cria outra (IA6).
 user_id               fk users           not null  restrict
 ai_assistant_id       fk ai_assistants   not null  restrict
 oauth_client_id       char(36)           not null            (oauth_clients.id do Passport)
-revoked_at            datetime           null                (RN-IA-04, RN-IA-05)
+revoked_at            datetime           null                (IA6; N4)
 índices: user_id, ai_assistant_id, oauth_client_id
 Revogar = revoked_at + revogar os tokens do Passport na mesma transação. Quem revogou: audit_logs.
 
@@ -253,57 +273,56 @@ pk (ai_authorization_id, ai_scope_id)      (pivot puro, sem id nem timestamps)
 =====================================================================
 ai_tool_calls
 =====================================================================
-Chamadas de ferramenta, inclusive LEITURA (D-IA-08: 180 dias, só ids e filtros). A escrita já está
-em audit_logs. O admin consulta por usuário, assistente e período (RN-IA-10). O limite 60/20 por minuto (RN-IA-06) roda no cache, por autorização (escolha T5).
+Chamadas de ferramenta, inclusive LEITURA (IA12: 180 dias, só ids e filtros). A escrita já está em
+audit_logs. O admin consulta por usuário, assistente e período (IA12). O limite 60/20 por minuto
+(IA7, D-IA-07) roda no cache, por autorização (T5).
 ai_authorization_id   fk ai_authorizations  not null  restrict
 tool_name             varchar(80)           not null
 arguments             json                  null      (só ids e filtros, nunca texto livre)
 outcome               varchar(15)           not null  check in ('success','denied','rate_limited','error')
 created_at            datetime              not null
-índices: (ai_authorization_id, created_at), created_at   (limpeza de 180 dias, escolha T5)
+índices: (ai_authorization_id, created_at), created_at   (limpeza de 180 dias, T5)
 
 
 #####################################################################
 #  2. PROJETOS — app/Domains/Projetos/
 #  FKs para fora: users, clients, contacts, contact_channels, audit_channels.
+#  Premissa: kanban sem trava. Admin e gestor mexem em tudo; o dev executa (P13, P56).
 #####################################################################
 
 =====================================================================
 projects
 =====================================================================
-client_id                        fk clients    not null  restrict  (RN-PRJ-01)
-manager_id                       fk users      not null  restrict  (RN-PRJ-05)
-key_prefix                       varchar(10)   not null  unique    (RN-PRJ-19; congela após a 1ª tarefa, D-PRJ-26)
+client_id                        fk clients    not null  restrict  (P1)
+manager_id                       fk users      not null  restrict  (P1)
+key_prefix                       varchar(10)   not null  unique    (P3; congela após a 1ª tarefa)
 name                             varchar(160)  not null
-starts_on                        date          not null            início (D-PRJ-29)
-due_on                           date          null                entrega (D-PRJ-29): sprints que cabem e
-                                                                   "fora do cronograma" (RN-PRJ-33).
-                                                                   null = produto contínuo, sem entrega;
-                                                                   o prazo é o de cada sprint
-ai_full                          boolean       not null  default false  modalidade "100% IA" (RN-PRJ-06)
-finished_at                      datetime      null      encerrado não recebe tarefa (RN-PRJ-03)
+starts_on                        date          not null            início (P2)
+due_on                           date          null                entrega do projeto de entrega (P2), só
+                                                                   informativa: nenhuma conta usa na v1 (P9).
+                                                                   null = produto contínuo, sem entrega
+ai_full                          boolean       not null  default false  modalidade "100% IA" (P4)
+finished_at                      datetime      null      encerrado não recebe tarefa nova (P7)
 last_task_number                 int unsigned  not null  default 0
-                                                         contador da chave (PRJ-03, escolha T4)
--- Padrões configuráveis (D-GER-05). Mudam dali para a frente (RN-PRJ-29).
-require_assignee_out_of_backlog  boolean  not null  default true   (RN-PRJ-02)
-default_requires_code_review     boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
-default_requires_cross_test      boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
-default_requires_qa              boolean  not null  default true   (RN-PRJ-09, D-PRJ-15)
-require_pr_for_code_review       boolean  not null  default false  (RN-PRJ-23)
-require_pause_reason             boolean  not null  default true   (RN-PRJ-12)
-enforce_sprint_capacity          boolean  not null  default true   (D-PRJ-24; false = só avisa)
+                                                         contador da chave (P16, T4)
+-- Padrões do projeto (G1). Mudam dali para a frente e nunca apagam registro (P8).
+default_requires_code_review     boolean  not null  default true   (P32)
+default_requires_cross_test      boolean  not null  default true   (P32)
+default_requires_qa              boolean  not null  default true   (P32)
+require_pause_reason             boolean  not null  default true   (P15)
 sprint_days                      smallint unsigned  not null  default 10
-                                                         duração da sprint em dias úteis (D-PRJ-24,
-                                                         RN-PRJ-35); base do "quantas sprints cabem"
+                                                         duração da sprint em dias úteis (P46)
 check: due_on is null or due_on >= starts_on;  sprint_days > 0
 índices: client_id, manager_id
-Reabrir (RN-PRJ-03) = finished_at volta a null, só gestor ou admin.
+Encerrar (P7): o gestor, quando quiser, mesmo com tarefa aberta. Reabrir = finished_at volta a null,
+só gestor ou admin.
 
 =====================================================================
 project_members
 =====================================================================
-Alocação: dev só vê projeto em que está (RN-PRJ-04). Tech Lead por projeto, um ou mais
-(D-PRJ-10, RN-PRJ-24).
+Alocação: o dev só vê projeto em que está (P5). O gestor põe e tira pessoas a qualquer momento (P5).
+Tirar a pessoa deixa sem dev (developer_id = null) e sem QA (qa_id = null) as tarefas do projeto em
+que ela estava, na mesma transação. Tech Lead por projeto, um ou mais (P6).
 project_id            fk projects   not null  cascade
 user_id               fk users      not null  restrict
 is_tech_lead          boolean       not null  default false
@@ -313,8 +332,8 @@ unique: (project_id, user_id)
 =====================================================================
 stage_roles                            (fechado)
 =====================================================================
-RN-PRJ-13: todo indicador lê o papel, nunca o nome da etapa.
-id   slug          label              etapa padrão (D-PRJ-11, D-PRJ-20)
+P11: todo indicador lê o papel, nunca o nome da etapa.
+id   slug          label              etapa padrão (P10)
 1    queue         Fila               Backlog
 2    sprint        Sprint             To do
 3    development   Desenvolvimento    Doing
@@ -323,29 +342,30 @@ id   slug          label              etapa padrão (D-PRJ-11, D-PRJ-20)
 6    done          Pronto             Done
 7    paused        Pausa              Paused
 8    support       Suporte            Support
-Retrabalho (RN-PRJ-08) = saída de code_review, test ou done para queue, sprint ou development.
+Retrabalho (P39) = saída de code_review, test ou done para queue, sprint ou development.
 
 =====================================================================
 board_stages
 =====================================================================
-Etapas do quadro por projeto: renomear, criar, remover, reordenar (RN-PRJ-30). Nasce com as 8
-acima. "Desligar a coluna Support" (RN-PRJ-31) = arquivar.
+Etapas do quadro por projeto: o gestor renomeia, cria, remove e reordena (P11, G7). Nasce com as 8
+acima (P10).
 project_id            fk projects      not null  cascade
-stage_role_id         fk stage_roles   not null  restrict  (obrigatório, RN-PRJ-13)
+stage_role_id         fk stage_roles   not null  restrict  (obrigatório, P11)
 name                  varchar(60)      not null
 position              smallint         not null            (ordem no quadro)
 archived_at           datetime         null                "remover" arquiva: a etapa segue nos
-                                                           movimentos antigos (RN-PRJ-29)
-Qualquer pessoa alocada move a tarefa entre etapas (D-PRJ-16). Restringir etapa a função
-(RN-PRJ-27, RN-PRJ-25) é v1+ (D-PRJ-25).
+                                                           movimentos antigos (P8, P12)
+Qualquer pessoa alocada move o card a partir do To do (P13). Restrição de etapa por função fica fora
+da v1.
 índices: project_id, stage_role_id
 Regras do Service: o papel não muda depois que a etapa tem movimento (os indicadores leem o papel
-atual da etapa); arquivar etapa com tarefas exige escolher o destino delas (RN-PRJ-29).
+atual da etapa, T1); arquivar etapa com tarefas exige escolher o destino delas (P12).
 
 =====================================================================
 task_types                             (cadastrável)
 =====================================================================
-RN-PRJ-07. O código depende do slug 'support' (card de suporte, RN-PRJ-32).
+P18. Lista geral: o Administrador edita (G7). O código depende do slug 'support' (card de suporte,
+P52).
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
      improvement   Melhoria
      bug           Correção de bug
@@ -355,7 +375,7 @@ slug varchar(20) null unique · label varchar(60) not null unique · deactivated
 =====================================================================
 project_areas                          (cadastrável por projeto)
 =====================================================================
-RN-PRJ-07: área do produto, lista fechada por projeto, nasce vazia.
+P18: área do produto, lista do projeto, nasce vazia. O gestor edita (G7).
 project_id            fk projects      not null  cascade
 name                  varchar(60)      not null
 deactivated_at / deactivated_by
@@ -364,7 +384,7 @@ unique: (project_id, name)
 =====================================================================
 task_priorities                        (fechado)
 =====================================================================
-PRJ-07, D-PRJ-21.
+P19.
 id   slug     label
 1    low      Baixa
 2    normal   Normal
@@ -375,71 +395,93 @@ id   slug     label
 tasks
 =====================================================================
 project_id            fk projects           not null  restrict
-number                int unsigned          not null            (sequencial por projeto, RN-PRJ-19)
-key                   varchar(24)           not null  unique    ("SGM-17", imutável; busca pela IA e tela)
+number                int unsigned          not null            (sequencial por projeto, P16)
+key                   varchar(24)           not null  unique    ("SGM-17", imutável; busca pela IA e
+                                                                tela; ver T10)
 board_stage_id        fk board_stages       not null  restrict  (etapa atual)
-task_type_id          fk task_types         not null  restrict  (RN-PRJ-07)
-project_area_id       fk project_areas      null      restrict  (RN-PRJ-07; null = nenhuma)
-task_priority_id      fk task_priorities    not null  restrict  (D-PRJ-21)
-developer_id          fk users              null      restrict  o dev da tarefa, um só (D-PRJ-27, RN-PRJ-14).
-                                                      Null só no Backlog (RN-PRJ-02)
-qa_id                 fk users              null      restrict  o QA da tarefa (D-PRJ-27); obrigatório
-                                                      quando requires_qa (Service)
-estimated_hours       hours                 not null  horas previstas da tarefa inteira, desenvolvimento
-                                                      + testes, informadas pelo gestor ao criar
-                                                      (D-PRJ-27, RN-PRJ-15). check (> 0)
+task_type_id          fk task_types         not null  restrict  (P18)
+project_area_id       fk project_areas      null      restrict  (P18; null = nenhuma)
+task_priority_id      fk task_priorities    not null  restrict  (P19)
+developer_id          fk users              null      restrict  o dev da tarefa, um só (P20). Pode ficar
+                                                      vazio em qualquer etapa; fica vazio quando o dev
+                                                      sai do projeto (P5)
+qa_id                 fk users              null      restrict  o QA da tarefa, um só (P20). Pode ficar
+                                                      vazio, mesmo com requires_qa (P20)
+estimated_hours       hours                 null      horas previstas da tarefa inteira, Dev + QA (P27):
+                                                      opcionais ao criar; o gestor define ou valida na
+                                                      montagem da sprint. Reestimar fica em audit_logs
 title                 varchar(200)          not null
--- Documento de requisição (F-PRJ-05, modelos SGM)
+-- Documento de requisição (P17)
 story_as              varchar(200)          null                ("Sendo")
 story_want            text                  null                ("Quero")
 story_so_that         text                  null                ("Para")
 description           text                  null                (informações adicionais)
--- Validações da tarefa, copiadas do projeto e desmarcáveis (RN-PRJ-09, D-PRJ-15)
+-- Validações da tarefa, copiadas do projeto e desligáveis na tarefa (P32)
 requires_code_review  boolean               not null
 requires_cross_test   boolean               not null
 requires_qa           boolean               not null
-due_on                date                  null      data prevista da TAREFA INTEIRA (D-PRJ-28, RN-PRJ-16):
-                                                      na 1ª entrada em etapa de papel development,
+due_on                date                  null      data prevista da TAREFA INTEIRA (P28):
                                                       estimated_hours ÷ users.daily_hours do dev, em dias
-                                                      úteis seg–sex (D-PRJ-22). Null antes de Doing.
-                                                      Foto: recalcula só quando estimated_hours muda,
-                                                      nunca quando muda a carga (RN-PRJ-17)
-sprint_id             fk sprints            null      restrict  sprint atual (D-PRJ-23)
-package_id            fk packages           null      restrict  pacote (RN-PRJ-10); reprovada na
-                                                      homologação volta a null
+                                                      úteis seg–sex (P29), contados da 1ª entrada em etapa
+                                                      de papel development. Null enquanto a tarefa não
+                                                      entrou em Doing ou faltar dev ou horas; calculada
+                                                      quando tiver os dois. Foto: recalcula só quando
+                                                      estimated_hours muda (reestimar), nunca pela carga
+                                                      (N3), pela pausa nem pelo retrabalho (P28)
+sprint_id             fk sprints            null      restrict  sprint do card (P45). Null = fora de
+                                                      sprint (Backlog, ou card de suporte fora da sprint,
+                                                      P52). Card pronto fica com a sprint em que foi feito
+                                                      (P51)
+package_id            fk packages           null      restrict  pacote, opcional (P41)
 origin_task_id        fk tasks              null      restrict  bug achado em produção aponta a original
-                                                      (PRJ-08, D-PRJ-21)
--- Card de suporte (RN-PRJ-32), obrigatórios quando o tipo é 'support'
+                                                      (P25)
+-- Card de suporte (P52), obrigatórios quando o tipo é 'support'
 requester_contact_id  fk contacts           null      restrict  (quem pediu)
 contact_channel_id    fk contact_channels   null      restrict  (por onde)
 requested_at          datetime              null                (quando o pedido chegou)
--- Arquivamento de tarefa abandonada (D-PRJ-31, RN-PRJ-34)
+-- Arquivamento do card com histórico (P26)
 archived_at           datetime              null
 archive_reason        varchar(500)          null                motivo obrigatório ao arquivar
+check: estimated_hours is null or estimated_hours > 0
 check: (archived_at is null) = (archive_reason is null)
 unique: (project_id, number), key
 índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, developer_id,
          qa_id, sprint_id, package_id, origin_task_id, requester_contact_id, contact_channel_id,
          due_on, archived_at
-Regras do Service: só tarefa em etapa de papel done entra em pacote; pacote em homologação ou depois
-não recebe tarefa (RN-PRJ-10). developer_id e qa_id alocados no projeto (project_members); definir
-um deles notifica a pessoa (RN-PRJ-21). Arquivar: só gestor do projeto ou admin; tarefa arquivada
-sai do quadro e das contas de prazo e capacidade; desarquivar volta ao Backlog (RN-PRJ-34).
+Regras do Service:
+- criar card: só gestor e admin (P56), também pela IA (G4);
+- developer_id e qa_id são pessoas alocadas no projeto (project_members); definir um deles gera o
+  aviso no sistema (P22);
+- entrar e sair do Backlog é pôr e tirar da sprint (P45), só gestor e admin: pôr preenche sprint_id e
+  leva o card à etapa de papel sprint (To do); tirar limpa sprint_id e devolve à etapa de papel queue
+  (Backlog);
+- card de suporte nasce na etapa de papel support, sem sprint; dali qualquer pessoa alocada move
+  (P52). Pôr na sprint só preenche sprint_id, sem trocar de etapa;
+- nas demais etapas, qualquer pessoa alocada move (P13). O Service não exige dev, horas, PR nem
+  parecer para mover (premissa);
+- tirar do quadro, só gestor e admin (P26):
+    · excluir de verdade só o card nunca usado: nenhum movimento além da criação e nenhuma linha em
+      time_entries, task_comments, task_attachments, task_pull_requests, task_validations ou em tasks
+      com origin_task_id apontando para ele. Conferido com a linha travada (banco.md §4). Os critérios
+      e o movimento de criação saem junto (cascade);
+    · card com histórico: arquivar (archived_at + archive_reason). Sai do quadro e das contas de prazo,
+      atraso e capacidade; as horas lançadas continuam nos indicadores de horas (P53). Desarquivar
+      limpa os dois, limpa sprint_id e leva à etapa de papel queue (Backlog).
 
 =====================================================================
 task_stage_movements                   — fonte dos indicadores
 =====================================================================
-Toda mudança de etapa: quem, quando, de onde e para onde (RN-PRJ-11). Dá o tempo por etapa
-(F-PRJ-02), o tempo parado (RN-PRJ-12) e o retrabalho (RN-PRJ-08). Mostra o canal no histórico
-da tarefa (cenário de aceite "tarefa movida pela IA"). Só created_at, imutável.
+Toda mudança de etapa: quem, quando, de onde e para onde (P14, fixa). Dá o tempo por etapa (P53), o
+tempo parado (P15) e o retrabalho (P39). Mostra o canal no histórico da tarefa (IA11; cenário de
+aceite "tarefa movida pela IA"). Só created_at, imutável.
 task_id               fk tasks            not null  cascade
 from_board_stage_id   fk board_stages     null      restrict  (null = criação)
 to_board_stage_id     fk board_stages     not null  restrict
 moved_by              fk users            not null  restrict
 audit_channel_id      fk audit_channels   not null  restrict
-rework_origin_id      fk rework_origins   null      restrict  preenchido = é retrabalho (RN-PRJ-08)
-rework_reason_id      fk rework_reasons   null      restrict
-reason_text           varchar(500)        null      motivo da pausa (RN-PRJ-12) ou texto do "outro"
+rework_origin_id      fk rework_origins   null      restrict  preenchido = é retrabalho (P39)
+rework_reason_id      fk rework_reasons   null      restrict  (P40)
+reason_text           varchar(500)        null      motivo da pausa (P15) ou texto do "outro" (P40)
 created_at            datetime            not null  (= momento do movimento)
 check: (rework_origin_id is null) = (rework_reason_id is null)
 índices: (task_id, created_at), from_board_stage_id, to_board_stage_id, moved_by, audit_channel_id,
@@ -448,7 +490,7 @@ check: (rework_origin_id is null) = (rework_reason_id is null)
 =====================================================================
 rework_origins                         (fechado)
 =====================================================================
-RN-PRJ-08.
+P39.
 id   slug          label
 1    code_review   Code review
 2    cross_test    Teste cruzado
@@ -458,37 +500,38 @@ id   slug          label
 =====================================================================
 rework_reasons                         (cadastrável por projeto)
 =====================================================================
-RN-PRJ-08: lista editável por projeto, sempre com "outro" com texto. O projeto nasce com a lista
-padrão copiada.
+P40: lista editável por projeto, sempre com "outro" com texto. O gestor edita (G7). O projeto nasce
+com a lista padrão copiada.
 project_id            fk projects   not null  cascade
 label                 varchar(80)   not null
 requires_text         boolean       not null  default false   (o "outro")
 deactivated_at / deactivated_by
 unique: (project_id, label)
-Lista padrão [validar com Rafael]: Ajuste visual · Regra de negócio · Erro / bug ·
+Lista padrão (P40): Ajuste visual · Regra de negócio · Erro / bug ·
 Requisito incompleto ou mal documentado · Outro (requires_text).
 
 =====================================================================
 task_acceptance_criteria
 =====================================================================
-CA_1…CA_n do documento de requisição (F-PRJ-05). Cada critério é também o item do roteiro de teste
-(F-PRJ-14): o QA marca o resultado aqui, e a evidência vai em task_attachments.
-RN-PRJ-20: editar um critério já testado volta o resultado para pending (o antigo fica em audit_logs).
-Depois de retrabalho, os itens voltam a pending e o roteiro é o mesmo (PRJ-05).
+CA_1…CA_n do documento de requisição (P17). Cada critério é também o item do roteiro de teste (P36):
+o QA marca o resultado aqui, e a evidência vai em task_attachments.
+P37: editar um critério já testado volta o resultado para pending (o antigo fica em audit_logs).
+Depois de retrabalho, todos os itens voltam a pending e o roteiro é o mesmo (P37).
 task_id               fk tasks                     not null  cascade
 parent_id             fk task_acceptance_criteria  null      cascade  (subitem CA_4.1, modelos SGM)
-position              smallint                     not null           (o código "CA_4.1" sai da posição)
+position              smallint                     not null           (o código "CA_4.1" sai da posição;
+                                                                       ver T9)
 description           text                         not null
 test_result_id        fk test_results              not null  restrict  default 1
-tested_by             fk users                     null      restrict  (QA que marcou)
+tested_by             fk users                     null      restrict  (QA que marcou, P36)
 tested_at             datetime                     null
 índices: task_id, parent_id, test_result_id, tested_by
-Excluir critério: só enquanto não testado.
+Excluir critério: só enquanto não testado (T1).
 
 =====================================================================
 test_results                           (fechado)
 =====================================================================
-"O QA executa o roteiro e marca os itens" (fluxo de Projetos, passo 7).
+P36: o QA marca cada item como aprovado ou reprovado; P37: "a testar".
 id   slug      label
 1    pending   A testar
 2    passed    Aprovado
@@ -497,7 +540,7 @@ id   slug      label
 =====================================================================
 validation_types                       (fechado)
 =====================================================================
-RN-PRJ-09: as três validações da tarefa.
+P32: as três validações da tarefa.
 id   slug          label
 1    code_review   Code review
 2    cross_test    Teste cruzado
@@ -506,34 +549,31 @@ id   slug          label
 =====================================================================
 validation_results                     (fechado)
 =====================================================================
+O parecer de uma validação (P33, P34, P36).
 id   slug       label
-1    pending    Pendente
-2    approved   Aprovado
-3    rejected   Reprovado
+1    approved   Aprovado
+2    rejected   Reprovado
 
 =====================================================================
 task_validations
 =====================================================================
-Parecer de cada validação (fluxo de desenvolvimento: aprovação do Tech Lead, do dev do teste cruzado
-e do QA). Uma linha por tentativa; a vigente é a mais recente do tipo. Reprovar grava o movimento de
-retrabalho na mesma transação.
-Teste cruzado fica livre para qualquer dev alocado puxar (PRJ-09, D-PRJ-19): validated_by +
-claimed_at. Não puxa o dev da tarefa (tasks.developer_id, RN-PRJ-26).
-Escolha T2: puxar trava a linha (lockForUpdate) e recusa se validated_by já estiver preenchido;
-linha nova do mesmo tipo só nasce depois que a anterior foi reprovada.
+Parecer de cada validação: code review (P33), teste cruzado (P34) e QA (P36). Uma linha por parecer;
+a vigente é a mais recente do tipo (T2). Reprovar grava o movimento de retrabalho na mesma transação
+(P39).
+Sem trava de "puxar" (revisão 4): a linha nasce com o parecer e guarda só quem validou e quando
+(created_at). O Service recusa só o parecer de teste cruzado dado pelo dev da tarefa
+(tasks.developer_id, P34). Validação ainda devida é consulta: requires_* ligado e nenhum parecer
+approved do tipo depois da última volta para desenvolvimento. Não impede mover o card (premissa).
 task_id               fk tasks               not null  cascade
 validation_type_id    fk validation_types    not null  restrict
-validation_result_id  fk validation_results  not null  restrict  default 1
-validated_by          fk users               null      restrict  (quem puxou / quem validou)
-claimed_at            datetime               null                (quando puxou, PRJ-09)
-validated_at          datetime               null                (quando deu o parecer)
+validation_result_id  fk validation_results  not null  restrict
+validated_by          fk users               not null  restrict  (quem deu o parecer)
 índices: (task_id, validation_type_id, created_at), validation_result_id, validated_by
 
 =====================================================================
 task_pull_requests
 =====================================================================
-Nenhum, um ou vários PRs por tarefa, link colado à mão ou pela IA (RN-PRJ-23, F-PRJ-06, D-PRJ-16).
-Serve também à trava opcional "exigir PR para Code-review".
+Nenhum, um ou vários PRs por tarefa, link colado à mão ou pela IA (P23; ferramenta anexar_pr, IA14).
 task_id               fk tasks         not null  cascade
 url                   varchar(500)     not null
 unique: (task_id, url)
@@ -541,7 +581,7 @@ unique: (task_id, url)
 =====================================================================
 task_comments
 =====================================================================
-Comentários da tarefa (escopo Trello, D-PRJ-05; ferramenta comentar_tarefa).
+Comentários da tarefa (P24; ferramenta comentar_tarefa, IA14).
 task_id               fk tasks         not null  cascade
 user_id               fk users         not null  restrict  (autor exibido no comentário)
 body                  text             not null
@@ -550,8 +590,7 @@ body                  text             not null
 =====================================================================
 task_attachments
 =====================================================================
-Anexos da tarefa (escopo Trello, D-PRJ-05) e evidência do QA por item do roteiro (fluxo de Projetos,
-passo 7; F-PRJ-07).
+Anexos da tarefa (P24) e evidência do QA por item do roteiro (P36).
 task_id                       fk tasks                     not null  restrict
 task_acceptance_criterion_id  fk task_acceptance_criteria  null      restrict  (preenchido = evidência)
 path                          varchar(255)                 not null  unique
@@ -563,8 +602,9 @@ Excluir anexo: o Service apaga o arquivo e a linha juntos (banco.md §4).
 =====================================================================
 time_entries
 =====================================================================
-Horas realizadas por pessoa (RN-PRJ-15, F-PRJ-11), lançadas à mão (PRJ-11). Previsto × realizado e
-produtividade, não contrato (D-PRJ-18). Correção = editar (audit_logs guarda o antes).
+Horas realizadas por pessoa, lançadas à mão, por dia, em horas decimais; sem cronômetro (P30).
+Previsto × realizado (P53), não contrato (P31). Quem trabalhou lança e corrige as próprias; o gestor
+e o admin corrigem qualquer uma (P30). Correção = editar (audit_logs guarda o antes).
 task_id               fk tasks      not null  restrict
 user_id               fk users      not null  restrict
 worked_on             date          not null
@@ -574,17 +614,18 @@ hours                 hours         not null  check (> 0 and <= 24)
 =====================================================================
 package_status_roles                   (fechado)
 =====================================================================
-RN-PRJ-10: estados do pacote renomeáveis; as regras leem o papel.
+P42: estados do pacote renomeáveis; o código lê o papel. Nenhum estado recusa tarefa (P41). Na v1 só
+o papel production é lido: entrar num estado com esse papel grava packages.released_at (P44).
 id   slug          label
-1    building      Em montagem       (recebe tarefa em done)
-2    homologation  Em homologação    (não recebe tarefa nova)
+1    building      Em montagem
+2    homologation  Em homologação
 3    approved      Homologado
-4    production    Em produção       (finalizado)
+4    production    Em produção
 
 =====================================================================
 package_statuses                       (cadastrável por projeto)
 =====================================================================
-RN-PRJ-10: renomear, criar ou remover estados. O projeto nasce com os 4 acima.
+P42: o gestor renomeia, cria e remove estados (G7). O projeto nasce com os 4 acima.
 project_id              fk projects              not null  cascade
 package_status_role_id  fk package_status_roles  not null  restrict
 label                   varchar(60)              not null
@@ -595,52 +636,57 @@ archived_at             datetime                 null      (estado já usado nã
 =====================================================================
 packages
 =====================================================================
-Pacote = versão, "com número e data" (vocabulário; F-PRJ-03). As tarefas apontam para cá
-(tasks.package_id).
+Pacote = versão (ex.: "1.0.9"), opcional (P41). O gestor e o admin montam o pacote e mudam o estado
+dele, sem trava (P41): põem e tiram tarefas (tasks.package_id) de qualquer etapa. A reprovação na
+homologação devolve as tarefas com retrabalho de origem homologação (P43) e não as tira do pacote
+sozinha.
 project_id            fk projects          not null  restrict
 name                  varchar(40)          not null            ("1.0.9")
 package_status_id     fk package_statuses  not null  restrict
-planned_release_on    date                 null      data definida por projeto, em geral pelo
-                                                     cliente (fluxo de Projetos, passo 9)
-released_at           datetime             null      a "data" da versão: quando entrou em produção
+planned_release_on    date                 null      data planejada, definida por projeto, em geral
+                                                     pelo cliente (P44)
+released_at           datetime             null      a data da versão: quando entrou em produção (P44)
 unique: (project_id, name)
 índices: package_status_id
 
 =====================================================================
 sprints
 =====================================================================
-Sprint = a "Fase" do Histórico de Desenvolvimento (D-PRJ-23). O gestor monta com tarefas do To do e
-um time (D-PRJ-24). Ao criar, ends_on vem proposto como starts_on + projects.sprint_days dias úteis
-(seg–sex; padrão 10, RN-PRJ-35); o gestor pode mudar. Uso opcional por projeto.
+Sprint = a "Fase" do Histórico de Desenvolvimento (P51). Obrigatória: é a única saída do Backlog
+(P45). O gestor e o admin criam (nome, objetivo, início e fim) e põem ou tiram card a qualquer
+momento (P45). Ao criar, ends_on vem proposto como starts_on + projects.sprint_days dias úteis (seg–sex,
+P46); o gestor muda.
 project_id            fk projects   not null  restrict
-name                  varchar(80)   not null            (título da fase no relatório)
-goal                  varchar(500)  not null            objetivo da sprint (D-PRJ-23)
+name                  varchar(80)   not null            (título da fase no relatório, P51)
+goal                  varchar(500)  not null            objetivo da sprint (P45)
 starts_on             date          not null
 ends_on               date          not null
+closed_at             datetime      null                o gestor encerra (P50). null = aberta
 check: ends_on >= starts_on
 unique: (project_id, name)
-Regras do Service (D-PRJ-24):
-- entra na sprint tarefa da coluna To do cujo dev (tasks.developer_id) está no time da sprint;
-- por dev, a soma das HORAS QUE FALTAM das tarefas dele na sprint não passa de daily_hours ×
-  available_days (D-PRJ-30). Horas que faltam = estimated_hours − todas as horas lançadas na tarefa
-  (time_entries), nunca abaixo de 0. Tarefa arquivada não conta (RN-PRJ-34). A tarefa conta só na capacidade do dev; a do QA
-  não é conferida na v1 (D-PRJ-30). Com
-  enforce_sprint_capacity = true recusa, com false avisa. A conferência roda em
-  transação com as linhas de sprint_members travadas (lockForUpdate), para duas inclusões ao mesmo
-  tempo não estourarem a capacidade (banco.md §8, escolha T1);
-- tarefa não concluída no fim é levada pelo gestor à próxima sprint (troca de sprint_id; o rastro
-  fica em audit_logs).
+Regras do Service:
+- uma sprint aberta (closed_at null) por projeto (P45): com uma aberta, não se cria outra; a próxima
+  nasce no encerramento da atual (P50);
+- encerrar (P50): o que não chegou a etapa de papel done vai para a próxima sprint (troca de sprint_id)
+  ou volta ao Backlog (sprint_id null, etapa de papel queue), como o gestor decidir; o rastro fica em
+  audit_logs (T3). O que está em done fica com esta sprint (P51);
+- a tarefa entra na sprint com ou sem dev e horas, e o dev não precisa estar no time (premissa);
+- capacidade é só referência e nunca recusa nada (P49): por dev, as horas que faltam das tarefas dele
+  na sprint (estimated_hours − todas as horas lançadas na tarefa em time_entries, nunca abaixo de 0)
+  contra daily_hours × available_days. Tarefa sem dev ou sem horas aparece à parte; tarefa arquivada
+  não conta (P26); a capacidade do QA não entra na v1 (P49).
 
 =====================================================================
 sprint_members
 =====================================================================
-Time da sprint e capacidade por pessoa (D-PRJ-24).
+Time da sprint (P47), montado pelo gestor, só com quem tem carga diária (N3, Service). Capacidade por
+pessoa (P48).
 sprint_id             fk sprints       not null  cascade
 user_id               fk users         not null  restrict
-daily_hours           hours            not null  foto da carga ao entrar (RN-PRJ-17: mudar a carga
-                                                 depois não mexe na sprint)
+daily_hours           hours            not null  foto da carga ao entrar (N3: mudar a carga depois
+                                                 não mexe na sprint)
 available_days        decimal(4,1)     not null  dias disponíveis; começa com os dias úteis da
-                                                 sprint e o gestor reduz (férias, folga, meio período)
+                                                 sprint e o gestor reduz (férias, folga) (P48)
 unique: (sprint_id, user_id)
 índices: user_id
 Capacidade = daily_hours × available_days (derivada).
@@ -648,15 +694,16 @@ Capacidade = daily_hours × available_days (derivada).
 
 #####################################################################
 #  3. CRM — app/Domains/Crm/
-#  FKs para fora: users, clients, contacts, contract_types, contact_channels.
-#  Sem migração do DaaS (D-CRM-03).
+#  FKs para fora: users, clients, contacts, service_types, contact_channels.
+#  Sem migração do DaaS (C15).
 #####################################################################
 
 =====================================================================
 funnel_stages                          (cadastrável)
 =====================================================================
-Funil único (CRM-01), etapas editáveis; padrão = etapas do DaaS (D-CRM-01). outcome diz o que é
-ganho e perdido: ganho exige conversão (RN-CRM-01), perdido exige motivo (RN-CRM-02).
+Funil único, etapas editáveis; padrão = etapas do DaaS (C1). Lista geral: o Administrador edita (G7).
+O lead anda livre entre as etapas (C1). outcome diz o que é ganho e perdido: ganho exige valor (C2),
+sizing se for auditoria (C12) e conversão (C10); perdido exige motivo (C11).
 name                  varchar(60)   not null
 position              smallint      not null
 outcome               varchar(4)    not null  check in ('open','won','lost')
@@ -665,49 +712,61 @@ final_key             varchar(4)    GENERATED ALWAYS AS (IF(outcome <> 'open' AN
                                     outcome, NULL)) STORED   unique
                                     → no máximo 1 etapa ativa won e 1 lost, travado no banco (T1)
 Semente: Prospecção · Contato · Reunião · Proposta (open) · Ganhou (won) · Perdido (lost)
-Regra do Service: pelo menos 1 won e 1 lost ativas (não dá para arquivar a última).
+Regra do Service: pelo menos 1 won e 1 lost ativas (C1: não dá para arquivar a última).
 
 =====================================================================
 lead_sources                           (cadastrável)
 =====================================================================
-"Comercial cadastra o lead (empresa, contato, origem)" (fluxo do CRM). A lista está em [LEVANTAR]
-no requisito: nasce VAZIA e o comercial cadastra.
+Origem do lead (C2). Lista geral: o Administrador edita (G7).
 label varchar(80) not null unique · deactivated_at/by
+Semente (C2): Indicação · Tráfego · Site
 
 =====================================================================
 lost_reasons                           (cadastrável)
 =====================================================================
-RN-CRM-02: lista editável.
+C11: lista editável. Lista geral: o Administrador edita (G7).
 label varchar(80) not null unique · requires_text boolean not null default false · deactivated_at/by
-Semente (RN-CRM-02): Preço · Momento · Concorrente · Sem resposta · Sem perfil · Outro (requires_text)
+Semente (C11): Preço · Momento · Concorrente · Sem resposta · Sem perfil · Outro (requires_text)
 
 =====================================================================
 leads
 =====================================================================
-company_name          varchar(160)       not null           (fluxo do CRM: "empresa")
+company_name          varchar(160)       not null           (C2: empresa)
 country               char(2)            not null  default 'BR'  ┐ conversão casa por país + documento
-document              varchar(30)        null                    ┘ (RN-CRM-01, D-NUC-01)
-owner_id              fk users           not null  restrict  edita só o dono; todos leem (RN-CRM-05)
-lead_source_id        fk lead_sources    null      restrict  (origem, fluxo do CRM)
-funnel_stage_id       fk funnel_stages   not null  restrict  ganho/perdido = outcome da etapa
-contract_type_id      fk contract_types  null      restrict  o que se está vendendo; 'audit' exige
-                                                             o sizing para ganhar (RN-CRM-07)
-current_situation     varchar(500)       null                situação atual (RN-CRM-14; versões
-                                                             antigas em audit_logs)
-lost_reason_id        fk lost_reasons    null      restrict  (RN-CRM-02)
-lost_note             varchar(500)       null                texto do "outro" (RN-CRM-02)
+document              varchar(30)        null                    ┘ (C2, C10, N5)
+owner_id              fk users           not null  restrict  dono: edita só o dono (e o admin); todos
+                                                             leem (C4). O admin troca o dono (C16)
+lead_source_id        fk lead_sources    null      restrict  (origem, C2)
+funnel_stage_id       fk funnel_stages   not null  restrict  ganho/perdido = outcome da etapa (C1)
+service_type_id       fk service_types   null      restrict  o que se está vendendo (C2, N10); 'audit'
+                                                             exige o sizing para ganhar (C12)
+value                 money              null                valor do lead (C2), obrigatório para
+                                                             ganhar (Service). Na auditoria é o preço
+                                                             (C12)
+current_situation     varchar(500)       null                situação atual (C6; versões antigas em
+                                                             audit_logs)
+lost_reason_id        fk lost_reasons    null      restrict  (C11)
+lost_note             varchar(500)       null                texto do "outro" (C11)
 client_id             fk clients         null      restrict  lead de quem já é cliente nasce com ele
-                                                             (D-CRM-06); lead novo recebe na conversão
-                                                             (RN-CRM-01)
-índices: owner_id, funnel_stage_id, lead_source_id, contract_type_id, lost_reason_id, client_id,
-         (country, document)
-Mesmo documento pode ter vários leads (D-CRM-06): sem unique; o Service avisa se há cliente ou lead
-aberto com o documento e mostra o dono. Lead ativo sem follow-up futuro (RN-CRM-04) é consulta.
+                                                             (C3); lead novo recebe na conversão (C10)
+deactivated_at        datetime           null                o "excluir" do Administrador (C16, G2)
+deactivated_by        fk users           null      restrict
+índices: owner_id, funnel_stage_id, lead_source_id, service_type_id, lost_reason_id, client_id,
+         (country, document), deactivated_at
+Regras do Service:
+- mesmo documento pode ter vários leads (C3): sem unique; o Service avisa se há cliente ou lead aberto
+  com o documento e mostra o dono;
+- lead ativo = deactivated_at nulo e etapa open. Lead ativo sem follow-up futuro aparece em alerta
+  para o dono (C8), por consulta;
+- ganhar (C10): valor preenchido (C2); com service_type 'audit', sizing completo (C12); cria o cliente
+  ou vincula ao existente pelo documento;
+- voltar do perdido para o funil (C11) limpa lost_reason_id e lost_note (o antigo fica em audit_logs);
+- desativar e reativar: só o admin (C16). Lead desativado sai das listas, da agenda e dos lembretes.
 
 =====================================================================
 lead_contacts
 =====================================================================
-Quem da empresa participa da negociação ("contato" no cadastro do lead). A pessoa mora em contacts.
+Os contatos do lead (C2). A pessoa mora em contacts (N8).
 lead_id               fk leads      not null  cascade
 contact_id            fk contacts   not null  restrict
 pk (lead_id, contact_id)
@@ -716,9 +775,9 @@ pk (lead_id, contact_id)
 =====================================================================
 lead_audit_sizings
 =====================================================================
-RN-CRM-07: os dados que travam o "ganhar" de auditoria, copiados do DaaS (tabela lead, migração
-0047 do wcj-ui): setor, 5 respostas e preço. Tudo obrigatório para ganhar lead com contract_type
-'audit'; antes disso pode ficar incompleto.
+C12: o sizing que trava o "ganhar" de auditoria, copiado do DaaS (tabela lead, migração 0047 do
+wcj-ui): setor e as 5 respostas. Tudo obrigatório para ganhar lead com service_type 'audit'; antes
+disso pode ficar incompleto. O preço da auditoria é leads.value (C12).
 lead_id               fk leads          not null  unique  cascade
 sector                varchar(120)      null      (no DaaS é texto livre, não lista)
 infra                 varchar(3)        null      check in ('ON','CLD','HIB')
@@ -726,24 +785,26 @@ sites                 varchar(3)        null      check in ('1','2-5','>5')
 employees             varchar(9)        null      check in ('<=50','51-300','301-1000','>1000')
 development           varchar(10)       null      check in ('ativo','manutencao','nao')
 operation_24x7        varchar(3)        null      check in ('sim','nao')
-price                 money             null      (preço da auditoria)
 
 =====================================================================
 lead_interactions
 =====================================================================
-Tratativa: "data, canal, resumo, próximo passo" (fluxo do CRM). Editável a qualquer momento, com
-histórico em audit_logs (RN-CRM-03). A situação atual do lead é atualizada junto (RN-CRM-14).
+Tratativa (C5): data, canal, resumo, próximo passo e, opcional, com quem falou. Editável a qualquer
+momento, com histórico em audit_logs (C5). A situação atual do lead é atualizada junto (C6).
 lead_id               fk leads              not null  cascade
 contact_channel_id    fk contact_channels   not null  restrict
+contact_id            fk contacts           null      restrict  com quem falou (C5): um contato do lead
+                                                                (lead_contacts), conferido no Service
 happened_at           datetime              not null
 summary               text                  not null
 next_step             varchar(500)          null
-índices: (lead_id, happened_at), contact_channel_id
+índices: (lead_id, happened_at), contact_channel_id, contact_id
 
 =====================================================================
 appointment_types                      (cadastrável)
 =====================================================================
-RN-CRM-12: follow-up e reunião, editável. O código depende do slug 'follow_up' (RN-CRM-04).
+C7: follow-up e reunião, lista editável. Lista geral: o Administrador edita (G7). O código depende do
+slug 'follow_up' (C8).
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
      follow_up   Follow-up
      meeting     Reunião
@@ -751,11 +812,10 @@ slug varchar(20) null unique · label varchar(60) not null unique · deactivated
 =====================================================================
 appointments
 =====================================================================
-RN-CRM-12: tipo, data e hora, duração (reunião), responsável, lead, observação; link ou local.
-Com lead ou com cliente (CRM-06). Convite .ics só para o responsável; participantes ele chama pelo
-Teams (CRM-07, D-CRM-08).
+C7: tipo, data e hora, duração (reunião), responsável, observação, local ou link; ligado a um lead ou
+a um cliente. Convite .ics só para o responsável; os participantes, ele chama pelo Teams (C9).
 appointment_type_id   fk appointment_types  not null  restrict
-owner_id              fk users              not null  restrict  (responsável; recebe o convite)
+owner_id              fk users              not null  restrict  (responsável; recebe o convite, C9)
 lead_id               fk leads              null      restrict
 client_id             fk clients            null      restrict
 starts_at             datetime              not null
@@ -766,38 +826,43 @@ notes                 text                  null      (observação)
 ics_sequence          int unsigned          not null  default 0
                                                       SEQUENCE do iCalendar: +1 a cada remarcação ou
                                                       cancelamento, senão o calendário ignora o
-                                                      convite novo (RN-CRM-13). O UID sai do id.
-completed_at          datetime              null      feito: sai de "vencidos" (RN-CRM-04, RN-CRM-13)
-cancelled_at          datetime              null      cancelado (RN-CRM-12)
-check: lead_id is not null or client_id is not null
+                                                      convite novo (C9). O UID sai do id.
+completed_at          datetime              null      feito: sai de "vencidos" (C8)
+cancelled_at          datetime              null      cancelado (C7)
+check: lead_id is not null or client_id is not null   (C7; ver T10)
 índices: (owner_id, starts_at), lead_id, client_id, appointment_type_id
+Follow-up vencido (C8, C9) é consulta: tipo follow_up, starts_at < agora, completed_at e cancelled_at
+nulos, e nenhuma tratativa do lead registrada (lead_interactions.created_at) depois de starts_at.
+Compromisso de lead desativado não entra na agenda nem nos lembretes (C16).
 
 
 #####################################################################
 #  4. FRAMEWORK (migrações no repositório, banco.md §5)
 #####################################################################
 Laravel:   sessions · cache · cache_locks · jobs · job_batches · failed_jobs · password_reset_tokens
-           · notifications (RN-PRJ-21: aviso no sistema)
+           · notifications (P22: aviso de atribuição, só no sistema)
 Passport:  oauth_clients · oauth_access_tokens · oauth_refresh_tokens · oauth_auth_codes
            · oauth_device_codes (D-IA-07)
-Colunas: as do pacote, sem alteração. Os campos padrão do Laravel em users que o Hub não usa
-(email_verified_at, remember_token) NÃO entram.
+E-mail (convite .ics e resumo diário do CRM, C9) sai pelo Mail do Laravel, sem tabela.
+Colunas: as do pacote, com data e hora em datetime (banco.md §3). Os campos padrão do Laravel em users
+que o Hub não usa (email_verified_at, remember_token) NÃO entram.
 
 
 #####################################################################
 #  5. O QUE CHAMADOS ACRESCENTA (não criar agora)
 #####################################################################
 Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma migração destrutiva.
-- roles: support, client_contact.  contacts: user_id (login do contato, D-NUC-02).
-- contracts (fora da v1, D-CRM-10) entra como tabela nova: client_id, contract_type_id, name,
-  started_on, ended_on, deactivated_at/by, unique (id, client_id); projects ganha contract_id null com
-  FK composta (contract_id, client_id) → contracts (id, client_id). Mais horas contratadas, período,
-  SLA por prioridade, dias para fechar sozinho (RN-CHM-03, 08, 09): colunas ou tabela contract_slas.
+- roles: support, client_contact.  contacts: user_id (login do contato; na v1 não há, N9).
+- contracts (fora da v1, N10) entra como tabela nova: client_id, service_type_id (a lista da N10),
+  name, started_on, ended_on, deactivated_at/by, unique (id, client_id); projects ganha contract_id
+  null com FK composta (contract_id, client_id) → contracts (id, client_id). Mais horas contratadas,
+  período, SLA por prioridade, dias para fechar sozinho (RN-CHM-03, 08, 09): colunas ou tabela
+  contract_slas. O Hub é a fonte única de contratos (D-CRM-04).
 - audit_channels: email.  ai_scopes: tickets:read, tickets:write.
-- tickets (número por sequência, cliente, contrato, projeto, task_id → coluna Support, F-PRJ-08),
-  filas N1/N2/N3 e despachante, mensagens (com a marca de interna, RN-CHM-05), anexos, e-mails não
-  identificados, apontamento de horas contra o contrato (banco de horas, D-PRJ-18).
-- Reaproveita: clients, contacts (e-mail do remetente), contract_types, contact_channels, task_priorities.
+- tickets (número por sequência, cliente, contrato, projeto, task_id → coluna Support, P52), filas
+  N1/N2/N3 e despachante, mensagens (com a marca de interna, RN-CHM-05), anexos, e-mails não
+  identificados, apontamento de horas contra o contrato (banco de horas, D-CHM-04).
+- Reaproveita: clients, contacts (e-mail do remetente), service_types, contact_channels, task_priorities.
 
 
 #####################################################################
@@ -805,77 +870,81 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 #####################################################################
 6.1  Single-tenant: sem enterprise_id. Escopo por papel + vínculo (alocação, dono do lead).
 6.2  FKs só em uma direção: Projetos → Platform, CRM → Platform (D-GER-15).
-6.3  Etapa livre com papel fixo no quadro, no funil (outcome) e no pacote: renomeia à vontade,
-     o indicador lê o papel. O papel da etapa não muda depois de usada.
-6.4  Quem fez = audit_logs. Coluna de pessoa só quando uma regra a lê (seção 0).
-6.5  Nada de cache: status e marcos se derivam. Fotos só onde a RN-PRJ-17 manda.
-6.6  Contato é um cadastro só no Núcleo; o CRM liga lead a contato (CRM-03).
+6.3  Etapa livre com papel fixo no quadro (P11), no funil (outcome, C1) e no pacote (P42): renomeia à
+     vontade, o indicador lê o papel. O papel da etapa não muda depois de usada (T1).
+6.4  Quem fez = audit_logs (D-GER-20). Coluna de pessoa só quando uma regra a lê (seção 0).
+6.5  Nada de cache: status e marcos se derivam. Fotos só onde a N3 manda.
+6.6  Contato é um cadastro só no Núcleo; o CRM liga lead a contato (N8).
 6.7  Tarefa aponta para sprint e pacote atuais (uma coluna cada). Troca de sprint e saída do
-     pacote ficam em audit_logs: nenhuma regra pede a lista histórica em tabela.
-6.8  Critério de aceite e item do roteiro são a mesma linha: 1 critério = 1 item (F-PRJ-14).
+     pacote ficam em audit_logs: nenhuma regra pede a lista histórica em tabela (T3).
+6.8  Critério de aceite e item do roteiro são a mesma linha: 1 critério = 1 item (P36).
 6.9  Chave da tarefa: key gravada + contador atômico (T4) + unique (project_id, number).
+6.10 Sem trava no fluxo de Projetos (premissa): nenhuma coluna de configuração existe só para recusar
+     movimento, e o Service não confere capacidade, dev, horas, PR nem parecer para mover card.
+6.11 Sem deleted_at (banco.md §4, G2): cadastro com histórico se desativa, card com histórico se
+     arquiva, e só o que nunca foi usado se exclui de verdade.
 
 
 #####################################################################
-#  7. RESPOSTAS DO LUCAS SCHOLZ → onde estão na necessidade
-#  A regra de negócio mora em docs/necessidade.md (tabela "Decisões registradas"). Aqui só o mapa,
-#  para os códigos citados neste arquivo continuarem rastreáveis. Técnicas ficam na seção 9.
-#####################################################################
-DB-01  → D-GER-21 (MySQL 8)             DB-02  → técnica: collation ai_ci (seção 0)
-DB-03  → técnica: unique "só entre ativos" por coluna gerada (T1)
-NUC-01 → D-NUC-01    NUC-02 → D-NUC-02    NUC-03 → D-NUC-03    NUC-04 → D-NUC-04
-NUC-05 → saiu no enxugamento (endereço: nenhuma regra usa)
-IA-01  → técnica: papel × escopo no código    IA-02 → D-IA-08, RN-IA-10    IA-03 → D-IA-09
-PRJ-01 → D-PRJ-18 (contrato fora da v1, D-CRM-10)    PRJ-02 → D-PRJ-26    PRJ-03 → técnica (T4)
-PRJ-04 → D-PRJ-22, SUBSTITUÍDA por D-PRJ-27 (horas da tarefa inteira, pelo gestor)
-PRJ-05 → RN-PRJ-20 (roteiro reaproveitado)   PRJ-06 → D-PRJ-22    PRJ-07/08/11 → D-PRJ-21
-PRJ-09 → D-PRJ-19    PRJ-10 → D-PRJ-20    PRJ-12 → D-PRJ-23    PRJ-13 → D-PRJ-22    PRJ-14 → D-PRJ-24
-CRM-01/02/03 → D-CRM-06    CRM-04 → D-CRM-07    CRM-05/07 → D-CRM-08    CRM-06 → D-CRM-09
-Enxugamento validado (D-GER-20): contato com e-mail e telefone; contrato com nome e datas (depois da v1); restringir
-etapa a função é v1+ (D-PRJ-25); lead sem valor e sem previsão até o comercial definir os campos
-mínimos. "Tarefa usada fica no Backlog" foi SUBSTITUÍDO por arquivar com motivo (D-PRJ-31).
-Revisão da etapa 2 (24/09): 1 dev + QA e horas pelo gestor (D-PRJ-27), data da tarefa inteira
-(D-PRJ-28), datas do projeto (D-PRJ-29), capacidade pelas horas que faltam (D-PRJ-30), arquivar
-tarefa (D-PRJ-31), lead ganho sem contrato (D-CRM-10), resumo_do_cliente por papel (D-IA-10).
-
-
-#####################################################################
-#  8. REVISÃO DE ENXUGAMENTO (24/09) — o que saiu e por quê
+#  7. REVISÃO DE ENXUGAMENTO (24/09) — o que saiu e por quê
 #  Fica até a aprovação do Lucas Alencar, para ele ver o que saiu. Depois sai: o git guarda.
 #####################################################################
-Critério: saiu tudo o que nenhuma regra do requisito lê ou grava. Volta com pedido e motivo.
-Voltaram depois, com regra: projects.starts_on/due_on (D-PRJ-29), sprints.goal (D-PRJ-23),
-arquivamento de tarefa com motivo (D-PRJ-31, no lugar do cancelamento).
+Critério: saiu tudo o que nenhuma regra do requisito lê ou grava (G5). Volta com pedido e motivo.
+Voltaram depois, com regra: projects.starts_on/due_on (P2), sprints.goal (P45), arquivamento de
+tarefa com motivo (P26, no lugar do cancelamento). Na Sessão C: sprints.closed_at e "uma sprint
+aberta por projeto" (P45, P50), leads.value (C2), leads.deactivated_at/by (C16),
+lead_interactions.contact_id (C5), semente de lead_sources (C2), índice em contacts.email (N8).
+
+Saiu na Sessão C (premissa sem trava; padrão 0.4.0)
+- projects: require_assignee_out_of_backlog (tarefa sem dev entra na sprint, P20),
+  enforce_sprint_capacity (a capacidade é só referência, P49) e require_pr_for_code_review (nenhuma
+  regra exige PR, P23).
+- tasks: "developer_id vazio só no Backlog" e "qa_id obrigatório com QA ligado" (P20);
+  estimated_hours obrigatório (P27).
+- sprints: "entra só tarefa do To do cujo dev está no time" e a recusa por capacidade, com o
+  lockForUpdate em sprint_members (P49).
+- task_validations: claimed_at, validated_at (é o created_at da linha) e a trava de "puxar" teste
+  cruzado; a linha nasce com o parecer. validation_results: o valor pending, que só servia à linha
+  puxada e ainda sem parecer.
+- packages: "só tarefa em Done entra", "em homologação não recebe tarefa" (P41, P42) e "reprovada na
+  homologação sai do pacote" (P43).
+- lead_audit_sizings: price (o preço é o valor do lead, C12).
+- deleted_at em tasks e leads, que o anexo da revisão 4 previa: o padrão 0.4.0 não aceita soft delete
+  (banco.md §4). Decisão do Lucas Scholz na Sessão C: card com histórico se arquiva, e lead se
+  desativa (G2, P26, C16).
+- rework_reasons: a marca "[validar com Rafael]" da lista padrão (P40).
 
 Saiu porque ninguém pediu o dado
 - users: phone, avatar_path, last_login_at (o login está em audit_logs), email_verified_at e
   remember_token (usuário é convidado pelo admin; "lembrar de mim" não foi pedido).
 - clients: razão social + nome fantasia viraram um só name; is_internal, industry, e-mail,
   telefone, site, endereço (7 colunas), notes, document_label.
-- contacts: job_title, mobile, is_primary, notes, unique de e-mail.
+- contacts: job_title, mobile, is_primary, notes, unique de e-mail (a N8 avisa, não recusa).
 - contracts: code, billing_cycle, currency, amount, hourly_rate, notes, contract_statuses
   (faturamento está fora da v1; "ativo" sai das datas). Horas contratadas vão para Chamados.
-- projects: description, project_statuses (só "encerrado" foi pedido: finished_at), project_modalities (virou boolean).
+- projects: description, project_statuses (só "encerrado" foi pedido: finished_at), project_modalities
+  (virou boolean).
 - board_stages e funnel_stages: color, wip_limit.
-- tasks: cancelamento (cancelled_at/by/reason; voltou como arquivamento), stage_entered_at, started_at, done_at,
-  due_on_calculated_at (tudo derivável dos movimentos).
+- tasks: cancelamento (cancelled_at/by/reason; voltou como arquivamento, P26), stage_entered_at,
+  started_at, done_at, due_on_calculated_at (tudo derivável dos movimentos).
 - time_entries: função e descrição.
 - task_estimates, task_assignments e work_functions inteiras: a tarefa tem 1 dev e 1 QA e as horas
-  previstas são da tarefa (D-PRJ-27) → tasks.developer_id, tasks.qa_id, tasks.estimated_hours.
+  previstas são da tarefa (P20, P27) → tasks.developer_id, tasks.qa_id, tasks.estimated_hours.
 - task_pull_requests: provider, repositório, número, título e status do PR (só entram com o
   webhook, D-GER-13). Saiu pull_request_statuses.
-- packages: datas de homologação, homologado por, notas de versão (F-PRJ-03 é v1+). Estado
+- packages: datas de homologação, homologado por, notas de versão (P55 é depois da v1). Estado
   "cancelado" do pacote.
-- sprints: número, dias úteis, encerramento, status (tabela sprint_statuses) e a regra
-  "1 sprint em andamento por projeto" — nada disso foi pedido.
-- leads: nome fantasia, setor, site, cidade, UF, detalhe da origem, valor estimado, moeda,
-  previsão de fechamento, datas de ganho/perda, data da situação, contrato gerado, arquivamento.
-  (Valor e previsão entram quando o comercial definir os "campos mínimos do lead", ainda [LEVANTAR].)
-- lead_interactions: com quem, quem registrou, situação gravada junto, marca de edição, remoção.
+- sprints: número, dias úteis, status (tabela sprint_statuses). O encerramento e "uma sprint aberta
+  por projeto" voltaram na Sessão C (P45, P50).
+- leads: nome fantasia, setor, site, cidade, UF, detalhe da origem, moeda, previsão de fechamento
+  (fora da v1, C2), datas de ganho/perda, data da situação, contrato gerado, arquivamento. O valor
+  voltou na Sessão C (C2).
+- lead_interactions: quem registrou, situação gravada junto, marca de edição, remoção. "Com quem
+  falou" voltou na Sessão C (C5).
 - appointments: título, status (virou completed_at/cancelled_at), UID gravado (sai do id), data do
   último convite, quem cancelou.
-- audit_logs: context, ip, user_agent, request_id. ai_authorizations: apelido, último uso, motivo e
-  autor da revogação. ai_tool_calls: user_id (sai da autorização), kind, duration_ms.
+- audit_logs: context, ip, user_agent, request_id (ver T8). ai_authorizations: apelido, último uso,
+  motivo e autor da revogação. ai_tool_calls: user_id (sai da autorização), kind, duration_ms.
 - Todas as colunas created_by, added_by, assigned_by, estimated_by, removed_by, closed_by e
   sort_order (seção 0).
 
@@ -883,10 +952,10 @@ Saiu porque era tabela para algo que uma coluna resolve
 - settings (limites de IA, horário do resumo e retenção vão para config/.env; "ajustável" não pede
   tela). lead_statuses (sai do outcome da etapa). funnel_stage_roles (virou outcome).
   sprint_tasks e package_tasks (viraram tasks.sprint_id e tasks.package_id). test_items (é o
-  próprio critério). pause_reasons (o requisito pede motivo, não lista: é texto).
+  próprio critério). pause_reasons (a P15 pede motivo, não lista: é texto).
   request_channels + interaction_channels (viraram um contact_channels só). industries e
   audit_sizing_questions/answers (o DaaS guarda setor em texto e as 5 respostas em colunas).
-  holidays (D-PRJ-22). Oportunidades (D-CRM-07).
+  holidays (P29). Oportunidades (fora da v1 no CRM).
 - attachments e comments polimórficos do Núcleo viraram task_attachments e task_comments: na v1 só
   a tarefa tem anexo e comentário. Chamados terá os dele.
 - Papéis support e client_contact, canais system e email, escopos tickets:*, assistente
@@ -894,18 +963,18 @@ Saiu porque era tabela para algo que uma coluna resolve
 
 
 #####################################################################
-#  9. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
+#  8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 #  Decididas para seguir. O Lucas Alencar corrige na revisão geral se discordar.
 #####################################################################
 T1  Regras que o banco não trava sozinho ficam no Service, cobertas por teste automatizado:
-    papel da etapa não muda depois de usada; critério só se exclui antes de testado.
+    papel da etapa não muda depois de usada; critério só se exclui antes de testado; uma sprint
+    aberta por projeto (P45); card e cadastro só se excluem de verdade se nunca usados (banco.md §4).
     Onde dá para travar no banco, trava: no máximo 1 etapa won e 1 lost ativas no funil
     (funnel_stages.final_key, coluna gerada + unique). "Pelo menos 1" fica no Service.
-    Capacidade da sprint: conferência em transação com sprint_members travado (lockForUpdate),
-    contra corrida de duas inclusões simultâneas (banco.md §8).
+    Saiu na Sessão C: a trava de capacidade da sprint com lockForUpdate (a capacidade é só
+    referência, P49).
 T2  task_validations sem número de rodada: vale a linha mais recente de cada tipo. O indicador de
-    retrabalho lê task_stage_movements. Puxar teste cruzado trava a linha e recusa se já houver
-    alguém; nova linha do mesmo tipo só depois de reprovada a anterior.
+    retrabalho lê task_stage_movements. Sem trava de "puxar" (revisão 4): a linha nasce com o parecer.
 T3  tasks.sprint_id e tasks.package_id no lugar de tabelas de vínculo; troca de sprint e saída do
     pacote ficam em audit_logs. Se um dia pedirem "tarefas que passaram de sprint", cria-se a
     tabela de vínculo e o passado é reconstruído do antes/depois de audit_logs.
@@ -914,9 +983,9 @@ T4  Chave da tarefa por contador no projeto (o MySQL não tem sequência por gru
         UPDATE projects SET last_task_number = LAST_INSERT_ID(last_task_number + 1) WHERE id = ?;
         SELECT LAST_INSERT_ID();
     Sem ler-e-gravar. unique (project_id, number) é a segunda trava. Transação que falha desfaz o
-    contador junto: não sobra buraco.
+    contador junto: não sobra buraco. Card excluído de verdade (P26) não devolve o número (P16).
 T5  ai_tool_calls: limpeza de 180 dias pelo prune agendado do Laravel (Prunable + model:prune),
-    em lotes. audit_logs não tem limpeza (NUC-04).
+    em lotes. audit_logs não tem limpeza (G3).
     Parâmetros em config/hub.php com padrão e override por .env: 60 leituras/min, 20 escritas/min,
     180 dias de retenção, horário do resumo diário do CRM.
     Limite de chamadas contado por autorização de IA (ai_authorization_id), não por usuário: um
@@ -937,55 +1006,56 @@ T7  Integridade por projeto. Nada no banco garante que etapa, sprint, pacote e �
     packages. Com 1 dev por tarefa, dá também (project_id, developer_id) e (project_id, qa_id) →
     project_members (project_id, user_id).
 T8  IP na auditoria. audit_logs perdeu ip e user_agent no enxugamento; o template tem os dois.
-    RN-NUC-03 registra tentativa negada e RN-IA-06 fala em "token roubado": sem IP não há como
-    investigar. Recomendo: manter ip varchar(45) null (user_agent opcional).
+    A G3 registra tentativa negada; sem IP não há como investigar uma conexão de IA roubada.
+    Recomendo: manter ip varchar(45) null (user_agent opcional).
 T9  Código CA_n estável. Hoje sai de task_acceptance_criteria.position: reordenar ou excluir
     renumera, e o "CA_3" do documento de requisição e da evidência passa a apontar outro critério.
     Recomendo: coluna number gravada + unique (task_id, parent_id, number).
 T10 Dados duplicados. Recomendo tirar ou travar:
-    - tasks.key: o prefixo congela (D-PRJ-26), então key = prefixo + number. "SGM-17" se acha por
+    - tasks.key: o prefixo congela (P3), então key = prefixo + number. "SGM-17" se acha por
       key_prefix (unique) + (project_id, number). Recomendo tirar a coluna.
     - leads.company_name/country/document com client_id preenchido repetem o cliente. Recomendo:
       definir se é foto do momento ou se some quando há client_id.
     - appointments.lead_id + client_id: com lead de cliente, o cliente se repete. Recomendo check
-      "um OU outro" (D-CRM-09).
+      "um OU outro" (C7).
     - audit_logs.audit_channel_id sai de ai_authorization_id (null = tela). task_stage_movements
       .moved_by e .audit_channel_id repetem o audit_logs do mesmo movimento. Recomendo: uma fonte só
       para "quem moveu".
     - Domínios gêmeos: test_results ≈ validation_results; rework_origins = validation_types +
       homologação; ai_assistants ↔ audit_channels (1:1). Recomendo juntar, a critério.
-T11 contacts sem índice em email: o "cadastro único" (D-CRM-06) depende só da busca. Recomendo índice
-    em email (sem unique) e aviso de possível duplicado no Service.
+T11 RESOLVIDA pelas regras (N8, revisão 4): contacts.email ganhou índice (sem unique) e o Service
+    avisa de possível duplicado. Sai na aprovação.
 
 
 #####################################################################
-#  10. DIFERENÇA PARA O TEMPLATE ai-systems (v0.3.0)
+#  9. DIFERENÇA PARA O TEMPLATE ai-systems (0.4.0)
 #  O Hub nasce clonando o template (etapa 3). Estas são as tabelas que o template já traz e o que
 #  acontece com cada uma. O código do template que lê essas colunas muda junto na etapa 3:
 #  models User e Enterprise, EnterprisePolicy, Scoping, DashboardService, HandleInertiaRequests,
-#  controllers e requests de Admin, CreateAdminCommand, seeders e e2e.
+#  controllers e requests de Admin, CreateAdminCommand, seeders e e2e. O trait Deactivatable e o
+#  LocalTime ficam e passam a servir clients, contacts, leads e as listas cadastráveis.
 #####################################################################
-user_types                → vira roles (id, slug, label): 4 papéis fixos (D-NUC-03).
+user_types                → vira roles (id, slug, label): 4 papéis fixos (N2).
 users                     user_type_id → role_id.
                           Saem: document, phone, email_verified_at, last_login_at, remember_token
-                          (seção 8; o login fica em audit_logs).
-                          active (boolean) + deleted_at (softDeletes) → deactivated_at +
-                          deactivated_by (banco.md §4, RN-NUC-02).
-                          email e password: de null para not null (usuário é convidado pelo admin).
-                          Ficam: name, must_change_password. Entra: daily_hours.
+                          (seção 7; o login fica em audit_logs, e o hasHistory() de User passa a
+                          ler o login de lá).
+                          email e password: de null para not null (N1: usuário é convidado pelo admin).
+                          Ficam: name, must_change_password, deactivated_at, deactivated_by (já no
+                          template 0.4.0). Entra: daily_hours (null, N3).
 enterprises               → SAI. Single-tenant (6.1). A tela de empresas do template (o gabarito de
-                          CRUD) serve de base para a de clients; parent_enterprise_id, nickname e
-                          active não passam.
+                          CRUD, com a desativação da 0.4.0) serve de base para a de clients;
+                          parent_enterprise_id e nickname não passam.
 user_has_enterprises      → SAI (sem escopo por empresa; o escopo é papel + alocação, 6.1).
 audit_logs                before_data + after_data → changes {"campo": [antes, depois]}.
                           Entram: audit_channel_id, ai_authorization_id, outcome.
                           auditable_id: de not null para null (negação antes de achar o registro).
-                          user_id: de nullOnDelete para restrict (usuário não se exclui, RN-NUC-02).
+                          user_id: de nullOnDelete para restrict (usuário com histórico não se
+                          exclui, G2).
                           ip_address e user_agent: saem nesta proposta; ver T8.
 password_reset_tokens,
 sessions, cache,
 cache_locks, jobs,
-job_batches, failed_jobs  → ficam como estão.
-Todas as colunas de data e hora, inclusive created_at/updated_at do template: TIMESTAMP → DATETIME
-(seção 0; TIMESTAMP acaba em 2038).
-Entram do zero: notifications (Laravel) e as tabelas do Passport (seção 4).
+job_batches, failed_jobs  → ficam como estão (a 0.4.0 já usa datetime e Unix time em bigint).
+Entram do zero: notifications (Laravel) e as tabelas do Passport (seção 4), com as migrações
+publicadas e ajustadas para datetime (o DateTimeConventionsTest do template recusa timestamps()).
