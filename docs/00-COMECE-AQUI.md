@@ -8,14 +8,14 @@ Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **P
 
 ## Estado atual
 
-Atualizado em 2026-09-24.
+Atualizado em 2026-09-29.
 
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Reescrita na Sessão C (24/09)** com as regras aprovadas por Lucas Scholz na revisão 4: códigos G, N, P, C e IA, e a tabela de decisões só com decisões de projeto. As lacunas fechadas pela premissa foram confirmadas por Lucas Scholz em 24/09. Na Sessão D (24/09) saíram P4 e P6 e foram completadas N5, P11, P25 e P42. Próximo: Comitê de IA. Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
 | 2. Banco | **Revisado por Lucas Scholz na Sessão D (24/09), tabela por tabela: 41 tabelas.** Antes: Sessão C (códigos novos, exclusão pelo padrão 0.4.0) e T6–T10 respondidas. O que mudou na Sessão D está no `banco.txt`, seção 7. As colunas geradas novas e a correção do T9 foram testadas no MySQL 8.4. **Próximo:** aprovação do Lucas Alencar (D-GER-01), depois o Comitê (D-GER-16) | `docs/banco.txt` |
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
-| 3. Repositório | Ainda não. Hoje este repo só tem `docs/`, com **backup privado na conta pessoal** (`lucas-scholz-91/wcj-hub`). Depois de banco e escopo validados, cria-se o repositório **na organização WCJ** com o template (etapa 3) | https://github.com/lucas-scholz-91/wcj-hub |
+| 3. Repositório | **Na organização WCJ desde 29/09**, privado, só com `docs/` e o histórico inteiro, para o Comitê de IA validar (decisão do Lucas Scholz: validam e a gente altera se precisar). O template `ai-systems` 0.4.0 entra na etapa 3, depois de banco e escopo validados. O backup antigo na conta pessoal (`lucas-scholz-91/wcj-hub`) deixou de ser a fonte | https://github.com/WCJ-Tecnologia/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
 | `core/mcp.md` no padrão | **Publicado** no `ai-systems` 0.3.0 (PR #4) | `~/Documents/Projetos/WCJ/ai-systems/.ai/core/mcp.md` |
 
@@ -72,4 +72,4 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 1. Lucas Alencar revisa e aprova o `banco.txt` (D-GER-01). As perguntas T6–T10 já foram respondidas por Lucas Scholz; ele corrige se discordar. Aprovado, as seções 7 e 8 saem do arquivo.
 2. Comitê de IA valida necessidade e banco (D-GER-16).
 3. Lucas Scholz faz a prova de conceito do MCP (D-GER-17), antes da etapa 4. Inclui ver se Claude app e Claude Code (e Codex CLI e Codex no app) dividem a mesma conexão (`necessidade.md`, "Em aberto").
-4. Etapa 3: repositório na organização WCJ, a partir do template `ai-systems` 0.4.0.
+4. Etapa 3: aplicar o template `ai-systems` 0.4.0 neste repositório (já na organização WCJ).
