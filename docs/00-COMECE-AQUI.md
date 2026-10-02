@@ -8,7 +8,7 @@ Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **P
 
 ## Estado atual
 
-Atualizado em 2026-09-29.
+Atualizado em 2026-10-01.
 
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
@@ -19,6 +19,8 @@ Atualizado em 2026-09-29.
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
 | `core/mcp.md` no padrão | **Publicado** no `ai-systems` 0.3.0 (PR #4) | `~/Documents/Projetos/WCJ/ai-systems/.ai/core/mcp.md` |
 
+**Revisão de 01/10/2026** ([`docs/revisoes/2026-10-01-revisao-fable.md`](revisoes/2026-10-01-revisao-fable.md)): proposta de fatiar a v1 (Núcleo + Projetos primeiro; CRM e GPT do Wilson na v2), reverter quatro regras de uso (P56, P22, card rápido, sprint sem cerimônia), trilho leve e enxugar a fatia 1 para 27 tabelas e 6 ferramentas MCP. **Aguarda decisão de Lucas Scholz, item por item (R1 a R17); nada foi aplicado na necessidade nem no banco.** Ler antes do passo 1 abaixo: se a v1 for fatiada, Lucas Alencar revisa 27 tabelas, não 41.
+
 ## Hierarquia dos documentos
 
 1. **Tabela "Decisões registradas"** no topo do `docs/necessidade.md`: vence qualquer texto mais abaixo e qualquer ata. Guarda só decisões de projeto.
@@ -27,6 +29,7 @@ Atualizado em 2026-09-29.
 4. **`docs/atas/`**: o que foi dito em cada reunião (fonte, não resumo final).
 5. **`docs/levantamento/`**: análises de apoio (Trello, modelos, fluxo de desenvolvimento).
 6. **`docs/pautas/`**: histórico de preparação; não é requisito. Os códigos antigos citados lá (RN-…, D-PRJ-…) não valem mais.
+7. **`docs/revisoes/`**: revisões propostas, com tabela de decisão. Não é requisito até ser aplicado na `necessidade.md` e no `banco.txt`.
 
 ## Decisões que foram revertidas (não usar)
 
