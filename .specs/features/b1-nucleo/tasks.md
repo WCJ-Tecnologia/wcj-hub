@@ -982,8 +982,8 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Spec passa na suíte inteira
-- [ ] Gate check passes: Build
+- [x] Spec passa na suíte inteira
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build
