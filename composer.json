@@ -37,11 +37,13 @@
     },
     "scripts": {
         "setup": [
-            "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "docker compose up -d --wait mysql || echo 'docker compose indisponivel: suba um MySQL 8 local (AGENTS.md, Como rodar)'",
+            "composer install",
             "@php artisan key:generate",
             "@php -r \"file_exists('storage/oauth-private.key') || passthru('php artisan passport:keys --no-interaction');\"",
             "@php artisan migrate:fresh --seed --force",
+            "@php artisan db:seed --class=ExemploSeeder --force",
             "npm install",
             "npm run build"
         ],
