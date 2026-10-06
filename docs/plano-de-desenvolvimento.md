@@ -8,6 +8,7 @@ Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz
 |---|---|
 | **Cauã** | Desenvolve blocos (com IA: Claude Code ou Codex, no padrão `ai-systems`). Faz o teste cruzado dos PRs do Vitinho. |
 | **Vitinho** | Desenvolve blocos, do mesmo jeito. Faz o teste cruzado dos PRs do Cauã. |
+| **Lucas Varanda** | Front-end. Tema da marca e fontes no template (`docs/brand/`), shell e os componentes que o Hub pede e o template não tem (kanban, ficha do card, roteiro de QA, linha do tempo), propostos antes de B3 e B5. Revisa o front dos PRs dos blocos (D-GER-29). |
 | **Lucas Scholz** | Dono do produto. Aprova funcional (F1, F8), spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. |
 | **Rafael Garcia** | Dono de Projetos. Aprova os funcionais F2 a F7 e responde os "pontos a validar"; faz o bugbash no quadro Wpay; homologa. |
 | **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.txt` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
@@ -21,9 +22,9 @@ Dois trilhos em paralelo. Um bloco começa quando o funcional dele está aprovad
 
 | Onda | Cauã | Vitinho | Lucas Scholz | Entra na `main` |
 |---|---|---|---|---|
-| 0 | Prepara a máquina (seção 4); lê os docs; sobe o B0 local | Idem | **B0** repositório, migrações, sementes, CI em MySQL 8 (com IA) ∥ **prova de conceito do MCP** | B0 |
+| 0 | Prepara a máquina (seção 4); lê os docs; sobe o B0 local | Idem | **B0** repositório, migrações, sementes, CI em MySQL 8 (com IA) ∥ **prova de conceito do MCP**. Lucas Varanda: tema da marca + fontes sobre o B0 (`docs/brand/`) | B0, tema |
 | 1 | **B1** Núcleo (trilho completo) | **B2** Projeto e configuração (leve) | Aprova as specs; revisa; cobra o Rafael pelos funcionais F3 a F7 | B1, B2 |
-| 2 | **B3** Quadro e card (leve, com piso completo em excluir e arquivar) | **B5** Sprint, horas e data prevista (leve); integração "arrastar para o To do" fecha quando o B3 entrar | Revisa; configura SMTP Zoho; alinha VPS com o Alaor | B3, B5 |
+| 2 | **B3** Quadro e card (leve, com piso completo em excluir e arquivar) | **B5** Sprint, horas e data prevista (leve); integração "arrastar para o To do" fecha quando o B3 entrar | Revisa; configura SMTP Zoho; alinha VPS com o Alaor. Lucas Varanda entrega antes: componentes de kanban, ficha do card e diálogo de sprint | B3, B5 |
 | 3 | **B4** Teste e QA, depois **B6** Pacote (leves) | **B7** Indicadores (leve, funções puras com teste) | Revisa; prepara homologação (B10 parcial) | B4, B6, B7 |
 | 4 | **B8** Conexões de IA (trilho completo), com o Lucas | **B9** Segurança + `docs/DEPLOY.md` | Testa o MCP com cada assistente | B8, B9 |
 | 5 | Correções do bugbash | Correções do bugbash | **B10**: homologação pública → bugbash com o Rafael no quadro Wpay → produção | Produção |
@@ -117,6 +118,7 @@ P13, P14, P15 (motivo da pausa), ... Onde: Projetos\Services\TaskService::move.
 - [ ] Prova de conceito do MCP (D-GER-17): servidor mínimo, OAuth, uma ferramenta de leitura e uma de escrita, em Claude app, Claude Code, Codex e ChatGPT Pro. Registrar o resultado em `docs/atas/` e fechar os "Em aberto" da `necessidade.md`.
 - [ ] Credenciais do SMTP Zoho num cofre (não no repo) para o B3.
 - [ ] Reunião de 30 minutos com Cauã e Vitinho: este plano, o rito, a divisão da onda 1, o canal de dúvidas, o prazo combinado.
+- [ ] Passar ao Lucas Varanda o `docs/brand/README.md` (a lista do que fazer está lá, na ordem) e combinar quando o tema entra em relação ao B0.
 - [ ] Alinhar com o Alaor a VPS (D-GER-19): espaço, MySQL 8 em container, backup, DNS `hub.wcjtecnologia.com.br`.
 - [ ] Combinar com o Rafael a data do bugbash no quadro Wpay (depois de B0 a B3 em homologação).
 

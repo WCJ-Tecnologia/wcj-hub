@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WCJ Tecnologia — Brand Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#1A6CF3; --blue-bright:#4D90FF; --blue-deep:#0F4FC4; --blue-tint:#E9F1FE;
+    --ink:#0C0E13; --navy:#070B16; --cool-50:#F5F7FB; --muted:#5B6273;
+    --alert:#FF5A45; --alert-text:#D12B15; --line:#DDE3EC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hanken Grotesk',sans-serif;color:var(--ink);background:var(--cool-50);line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.03em;line-height:1.05}
+  .mono{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em}
+  section{padding:72px 0}
+  .eyebrow{display:flex;align-items:center;gap:14px;color:var(--blue);font-size:.72rem;margin-bottom:18px}
+  .eyebrow::after{content:"";height:1px;flex:1;background:rgba(26,108,243,.3)}
+
+  /* HERO (navy) */
+  .hero{background:var(--navy);color:var(--cool-50);position:relative;overflow:hidden;padding:96px 0 88px}
+  .hero h1{font-size:clamp(2.6rem,6vw,5rem);color:#fff}
+  .hero p{max-width:560px;margin-top:22px;color:#aeb6c6;font-size:1.05rem}
+  .hero .tag{color:var(--blue-bright)}
+  .hero .trilha{position:absolute;left:60%;bottom:44px;height:210px;pointer-events:none}
+  @media(max-width:900px){.hero{padding-bottom:170px}.hero .trilha{left:34%;bottom:26px;height:110px}}
+  .stat{margin-top:40px;display:inline-flex;flex-direction:column;background:rgba(255,255,255,.04);border:1px solid rgba(77,144,255,.25);border-radius:14px;padding:20px 26px}
+  .stat b{font-family:'Space Mono',monospace;font-size:2.4rem;color:var(--blue-bright);line-height:1}
+  .stat span{font-size:.7rem;margin-top:8px;color:#aeb6c6}
+
+  /* PALETTE */
+  .grid{display:grid;gap:18px}
+  .swatches{grid-template-columns:repeat(4,1fr)}
+  .sw{border-radius:14px;overflow:hidden;border:1px solid rgba(12,14,19,.08);background:#fff}
+  .sw .chip{height:104px}
+  .sw .meta{padding:12px 14px}
+  .sw .name{font-weight:600;font-size:.9rem}
+  .sw .hex{font-family:'Space Mono',monospace;font-size:.74rem;color:var(--muted);margin-top:3px}
+  .sw .use{font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.35}
+  @media(max-width:760px){.swatches{grid-template-columns:repeat(2,1fr)}}
+
+  /* TYPE (dark) */
+  .dark{background:var(--ink);color:var(--cool-50)}
+  .dark .eyebrow{color:var(--blue-bright)}
+  .dark .eyebrow::after{background:rgba(77,144,255,.3)}
+  .type-row{padding:26px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .type-row:last-child{border-bottom:none}
+  .type-label{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;font-size:.7rem;color:var(--blue-bright);margin-bottom:10px}
+  .sg{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.03em;font-size:clamp(2rem,5vw,3.4rem);color:#fff}
+  .hk{font-family:'Hanken Grotesk',sans-serif;font-size:1.05rem;color:#cdd4e0;max-width:640px}
+  .smn{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.12em;color:var(--blue-bright)}
+
+  /* CARDS */
+  .cards{grid-template-columns:repeat(3,1fr)}
+  .card{background:#fff;border:1px solid rgba(12,14,19,.08);border-radius:16px;padding:26px}
+  .card .node{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 5px rgba(26,108,243,.15);margin-bottom:16px}
+  .card h3{font-size:1.12rem;margin-bottom:8px}
+  .card p{font-size:.92rem;color:var(--muted)}
+  @media(max-width:760px){.cards{grid-template-columns:1fr}}
+
+  /* BLUE band */
+  .band{background:var(--blue);color:#fff}
+  .band .eyebrow{color:rgba(255,255,255,.85)}
+  .band .eyebrow::after{background:rgba(255,255,255,.4)}
+  .band h2{font-size:clamp(1.8rem,4vw,2.6rem);max-width:720px}
+  .band p{margin-top:16px;max-width:640px;color:rgba(255,255,255,.9)}
+
+  /* NOT */
+  .nots{grid-template-columns:repeat(2,1fr);gap:14px}
+  .not{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid rgba(209,43,21,.22);border-left:3px solid var(--alert-text);border-radius:12px;padding:16px 18px}
+  .not .x{color:var(--alert-text);font-family:'Space Mono',monospace;font-weight:700}
+  .not span{font-size:.92rem}
+  @media(max-width:760px){.nots{grid-template-columns:1fr}}
+
+  /* LOGO */
+  .logos{grid-template-columns:repeat(3,1fr)}
+  .lg{border-radius:14px;overflow:hidden;border:1px solid rgba(12,14,19,.08);background:#fff}
+  .lg .palco{height:150px;display:grid;place-items:center;padding:18px}
+  .lg .palco img{max-width:100%;max-height:100%;display:block}
+  .lg .palco.escuro{background:var(--navy)}.lg .palco.azul{background:var(--blue)}.lg .palco.frio{background:var(--cool-50)}
+  .lg .meta{padding:12px 14px;border-top:1px solid rgba(12,14,19,.08)}
+  .lg .name{font-weight:600;font-size:.9rem}
+  .lg .use{font-size:.78rem;color:var(--muted);margin-top:4px;line-height:1.4}
+  .regras{grid-template-columns:repeat(2,1fr);margin-top:18px}
+  .regra{background:#fff;border:1px solid rgba(12,14,19,.08);border-radius:16px;padding:22px 24px}
+  .regra h3{font-size:1.05rem;margin-bottom:8px}
+  .regra p,.regra li{font-size:.92rem;color:var(--muted)}
+  .regra ul{padding-left:18px;margin-top:4px}
+  .regra li{margin:4px 0}
+  .regra b{color:var(--ink);font-weight:600}
+  .protecao{position:relative;display:block;background:var(--cool-50);border-radius:10px;margin-top:12px;overflow:hidden}
+  .protecao img{display:block;width:100%}
+  .protecao::after{content:"";position:absolute;inset:9.64% 3.89%;border:1.5px dashed var(--blue)}
+  @media(max-width:760px){.logos{grid-template-columns:1fr}.regras{grid-template-columns:1fr}}
+
+  /* PALETA: regras, estados e cinzas */
+  h3.sub{font-size:1.18rem;margin:44px 0 6px}
+  h3.sub + p{color:var(--muted);font-size:.95rem;max-width:660px;margin-bottom:16px}
+  .tabela{background:#fff;border:1px solid rgba(12,14,19,.08);border-radius:14px;overflow-x:auto}
+  .tabela table{width:100%;border-collapse:collapse;font-size:.9rem}
+  .tabela th{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;font-size:.66rem;font-weight:700;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .tabela td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tabela tr:last-child td{border-bottom:0}
+  .tabela .hexa{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .ponto{display:inline-block;width:20px;height:20px;border-radius:6px;border:1px solid rgba(12,14,19,.12);vertical-align:middle;margin-right:8px}
+  .selo{display:inline-block;border-radius:8px;padding:5px 10px;font-weight:600;font-size:.86rem;white-space:nowrap}
+  .noite{display:inline-block;background:var(--navy);border-radius:8px;padding:7px}
+
+  /* NÓS */
+  .pecas{grid-template-columns:repeat(2,1fr)}
+  .peca{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--navy);color:#fff}
+  .peca.clara{background:var(--cool-50);color:var(--ink);border:1px solid rgba(12,14,19,.08)}
+  .peca img{position:absolute;pointer-events:none}
+  .peca .trilha{left:49.5%;bottom:5.3%;height:40.6%}
+  .peca .recorte{left:46.5%;top:8.7%;height:100.4%}
+  .peca .txt{position:absolute;left:7%;bottom:22%}
+  .peca .txt .mono{display:block;font-size:.56rem;letter-spacing:.2em;color:var(--blue-bright);margin-bottom:8px}
+  .peca.clara .txt .mono{color:var(--blue-deep)}
+  .peca .txt b{font-family:'Space Grotesk',sans-serif;font-size:clamp(1rem,2.4vw,1.5rem);line-height:1.1;letter-spacing:-.03em;display:block}
+  .legenda{font-size:.86rem;color:var(--muted);margin-top:10px}
+  .legenda b{color:var(--ink)}
+  @media(max-width:760px){.pecas{grid-template-columns:1fr}}
+
+  h2.section-title{font-size:clamp(1.6rem,3.5vw,2.2rem);margin-top:4px}
+  .lead{color:var(--muted);max-width:620px;margin-top:14px;font-size:1rem}
+  footer{padding:40px 0;color:var(--muted);font-size:.8rem;border-top:1px solid rgba(12,14,19,.08)}
+  .footer-mono{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <img class="trilha" src="nos/wcj-trilha-fundo-escuro.svg" alt="">
+  <div class="wrap">
+    <div class="eyebrow mono" style="color:var(--blue-bright)">WCJ Tecnologia · Brand Board</div>
+    <h1>A operação cresceu.<br>A identidade <span class="tag">acompanha.</span></h1>
+    <p>Sistema visual da WCJ — sala de controle limpa. Preto e branco dominam, o azul elétrico é acento afiado, o padrão de nós assina as peças de marca.</p>
+    <div class="stat"><b>#1A6CF3</b><span class="mono">AZUL PRIMÁRIO · ACENTO, NUNCA A TELA TODA</span></div>
+  </div>
+</header>
+
+<!-- LOGO -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow mono">01 — Logo</div>
+    <h2 class="section-title">Um desenho, quatro versões.</h2>
+    <p class="lead">O logo é vetor e usa as cores do sistema. Os arquivos ficam em <span class="mono" style="font-size:.78rem">marca/logo</span> e todos saem do mesmo desenho.</p>
+    <div class="grid logos" style="margin-top:34px">
+      <div class="lg"><div class="palco"><img src="logo/wcj-logo-fundo-claro.svg" alt="Logo WCJ completo, fundo claro"></div><div class="meta"><div class="name">Completo · fundo claro</div><div class="use">Padrão. Azul #1A6CF3 e ink #0C0E13.</div></div></div>
+      <div class="lg"><div class="palco escuro"><img src="logo/wcj-logo-fundo-escuro.svg" alt="Logo WCJ completo, fundo escuro"></div><div class="meta"><div class="name">Completo · fundo escuro</div><div class="use">Azul brilhante #4D90FF e branco, sobre navy ou ink.</div></div></div>
+      <div class="lg"><div class="palco azul"><img src="logo/wcj-logo-branco.svg" alt="Logo WCJ branco"></div><div class="meta"><div class="name">Uma cor</div><div class="use">Branco sobre azul ou foto escura; preto quando só há uma tinta.</div></div></div>
+      <div class="lg"><div class="palco frio"><img src="logo/wcj-logo-horizontal-fundo-claro.svg" alt="Logo WCJ horizontal"></div><div class="meta"><div class="name">Horizontal</div><div class="use">Sem "tecnologia". Para o desenho entre 16 e 40 px de altura.</div></div></div>
+      <div class="lg"><div class="palco"><img src="logo/wcj-simbolo-azul.svg" alt="Símbolo WCJ" style="max-height:74px"></div><div class="meta"><div class="name">Símbolo</div><div class="use">Abaixo de 16 px de altura, ou como elemento gráfico.</div></div></div>
+      <div class="lg"><div class="palco frio"><img src="logo/wcj-icone.svg" alt="Ícone WCJ" style="max-height:92px"></div><div class="meta"><div class="name">Ícone</div><div class="use">Favicon, ícone de app e foto de perfil.</div></div></div>
+    </div>
+    <div class="grid regras">
+      <div class="regra">
+        <h3>Área de proteção</h3>
+        <p>O raio de um nó em toda a volta. Nada de texto, imagem ou borda dentro dela. Os arquivos já trazem essa margem.</p>
+        <span class="protecao"><img src="logo/wcj-logo-fundo-claro.svg" alt="Logo com a área de proteção marcada"></span>
+      </div>
+      <div class="regra">
+        <h3>Tamanho mínimo</h3>
+        <ul>
+          <li><b>40 px de altura ou mais:</b> logo completo.</li>
+          <li><b>De 16 a 40 px:</b> horizontal, sem "tecnologia".</li>
+          <li><b>Menos de 16 px:</b> só o símbolo, ou o ícone.</li>
+        </ul>
+        <h3 style="margin-top:18px">O que não fazer</h3>
+        <ul>
+          <li>Trocar as cores fora das quatro versões.</li>
+          <li>Esticar, inclinar ou redesenhar.</li>
+          <li>Aplicar sombra, contorno, brilho ou degradê.</li>
+          <li>Usar a versão de fundo claro sobre foto ou cor escura.</li>
+          <li>Colar texto ou outro logo dentro da área de proteção.</li>
+          <li>Usar o logo completo abaixo de 40 px.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PALETTE -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow mono">02 — Paleta</div>
+    <h2 class="section-title">Preto e branco dominam. Azul é acento.</h2>
+    <p class="lead">Os neutros sustentam a página; o azul entra onde há decisão (CTA, dado, oferta). O alerta é exceção rara.</p>
+    <div class="grid swatches" style="margin-top:34px">
+      <div class="sw"><div class="chip" style="background:#1A6CF3"></div><div class="meta"><div class="name">Azul primário</div><div class="hex">#1A6CF3</div><div class="use">CTA, links, dado em destaque, faixa de oferta.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#4D90FF"></div><div class="meta"><div class="name">Azul brilhante</div><div class="hex">#4D90FF</div><div class="use">Só sobre fundo escuro: texto, logo e destaque.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#0F4FC4"></div><div class="meta"><div class="name">Azul profundo</div><div class="hex">#0F4FC4</div><div class="use">Hover, e texto azul pequeno sobre cinza-claro ou tint.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E9F1FE"></div><div class="meta"><div class="name">Azul tint</div><div class="hex">#E9F1FE</div><div class="use">Fundo de badge / ícone.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#0C0E13"></div><div class="meta"><div class="name">Ink</div><div class="hex">#0C0E13</div><div class="use">Faixas escuras, texto forte.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#070B16"></div><div class="meta"><div class="name">Navy-deep</div><div class="hex">#070B16</div><div class="use">Hero e case (o mais escuro).</div></div></div>
+      <div class="sw"><div class="chip" style="background:#F5F7FB;border-bottom:1px solid rgba(12,14,19,.08)"></div><div class="meta"><div class="name">Off-white frio</div><div class="hex">#F5F7FB</div><div class="use">Fundo claro.</div></div></div>
+      <div class="sw"><div class="chip" style="background:#FF5A45"></div><div class="meta"><div class="name">Vermelho-alerta</div><div class="hex">#FF5A45</div><div class="use">Só risco, quebra ou nó órfão, sobre fundo escuro ou em tamanho grande. Nunca decorativo.</div></div></div>
+    </div>
+
+    <h3 class="sub">Azul e vermelho em texto</h3>
+    <p>O mínimo para texto pequeno é 4,5:1. Estas cinco regras garantem isso.</p>
+    <div class="grid regras" style="margin-top:0">
+      <div class="regra">
+        <ul>
+          <li><b>#1A6CF3 em texto pequeno</b> só sobre branco (4,68:1).</li>
+          <li><b>Sobre cinza-claro ou tint</b>, o azul de texto é #0F4FC4 (6,67:1 e 6,29:1).</li>
+          <li><b>Sobre fundo escuro</b>, o azul de texto é #4D90FF (6,32:1 no navy).</li>
+        </ul>
+      </div>
+      <div class="regra">
+        <ul>
+          <li><b>Vermelho em texto sobre fundo claro</b> é #D12B15 (5,16:1). O #FF5A45 fica para fundo escuro e título grande.</li>
+          <li><b>Texto branco</b> pode sobre #1A6CF3 e sobre #D12B15. Sobre #4D90FF e #FF5A45, só em título grande.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sub">Estados</h3>
+    <p>Uma escala só para severidade e situação, no app e nos relatórios. Verde, âmbar e laranja aparecem em dado e em tela de produto, nunca como cor de marca em peça de divulgação.</p>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Estado</th><th>Texto no claro</th><th>Selo no claro</th><th>No escuro</th></tr></thead>
+        <tbody>
+          <tr><td><b>Crítico</b></td><td><span class="ponto" style="background:#D12B15"></span><span class="hexa">#D12B15</span></td><td><span class="selo" style="background:#FCEDEB;color:#D12B15">Crítico</span> <span class="hexa">#FCEDEB</span></td><td><span class="noite"><span class="selo" style="background:#301612;color:#FF5A45">Crítico</span></span> <span class="hexa">#FF5A45 · #301612</span></td></tr>
+          <tr><td><b>Alto</b></td><td><span class="ponto" style="background:#B6500C"></span><span class="hexa">#B6500C</span></td><td><span class="selo" style="background:#FCF2EB;color:#B6500C">Alto</span> <span class="hexa">#FCF2EB</span></td><td><span class="noite"><span class="selo" style="background:#301E12;color:#FB8537">Alto</span></span> <span class="hexa">#FB8537 · #301E12</span></td></tr>
+          <tr><td><b>Médio</b></td><td><span class="ponto" style="background:#986706"></span><span class="hexa">#986706</span></td><td><span class="selo" style="background:#FCF6EB;color:#986706">Médio</span> <span class="hexa">#FCF6EB</span></td><td><span class="noite"><span class="selo" style="background:#302612;color:#F6B128">Médio</span></span> <span class="hexa">#F6B128 · #302612</span></td></tr>
+          <tr><td><b>Bom</b></td><td><span class="ponto" style="background:#1C8051"></span><span class="hexa">#1C8051</span></td><td><span class="selo" style="background:#ECFBF4;color:#1C8051">Bom</span> <span class="hexa">#ECFBF4</span></td><td><span class="noite"><span class="selo" style="background:#123022;color:#30CF85">Bom</span></span> <span class="hexa">#30CF85 · #123022</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Cinzas</h3>
+    <p>Treze tons frios, cada um com um papel. Borda sobre fundo escuro: #232A38.</p>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Tom</th><th>Cor</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td class="hexa">0</td><td><span class="ponto" style="background:#FFFFFF"></span><span class="hexa">#FFFFFF</span></td><td>Superfície: cartão, página de documento</td></tr>
+          <tr><td class="hexa">50</td><td><span class="ponto" style="background:#F5F7FB"></span><span class="hexa">#F5F7FB</span></td><td>Fundo de página claro</td></tr>
+          <tr><td class="hexa">100</td><td><span class="ponto" style="background:#EBEFF7"></span><span class="hexa">#EBEFF7</span></td><td>Faixa alternada e zebra de tabela</td></tr>
+          <tr><td class="hexa">200</td><td><span class="ponto" style="background:#DDE3EC"></span><span class="hexa">#DDE3EC</span></td><td>Borda e régua</td></tr>
+          <tr><td class="hexa">300</td><td><span class="ponto" style="background:#C9D0DE"></span><span class="hexa">#C9D0DE</span></td><td>Borda forte, contorno de campo</td></tr>
+          <tr><td class="hexa">400</td><td><span class="ponto" style="background:#AEB6C6"></span><span class="hexa">#AEB6C6</span></td><td>Texto suave sobre fundo escuro</td></tr>
+          <tr><td class="hexa">500</td><td><span class="ponto" style="background:#8590A6"></span><span class="hexa">#8590A6</span></td><td>Ícone e texto desativado</td></tr>
+          <tr><td class="hexa">600</td><td><span class="ponto" style="background:#5B6273"></span><span class="hexa">#5B6273</span></td><td>Texto suave sobre fundo claro</td></tr>
+          <tr><td class="hexa">700</td><td><span class="ponto" style="background:#3B4253"></span><span class="hexa">#3B4253</span></td><td>Texto secundário forte</td></tr>
+          <tr><td class="hexa">800</td><td><span class="ponto" style="background:#1A1D24"></span><span class="hexa">#1A1D24</span></td><td>Corpo de texto em documento</td></tr>
+          <tr><td class="hexa">850</td><td><span class="ponto" style="background:#14171F"></span><span class="hexa">#14171F</span></td><td>Cartão sobre fundo escuro</td></tr>
+          <tr><td class="hexa">900</td><td><span class="ponto" style="background:#0C0E13"></span><span class="hexa">#0C0E13</span></td><td>Ink: faixas escuras, títulos, o "wcj" do logo</td></tr>
+          <tr><td class="hexa">950</td><td><span class="ponto" style="background:#070B16"></span><span class="hexa">#070B16</span></td><td>Navy: hero e capa, o tom mais escuro</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Impressão</h3>
+    <p>O azul #1A6CF3 não existe na impressão em quatro cores: sai mais fechado e acinzentado. A receita oficial ainda não foi escolhida. Ela sai de uma folha de prova, impressa junto com a próxima peça, e toda peça impressa pede prova antes de rodar.</p>
+    <p class="legenda">As cores desta seção estão em <span class="mono" style="font-size:.74rem">marca/cores.json</span>; <span class="mono" style="font-size:.74rem">marca/ferramentas/contraste.py</span> confere os contrastes.</p>
+  </div>
+</section>
+
+<!-- TYPE -->
+<section class="dark">
+  <div class="wrap">
+    <div class="eyebrow mono">03 — Tipografia</div>
+    <h2 class="section-title" style="color:#fff">Três vozes tipográficas.</h2>
+    <div class="type-row">
+      <div class="type-label">Space Grotesk · Display / títulos · bold -0.03em</div>
+      <div class="sg">Quem desenha é quem sustenta.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-label">Hanken Grotesk · Corpo</div>
+      <div class="hk">A WCJ assume a TI de operações que cresceram rápido demais e perderam o controle — corta custo, elimina risco de compliance, migra para cloud e instala governança.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-label">Space Mono · Rótulos / dados / eyebrows · uppercase</div>
+      <div class="smn">AUDITORIA DE TI · 30 DIAS · +R$ 200.000,00/ANO · ISO 27001</div>
+    </div>
+  </div>
+</section>
+
+<!-- NÓS -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow mono">04 — Padrão de nós</div>
+    <h2 class="section-title">Os nós saem do desenho do logo.</h2>
+    <p class="lead">O símbolo tem cinco nós do mesmo tamanho em zigue-zague, quatro fundidos e um solto. O padrão continua esse desenho, na mesma grade. São dois usos.</p>
+    <div class="grid pecas" style="margin-top:34px">
+      <div>
+        <div class="peca"><img class="trilha" src="nos/wcj-trilha-fundo-escuro.svg" alt=""><div class="txt"><span class="mono">Rótulo da peça</span><b>Título da peça<br>em duas linhas</b></div></div>
+        <p class="legenda"><b>Trilha, o padrão.</b> O nó solto em azul e o corpo do símbolo continuado até sair pela borda.</p>
+      </div>
+      <div>
+        <div class="peca clara"><img class="trilha" src="nos/wcj-trilha-fundo-claro.svg" alt=""><div class="txt"><span class="mono">Rótulo da peça</span><b>Título da peça<br>em duas linhas</b></div></div>
+        <p class="legenda">A trilha sobre fundo claro.</p>
+      </div>
+      <div>
+        <div class="peca"><img class="recorte" src="nos/wcj-recorte-fundo-escuro.svg" alt=""><div class="txt"><span class="mono">Rótulo da peça</span><b>Título da peça<br>em duas linhas</b></div></div>
+        <p class="legenda"><b>Recorte, para capa.</b> O símbolo gigante, numa cor só, cortado pela borda. Pede área livre grande.</p>
+      </div>
+      <div>
+        <div class="peca clara"><img class="recorte" src="nos/wcj-recorte-fundo-claro.svg" alt=""><div class="txt"><span class="mono">Rótulo da peça</span><b>Título da peça<br>em duas linhas</b></div></div>
+        <p class="legenda">O recorte sobre fundo claro.</p>
+      </div>
+    </div>
+    <div class="grid regras">
+      <div class="regra">
+        <h3>Regras</h3>
+        <ul>
+          <li><b>Na grade.</b> Todo nó tem o raio e a distância do logo. Nada de pontos espalhados ao acaso.</li>
+          <li><b>Ligação é fusão.</b> Nós se ligam como no logo, fundidos. Linha fina entre pontos saiu de uso.</li>
+          <li><b>Chapado.</b> Sem brilho, sem desfoque, sem profundidade.</li>
+          <li><b>Texto.</b> Nunca atrás de texto corrido: o padrão ocupa o lado oposto ao título.</li>
+          <li><b>Onde.</b> Site, deck, carrossel e vídeo. Relatório e documento seguem sem nós, só com o bullet.</li>
+        </ul>
+      </div>
+      <div class="regra">
+        <h3>Cor e medida</h3>
+        <ul>
+          <li><b>Um tom acima do fundo:</b> #091833 sobre navy, #E3ECFA sobre cinza-claro. É o fundo com 13% do azul primário no escuro e 8% no claro.</li>
+          <li><b>No máximo um nó em azul</b> (#1A6CF3) por peça: o nó solto da trilha.</li>
+          <li><b>Grade:</b> nós vizinhos a 2,59 raios um do outro; 2,83 raios entre nós da mesma fileira; 2,17 raios entre as duas fileiras.</li>
+          <li><b>Arquivos</b> em <span class="mono" style="font-size:.74rem">marca/nos</span>, gerados do desenho do logo. Não redesenhar à mão.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPOSITION / PRINCIPLES -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow mono">05 — Composição & Motivos</div>
+    <h2 class="section-title">Como as coisas se organizam.</h2>
+    <div class="grid cards" style="margin-top:34px">
+      <div class="card"><span class="node"></span><h3>Ritmo de seções</h3><p>Claro → escuro → azul. A faixa azul é sempre oferta, CTA ou ponte entre páginas.</p></div>
+      <div class="card"><span class="node"></span><h3>Padrão de nós</h3><p>Trilha e recorte, tirados do símbolo (seção 04). Entram em site, deck, carrossel e vídeo; ficam de fora de relatório e documento, onde só o bullet de nó aparece.</p></div>
+      <div class="card"><span class="node"></span><h3>Uma ideia por bloco</h3><p>Padding generoso (~48px) e alinhamento forte à esquerda. Cantos: 10 e 18 px nas peças de marca (site, deck, carrossel); 5 px nas telas de produto.</p></div>
+      <div class="card"><span class="node"></span><h3>Eyebrow técnico</h3><p>Space Mono uppercase azul + linha fina horizontal abrindo cada seção.</p></div>
+      <div class="card"><span class="node"></span><h3>Número como prova</h3><p>Stat-card com número grande em Space Mono azul. Dado nunca solto — sempre ancorado.</p></div>
+      <div class="card"><span class="node"></span><h3>Imagem editorial</h3><p>Rack, dashboard, mapa de rede. Fotografia técnica, nunca foto de equipe ou stock.</p></div>
+      <div class="card"><span class="node"></span><h3>Ícones</h3><p>Biblioteca Lucide, traço entre 1,75 e 2, em 24 px. Azul sobre o tint #E9F1FE quando o ícone ganha fundo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MOOD band -->
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow mono">Mood</div>
+    <h2>Precisão de engenharia auditável — “sala de controle limpa”.</h2>
+    <p>Cada peça deve parecer um painel sob controle: sóbria, confiante, sem ruído. Se parece startup animada ou degradê de software house, está errada.</p>
+  </div>
+</section>
+
+<!-- NOT -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow mono">06 — O que isso NÃO é</div>
+    <h2 class="section-title">As recusas.</h2>
+    <div class="grid nots" style="margin-top:30px">
+      <div class="not"><span class="x">✕</span><span>Maximalista, fofo ou corporate genérico.</span></div>
+      <div class="not"><span class="x">✕</span><span>Foto stock de equipe / aperto de mão.</span></div>
+      <div class="not"><span class="x">✕</span><span>Verde / serif / luxury (versão off-brand já rejeitada).</span></div>
+      <div class="not"><span class="x">✕</span><span>“Fábrica de software”: 3D, degradês exagerados, clipart de cadeado.</span></div>
+      <div class="not"><span class="x">✕</span><span>Azul tomando a tela inteira — ele é acento, não fundo.</span></div>
+      <div class="not"><span class="x">✕</span><span>Número solto, sem fonte ou sem contexto.</span></div>
+      <div class="not"><span class="x">✕</span><span>Nós com brilho, pontos ao acaso ou linha fina entre eles.</span></div>
+      <div class="not"><span class="x">✕</span><span>Vermelho, verde ou âmbar como cor de marca: são alerta e estado.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="footer-mono">WCJ Tecnologia</span> — Master Brand Brain · Pilar 3 (Identidade Visual). Fontes: Space Grotesk · Hanken Grotesk · Space Mono.
+  </div>
+</footer>
+
+</body>
+</html>

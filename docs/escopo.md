@@ -62,7 +62,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Permissão.** Não se aplica.
 
-**Entrega.** `AGENTS.md` do projeto preenchido (vocabulário, armadilhas da seção 9, trilhos), ADR-001 (por domínio, D-GER-15), ADR-002 (MySQL nos testes, D-GER-22), `.env.example` completo com integrações desligadas, `docs/DEPLOY.md` esboçado, trava de segredo conferida, `composer setup` cronometrado. Testes de arquitetura: a regra "domínio não lê tabela de outro" entra aqui (ArchUnit do padrão `wcj-testes`).
+**Entrega.** `AGENTS.md` do projeto preenchido (vocabulário, armadilhas da seção 9, trilhos), ADR-001 (por domínio, D-GER-15), ADR-002 (MySQL nos testes, D-GER-22), tema da marca a partir de `docs/brand/tokens.wcj.json` e fontes em `public/fonts/` (Lucas Varanda, D-GER-29; pode ser PR separado logo depois do B0), `.env.example` completo com integrações desligadas, `docs/DEPLOY.md` esboçado, trava de segredo conferida, `composer setup` cronometrado. Testes de arquitetura: a regra "domínio não lê tabela de outro" entra aqui (ArchUnit do padrão `wcj-testes`).
 
 ### B1. Núcleo: usuários, clientes, contatos e auditoria
 
@@ -197,7 +197,7 @@ Copiado e ampliado de `necessidade.md`:
 - CRM, GPT "WCJ Hub", Chamados, contrato, GitHub por webhook, importação do Trello, WhatsApp, app nativo, cronômetro de horas, feriados, aprovação em dois níveis, ranking ou metas (G6, D-GER-13, D-GER-24).
 - SQLite nos testes (D-GER-22). `TIMESTAMP` no MySQL. `timestamps()` do Laravel.
 - Painel de produtividade por dev, PDF de histórico, relatório de fechamento, notas de versão (P54, P55).
-- Marca WCJ no produto: é sistema interno, sem material de marketing; o tema vem do template.
+- Cor, fonte ou raio fora de `design/tokens.json`; logo ou cor copiada à mão. A marca WCJ entra no Hub (é sistema interno) só pelos arquivos de `docs/brand/` e pelo `tokens.json` (D-GER-29).
 
 ## 7. Travas
 
@@ -226,6 +226,8 @@ Duas pessoas (Cauã e Vitinho) em paralelo, com Lucas Scholz supervisionando. De
 7. **B10** Publicação em homologação; bugbash com o Rafael no quadro Wpay; produção; o Trello para de ser usado.
 
 Com B0 a B3 no ar em homologação, o quadro Wpay já pode ser usado para valer, e o resto entra por cima.
+
+Em paralelo às ondas, **Lucas Varanda** cuida do front: tema da marca e fontes (com o B0), shell e componentes que o template não tem (kanban com arrastar e soltar, ficha do card com seções recolhidas, roteiro de QA por item, linha do tempo), propostos antes de B3 e B5 começarem (`docs/brand/README.md`, D-GER-29).
 
 ## 9. Fora deste escopo
 

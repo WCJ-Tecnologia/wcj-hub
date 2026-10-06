@@ -52,6 +52,7 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-25 | 06/10/2026 | **Execução:** Cauã e Vitinho desenvolvem, com IA (por inteiro ou em parte); Lucas Scholz supervisiona, aprova funcional, spec e PR, e faz o teste técnico do MCP. Substitui a execução da D-GER-17. O padrão `ai-systems` (0.6.0, skill `tlc-spec-driven`) continua valendo, no **trilho leve** (R6): trilho completo só em autenticação e papéis, Policies, OAuth e MCP, auditoria, desativação e exclusão; o resto com spec no PR, teste e uso no navegador. |
 | D-GER-26 | 06/10/2026 | Regras de uso revertidas (R2 a R5): qualquer pessoa alocada cria card no `Backlog` (P56); e-mail ao definir dev ou QA e ao devolver para desenvolvimento (P22); o card nasce só com título (P17); arrastar do `Backlog` para o `To do` põe na sprint aberta, sem cerimônia, e o objetivo da sprint é opcional (P45). |
 | D-GER-27 | 06/10/2026 | Cortes da fatia 1 no banco (R7 a R11, R13 a R15): saem CRM, `service_types`, `task_validations` e as flags `requires_*`, `sprint_members`, `package_statuses` e `ai_tool_calls`; motivos de retrabalho viram lista geral; o movimento do card guarda quem moveu e o canal; a integridade por projeto é conferida no Service, não por FK composta (Lucas Alencar confere). 41 → 27 tabelas. Indicadores: o atraso desconta a pausa e o realizado tem fallback no tempo em desenvolvimento (R16, R17). |
+| D-GER-29 | 06/10/2026 | **Lucas Varanda** (front-end) adapta o template à marca WCJ e desenha os componentes que o Hub pede e o template não tem. A marca entra no Hub inteira, só por `docs/brand/` e `design/tokens.json`; no mestre da marca (`wcj-master-brand-brain/marca/`) é que se muda. |
 | D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado pelo dono do módulo (Projetos: Rafael Garcia; Núcleo e IA: Lucas Scholz) antes da spec. O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
@@ -533,6 +534,7 @@ Consequência para a v1 (IA3):
 | Interface de IA | Lucas Scholz (produto) + Lucas Alencar (técnico) (D-GER-07) |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
 | **Execução** | Cauã e Vitinho, com IA; supervisão, aprovação de funcional, spec e PR por Lucas Scholz (D-GER-25) |
+| **Front-end e marca no template** | Lucas Varanda (D-GER-29) |
 | Infraestrutura (VPS) | Alaor Rodrigues (D-GER-19) |
 
 ## Em aberto
