@@ -78,7 +78,7 @@ T20 → T21 → T22
 ### Phase 6: Integração
 
 ```
-T23 → T24
+T23 → T24 → T25
 ```
 
 ---
@@ -992,6 +992,32 @@ T23 → T24
 
 ---
 
+### T25: Mensagens de validação em português
+
+**What**: arquivo de tradução `lang/pt_BR/validation.php` (mensagens e nomes de atributo do Núcleo), para que todo erro de campo saia em português com `APP_LOCALE=pt_BR`, que o `.env.example` já define.
+**Where**: `lang/pt_BR/validation.php`
+**Depends on**: T24
+**Reuses**: as mensagens à mão que já existem nos FormRequests (continuam valendo)
+**Requirement**: NUC-14
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Erro de e-mail inválido, campo obrigatório, tamanho máximo e número fora do limite saem em português nas telas do Núcleo
+- [ ] Teste em `tests/Feature/Nucleo/MensagensEmPortuguesTest.php` asserindo o texto exato de pelo menos quatro regras
+- [ ] Gate check passes: Build
+
+**Tests**: integration
+**Gate**: build
+
+**Commit**: `feat(nucleo): mensagens de validação em português`
+
+---
+
 ## Phase Execution Map
 
 ```
@@ -1004,7 +1030,7 @@ Phase 2:  T6 → T7 → T8 → T9
 Phase 3:  T10 → T11 → T12 → T13 → T14
 Phase 4:  T15 → T16 → T17 → T18 → T19
 Phase 5:  T20 → T21 → T22
-Phase 6:  T23 → T24
+Phase 6:  T23 → T24 → T25
 ```
 
 ## Task Granularity Check
@@ -1020,6 +1046,7 @@ Phase 6:  T23 → T24
 | T9, T13, T14, T19, T22 | 1 página (com o formulário dela) | ⚠️ Coeso |
 | T23 | abilities nos 4 pontos que o AGENTS.md manda mudar juntos | ⚠️ Coeso |
 | T24 | 1 spec e2e | ✅ Granular |
+| T25 | 1 arquivo de tradução | ✅ Granular |
 
 ## Diagram-Definition Cross-Check
 
@@ -1049,6 +1076,7 @@ Phase 6:  T23 → T24
 | T22 | T21 | T21 → T22 | ✅ Match |
 | T23 | T22 | fase anterior | ✅ Match |
 | T24 | T23 | T23 → T24 | ✅ Match |
+| T25 | T24 | T24 → T25 | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1066,3 +1094,4 @@ Phase 6:  T23 → T24
 | T20 | Policy + consulta | integration | integration | ✅ OK |
 | T23 | Middleware + página (menu) | integration + e2e | e2e (com teste de abilities) | ✅ OK |
 | T24 | e2e | e2e | e2e | ✅ OK |
+| T25 | Tradução (validação) | integration | integration | ✅ OK |
