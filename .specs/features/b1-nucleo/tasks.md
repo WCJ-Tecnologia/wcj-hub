@@ -129,10 +129,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] `denied` grava `user_id`, `action`, `outcome = denied`, `auditable_type` e `auditable_id` (nulo para classe)
-- [ ] `scrubPersonalData` só toca as linhas do registro informado e só as chaves pedidas; devolve quantas linhas mudaram
-- [ ] Testes em `tests/Feature/Nucleo/AuditServiceTest.php` (inclui: outra linha de outro contato fica intacta; senha nunca entra em `changes`)
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] `denied` grava `user_id`, `action`, `outcome = denied`, `auditable_type` e `auditable_id` (nulo para classe)
+- [x] `scrubPersonalData` só toca as linhas do registro informado e só as chaves pedidas; devolve quantas linhas mudaram
+- [x] Testes em `tests/Feature/Nucleo/AuditServiceTest.php` (inclui: outra linha de outro contato fica intacta; senha nunca entra em `changes`)
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Gravação única da auditoria (G3; docs/banco.txt, audit_logs). Por ora só a tela grava
- * (ai_authorization_id nulo); o canal da IA e a tentativa negada entram com o B1 e o B8.
+ * (ai_authorization_id nulo); o canal da IA entra com o B8.
  */
 class AuditService
 {
@@ -36,8 +36,70 @@ class AuditService
             'auditable_type' => $auditable->getMorphClass(),
             'auditable_id' => $auditable->getKey(),
             'changes' => $this->changes($before, $after),
-            'ip_address' => request()->ip(),
+            'ip_address' => $this->ip(),
         ]);
+    }
+
+    /**
+     * A tentativa barrada pela Policy (G3). Alvo Model: o registro; nome de classe: o tipo,
+     * com id nulo, porque a negação veio antes de existir ou de achar o registro. Outro texto
+     * (gate sem Model, como view-audit-logs) fica como o tipo.
+     */
+    public function denied(string $ability, Model|string $target): AuditLog
+    {
+        $type = match (true) {
+            $target instanceof Model => $target->getMorphClass(),
+            is_subclass_of($target, Model::class) => (new $target)->getMorphClass(),
+            default => $target,
+        };
+
+        return AuditLog::query()->create([
+            'user_id' => Auth::id(),
+            'ai_authorization_id' => null,
+            'action' => AuditActionEnum::forAbility($ability)->value,
+            'outcome' => AuditLog::OUTCOME_DENIED,
+            'auditable_type' => $type,
+            'auditable_id' => $target instanceof Model ? $target->getKey() : null,
+            'changes' => null,
+            'ip_address' => $this->ip(),
+        ]);
+    }
+
+    /**
+     * Tira as chaves pessoais de changes em toda linha do registro (N12). É a única escrita
+     * que altera linha já gravada; quem chama abre a transação da anonimização.
+     *
+     * @param  list<string>  $fields
+     * @return int linhas alteradas
+     */
+    public function scrubPersonalData(Model $auditable, array $fields): int
+    {
+        $logs = AuditLog::query()
+            ->where('auditable_type', $auditable->getMorphClass())
+            ->where('auditable_id', $auditable->getKey())
+            ->whereNotNull('changes')
+            ->lockForUpdate()
+            ->get();
+
+        $changed = 0;
+        foreach ($logs as $log) {
+            $kept = array_diff_key($log->changes, array_flip($fields));
+            if (count($kept) === count($log->changes)) {
+                continue;
+            }
+
+            $log->changes = $kept === [] ? null : $kept;
+            $log->save();
+            $changed++;
+        }
+
+        return $changed;
+    }
+
+    // A4 (divida.php): o único ponto do Service que lê a requisição.
+    private function ip(): ?string
+    {
+        return request()->ip();
     }
 
     /**
