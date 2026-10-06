@@ -310,6 +310,259 @@ T23 → T24
 
 ---
 
+### Phase 3: Clientes
+
+```
+T10 → T11 → T12 → T13 → T14
+```
+
+### Phase 4: Contatos
+
+```
+T15 → T16 → T17 → T18 → T19
+```
+
+### Phase 5: Auditoria (tela)
+
+```
+T20 → T21 → T22
+```
+
+### Phase 6: Integração
+
+```
+T23 → T24
+```
+
+---
+
+## Task Breakdown
+
+### Phase 1: Fundação
+
+### T1: Ações de auditoria novas e o mapa ability → ação
+
+**What**: `AuditActionEnum` ganha `DEACTIVATED`, `REACTIVATED`, `ANONYMIZED`, `VIEWED`, os rótulos em português e `forAbility(string)`.
+**Where**: `app/Platform/Enums/AuditActionEnum.php`
+**Depends on**: None
+**Reuses**: o enum existente
+**Requirement**: NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Casos novos com rótulo (Desativado, Reativado, Anonimizado, Consultado)
+- [x] `forAbility` cobre create, update, delete, deactivate, reactivate, anonymize, resendInvite e leitura (viewAny, view)
+- [x] Teste unitário de cada mapeamento em `tests/Unit/AuditActionEnumTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: unit
+**Gate**: quick
+
+**Commit**: `feat(auditoria): ações de desativar, reativar, anonimizar e negação de leitura`
+
+---
+
+### T2: AuditService grava negação e limpa dado pessoal
+
+**What**: `AuditService::denied()` (outcome `denied`, ação pretendida, alvo por morph map, id nulo quando o alvo é a classe) e `scrubPersonalData()` (remove chaves de `changes` das linhas de um registro).
+**Where**: `app/Platform/Services/AuditService.php`
+**Depends on**: T1
+**Reuses**: `log()` existente, `NEVER_AUDITED`
+**Requirement**: NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] `denied` grava `user_id`, `action`, `outcome = denied`, `auditable_type` e `auditable_id` (nulo para classe)
+- [x] `scrubPersonalData` só toca as linhas do registro informado e só as chaves pedidas; devolve quantas linhas mudaram
+- [x] Testes em `tests/Feature/Nucleo/AuditServiceTest.php` (inclui: outra linha de outro contato fica intacta; senha nunca entra em `changes`)
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `feat(auditoria): gravação da negação e limpeza de dado pessoal no AuditService`
+
+---
+
+### T3: authorize() do Controller base audita a negação
+
+**What**: `App\Http\Controllers\Controller::authorize()` usa `Gate::inspect`; se nega, chama `AuditService::denied()` e lança o 403.
+**Where**: `app/Http/Controllers/Controller.php`
+**Depends on**: T2
+**Reuses**: `AuthorizesRequests`
+**Requirement**: NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Dev em `GET /admin/users` recebe 403 e aparece uma linha `denied` com `auditable_type = user`
+- [x] Rota permitida não grava linha `denied`
+- [x] `RotasAutorizadasTest` (A5) continua verde
+- [x] Testes em `tests/Feature/Nucleo/NegacaoAuditadaTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `feat(auditoria): negação por Policy gravada na auditoria`
+
+---
+
+### T4: Regra do CNPJ alfanumérico
+
+**What**: `App\Rules\AlphanumericCnpj` valida 12 alfanuméricos + 2 dígitos com o cálculo da Receita (ASCII − 48) e expõe `normalize()`.
+**Where**: `app/Rules/AlphanumericCnpj.php`
+**Depends on**: None
+**Reuses**: estrutura de `App\Rules\Document`
+**Requirement**: NUC-05
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Aceita `12ABC34501DE35`, `12.ABC.345/01DE-35`, `12abc34501de35` e `38614817000122`
+- [x] Recusa dígito errado, tamanho errado, letra nos dígitos, todos iguais
+- [x] `normalize` tira máscara e põe maiúscula
+- [x] Testes em `tests/Unit/AlphanumericCnpjTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: unit
+**Gate**: quick
+
+**Commit**: `feat(clientes): regra do CNPJ alfanumérico`
+
+---
+
+### T5: Contrato ClientProjects e a implementação de Projetos
+
+**What**: interface `App\Platform\Contracts\ClientProjects` e `App\Domains\Projetos\Services\ProjectClientProjects` (clientes geridos, `manages`, projetos abertos), ligada no `AppServiceProvider`, com ADR-003 e AD-003.
+**Where**: `app/Domains/Projetos/Services/ProjectClientProjects.php`
+**Depends on**: None
+**Reuses**: Models `Project`, `ProjectMember`
+**Requirement**: NUC-06
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Gestor por `manager_id` e gestor alocado em `project_members` contam; dev alocado não conta; projeto de outro cliente não conta
+- [x] `openProjectsCount` conta só `finished_at` nulo
+- [x] `docs/adr/003-nucleo-consulta-projetos-por-contrato.md` e `AD-003` no `.specs/STATE.md`
+- [x] A7 e A9 verdes
+- [x] Testes em `tests/Feature/Nucleo/ClientProjectsTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `feat(projetos): contrato para o Núcleo saber os clientes de cada gestor`
+
+---
+
+### Phase 2: Usuários
+
+### T6: UserPolicy completa
+
+**What**: `deactivate`, `reactivate`, `resendInvite`, `viewChoiceList` e o `delete` sem a si mesmo.
+**Where**: `app/Platform/Policies/UserPolicy.php`
+**Depends on**: T3
+**Reuses**: a Policy existente
+**Requirement**: NUC-04, NUC-13
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Matriz ability × papel testada (admin, gestor, dev, comercial)
+- [x] Testes em `tests/Feature/Nucleo/UserPolicyTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `feat(usuarios): UserPolicy com desativar, reativar, reenviar convite e lista de escolha`
+
+---
+
+### T7: UserService
+
+**What**: `invite`, `resendInvite`, `update`, `deactivate`, `reactivate`, `delete`, `choiceList`, com auditoria na transação, revogação das conexões de IA, carga obrigatória para Desenvolvedor, último admin ativo e e-mail enviado depois do commit.
+**Where**: `app/Platform/Services/UserService.php`
+**Depends on**: T6
+**Reuses**: `TemporaryPasswordService` (separado em gravar e enviar), `SessionService`, `Deactivatable`, `AuditService`
+**Requirement**: NUC-01, NUC-02, NUC-03, NUC-13
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Usuários AC 1–12, 14 e 16 com teste cada
+- [x] Edge cases: convite simultâneo (unique), e-mail que falha mantém o usuário, último admin
+- [x] Linha "Login: e-mail" no e-mail de convite (texto e HTML)
+- [x] Testes em `tests/Feature/Nucleo/UserServiceTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `feat(usuarios): UserService com convite, desativação e revogação das conexões de IA`
+
+---
+
+### T8: UserController fino, rotas e requests
+
+**What**: o controller passa a chamar o `UserService`; rotas `deactivate` e `reactivate`; lista com Último acesso, Situação e *Mostrar desativados*; `StoreUserRequest` com `ai_write_allowed` e carga obrigatória para dev.
+**Where**: `app/Platform/Controllers/Admin/UserController.php`
+**Depends on**: T7
+**Reuses**: o controller e o request existentes
+**Requirement**: NUC-04
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Toda rota de usuário: feliz, 403 com "nada muda" para gestor e dev, erro de validação
+- [x] `UserControllerTest` existente ajustado sem perder caso; a caixa "ativo" sai
+- [x] Dívida A6 do `UserController` diminui ou sai do `divida.php`
+- [x] Testes em `tests/Feature/Nucleo/UserControllerTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `refactor(usuarios): controller fino sobre o UserService, com desativar e reativar`
+
+---
+
 ### T9: Tela de usuários
 
 **What**: colunas do F1 §03, filtro *Mostrar desativados*, ações *Reenviar convite*, Editar, Desativar, Reativar, Excluir, *Histórico*; formulário com "IA pode escrever" e o aviso de desconexão da IA.

@@ -21,7 +21,7 @@ type Entry = { tone: Tone; icon: ComponentType<{ className?: string }>; label: s
  */
 const USER: Record<string, Entry> = {
     active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
-    inactive: { tone: 'neutral', icon: XCircle, label: 'Inativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
 const CLIENT: Record<string, Entry> = {
