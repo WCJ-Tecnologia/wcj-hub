@@ -16,7 +16,7 @@ Atualizado em 2026-10-06.
 | 2. Banco | **APROVADO por Lucas Alencar em 06/10** (41 tabelas, D-GER-23). No mesmo dia virou a **fatia 1: 27 tabelas** (R7 a R15). A diferença para o aprovado está na seção 7, para ele conferir (em especial a R15: asserção no Service no lugar das FKs compostas). As colunas geradas foram testadas no MySQL 8.4 | `docs/banco.txt` |
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | Funcionais | **Escritos em 06/10**, versão 0.1 para aprovação: F1 a F8 em `docs/funcional/` (D-GER-28). **F1 a F8 APROVADOS por Lucas Scholz em 06/10 (v1.0)**, com todos os pontos a validar respondidos; Rafael Garcia valida Projetos no uso (bugbash). Colunas aditivas decididas na aprovação: `tasks.position`, `tasks.proposed_hours`, `users.ai_write_allowed` (seção 7 do `banco.txt`). Cada um tem a seção 10 "Pontos a validar" | `docs/funcional/README.md` |
-| 4. Escopo | **Escrito em 06/10**: blocos B0 a B10, apontando para os funcionais; aguarda validação inteira por uma pessoa (etapa 5) | `docs/escopo.md` |
+| 4. Escopo | **VALIDADO por Lucas Scholz em 06/10 (etapa 5)**: blocos B0 a B10, apontando para os funcionais. Ele é o responsável por todas as travas da seção 7 | `docs/escopo.md` |
 | Marca no template | **`docs/brand/` criada em 06/10**: logo em vetor, ícones, cores, nós, fontes, Brand Board e o rascunho `tokens.wcj.json` para o Lucas Varanda aplicar no template (D-GER-29) | `docs/brand/README.md` |
 | Plano de desenvolvimento | **Escrito em 06/10**: ondas, divisão Cauã × Vitinho, rito do PR, trilhos, checklist do Lucas antes de começar | `docs/plano-de-desenvolvimento.md` |
 | 3. Repositório | **Na organização WCJ desde 29/09**, privado, só com `docs/`. O template `ai-systems` 0.6.0 entra no **B0** (etapa 3), próximo passo prático. O backup antigo na conta pessoal (`lucas-scholz-91/wcj-hub`) deixou de ser a fonte | https://github.com/WCJ-Tecnologia/wcj-hub |
@@ -90,7 +90,7 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 
 1. ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10. Rafael Garcia lê F2 a F7 e valida no bugbash.
 2. Lucas Alencar confere o `banco.txt` §7 (a R15 em especial). Não bloqueia o B0.
-3. Lucas Scholz valida o `docs/escopo.md` inteiro (etapa 5) e assina.
+3. ~~Escopo~~ validado por Lucas Scholz em 06/10 (etapa 5).
 4. **B0** (etapa 3): template `ai-systems` 0.6.0 neste repositório, por domínio, 27 migrações, sementes, CI em MySQL 8, `AGENTS.md`, ADR-001 e ADR-002. Prompt abaixo.
 5. Prova de conceito do MCP (D-GER-17), em paralelo ao B0.
 6. Reunião de partida com Cauã e Vitinho; onda 1 (B1 ∥ B2).

@@ -2,7 +2,7 @@
 
 Etapa 4 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Gerado com apoio de IA em 06/10/2026 a partir de `necessidade.md`, `banco.txt` (aprovado por Lucas Alencar em 06/10, D-GER-23) e dos documentos funcionais de `docs/funcional/`. Depois de validado inteiro por uma pessoa (etapa 5), é a referência: a IA não desenvolve o que não está aqui, e nada aqui contraria o funcional do bloco.
 
-Validado por: ____________ em ____-__-__.
+Validado por: **Lucas Scholz em 2026-10-06** (etapa 5), com uma mudança: na seção 7, ele é o responsável por todas as travas.
 
 ## 1. Contexto em uma página
 
@@ -201,16 +201,16 @@ Copiado e ampliado de `necessidade.md`:
 
 ## 7. Travas
 
-O que para o desenvolvimento e exige humano:
+O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Scholz** (decisão de 06/10). Cauã e Vitinho acionam só ele; se precisar, ele chama Lucas Alencar ou Alaor Rodrigues. A coluna "Com quem" diz quem ele envolve.
 
-| Trava | Quem resolve | Bloqueia |
+| Trava | Com quem | Bloqueia |
 |---|---|---|
-| Funcionais F2 a F7 aprovados por Rafael Garcia; F1 e F8 por Lucas Scholz (D-GER-28). Os "pontos a validar" de cada um respondidos. | Rafael, Lucas Scholz | A spec de cada bloco. B0 não espera. |
-| Lucas Alencar confere a diferença da fatia 1 (`banco.txt` §7), em especial a R15. Se ele preferir as FKs compostas, elas voltam como migração aditiva, sem mudar Service. | Lucas Alencar | Nada: B0 segue com a asserção no Service. |
-| Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | Lucas Scholz | B8 |
-| Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | Lucas Scholz | O canal `mail` do B3 (o `database` não espera). |
-| Acesso à VPS do DaaS, capacidade e separação do banco; DNS do subdomínio. | Alaor Rodrigues, Lucas Scholz | B10 e a homologação pública do B8. |
-| Diferenças do template 0.6.0 em relação à seção 9 do `banco.txt` (escrita sobre a 0.4.0). | Quem fizer o B0 | B0: conferir e anotar no ADR. |
+| ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28). Rafael Garcia valida Projetos no bugbash. | Rafael Garcia | Nada: as specs podem começar. |
+| Lucas Alencar confere a diferença da fatia 1 (`banco.txt` §7), em especial a R15 e as 3 colunas aditivas de 06/10. Se ele preferir as FKs compostas, elas voltam como migração aditiva, sem mudar Service. | Lucas Alencar | Nada: B0 segue com a asserção no Service. |
+| Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | ele mesmo | B8 |
+| Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | ele mesmo | O canal `mail` do B3 (o `database` não espera). |
+| Acesso à VPS do DaaS, capacidade e separação do banco; DNS do subdomínio. | Alaor Rodrigues | B10 e a homologação pública do B8. |
+| Diferenças do template 0.6.0 em relação à seção 9 do `banco.txt` (escrita sobre a 0.4.0). | ele mesmo, no B0 | B0: conferir e anotar no ADR. |
 
 ## 8. Ordem de execução
 

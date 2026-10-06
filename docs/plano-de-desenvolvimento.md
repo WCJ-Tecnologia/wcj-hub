@@ -14,6 +14,8 @@ Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz
 | **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.txt` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
 | **Alaor Rodrigues** | VPS, banco de produção, DNS, backup (B10). |
 
+**Ponto de contato único:** Cauã, Vitinho e Lucas Varanda acionam só o Lucas Scholz, para qualquer dúvida ou trava (`escopo.md` §7). Ele decide ou chama Lucas Alencar e Alaor Rodrigues quando precisar.
+
 Regra do padrão: **quem fez não confere** (`core/testes.md` §10). Spec, PR e teste cruzado sempre passam por outra pessoa, ou pelo Verifier da skill no trilho completo.
 
 ## 2. Ordem e divisão
