@@ -24,9 +24,10 @@ const USER: Record<string, Entry> = {
     inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
+// F1 §02: a situação do cliente é Ativo ou Desativado (N11).
 const CLIENT: Record<string, Entry> = {
     active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
-    inactive: { tone: 'neutral', icon: XCircle, label: 'Inativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
 const SETS = { user: USER, client: CLIENT };

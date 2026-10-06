@@ -51,7 +51,7 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($this->admin)->get('/admin/clients')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('admin/clients/index', false)
+            ->assertInertia(fn ($page) => $page->component('admin/clients/index')
                 ->has('clients.data', 2)
                 ->where('clients.data.0.name', 'Alfa Bouw')
                 ->where('clients.data.0.country', 'NL')
