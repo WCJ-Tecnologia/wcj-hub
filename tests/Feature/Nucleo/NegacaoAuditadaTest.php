@@ -51,7 +51,9 @@ class NegacaoAuditadaTest extends TestCase
         $this->assertSame(RoleEnum::DEVELOPER->value, $target->role_id);
     }
 
-    public function test_gate_sem_registro_grava_o_nome_do_gate_como_tipo(): void
+    // T20: a AuditLogPolicy substituiu o gate view-audit-logs; a negação passa a ter o tipo do
+    // morph map, como as outras.
+    public function test_negacao_da_auditoria_grava_o_tipo_audit_log_sem_id(): void
     {
         $dev = User::factory()->developer()->create();
 
@@ -61,7 +63,7 @@ class NegacaoAuditadaTest extends TestCase
         $this->assertSame($dev->id, $log->user_id);
         $this->assertSame('viewed', $log->action);
         $this->assertSame(AuditLog::OUTCOME_DENIED, $log->outcome);
-        $this->assertSame('view-audit-logs', $log->auditable_type);
+        $this->assertSame('audit_log', $log->auditable_type);
         $this->assertNull($log->auditable_id);
     }
 

@@ -876,9 +876,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Cada filtro testado; período padrão 7 dias; *Histórico* (tipo + id) sem limite de período
-- [ ] Testes em `tests/Feature/Nucleo/AuditLogQueryTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Cada filtro testado; período padrão 7 dias; *Histórico* (tipo + id) sem limite de período
+- [x] Testes em `tests/Feature/Nucleo/AuditLogQueryTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

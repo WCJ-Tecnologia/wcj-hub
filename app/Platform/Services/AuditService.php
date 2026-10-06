@@ -43,7 +43,7 @@ class AuditService
     /**
      * A tentativa barrada pela Policy (G3). Alvo Model: o registro; nome de classe: o tipo,
      * com id nulo, porque a negação veio antes de existir ou de achar o registro. Outro texto
-     * (gate sem Model, como view-audit-logs) fica como o tipo.
+     * (gate sem Model) fica como o tipo.
      */
     public function denied(string $ability, Model|string $target): AuditLog
     {

@@ -14,7 +14,7 @@ class AuditLogController extends Controller
 {
     public function index(Request $request): Response
     {
-        $this->authorize('view-audit-logs');
+        $this->authorize('viewAny', AuditLog::class);
 
         $filters = $request->validate([
             'action' => ['nullable', 'string', 'max:60'],
