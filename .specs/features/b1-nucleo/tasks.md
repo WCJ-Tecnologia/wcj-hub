@@ -1007,9 +1007,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Erro de e-mail inválido, campo obrigatório, tamanho máximo e número fora do limite saem em português nas telas do Núcleo
-- [ ] Teste em `tests/Feature/Nucleo/MensagensEmPortuguesTest.php` asserindo o texto exato de pelo menos quatro regras
-- [ ] Gate check passes: Build
+- [x] Erro de e-mail inválido, campo obrigatório, tamanho máximo e número fora do limite saem em português nas telas do Núcleo
+- [x] Teste em `tests/Feature/Nucleo/MensagensEmPortuguesTest.php` asserindo o texto exato de pelo menos quatro regras
+- [x] Gate check passes: Build
 
 **Tests**: integration
 **Gate**: build

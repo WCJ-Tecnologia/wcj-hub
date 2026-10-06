@@ -244,7 +244,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-11 | P1: Auditoria — gravação com canal e resultado, negações (AC 1, 2, 8, 9) | Design | Done |
 | NUC-12 | P1: Auditoria — tela, filtros, Histórico por ficha (AC 3–7, 10) | Design | Done |
 | NUC-13 | P2: Listas de escolha para gestor (AC 1–3) | - | Done |
-| NUC-14 | P3: Estados de tela e textos (AC 1–2) | - | In Progress |
+| NUC-14 | P3: Estados de tela e textos (AC 1–2) | - | Done |
 
 **Coverage:** 14 total, 0 mapped to tasks, 14 unmapped ⚠️ (mapeados na fase Tasks)
 

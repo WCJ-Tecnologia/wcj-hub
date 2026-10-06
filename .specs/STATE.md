@@ -39,10 +39,10 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
-- **Phase / Task**: Specify aprovada por Lucas Scholz em 06/10/2026. Design e Tasks concluídos por Cauã em 06/10/2026 (`design.md`, `tasks.md` com 24 tarefas em 6 fases, `validate_tasks.py` e `conferir-specs.mjs` limpos). Próxima fase: Execute a partir de T1.
-- **Completed**: B0 (PR #1, mergeado em 06/10).
+- **Phase / Task**: Execute concluído, T1 a T25 (25 tarefas em 6 fases, um commit por tarefa em `feat/b1-nucleo`). Gate Build verde no fim do lote: PHPUnit em MySQL, typecheck, lint, build, `test:guard` e Playwright (smoke com axe nos dois temas e o `@critical` de `e2e/nucleo.spec.ts`).
+- **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T25.
 - **In-progress** (file:line): none
-- **Next step**: Cauã roda Design (opcional) e Tasks → Execute em `feat/b1-nucleo`, PR em rascunho → Verifier → pronto. Em paralelo, B2 (Vitinho, trilho leve, sem pasta em `.specs/`).
+- **Next step**: Verifier em agente separado (quem não implementou), sobre `spec.md` e o intervalo de commits do B1, com o sensor de mutação nas regras de permissão, exclusão e anonimização; depois PR em rascunho e revisão do Lucas Scholz. Pendências para o PR: SPEC_DEVIATION dos três `destroy` (toast em vez de 403, AC 12/12/9) e a busca da auditoria por chave de card ("SGM-17"), que entra com o B3 pelo domínio de Projetos (A9).
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo
