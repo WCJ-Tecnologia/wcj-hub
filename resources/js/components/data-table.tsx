@@ -27,6 +27,7 @@ export function DataTable<Row>({
     caption,
     emptyState,
     className,
+    rowClassName,
 }: {
     columns: Column<Row>[];
     rows: Row[];
@@ -37,6 +38,8 @@ export function DataTable<Row>({
     caption: string;
     emptyState?: ReactNode;
     className?: string;
+    /** Destaque de uma linha (ex.: tentativa negada na auditoria), na tabela e no card. */
+    rowClassName?: (row: Row) => string | undefined;
 }) {
     if (rows.length === 0 && emptyState) return <>{emptyState}</>;
 
@@ -59,7 +62,7 @@ export function DataTable<Row>({
                     </thead>
                     <tbody>
                         {rows.map((row) => (
-                            <tr key={rowKey(row)} className="border-b border-border last:border-0">
+                            <tr key={rowKey(row)} className={cn('border-b border-border last:border-0', rowClassName?.(row))}>
                                 {columns.map((column) => (
                                     <td key={column.key} className={cn('px-4 py-3', column.className)}>
                                         {render(column, row)}
@@ -73,7 +76,7 @@ export function DataTable<Row>({
 
             <ul className="divide-y divide-border md:hidden" aria-label={caption}>
                 {rows.map((row) => (
-                    <li key={rowKey(row)} className="p-4">
+                    <li key={rowKey(row)} className={cn('p-4', rowClassName?.(row))}>
                         {mobileCard ? (
                             mobileCard(row)
                         ) : (

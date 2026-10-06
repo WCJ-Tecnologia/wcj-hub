@@ -929,8 +929,8 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Smoke e2e com axe e o detalhe aberto
-- [ ] Gate check passes: Build
+- [x] Smoke e2e com axe e o detalhe aberto
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

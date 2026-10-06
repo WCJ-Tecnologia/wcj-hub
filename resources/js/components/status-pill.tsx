@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, EyeOff, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, EyeOff, ShieldX, XCircle } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -37,7 +37,13 @@ const CONTACT: Record<string, Entry> = {
     anonymized: { tone: 'neutral', icon: EyeOff, label: 'Anonimizado' },
 };
 
-const SETS = { user: USER, client: CLIENT, contact: CONTACT };
+// F1 §03: o resultado da linha de auditoria é ok ou negado (G3).
+const AUDIT: Record<string, Entry> = {
+    success: { tone: 'approved', icon: CheckCircle2, label: 'Ok' },
+    denied: { tone: 'rejected', icon: ShieldX, label: 'Negado' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT };
 
 /**
  * Status is never communicated by colour alone — every pill carries an icon and

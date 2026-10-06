@@ -6,7 +6,7 @@ const SCREENS = [
     { path: '/admin/users', title: 'Usuários' },
     { path: '/admin/clients', title: 'Clientes' },
     { path: '/admin/contacts', title: 'Contatos' },
-    { path: '/admin/audit-logs', title: 'Logs de auditoria' },
+    { path: '/admin/audit-logs', title: 'Auditoria' },
     { path: '/admin/profile', title: 'Meu perfil' },
 ];
 
@@ -108,6 +108,26 @@ test('@smoke o diálogo de anonimizar contato passa no axe', async ({ page, axe 
     });
 });
 
+/** Abre o detalhe da linha mais recente: o login do e2e já gravou uma linha (G3). */
+async function openAuditDetail(admin: AdminPage) {
+    await admin.goto('/admin/audit-logs');
+    await expect(admin.heading).toHaveText('Auditoria');
+    await admin.page
+        .getByRole('button', { name: /^Ver detalhes/ })
+        .first()
+        .click();
+    await expect(admin.dialog).toBeVisible();
+    await expect(admin.dialog.getByText(/IP /)).toBeVisible();
+}
+
+test('@smoke o detalhe da auditoria passa no axe', async ({ page, axe }) => {
+    const admin = new AdminPage(page);
+    await openAuditDetail(admin);
+
+    const results = await axe().analyze();
+    expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+});
+
 /**
  * Tema escuro: todo token tem valor nos dois temas e o gate de contraste vale
  * para os dois. A classe é aplicada como o anti-FOUC do app.blade.php faz.
@@ -118,6 +138,7 @@ test.describe('@smoke tema escuro', () => {
         { path: '/admin/users', title: 'Usuários' },
         { path: '/admin/clients', title: 'Clientes' },
         { path: '/admin/contacts', title: 'Contatos' },
+        { path: '/admin/audit-logs', title: 'Auditoria' },
     ];
 
     for (const screen of DARK) {
@@ -176,6 +197,17 @@ test.describe('@smoke tema escuro', () => {
 
         await page.getByRole('button', { name: 'Novo contato' }).first().click();
         await expect(admin.dialog).toBeVisible();
+
+        const results = await axe().analyze();
+        expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+    });
+
+    test('@smoke o detalhe da auditoria passa no axe em dark mode', async ({ page, axe }) => {
+        const admin = new AdminPage(page);
+        await openAuditDetail(admin);
+
+        await page.evaluate(() => document.documentElement.classList.add('dark'));
+        await expect(page.locator('html')).toHaveClass(/dark/);
 
         const results = await axe().analyze();
         expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
