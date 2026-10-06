@@ -633,10 +633,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Clientes AC 1–12 e 14 com teste cada; edge cases de máscara e de troca de país
-- [ ] `ClientFactory` gera CNPJ válido
-- [ ] Testes em `tests/Feature/Nucleo/ClientServiceTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Clientes AC 1–12 e 14 com teste cada; edge cases de máscara e de troca de país
+- [x] `ClientFactory` gera CNPJ válido
+- [x] Testes em `tests/Feature/Nucleo/ClientServiceTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

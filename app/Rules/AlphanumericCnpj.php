@@ -29,6 +29,25 @@ class AlphanumericCnpj implements ValidationRule
         }
     }
 
+    /**
+     * Os 12 primeiros caracteres seguidos dos 2 dígitos verificadores. Também gera CNPJ válido
+     * para a factory de clientes.
+     */
+    public static function withCheckDigits(string $base): string
+    {
+        foreach (self::WEIGHTS as $weights) {
+            $sum = 0;
+            foreach ($weights as $offset => $weight) {
+                $sum += (ord($base[$offset]) - 48) * $weight;
+            }
+
+            $remainder = $sum % 11;
+            $base .= $remainder < 2 ? '0' : (string) (11 - $remainder);
+        }
+
+        return $base;
+    }
+
     private function valid(string $cnpj): bool
     {
         // Todo igual (00000000000000) passa no cálculo, mas não é CNPJ.
@@ -36,18 +55,6 @@ class AlphanumericCnpj implements ValidationRule
             return false;
         }
 
-        foreach (self::WEIGHTS as $index => $weights) {
-            $sum = 0;
-            foreach ($weights as $offset => $weight) {
-                $sum += (ord($cnpj[$offset]) - 48) * $weight;
-            }
-
-            $remainder = $sum % 11;
-            if ((int) $cnpj[12 + $index] !== ($remainder < 2 ? 0 : 11 - $remainder)) {
-                return false;
-            }
-        }
-
-        return true;
+        return self::withCheckDigits(substr($cnpj, 0, 12)) === $cnpj;
     }
 }

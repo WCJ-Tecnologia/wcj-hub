@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Platform\Models\Client;
+use App\Rules\AlphanumericCnpj;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +21,8 @@ class ClientFactory extends Factory
         return [
             'name' => fake()->unique()->company(),
             'country' => 'BR',
-            // CNPJ obrigatório no BR (check do banco); a validação do formato é do Service (B1).
-            'document' => fake()->unique()->numerify('##############'),
+            // CNPJ alfanumérico válido: o ClientService recusa o que não passa no dígito (N5).
+            'document' => AlphanumericCnpj::withCheckDigits(fake()->unique()->regexify('[0-9A-Z]{12}')),
         ];
     }
 
