@@ -85,7 +85,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | Papel | Quem é | O que faz no sistema | O que não pode ver ou fazer |
 |---|---|---|---|
 | Administrador | Sócios, inclusive o Wilson | Tudo | — |
-| Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Tudo nos projetos que gere | Pipeline comercial e valores de proposta (C14) |
+| Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Tudo nos projetos que gere; cria cliente ao criar projeto e edita os clientes dos projetos dele (N6) | Pipeline comercial e valores de proposta (C14) |
 | Desenvolvedor | Devs PJ | Nos projetos em que está alocado: cria card no `Backlog`, move, edita, comenta, anexa, lança horas e faz teste cruzado | CRM; painel de produtividade (P54). Não exclui nem arquiva card e não mexe em sprint, pacote nem configuração (P26, P45, premissa) |
 | Comercial | Ninguém no início | Vê todos os leads, edita os próprios e converte lead em cliente | Tarefas internas de projeto |
 
@@ -177,7 +177,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 - **G1** O sistema traz um padrão pronto que o gestor ajusta por projeto. Só é fixo o que protege segurança e auditoria.
 - **G2** Usuário, cliente, contato e lead já usados não são excluídos: são desativados, com quem e quando, e podem ser reativados. Card de projeto já usado é arquivado (P26). Só se exclui de verdade o que nunca foi usado, e só quem tem permissão exclui. Tudo fica na auditoria.
-- **G3** Toda alteração, em qualquer módulo, fica na auditoria: quem, quando, o antes e o depois, e por onde (tela ou qual IA). Tentativa negada também fica. A auditoria nunca é apagada.
+- **G3** Toda alteração, em qualquer módulo, fica na auditoria: quem, quando, o antes e o depois, e por onde (tela ou qual IA). Tentativa negada também fica. A auditoria nunca é apagada. A tela geral da auditoria é só do Administrador (decisão de 06/10); os demais veem o histórico de cada registro pela ficha.
 - **G4** O que o papel não vê na tela, a IA dele também não vê nem altera.
 - **G5** Dado sem regra que o use não entra no sistema. Volta quando alguém pedir, com o motivo.
 - **G6** Na v1 não existem: aprovação em dois níveis, ranking ou metas, mensagem ao cliente por WhatsApp e aplicativo nativo (a v1 é web responsiva).
@@ -185,14 +185,14 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 ### 1. Núcleo
 
-- **N1** O usuário é convidado pelo Administrador, com senha provisória trocada no primeiro acesso.
+- **N1** O usuário é convidado pelo Administrador, por **e-mail**, com senha provisória trocada no primeiro acesso (decisão de 06/10: o convite vai por e-mail, não é mostrado na tela).
 - **N2** Cada usuário tem um papel, entre os 4 fixos, atribuído pelo Administrador. Não se cria papel novo.
 - **N3** Carga diária (ex.: 8 h ou 4 h): obrigatória para o Desenvolvedor, opcional para os outros papéis, definida pelo Administrador. Sem carga, a tarefa do dev fica sem data prevista e sem capacidade. Mudar a carga vale dali para a frente.
 - **N4** Usuário desativado perde o acesso na hora, inclusive as conexões de IA.
 - **N5** Cliente brasileiro é identificado pelo CNPJ, numérico ou alfanumérico (o CNPJ com letras vale desde julho de 2026), e CNPJ repetido é recusado. Empresa estrangeira: país + identificador fiscal do país, opcional. Pessoa física não é cliente.
-- **N6** O cliente nasce por cadastro direto ou por lead ganho, sempre sem contrato.
-- **N7** A própria WCJ é um cliente: é a dona dos projetos internos e dos produtos (ex.: Wpay).
-- **N8** O contato é um cadastro só, seja pessoa de cliente ou de lead: nome, e-mail e telefone. Quando o lead vira cliente, o contato não é redigitado. O sistema avisa quando já existe contato com o mesmo e-mail, sem recusar. O gestor também cadastra contato dos clientes dos projetos dele.
+- **N6** O cliente nasce por cadastro direto do Administrador, pelo **gestor ao criar um projeto** (botão *Novo cliente* no formulário do projeto, decisão de 06/10) ou, na v2, por lead ganho; sempre sem contrato. O gestor edita os clientes dos projetos dele; desativar e excluir é do Administrador.
+- **N7** A própria WCJ é um cliente: é a dona dos projetos internos e dos produtos (ex.: Wpay). Já vem semeada na instalação, com o CNPJ 38.614.817/0001-22, e não se desativa.
+- **N8** O contato é um cadastro só, seja pessoa de cliente ou de lead: nome, e-mail e telefone. Quando o lead vira cliente, o contato não é redigitado. O sistema avisa quando já existe contato com o mesmo e-mail, sem recusar. O gestor também cadastra contato dos clientes dos projetos dele. O contato é **opcional**: nenhum cadastro o exige; ele existe para a equipe lembrar com quem fala na empresa (decisão de 06/10). Veem contatos o Administrador e o gestor, nos clientes dos projetos dele; o dev vê só o nome em "quem pediu" no card de suporte (P52).
 - **N9** O contato não tem login na v1.
 - **N10** O contrato fica fora da v1. A lista de **tipos de serviço** (projeto, sustentação, auditoria, alocação de dev, infraestrutura), que o lead usa para dizer o que está sendo vendido, entra com o CRM, na v2: nada da fatia 1 a lê (R7).
 - **N11** O Administrador desativa e reativa usuário, cliente e contato. Ter algo aberto não impede.
@@ -403,7 +403,7 @@ A levantar em Chamados:
 | Funil e CRM pós-auditoria do DaaS | importação | **Não** (C15) |
 | DaaS consulta contratos no Hub | saída | Depois da v1 (N10, D-CRM-04) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | **Não** (C13) |
-| E-mail interno | saída | **Sim**: Projetos avisa dev e QA por e-mail (P22, SMTP Zoho da WCJ, como no sistema de obras). Convites `.ics` e resumo diário entram com o CRM (v2, C9) |
+| E-mail interno | saída | **Sim**: convite de usuário com senha provisória (N1); Projetos avisa dev e QA (P22). SMTP Zoho da WCJ, como no sistema de obras. Convites `.ics` e resumo diário entram com o CRM (v2, C9) |
 | E-mail de suporte | entrada (e-mail vira chamado) e saída (avisos ao cliente) | Com o módulo Chamados (D-CHM-02) |
 | GLPI | entrada e saída pela API | Em avaliação (D-CHM-01) |
 | WhatsApp | — | **Não** (G6) |

@@ -29,7 +29,7 @@
 
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
-| Cliente | lista dos clientes ativos (F1) | sim | | Todo projeto é de um cliente (P1). Cliente desativado sai da lista; o projeto que já é dele continua (N11). |
+| Cliente | lista dos clientes ativos (F1) | sim | | Todo projeto é de um cliente (P1). Ao lado, o botão *Novo cliente* abre o cadastro de cliente (campos de F1) sem sair do formulário; ao salvar, o cliente novo já fica escolhido (N6, decisão de 06/10). Cliente desativado sai da lista; o projeto que já é dele continua (N11). |
 | Gestor | lista dos usuários ativos com papel Gestor de projetos ou Administrador | sim | quem está criando, se for Gestor de projetos | Um gestor por projeto (P1). Quem pode ser gestor: ver 10.1. |
 | Prefixo | texto, até 10, único no sistema | sim | | Forma a chave das tarefas: `SGM` → `SGM-17` (P3, P16). Proposta: letras e números, sem espaço, gravado em maiúsculas (ver 10.2). Repetido é recusado, sem diferença de maiúscula e minúscula. Fica só leitura depois que a primeira tarefa do projeto é criada, mesmo que ela seja excluída depois, porque o número nunca é reaproveitado (P3, P16). |
 | Nome | texto, até 160 | sim | | Ex.: "Wpay", "Gestão de multas". |
@@ -118,6 +118,7 @@ Estado vazio: Projetos, "Nenhum projeto ainda. *Novo projeto*" (para o dev, sem 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
 | Novo projeto | Administrador; Gestor de projetos | Cria o projeto com o quadro padrão, sem áreas e com os padrões (P10, P15, P18, P46). | Prefixo repetido: recusa com "O prefixo SGM já é do projeto X" (P3). |
+| Novo cliente (no formulário do projeto) | Administrador; gestor | Cria o cliente com os campos de F1 e o deixa escolhido no projeto (N6). | CNPJ repetido: mesma recusa de F1 (N5). |
 | Editar | Administrador; gestor do projeto | Cliente, gestor, nome, tipo e datas; o prefixo, só até a primeira tarefa (P3). Vale dali para a frente (P8). | Ao trocar o gestor: "Fulano deixa de gerir este projeto e só continua vendo se estiver alocado. Continuar?" (P5) |
 | Encerrar | Administrador; gestor do projeto | Marca o projeto como encerrado. Tarefas, sprint e pacotes ficam como estão; ninguém cria tarefa nova, nem pela tela nem pela IA (P7). | "O projeto tem N cards fora da etapa de papel Pronto. Eles continuam no quadro. Encerrar?" |
 | Reabrir | Administrador; gestor do projeto | Volta a aberto e a receber tarefas (P7). | |

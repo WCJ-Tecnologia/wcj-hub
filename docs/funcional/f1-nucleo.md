@@ -1,6 +1,6 @@
 # F1. Núcleo: usuários, clientes, contatos e auditoria
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 0.2, de 06/10/2026: pontos a validar respondidos por Lucas Scholz no mesmo dia (seção 10). Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -12,11 +12,11 @@
 
 ## 01. Fluxo funcional
 
-**Usuários.** O Administrador abre *Administração → Usuários*, clica em *Convidar usuário*, preenche nome, e-mail, papel e carga diária e confirma. O sistema cria a pessoa com uma senha provisória, que ela troca no primeiro acesso (N1). Dali em diante o Administrador edita a ficha, troca o papel, ajusta a carga, desativa e reativa (N2, N3, N11). Usuário desativado perde o acesso no mesmo instante, inclusive as conexões de IA (N4).
+**Usuários.** O Administrador abre *Administração → Usuários*, clica em *Convidar usuário*, preenche nome, e-mail, papel e carga diária e confirma. O sistema manda o convite por e-mail, com o endereço do Hub, o login e a senha provisória, que a pessoa troca no primeiro acesso (N1). Dali em diante o Administrador edita a ficha, troca o papel, ajusta a carga, desativa e reativa (N2, N3, N11). Usuário desativado perde o acesso no mesmo instante, inclusive as conexões de IA (N4).
 
-**Clientes.** O Administrador abre *Administração → Clientes*, clica em *Novo cliente*, informa o nome, o país e o CNPJ (ou o identificador fiscal, se a empresa for de fora) e confirma (N5). O cliente nasce sem contrato (N6). A própria WCJ já existe como cliente, para os projetos internos e os produtos (N7). Na v2, o lead ganho no CRM também cria cliente por aqui, sem redigitar (C10).
+**Clientes.** O Administrador abre *Administração → Clientes*, clica em *Novo cliente*, informa o nome, o país e o CNPJ (ou o identificador fiscal, se a empresa for de fora) e confirma (N5). O gestor cria cliente sem sair de Projetos: no formulário do projeto, o botão *Novo cliente* ao lado do campo Cliente abre o mesmo cadastro, e ao salvar o cliente já fica escolhido ([F2](f2-projeto-e-configuracao.md), N6). O cliente nasce sem contrato (N6). A própria WCJ já existe como cliente, semeada na instalação com o CNPJ 38.614.817/0001-22, e não se desativa (N7). Na v2, o lead ganho no CRM também cria cliente por aqui, sem redigitar (C10).
 
-**Contatos.** Na ficha do cliente, aba *Contatos*, o Administrador ou o gestor de um projeto desse cliente clica em *Novo contato*, informa nome, e-mail e telefone e confirma (N8). Se já existe contato com o mesmo e-mail, o sistema avisa e deixa seguir (N8). O contato não tem login (N9). A pedido do titular, o Administrador anonimiza o contato: os dados pessoais somem, o histórico fica (N12).
+**Contatos.** Na ficha do cliente, aba *Contatos*, o Administrador ou o gestor de um projeto desse cliente clica em *Novo contato*, informa nome, e-mail e telefone e confirma (N8). O contato é opcional: nenhum cadastro o exige; ele existe para a equipe lembrar com quem fala na empresa (N8). Se já existe contato com o mesmo e-mail, o sistema avisa e deixa seguir (N8). O contato não tem login (N9). A pedido do titular, o Administrador anonimiza o contato: os dados pessoais somem, o histórico fica (N12).
 
 **Auditoria.** O Administrador abre *Administração → Auditoria* e vê, em ordem do mais recente, toda alteração feita em qualquer módulo e toda tentativa negada: quem, quando, por onde (tela ou qual IA), o que mudou (G3). Nada ali se edita nem se apaga (G3). Nas fichas do Núcleo (usuário, cliente, contato), o botão *Histórico* abre a auditoria já filtrada naquele registro. No card, *Histórico* abre a linha do tempo dos movimentos ([F7](f7-indicadores.md)), que todo alocado vê; de lá, o Administrador tem *Ver na auditoria*.
 
@@ -30,7 +30,7 @@
 | E-mail | e-mail, até 160, único | sim | | É o login. Repetido é recusado. |
 | Papel | lista fixa: Administrador, Gestor de projetos, Desenvolvedor, Comercial | sim | | Só os 4; não se cria papel (N2). Comercial fica pronto para a v2, sem uso hoje. |
 | Carga diária | horas, com decimais, maior que 0 e até 24 | sim para Desenvolvedor; opcional para os outros | | Horas por dia na WCJ, ex.: 8 ou 4 (N3). Usada na data prevista e na capacidade (P28, P48). Mudar vale dali para a frente. |
-| Senha provisória | gerada pelo sistema | | | Trocada no primeiro acesso (N1). Nunca aparece na auditoria. |
+| Senha provisória | gerada pelo sistema e enviada por e-mail no convite | | | Trocada no primeiro acesso (N1). Nunca aparece na tela nem na auditoria. |
 | Situação | só leitura: Ativo / Desativado em DD/MM/AAAA por Fulano | | Ativo | (N11) |
 
 ### Cliente (criar e editar)
@@ -77,7 +77,7 @@ Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Convidar usuário | Administrador | Cria a pessoa com senha provisória (N1). | Mostra a senha provisória uma vez, para o Administrador repassar (ver 10.1). |
+| Convidar usuário | Administrador | Cria a pessoa e manda o convite por e-mail, com o endereço do Hub, o login e a senha provisória (N1). | Se o e-mail se perder, *Reenviar convite* gera outra senha provisória e manda de novo; a anterior deixa de valer. |
 | Editar | Administrador | Nome, e-mail, papel, carga. Trocar o papel derruba as conexões de IA da pessoa (IA6). Mudar a carga vale dali para a frente (N3). | Ao trocar o papel: "As conexões de IA de Fulano serão desconectadas. Continuar?" |
 | Desativar | Administrador | A pessoa perde o acesso agora: sessões encerradas e conexões de IA revogadas (N4, IA6). As tarefas em que ela é dev ou QA continuam apontando para ela (P5 trata só de sair do projeto). | "Fulano perde o acesso imediatamente. Continuar?" |
 | Reativar | Administrador | Volta a entrar com a senha de antes. As conexões de IA não voltam: a pessoa reconecta (IA6). | |
@@ -88,8 +88,8 @@ Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Novo cliente | Administrador | Cria o cliente, sem contrato (N5, N6). | CNPJ repetido: recusa com "Já existe o cliente X com este CNPJ" (N5). |
-| Editar | Administrador | Nome, país, documento. | Mesma recusa de CNPJ repetido. |
+| Novo cliente | Administrador; gestor, pelo botão *Novo cliente* do formulário do projeto (F2) | Cria o cliente, sem contrato (N5, N6). | CNPJ repetido: recusa com "Já existe o cliente X com este CNPJ" (N5). |
+| Editar | Administrador; gestor nos clientes dos projetos dele (N6) | Nome, país, documento. | Mesma recusa de CNPJ repetido. |
 | Desativar / Reativar | Administrador | Desativado sai das listas de escolha (ex.: criar projeto) e fica em cinza; ter projeto aberto não impede (N11). | "O cliente X tem N projetos abertos; eles continuam. Desativar?" |
 | Excluir | Administrador | Só cliente sem projeto e sem contato (G2). | "Excluir de verdade. Não dá para desfazer." |
 | Histórico | Administrador | Auditoria filtrada no cliente. | |
@@ -123,7 +123,7 @@ Não se aplica: nenhuma regra pede número no Núcleo (G5).
 
 ## 07. Avisos e documentos gerados
 
-- **Senha provisória:** mostrada uma vez na tela ao Administrador (ver 10.1). Nenhum e-mail no Núcleo na fatia 1.
+- **Convite:** e-mail ao usuário convidado, com o endereço do Hub, o login e a senha provisória, que é trocada no primeiro acesso (N1). *Reenviar convite* manda outro, com senha nova. É o único e-mail do Núcleo.
 - **Aviso de contato repetido:** "Já existe Fulano (Cliente X) com este e-mail" (N8). Deixa seguir.
 - **Recusa de CNPJ repetido:** "Já existe o cliente X com este CNPJ" (N5). Não segue.
 - Nenhum documento gerado.
@@ -139,7 +139,8 @@ Não se aplica na fatia 1: nenhuma regra pede exportação, e a auditoria não e
 | Usuários: ver lista | sim | só nomes ativos, nas telas de alocar e atribuir (F2, F3) | só nomes dos alocados no projeto, nas telas do card (F3) |
 | Usuários: convidar, editar, desativar, excluir | sim | não | não |
 | Clientes: ver lista e ficha | sim | sim, para escolher no projeto (P1) | só o nome do cliente no projeto em que está (P5) |
-| Clientes: criar, editar, desativar, excluir | sim | não (N6) | não |
+| Clientes: criar e editar | sim | cria pelo formulário do projeto; edita os clientes dos projetos dele (N6) | não |
+| Clientes: desativar, excluir | sim | não | não |
 | Contatos: ver | sim | dos clientes dos projetos dele | dos clientes dos projetos dele, só para ler "quem pediu" no card de suporte (P52) |
 | Contatos: criar, editar | sim | nos clientes dos projetos dele (N8) | não |
 | Contatos: desativar, excluir, anonimizar | sim | não | não |
@@ -151,7 +152,10 @@ A IA de cada pessoa tem exatamente estas permissões, nem mais nem menos (G4). O
 
 ## 10. Pontos a validar
 
-1. **Entrega da senha provisória.** O template mostra a senha uma vez na tela, para o Administrador repassar. Com o SMTP da WCJ configurado para os avisos de Projetos (P22), vale mandar o convite por e-mail? Hoje nenhuma regra pede; proposta: manter como o template faz e decidir depois do uso.
-2. **Gestor na auditoria.** G3 não diz quem vê a tela geral. Proposta: só o Administrador; o gestor vê o histórico de cada card, projeto e sprint pela ficha (F7). Confirmar.
-3. **WCJ como cliente.** N7 diz que a WCJ é um cliente. Proposta: ela já vem semeada na instalação, com o CNPJ da WCJ, e não pode ser desativada. Confirmar o CNPJ a usar.
-4. **Contato de lead na fatia 1.** O banco deixa o cliente do contato vazio para a v2 (lead). Na fatia 1 a tela exige cliente. Confirmar que ninguém precisa cadastrar contato "solto" antes do CRM.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima e na `necessidade.md`.
+
+1. **Entrega da senha provisória.** ~~Mostrar na tela, como o template~~ → **por e-mail** (N1). Entra a ação *Reenviar convite*.
+2. **Gestor na auditoria.** **Só o Administrador** vê a tela geral (G3). O gestor vê o histórico de cada registro pela ficha (F7).
+3. **WCJ como cliente.** Semeada na instalação com o **CNPJ 38.614.817/0001-22** (WCJ Tecnologia e Desenvolvimento de Sistemas Ltda), não desativável (N7).
+4. **Contato.** É para o cadastro e, na v2, para o CRM: **opcional**, um facilitador para a equipe lembrar os contatos da empresa; nenhum cadastro exige contato (N8). Na fatia 1 todo contato pertence a um cliente; contato de lead só na v2. Só Administrador e gestor (nos clientes dos projetos dele) veem contatos; o dev vê o nome em "quem pediu" no card de suporte.
+5. **Cliente criado a partir de Projetos** (pedido do Lucas Scholz em 06/10). Botão *Novo cliente* no formulário do projeto, para o gestor e o Administrador, com os mesmos campos; ao salvar, o cliente fica escolhido (N6, F2). Premissa decidida junto: o gestor também **edita** os clientes dos projetos dele, para corrigir um nome ou CNPJ sem chamar o Administrador; desativar e excluir continuam só do Administrador.

@@ -54,7 +54,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Objetivo.** Repositório com o template 0.6.0 adaptado ao Hub, as 27 tabelas migradas e semeadas, CI em MySQL 8, subindo do zero em até 3 minutos.
 
-**Dados.** Todas as tabelas do `banco.txt` (seções 1, 2 e 4), numa migração por tabela, na ordem das dependências; Passport e `notifications` publicados e ajustados para `datetime`. Sementes: `roles` (4), `stage_roles` (8), `task_priorities` (4), `test_results` (3), `validation_types` (4), `task_types` (4, com `improvement` e `support`), `rework_reasons` (5), `ai_assistants` (4), `contact_channels` (5), o cliente WCJ (N7) e o primeiro Administrador (`app:create-admin`). Dado de exemplo marcado como exemplo, com comando de limpeza.
+**Dados.** Todas as tabelas do `banco.txt` (seções 1, 2 e 4), numa migração por tabela, na ordem das dependências; Passport e `notifications` publicados e ajustados para `datetime`. Sementes: `roles` (4), `stage_roles` (8), `task_priorities` (4), `test_results` (3), `validation_types` (4), `task_types` (4, com `improvement` e `support`), `rework_reasons` (5), `ai_assistants` (4), `contact_channels` (5), o cliente WCJ (N7, CNPJ 38.614.817/0001-22, não desativável) e o primeiro Administrador (`app:create-admin`). Dado de exemplo marcado como exemplo, com comando de limpeza.
 
 **Telas.** Nenhuma nova. A tela de empresas do template sai; usuários passam a mostrar papel e carga diária (ajuste mínimo; a tela completa é B1).
 
@@ -74,9 +74,9 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Telas.** `/admin/usuarios` (lista, convidar, editar, desativar, reativar, excluir, histórico); `/admin/clientes` e `/admin/clientes/{id}` com a aba de contatos; `/admin/contatos` (lista geral); `/admin/auditoria` (lista com filtros e detalhe antes/depois); `/perfil` (do template). Campos, colunas, filtros e mensagens: seções 02 a 07 do F1.
 
-**Regras.** N1 a N9, N11, N12, G2, G3 em `Platform\Services\UserService` (convidar, trocar papel e carga, desativar revogando sessões e conexões de IA, reativar, excluir só sem histórico), `ClientService` (CNPJ alfanumérico, unique por país, desativar sem trava), `ContactService` (aviso de e-mail repetido, anonimizar numa transação limpando `audit_logs.changes`), `AuditService` (gravação única usada por todos os Services; consulta com filtros).
+**Regras.** N1 a N9, N11, N12, G2, G3 em `Platform\Services\UserService` (convidar com e-mail de convite e senha provisória, notificação `UserInvited` no canal `mail`, reenviar convite, trocar papel e carga, desativar revogando sessões e conexões de IA, reativar, excluir só sem histórico), `ClientService` (CNPJ alfanumérico, unique por país, desativar sem trava), `ContactService` (aviso de e-mail repetido, anonimizar numa transação limpando `audit_logs.changes`), `AuditService` (gravação única usada por todos os Services; consulta com filtros).
 
-**Permissão.** `UserPolicy`, `ClientPolicy`, `ContactPolicy` (gestor cria e edita contato nos clientes dos projetos dele), `AuditLogPolicy` (só admin). Dev vê nomes de usuários só pelas telas de Projetos.
+**Permissão.** `UserPolicy` (só admin), `ClientPolicy` (`create`: admin e gestor; `update`: admin e gestor dos projetos do cliente; `deactivate` e `delete`: admin), `ContactPolicy` (gestor cria e edita contato nos clientes dos projetos dele), `AuditLogPolicy` (só admin). Dev vê nomes de usuários só pelas telas de Projetos.
 
 ### B2. Projeto e configuração do quadro
 
@@ -86,7 +86,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Dados.** `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons`.
 
-**Telas.** `/projetos` (lista: os que o papel vê); `/projetos/novo` e `/projetos/{id}/editar`; `/projetos/{id}/configuracao` com as abas Pessoas, Etapas, Áreas e Padrões; `/admin/listas` com Tipos de tarefa e Motivos de retrabalho. Encerrar e reabrir na ficha do projeto.
+**Telas.** `/projetos` (lista: os que o papel vê); `/projetos/novo` e `/projetos/{id}/editar`, com o botão *Novo cliente* inline que chama o `ClientService` do Platform (N6); `/projetos/{id}/configuracao` com as abas Pessoas, Etapas, Áreas e Padrões; `/admin/listas` com Tipos de tarefa e Motivos de retrabalho. Encerrar e reabrir na ficha do projeto.
 
 **Regras.** P1, P2, P3 (prefixo congela após a 1ª tarefa), P5 (tirar pessoa limpa dev e QA das tarefas na mesma transação), P7, P8, P10 (nasce com as 8 etapas), P11 (papel fixo; uma etapa ativa de `queue`, `sprint` e `support`, travada pela coluna gerada `single_role_key`; "pelo menos uma" no Service), P12 (arquivar etapa com tarefas pede destino), P15 e P46 (padrões), P18, P40, G7, em `Projetos\Services\ProjectService`, `BoardStageService`, `ProjectAreaService` e `Platform\Services\ListService`.
 
@@ -210,7 +210,6 @@ O que para o desenvolvimento e exige humano:
 | Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | Lucas Scholz | B8 |
 | Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | Lucas Scholz | O canal `mail` do B3 (o `database` não espera). |
 | Acesso à VPS do DaaS, capacidade e separação do banco; DNS do subdomínio. | Alaor Rodrigues, Lucas Scholz | B10 e a homologação pública do B8. |
-| CNPJ da WCJ para a semente do cliente interno (N7). | Lucas Scholz | Semente do B0 (pode entrar com placeholder marcado). |
 | Diferenças do template 0.6.0 em relação à seção 9 do `banco.txt` (escrita sobre a 0.4.0). | Quem fizer o B0 | B0: conferir e anotar no ADR. |
 
 ## 8. Ordem de execução
