@@ -52,6 +52,7 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-25 | 06/10/2026 | **Execução:** Cauã e Vitinho desenvolvem, com IA (por inteiro ou em parte); Lucas Scholz supervisiona, aprova funcional, spec e PR, e faz o teste técnico do MCP. Substitui a execução da D-GER-17. O padrão `ai-systems` (0.6.0, skill `tlc-spec-driven`) continua valendo, no **trilho leve** (R6): trilho completo só em autenticação e papéis, Policies, OAuth e MCP, auditoria, desativação e exclusão; o resto com spec no PR, teste e uso no navegador. |
 | D-GER-26 | 06/10/2026 | Regras de uso revertidas (R2 a R5): qualquer pessoa alocada cria card no `Backlog` (P56); e-mail ao definir dev ou QA e ao devolver para desenvolvimento (P22); o card nasce só com título (P17); arrastar do `Backlog` para o `To do` põe na sprint aberta, sem cerimônia, e o objetivo da sprint é opcional (P45). |
 | D-GER-27 | 06/10/2026 | Cortes da fatia 1 no banco (R7 a R11, R13 a R15): saem CRM, `service_types`, `task_validations` e as flags `requires_*`, `sprint_members`, `package_statuses` e `ai_tool_calls`; motivos de retrabalho viram lista geral; o movimento do card guarda quem moveu e o canal; a integridade por projeto é conferida no Service, não por FK composta (Lucas Alencar confere). 41 → 27 tabelas. Indicadores: o atraso desconta a pausa e o realizado tem fallback no tempo em desenvolvimento (R16, R17). |
+| D-GER-30 | 06/10/2026 | **Prova de conceito do MCP, parte 1** (`docs/atas/2026-10-06-poc-mcp.md`): o Claude Code conectado pelo terminal é outro cliente OAuth e derruba a conexão do Claude app (uma por assistente, IA6). **O Claude Code vira o quarto assistente** (`claude_code`, canal `ia:claude_code`), com cartão próprio. Identificação na fatia 1 pelo `redirect_uri` (`claude.ai` = app; `localhost` = Claude Code) mais o nome do cliente. Nenhum assistente pediu confirmação antes de escrever: a IA9 vale como está, e toda escrita pela IA é reversível e auditada. ChatGPT condicional à parte 2; se der trabalho, v2. |
 | D-GER-29 | 06/10/2026 | **Lucas Varanda** (front-end) adapta o template à marca WCJ e desenha os componentes que o Hub pede e o template não tem. A marca entra no Hub inteira, só por `docs/brand/` e `design/tokens.json`; no mestre da marca (`wcj-master-brand-brain/marca/`) é que se muda. |
 | D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado pelo dono do módulo (Projetos: Rafael Garcia; Núcleo e IA: Lucas Scholz) antes da spec. O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
@@ -324,7 +325,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
 - **IA1** Só usuários internos conectam IA na v1.
 - **IA2** O sistema não chama IA por conta própria: toda IA é a do usuário, paga por ele.
 - **IA3** Quem usa o quê:
-  - devs: Claude (app ou Claude Code) ou Codex, lendo e escrevendo;
+  - devs: Claude (app), Claude Code (terminal, IDE ou desktop) ou Codex, lendo e escrevendo. Claude app e Claude Code são assistentes separados, cada um com a própria conexão (D-GER-30);
   - ChatGPT Pro: só lê;
   - ChatGPT Plus: não conecta;
   - comercial (hoje o Wilson): pelo GPT "WCJ Hub" no ChatGPT, com áudio, entregue junto com o CRM (v2).
@@ -335,7 +336,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
 - **IA8** Cada escrita altera uma coisa só. Não existe alteração em lote, exclusão pela IA nem consulta livre (SQL). **Fixa.**
 - **IA9** As ferramentas são marcadas como leitura ou escrita, para o assistente pedir confirmação antes de escrever. A segurança não depende disso: o servidor confere tudo.
 - **IA10** Texto vindo de cliente volta para a IA como dado, marcado como conteúdo externo.
-- **IA11** Toda escrita feita pela IA fica na auditoria com o canal (`ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`).
+- **IA11** Toda escrita feita pela IA fica na auditoria com o canal (`ia:claude`, `ia:claude_code`, `ia:codex`, `ia:chatgpt`, `ia:gpt`).
 - **IA12** Toda chamada da IA, inclusive de leitura, fica registrada por 180 dias (só ids e filtros) em log de arquivo do servidor, com rotação (R13). A tela de consulta do Administrador fica para quando alguém pedir; a escrita já está na auditoria (IA11).
 - **IA13** O resumo do cliente pela IA mostra só o que o papel vê.
 - **IA14** Ferramentas da fatia 1 (R12): seis. Cada ferramenta é Service + Policy + definição + teste, por isso só entram as de uso certo; as demais vêm com uso real, nas versões seguintes.
@@ -544,7 +545,7 @@ Consequência para a v1 (IA3):
 - [x] Lucas Alencar aprovou o `banco.txt` em 06/10 (D-GER-23).
 - [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.txt`, R15 e colunas de 06/10) em 06/10.
 - [ ] Rafael Garcia aprova os funcionais de Projetos (`docs/funcional/`, D-GER-28); Lucas Scholz, os de Núcleo e IA.
-- [ ] Prova de conceito: ver se Claude app e Claude Code (e Codex CLI e Codex no app) usam a mesma conexão ou uma cada. Como a conexão é uma por assistente (IA4, IA6), conectar um derrubaria o outro; se o dev precisar dos dois, `claude_code` volta a ser um assistente separado.
+- [x] Prova de conceito, parte 1 (06/10): Claude app e Claude Code pelo terminal são conexões distintas e uma derruba a outra; `claude_code` virou assistente separado (D-GER-30). Codex CLI × Codex no app fica para a parte 2.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
 - [ ] (v2) Prova de conceito: testar se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.
 - [ ] Enquete interna de ferramentas (em andamento): para cada pessoa, **qual assistente**, **qual plano** e **onde usa** (app web/desktop, celular, Claude Code, Codex).

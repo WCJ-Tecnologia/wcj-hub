@@ -240,15 +240,16 @@ ai_assistants                          (fechado)
 IA3 (quem usa o quê) e IA4 (uma autorização por assistente). write_allowed = false emite token só de
 leitura (ChatGPT Pro, IA3). O slug dá o canal da auditoria: ia:<slug> (IA11, T10).
 id   slug         label            write_allowed
-1    claude       Claude           true      (app e Claude Code)
-2    chatgpt      ChatGPT          false
+1    claude       Claude           true      (app claude.ai; redirect https://claude.ai/...)
+2    chatgpt      ChatGPT          false     (condicional à parte 2 da prova; se der trabalho, v2)
 3    codex        Codex            true      (CLI, IDE e app)
 4    gpt          GPT "WCJ Hub"    true      (v2, com o CRM; fica na semente para o canal existir)
+5    claude_code  Claude Code      true      (terminal, IDE, desktop; redirect localhost; D-GER-30)
 colunas: write_allowed boolean not null
-Claude app e Claude Code são o mesmo assistente, e o Codex CLI e o Codex no app também. Se cada um
-fizer a própria conexão, conectar um derruba o outro (uma conexão por assistente, IA4, IA6). Fica
-como está; a prova de conceito (D-GER-17) confere. Se o dev precisar dos dois, claude_code volta a
-ser um assistente separado (Sessão D).
+Prova de conceito de 06/10 (D-GER-30): o Claude Code conectado pelo terminal é outro cliente OAuth e
+derrubava a conexão do app (uma por assistente, IA4, IA6), então virou o assistente 5. O servidor os
+distingue pelo redirect_uri (claude.ai × localhost) e pelo client_name. Codex CLI × Codex no app: a
+parte 2 da prova diz se também separam.
 
 =====================================================================
 ai_authorizations

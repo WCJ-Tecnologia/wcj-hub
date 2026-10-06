@@ -16,7 +16,7 @@ Três palavras aparecem no assistente e nesta tela. **MCP** é o padrão de cone
 
 **Conectar (IA4, IA5).**
 
-1. A pessoa abre *Perfil → Conexões de IA*. Há um cartão por assistente: Claude (app ou Claude Code), Codex (terminal, IDE ou app) e ChatGPT (plano Pro, só leitura) (IA3).
+1. A pessoa abre *Perfil → Conexões de IA*. Há um cartão por assistente: Claude (app claude.ai), Claude Code (terminal, IDE ou desktop), Codex (terminal, IDE ou app) e ChatGPT (plano Pro, só leitura; condicional à parte 2 da prova) (IA3, D-GER-30).
 2. Clica em *Conectar* no cartão. O Hub mostra o endereço do conector do Hub e onde colá-lo no assistente: no Claude, "Customize → Connectors"; no Codex, o comando de adicionar o servidor e o de login; no ChatGPT Pro, o modo desenvolvedor. Não há chave para copiar (IA4).
 3. No assistente, a pessoa adiciona o conector com esse endereço. O assistente abre a página de login do Hub. Quem ainda não entrou no Hub naquele navegador entra com o e-mail e a senha de sempre.
 4. O Hub mostra a tela de autorização: o nome do assistente, a pessoa e o que a conexão vai poder fazer em cada módulo, limitado pelo papel dela (IA5). Se já existe conexão daquele assistente, a tela avisa que ela será substituída (IA6).
@@ -41,7 +41,7 @@ Três palavras aparecem no assistente e nesta tela. **MCP** é o padrão de cone
 
 | Campo | O que mostra | Regra |
 |---|---|---|
-| Assistente | Claude (app ou Claude Code); Codex (terminal, IDE ou app); ChatGPT (plano Pro). | (IA3) |
+| Assistente | Claude (app); Claude Code; Codex (terminal, IDE ou app); ChatGPT (plano Pro). | (IA3, D-GER-30) |
 | Situação | "Conectado desde DD/MM/AAAA HH:MM" ou "Não conectado". | (IA6) |
 | O que pode | Por módulo: "Núcleo: ler", "Projetos: ler e escrever" ou "Projetos: ler". Só quando conectado. | (IA4, IA5) |
 | Observação | No ChatGPT: "Só leitura. O ChatGPT Plus não conecta." | (IA3) |
@@ -229,7 +229,7 @@ No ChatGPT, qualquer papel só lê (IA3). O Comercial conecta, só com Núcleo p
 
 Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, no F1, na `necessidade.md` (IA4) e no `banco.txt` (coluna aditiva em `users`).
 
-1. **Claude app e Claude Code dividem a conexão?** OK: mesmo assistente na fatia 1; a prova de conceito confere; se precisar, o Claude Code vira um quarto cartão.
+1. **Claude app e Claude Code dividem a conexão?** Respondido pela prova de conceito em 06/10 (D-GER-30): **não**, quando o Claude Code entra pelo terminal. O Claude Code é o quarto cartão. O conector do claude.ai aparece sozinho no Claude Code da mesma conta e aí divide a conexão do app; isso continua valendo e não precisa de cartão.
 2. **Como cada assistente se identifica.** OK: depende da prova de conceito; assistente não reconhecido é recusado como "não homologado".
 3. **Quem escolhe "só ler".** **O Administrador**, no cadastro do usuário (F1): a marca "IA pode escrever" define se a IA da pessoa altera dados ou só consulta (IA4). A tela de autorização não oferece escolha. Mudar a marca derruba as conexões da pessoa (IA6).
 4. **"Núcleo: ler" sem ferramenta.** OK: o escopo aparece desde já.
