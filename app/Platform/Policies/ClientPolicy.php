@@ -16,6 +16,8 @@ class ClientPolicy
 {
     public const WCJ_NOT_DEACTIVATABLE = 'A WCJ não pode ser desativada';
 
+    public const WCJ_NOT_DELETABLE = 'A WCJ não pode ser excluída';
+
     public function __construct(private readonly ClientProjects $projects) {}
 
     public function viewAny(User $user): bool
@@ -54,9 +56,15 @@ class ClientPolicy
         return $user->isAdmin();
     }
 
-    public function delete(User $user, Client $client): bool
+    // N7: a WCJ existe em toda instalação. Recém-instalada ela ainda não tem histórico, e o
+    // deleteIfUnused() sozinho a deixaria sair.
+    public function delete(User $user, Client $client): Response
     {
-        return $user->isAdmin();
+        if (! $user->isAdmin()) {
+            return Response::deny();
+        }
+
+        return $client->isWcj() ? Response::deny(self::WCJ_NOT_DELETABLE) : Response::allow();
     }
 
     /** Lista de escolha de clientes ativos (NUC-13): id e nome, para montar projeto. */

@@ -101,6 +101,21 @@ class ClientPolicyTest extends TestCase
         $this->assertTrue($admin->can('reactivate', $wcj));
     }
 
+    // Clientes AC 14: a WCJ existe em toda instalação. Numa instalação nova ela ainda não tem
+    // projeto nem contato, e o "só exclui o nunca usado" a deixaria sair.
+    public function test_wcj_nunca_se_exclui_nem_sem_historico(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('country', 'BR')->where('document', WcjClientSeeder::CNPJ)->sole();
+        $admin = User::factory()->admin()->create();
+
+        $response = Gate::forUser($admin)->inspect('delete', $wcj);
+
+        $this->assertTrue($response->denied());
+        $this->assertSame('A WCJ não pode ser excluída', $response->message());
+        $this->assertTrue($admin->can('delete', Client::factory()->create()));
+    }
+
     public function test_o_mesmo_documento_em_outro_pais_nao_e_a_wcj(): void
     {
         $admin = User::factory()->admin()->create();
