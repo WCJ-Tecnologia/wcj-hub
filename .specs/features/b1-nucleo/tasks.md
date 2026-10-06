@@ -790,11 +790,11 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Desativar com falha na auditoria da revogação: usuário ativo, sem `deactivated_at`/`deactivated_by`, sessões e conexões de IA intactas, nenhuma linha de auditoria nova (Usuários AC 8)
-- [ ] Desativar com falha depois de encerrar as sessões: as sessões voltam junto com o resto (Usuários AC 8)
-- [ ] Trocar papel e trocar "IA pode escrever" com falha na revogação: papel, marca, conexões e auditoria como estavam (Usuários AC 6, 7)
-- [ ] M10 e M33 reaplicados numa cópia descartável em `/tmp` (com `vendor` copiado) fazem os testes novos falharem; a cópia é removida
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Desativar com falha na auditoria da revogação: usuário ativo, sem `deactivated_at`/`deactivated_by`, sessões e conexões de IA intactas, nenhuma linha de auditoria nova (Usuários AC 8)
+- [x] Desativar com falha depois de encerrar as sessões: as sessões voltam junto com o resto (Usuários AC 8)
+- [x] Trocar papel e trocar "IA pode escrever" com falha na revogação: papel, marca, conexões e auditoria como estavam (Usuários AC 6, 7)
+- [x] M10 e M33 reaplicados numa cópia descartável em `/tmp` (com `vendor` copiado) fazem os testes novos falharem; a cópia é removida
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

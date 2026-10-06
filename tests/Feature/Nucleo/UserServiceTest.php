@@ -4,14 +4,18 @@ namespace Tests\Feature\Nucleo;
 
 use App\Mail\TemporaryPasswordMail;
 use App\Platform\Controllers\Auth\AuthenticatedSessionController;
+use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AiAssistant;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
+use App\Platform\Services\AuditService;
+use App\Platform\Services\SessionService;
 use App\Platform\Services\UserService;
 use Database\Seeders\AiAssistantSeeder;
 use DomainException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -273,6 +277,112 @@ class UserServiceTest extends TestCase
             ->post('/admin/login', ['email' => 'dev@example.com', 'password' => 'password'])
             ->assertSessionHasErrors(['email' => AuthenticatedSessionController::INVALID_CREDENTIALS]);
         $this->assertGuest();
+    }
+
+    /**
+     * O UserService passa a usar um AuditService que falha ao auditar a revogação de uma conexão
+     * de IA: a falha cai depois de o usuário, a primeira conexão e a auditoria do usuário já
+     * terem sido gravados, o pior ponto para uma escrita sem transação.
+     */
+    private function failWhenAuditingAiRevocation(): void
+    {
+        $this->app->instance(AuditService::class, new class extends AuditService
+        {
+            public function log(AuditActionEnum $action, Model $auditable, ?array $before = null, ?array $after = null, ?int $userId = null, ?int $aiAuthorizationId = null): AuditLog
+            {
+                if ($auditable instanceof AiAuthorization) {
+                    throw new RuntimeException('falha simulada na auditoria da revogação');
+                }
+
+                return parent::log($action, $auditable, $before, $after, $userId, $aiAuthorizationId);
+            }
+        });
+        $this->service = app(UserService::class);
+    }
+
+    /** Dev com duas conexões de IA ativas e duas sessões, e o estado dele para comparar depois. */
+    private function devWithSessionsAndAi(): array
+    {
+        config(['session.driver' => 'database']);
+        $dev = User::factory()->developer()->create()->fresh();
+        [$claude, $codex] = $this->aiAuthorizations($dev);
+        DB::table('sessions')->insert([
+            ['id' => 'notebook', 'user_id' => $dev->id, 'payload' => '', 'last_activity' => time()],
+            ['id' => 'celular', 'user_id' => $dev->id, 'payload' => '', 'last_activity' => time()],
+        ]);
+
+        return [$dev, $claude, $codex];
+    }
+
+    private function assertUntouched(User $dev, AiAuthorization ...$authorizations): void
+    {
+        $fresh = $dev->fresh();
+        $this->assertNull($fresh->deactivated_at);
+        $this->assertNull($fresh->deactivated_by);
+        $this->assertSame(RoleEnum::DEVELOPER->value, $fresh->role_id);
+        $this->assertTrue($fresh->ai_write_allowed);
+        $this->assertSame(['celular', 'notebook'], DB::table('sessions')->where('user_id', $dev->id)->orderBy('id')->pluck('id')->all());
+        foreach ($authorizations as $authorization) {
+            $this->assertNull($authorization->fresh()->revoked_at);
+        }
+        $this->assertSame(0, AuditLog::query()->count());
+    }
+
+    // AC 8: "na mesma transação"
+    public function test_desativar_que_falha_na_revogacao_da_ia_desfaz_tudo(): void
+    {
+        [$dev, $claude, $codex] = $this->devWithSessionsAndAi();
+        $this->failWhenAuditingAiRevocation();
+
+        $this->assertThrows(fn () => $this->service->deactivate($dev, $this->admin), RuntimeException::class);
+
+        $this->assertUntouched($dev, $claude, $codex);
+    }
+
+    // AC 8: a última escrita (encerrar as sessões) também volta.
+    public function test_desativar_que_falha_depois_de_encerrar_as_sessoes_desfaz_tudo(): void
+    {
+        [$dev, $claude, $codex] = $this->devWithSessionsAndAi();
+        $this->app->instance(SessionService::class, new class extends SessionService
+        {
+            public function terminateOthers(User $user, ?string $keepSessionId = null): int
+            {
+                parent::terminateOthers($user, $keepSessionId);
+
+                throw new RuntimeException('falha simulada depois de encerrar as sessões');
+            }
+        });
+        $this->service = app(UserService::class);
+
+        $this->assertThrows(fn () => $this->service->deactivate($dev, $this->admin), RuntimeException::class);
+
+        $this->assertUntouched($dev, $claude, $codex);
+    }
+
+    // AC 6: "na mesma transação"
+    public function test_trocar_o_papel_que_falha_na_revogacao_da_ia_desfaz_tudo(): void
+    {
+        [$dev, $claude, $codex] = $this->devWithSessionsAndAi();
+        $this->failWhenAuditingAiRevocation();
+
+        $this->assertThrows(fn () => $this->service->update($dev, [
+            'role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $dev->name, 'email' => $dev->email, 'daily_hours' => '8',
+        ], $this->admin), RuntimeException::class);
+
+        $this->assertUntouched($dev, $claude, $codex);
+    }
+
+    // AC 7
+    public function test_trocar_a_marca_ia_pode_escrever_que_falha_na_revogacao_desfaz_tudo(): void
+    {
+        [$dev, $claude, $codex] = $this->devWithSessionsAndAi();
+        $this->failWhenAuditingAiRevocation();
+
+        $this->assertThrows(fn () => $this->service->update($dev, [
+            'role_id' => RoleEnum::DEVELOPER->value, 'name' => $dev->name, 'email' => $dev->email, 'daily_hours' => '8', 'ai_write_allowed' => false,
+        ], $this->admin), RuntimeException::class);
+
+        $this->assertUntouched($dev, $claude, $codex);
     }
 
     public function test_desativar_quem_ja_esta_desativado_mantem_o_carimbo_original(): void
