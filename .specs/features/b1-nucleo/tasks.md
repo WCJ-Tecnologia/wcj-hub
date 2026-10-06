@@ -902,10 +902,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Admin vê; gestor e dev 403 e a negação gravada
-- [ ] Dívida A6 do `AuditLogController::index` sai do `divida.php`
-- [ ] Testes em `tests/Feature/Nucleo/AuditLogControllerTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Admin vê; gestor e dev 403 e a negação gravada
+- [x] Dívida A6 do `AuditLogController::index` sai do `divida.php`
+- [x] Testes em `tests/Feature/Nucleo/AuditLogControllerTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
