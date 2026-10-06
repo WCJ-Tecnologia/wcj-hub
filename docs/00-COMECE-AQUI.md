@@ -19,7 +19,7 @@ Atualizado em 2026-10-06.
 | 4. Escopo | **VALIDADO por Lucas Scholz em 06/10 (etapa 5)**: blocos B0 a B10, apontando para os funcionais. Ele é o responsável por todas as travas da seção 7 | `docs/escopo.md` |
 | Marca no template | **`docs/brand/` criada em 06/10**: logo em vetor, ícones, cores, nós, fontes, Brand Board e o rascunho `tokens.wcj.json` para o Lucas Varanda aplicar no template (D-GER-29) | `docs/brand/README.md` |
 | Plano de desenvolvimento | **Escrito em 06/10**: ondas, divisão Cauã × Vitinho, rito do PR, trilhos, checklist do Lucas antes de começar | `docs/plano-de-desenvolvimento.md` |
-| 3. Repositório | **Na organização WCJ desde 29/09**, privado, só com `docs/`. O template `ai-systems` 0.6.0 entra no **B0** (etapa 3), próximo passo prático. O backup antigo na conta pessoal (`lucas-scholz-91/wcj-hub`) deixou de ser a fonte | https://github.com/WCJ-Tecnologia/wcj-hub |
+| 3. Repositório | **B0 MERGEADO em 06/10 (PR #1)**: template `ai-systems` 0.6.0 por domínio, 27 migrações + 3 colunas de 06/10, Passport, sementes, MySQL 8 nos testes e no CI, tema da marca, `AGENTS.md`, ADR-001 e ADR-002. `composer setup` do zero em 32 s. Próximo: onda 1 (B1 ∥ B2) | https://github.com/WCJ-Tecnologia/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
 | `core/mcp.md` no padrão | **Publicado** no `ai-systems` 0.3.0 (PR #4) | `~/Documents/Projetos/WCJ/ai-systems/.ai/core/mcp.md` |
 
@@ -91,7 +91,8 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 1. ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10. Rafael Garcia lê F2 a F7 e valida no bugbash.
 2. ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira em 06/10.
 3. ~~Escopo~~ validado por Lucas Scholz em 06/10 (etapa 5).
-4. **B0** (etapa 3): FEITO em 06/10 = PR #1 (branch `chore/b0-base`, CI verde, setup em 32 s), aguarda merge do Lucas Scholz. Decisões do PR aceitas por ele em 06/10 (primária clara `#0F4FC4`, usuários só admin, `composer audit` em PR próprio). Prompt usado abaixo.
+4. ~~B0~~ MERGEADO em 06/10 (PR #1). Decisões do PR aceitas pelo Lucas Scholz (primária clara `#0F4FC4`, usuários só admin, `composer audit` em PR próprio). Prompt usado abaixo, para referência.
+5. **Onda 1:** B1 Núcleo (Cauã, trilho completo) ∥ B2 Projeto e configuração (Vitinho, leve), a partir desta `main`. Reunião de partida e `docs/brand/README.md` para o Lucas Varanda. Prova de conceito do MCP em paralelo (Lucas Scholz).
 5. Prova de conceito do MCP (D-GER-17), em paralelo ao B0.
 6. Reunião de partida com Cauã e Vitinho; onda 1 (B1 ∥ B2).
 
