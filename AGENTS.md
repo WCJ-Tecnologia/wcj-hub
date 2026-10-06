@@ -129,7 +129,7 @@ npm run test:guard
 php artisan app:limpar-exemplo       # apaga o dado de exemplo ("[Exemplo] …", @exemplo.wcj.test)
 ```
 
-Sem Docker: um MySQL 8 local com os bancos `wcj_hub`, `wcj_hub_test` e `wcj_hub_e2e` e o usuário do `.env` (ver `docker/mysql/init.sh`).
+Sem Docker: um MySQL 8 local com os bancos `wcj_hub`, `wcj_hub_test` e `wcj_hub_e2e` e o usuário do `.env` (ver o `mysql_init` do `docker-compose.yml`).
 
 ## Ambientes
 

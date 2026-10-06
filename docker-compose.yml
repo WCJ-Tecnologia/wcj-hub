@@ -1,7 +1,9 @@
 # Local services only. Credentials come from .env (never hard-code them here).
-#   cp .env.example .env  →  docker compose up -d mysql
-# The init script creates the test (wcj_hub_test) and e2e (wcj_hub_e2e) databases
-# with grants for DB_USERNAME: tests run on MySQL 8, never SQLite (ADR-002).
+#   cp .env.example .env  →  docker compose up -d mysql   (composer setup does both)
+# The init SQL creates the test (wcj_hub_test) and e2e (wcj_hub_e2e) databases with
+# grants for DB_USERNAME: tests run on MySQL 8, never SQLite (ADR-002). It is inline
+# (configs.content), not a bind mount, so it works wherever the clone lives (Colima only
+# shares the home folder with its VM).
 services:
   mysql:
     image: mysql:8.4
@@ -15,18 +17,30 @@ services:
       - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    configs:
+      - source: mysql_init
+        target: /docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
-      interval: 5s
+      interval: 3s
       timeout: 5s
-      retries: 20
+      retries: 40
 
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
       - "${REDIS_PORT:-6379}:6379"
+
+configs:
+  # Runs once, on the first start of an empty volume (docker-entrypoint-initdb.d).
+  mysql_init:
+    content: |
+      CREATE DATABASE IF NOT EXISTS wcj_hub_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+      CREATE DATABASE IF NOT EXISTS wcj_hub_e2e CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+      GRANT ALL PRIVILEGES ON wcj_hub_test.* TO '${DB_USERNAME}'@'%';
+      GRANT ALL PRIVILEGES ON wcj_hub_e2e.* TO '${DB_USERNAME}'@'%';
+      FLUSH PRIVILEGES;
 
 volumes:
   mysql_data:

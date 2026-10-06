@@ -14,7 +14,7 @@ O banco do Hub depende do que só o MySQL tem: colunas geradas (`board_stages.si
 
 Toda a suíte roda em MySQL 8, local e no CI, sempre:
 
-- **Local:** o MySQL do `docker-compose.yml` (`mysql:8.4`, colação `utf8mb4_0900_ai_ci`). O `docker/mysql/init.sh` cria `wcj_hub_test` e `wcj_hub_e2e` ao lado do banco de dev, com permissão para o mesmo usuário. `phpunit.xml` aponta `DB_CONNECTION=mysql` e `DB_DATABASE=wcj_hub_test`; host, usuário e senha vêm do `.env.testing` (os valores locais do docker, que não são segredo).
+- **Local:** o MySQL do `docker-compose.yml` (`mysql:8.4`, colação `utf8mb4_0900_ai_ci`). O SQL de início (`configs.mysql_init`, no próprio compose, sem bind mount) cria `wcj_hub_test` e `wcj_hub_e2e` ao lado do banco de dev, com permissão para o mesmo usuário. `phpunit.xml` aponta `DB_CONNECTION=mysql` e `DB_DATABASE=wcj_hub_test`; host, usuário e senha vêm do `.env.testing` (os valores locais do docker, que não são segredo).
 - **CI:** o job `php` tem um serviço `mysql:8.4` com `wcj_hub_test`, e um passo final confere no próprio banco que a suíte migrou ali. O job `e2e` tem o próprio serviço com `wcj_hub_e2e`.
 - **e2e:** `npm run e2e:prepare` recusa `.env.e2e` que não seja MySQL ou cujo banco não termine em `_e2e` (para nunca apagar o banco de dev).
 - O `config/database.php` passa a ter `mysql` como conexão padrão e `utf8mb4_0900_ai_ci` como colação padrão.
