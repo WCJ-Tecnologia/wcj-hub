@@ -156,11 +156,11 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Dev em `GET /admin/users` recebe 403 e aparece uma linha `denied` com `auditable_type = user`
-- [ ] Rota permitida não grava linha `denied`
-- [ ] `RotasAutorizadasTest` (A5) continua verde
-- [ ] Testes em `tests/Feature/Nucleo/NegacaoAuditadaTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Dev em `GET /admin/users` recebe 403 e aparece uma linha `denied` com `auditable_type = user`
+- [x] Rota permitida não grava linha `denied`
+- [x] `RotasAutorizadasTest` (A5) continua verde
+- [x] Testes em `tests/Feature/Nucleo/NegacaoAuditadaTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
