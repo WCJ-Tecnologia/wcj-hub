@@ -578,9 +578,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Estados vazio, erro e carregando; textos do F1 §04 e §07
-- [ ] Smoke e2e da tela e do modal (axe, dois temas) continua verde
-- [ ] Gate check passes: Build
+- [x] Estados vazio, erro e carregando; textos do F1 §04 e §07
+- [x] Smoke e2e da tela e do modal (axe, dois temas) continua verde
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build
