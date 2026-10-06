@@ -606,10 +606,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Matriz ability × papel, com gestor que gere e que não gere
-- [ ] Registrada com `Gate::policy` no `AppServiceProvider`
-- [ ] Testes em `tests/Feature/Nucleo/ClientPolicyTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Matriz ability × papel, com gestor que gere e que não gere
+- [x] Registrada com `Gate::policy` no `AppServiceProvider`
+- [x] Testes em `tests/Feature/Nucleo/ClientPolicyTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

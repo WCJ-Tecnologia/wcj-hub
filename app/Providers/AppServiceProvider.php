@@ -32,6 +32,7 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\ContactChannel;
 use App\Platform\Models\Role;
 use App\Platform\Models\User;
+use App\Platform\Policies\ClientPolicy;
 use App\Platform\Policies\UserPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -135,6 +136,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Client::class, ClientPolicy::class);
 
         Gate::define('view-audit-logs', fn (User $user) => $user->isAdmin());
     }
