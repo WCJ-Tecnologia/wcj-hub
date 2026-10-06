@@ -17,6 +17,10 @@ class AlphanumericCnpjTest extends TestCase
             'com máscara' => ['12.ABC.345/01DE-35'],
             'em minúsculas' => ['12abc34501de35'],
             'numérico, o da WCJ' => ['38614817000122'],
+            // Bordas do resto (rodada 3 do Verifier): resto 2 vira 9; resto 0 ou 1 vira 0.
+            'primeiro dígito com resto 2' => ['00000000000191'],
+            'primeiro dígito com resto 1' => ['00000000000604'],
+            'primeiro dígito com resto 0' => ['00000000001406'],
         ];
     }
 
@@ -33,6 +37,8 @@ class AlphanumericCnpjTest extends TestCase
             'primeiro dígito errado' => ['12ABC34501DE45'],
             'segundo dígito errado' => ['12ABC34501DE36'],
             'numérico com dígito errado' => ['38614817000123'],
+            // O que sairia se o resto 2 também virasse 0.
+            'resto 2 tratado como 0' => ['00000000000108'],
             'curto' => ['12ABC34501DE3'],
             'longo' => ['12ABC34501DE351'],
             'letra nos dígitos' => ['12ABC34501DE3A'],

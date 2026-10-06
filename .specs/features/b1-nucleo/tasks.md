@@ -93,6 +93,12 @@ T26 → T27 → T28 → T29
 T30
 ```
 
+### Phase 9: Correções do Verifier (rodada 3)
+
+```
+T31
+```
+
 ---
 
 ## Task Breakdown
@@ -917,10 +923,38 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 9: Correções do Verifier (rodada 3)
+
+### T31: Bordas do dígito verificador do CNPJ com caso fixo
+
+**What**: casos fixos no teste do CNPJ para resto 2 (dígito 9), resto 1 e resto 0 (dígito 0), e o inválido que um "resto ≤ 2 vira 0" aceitaria.
+**Where**: `tests/Unit/AlphanumericCnpjTest.php`
+**Depends on**: T30
+**Reuses**: os data providers existentes
+**Requirement**: NUC-05
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Válidos `00000000000191`, `00000000000604`, `00000000001406`; inválido `00000000000108`
+- [x] Mutantes S10 (`< 2` → `<= 2`) e S10b (`< 2` → `< 1`) derrubados por caso fixo, numa cópia descartável
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: unit
+**Gate**: quick
+
+**Commit**: `test(clientes): bordas do dígito verificador do CNPJ`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -932,6 +966,7 @@ Phase 5:  T20 → T21 → T22
 Phase 6:  T23 → T24 → T25
 Phase 7:  T26 → T27 → T28 → T29
 Phase 8:  T30
+Phase 9:  T31
 ```
 
 ## Task Granularity Check
@@ -985,6 +1020,7 @@ Phase 8:  T30
 | T28 | T27 | T27 → T28 | ✅ Match |
 | T29 | T28 | T28 → T29 | ✅ Match |
 | T30 | T29 | fase anterior | ✅ Match |
+| T31 | T30 | fase anterior | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1006,3 +1042,4 @@ Phase 8:  T30
 | T26, T27 | Service (testes) | integration | integration | ✅ OK |
 | T28, T29 | Página React | e2e | e2e | ✅ OK |
 | T30 | Policy | integration | integration | ✅ OK |
+| T31 | Regra de validação | unit | unit | ✅ OK |
