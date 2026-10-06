@@ -2,6 +2,7 @@
 
 namespace Tests\Arch;
 
+use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\TestCase;
 use Tests\Arch\Support\Codigo;
 use Tests\Arch\Support\VerificaArquitetura;
@@ -109,6 +110,69 @@ class ArquiteturaTest extends TestCase
 
         $this->semViolacoes('A7', 'Domínio não usa Model de outro domínio', $violacoes,
             'chame o Service do outro domínio; a tabela dele só ele lê e grava.');
+    }
+
+    /**
+     * A9 (ADR-001): domínio não lê nem grava tabela de outro. A7 já barra o Model de outro
+     * domínio; aqui vão (a) o Platform usando qualquer coisa de App\Domains (o Núcleo não
+     * conhece módulo: as FKs vão só de Domains para Platform, banco.txt 6.2) e (b) o nome de uma
+     * tabela de outro domínio escrito à mão (DB::table('tasks'), join, SQL cru). Um domínio
+     * pode ler as tabelas do Platform, na direção das FKs; o Platform não lê as dos domínios.
+     * O dono de cada tabela sai dos Models de app/Platform/Models e app/Domains/<X>/Models.
+     */
+    public function test_a9_dominio_nao_le_tabela_de_outro(): void
+    {
+        $donos = self::donosDasTabelas();
+        if ($donos === []) {
+            $this->markTestSkipped('Sem Models em app/Platform/Models nem app/Domains/*/Models.');
+        }
+
+        $usos = Codigo::violacoes('app/Platform', ['App\\Domains\\']);
+
+        $areas = array_values(array_unique($donos));
+        foreach ($areas as $area) {
+            $pasta = $area === 'Platform' ? 'app/Platform' : "app/Domains/{$area}";
+            foreach (Codigo::textos($pasta) as $texto) {
+                $tabela = strtolower(strtok(trim($texto['valor']), '. '));
+                $dono = $donos[$tabela] ?? null;
+                // Do próprio domínio, ou do Platform lido por um domínio: pode.
+                if ($dono === null || $dono === $area || $dono === 'Platform') {
+                    continue;
+                }
+                if ($texto['valor'] !== $tabela && ! str_starts_with($texto['valor'], $tabela.'.')) {
+                    continue; // texto comum que só começa com a palavra
+                }
+                $usos[] = ['arquivo' => $texto['arquivo'], 'linha' => $texto['linha'], 'nome' => "tabela {$tabela} ({$dono})"];
+            }
+        }
+
+        $this->semViolacoes('A9', 'Domínio não lê tabela de outro', self::violacoesPorArquivo($usos),
+            'chame o Service do domínio dono da tabela. O Platform (Núcleo) não conhece módulo: quem precisa do dado do módulo é o módulo.');
+    }
+
+    /**
+     * Tabela => domínio dono ('Platform' ou o nome em app/Domains), lido de cada Model.
+     *
+     * @return array<string, string>
+     */
+    private static function donosDasTabelas(): array
+    {
+        $pastas = ['Platform' => 'app/Platform/Models'];
+        foreach (glob(Codigo::raiz().'/app/Domains/*', GLOB_ONLYDIR) ?: [] as $dominio) {
+            $pastas[basename($dominio)] = 'app/Domains/'.basename($dominio).'/Models';
+        }
+
+        $donos = [];
+        foreach ($pastas as $area => $pasta) {
+            foreach (glob(Codigo::raiz()."/{$pasta}/*.php") ?: [] as $arquivo) {
+                $classe = 'App\\'.str_replace('/', '\\', substr($pasta, 4)).'\\'.basename($arquivo, '.php');
+                if (class_exists($classe) && is_subclass_of($classe, Model::class) && ! (new \ReflectionClass($classe))->isAbstract()) {
+                    $donos[(new $classe)->getTable()] = $area;
+                }
+            }
+        }
+
+        return $donos;
     }
 
     /**

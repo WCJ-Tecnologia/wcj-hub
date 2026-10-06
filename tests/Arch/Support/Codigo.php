@@ -126,6 +126,24 @@ final class Codigo
     }
 
     /**
+     * Cada string literal (aspas simples ou duplas, sem interpolação) sob a pasta, com a linha.
+     * Serve à regra A9: nome de tabela escrito à mão em DB::table(), join, from, SQL cru.
+     *
+     * @return list<array{arquivo: string, linha: int, valor: string}>
+     */
+    public static function textos(string $pasta): array
+    {
+        $textos = [];
+        foreach (self::arquivos($pasta) as $arquivo) {
+            foreach ((new NodeFinder)->findInstanceOf(self::arvore($arquivo), Node\Scalar\String_::class) as $texto) {
+                $textos[] = ['arquivo' => $arquivo, 'linha' => $texto->getStartLine(), 'valor' => $texto->value];
+            }
+        }
+
+        return $textos;
+    }
+
+    /**
      * Métodos declarados sob a pasta, com o tamanho em linhas (da assinatura ao fecha-chave).
      *
      * @return list<array{arquivo: string, linha: int, nome: string, linhas: int}>
