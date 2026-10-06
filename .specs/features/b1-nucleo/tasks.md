@@ -768,9 +768,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Contatos AC 1–9 com teste cada
-- [ ] Testes em `tests/Feature/Nucleo/ContactServiceTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Contatos AC 1–9 com teste cada
+- [x] Testes em `tests/Feature/Nucleo/ContactServiceTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
