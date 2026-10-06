@@ -184,11 +184,11 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Aceita `12ABC34501DE35`, `12.ABC.345/01DE-35`, `12abc34501de35` e `38614817000122`
-- [ ] Recusa dígito errado, tamanho errado, letra nos dígitos, todos iguais
-- [ ] `normalize` tira máscara e põe maiúscula
-- [ ] Testes em `tests/Unit/AlphanumericCnpjTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Aceita `12ABC34501DE35`, `12.ABC.345/01DE-35`, `12abc34501de35` e `38614817000122`
+- [x] Recusa dígito errado, tamanho errado, letra nos dígitos, todos iguais
+- [x] `normalize` tira máscara e põe maiúscula
+- [x] Testes em `tests/Unit/AlphanumericCnpjTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: unit
 **Gate**: quick
