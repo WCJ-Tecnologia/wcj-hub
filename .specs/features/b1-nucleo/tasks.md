@@ -102,10 +102,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Casos novos com rótulo (Desativado, Reativado, Anonimizado, Consultado)
-- [ ] `forAbility` cobre create, update, delete, deactivate, reactivate, anonymize, resendInvite e leitura (viewAny, view)
-- [ ] Teste unitário de cada mapeamento em `tests/Unit/AuditActionEnumTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Casos novos com rótulo (Desativado, Reativado, Anonimizado, Consultado)
+- [x] `forAbility` cobre create, update, delete, deactivate, reactivate, anonymize, resendInvite e leitura (viewAny, view)
+- [x] Teste unitário de cada mapeamento em `tests/Unit/AuditActionEnumTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: unit
 **Gate**: quick
