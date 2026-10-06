@@ -9,7 +9,7 @@ try {
 
 export default defineConfig({
     testDir: './e2e',
-    // One shared SQLite database: parallel workers would create flaky tests.
+    // One shared e2e database: parallel workers would create flaky tests.
     workers: 1,
     fullyParallel: false,
     retries: 0,

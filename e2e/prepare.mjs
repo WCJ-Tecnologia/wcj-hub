@@ -5,7 +5,7 @@
  *   npm run e2e:prepare
  *
  *   1. copies .env.e2e.example → .env.e2e (if missing) and generates APP_KEY
- *   2. recreates database/e2e.sqlite with migrate:fresh --seed
+ *   2. recreates the e2e database (MySQL 8, DB_DATABASE of .env.e2e) with migrate:fresh --seed
  *   3. creates the e2e admin with E2E_ADMIN_PASSWORD (generated at random into
  *      .env.e2e when empty: no admin password lives in a versioned file)
  *
@@ -14,7 +14,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -66,11 +66,14 @@ if (!email || !password) {
     process.exit(2);
 }
 
-const database = resolve(root, env.DB_DATABASE ?? 'database/e2e.sqlite');
-mkdirSync(resolve(database, '..'), { recursive: true });
-writeFileSync(database, '');
+// MySQL 8 only (ADR-002). The name check keeps this script away from the dev database.
+if (env.DB_CONNECTION !== 'mysql' || !/_e2e$/.test(env.DB_DATABASE ?? '')) {
+    console.error('.env.e2e precisa de DB_CONNECTION=mysql e um DB_DATABASE terminado em _e2e (nunca o banco de dev).');
+    process.exit(2);
+}
+const database = env.DB_DATABASE;
 
 artisan(['migrate:fresh', '--seed', '--force', '--no-interaction']);
 artisan(['app:create-admin', email, '--name=E2E Admin', `--password=${password}`, '--no-interaction']);
 
-console.log(`\nBanco e2e pronto em ${database}. Suba o servidor com: npm run e2e:serve`);
+console.log(`\nBanco e2e pronto (${database}). Suba o servidor com: npm run e2e:serve`);
