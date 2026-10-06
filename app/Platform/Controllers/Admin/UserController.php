@@ -81,7 +81,7 @@ class UserController extends Controller
         $actor = $request->user();
 
         // users.password é not null (N1): a senha provisória nasce junto com a linha.
-        $user = DB::transaction(function () use ($data, $actor) {
+        [$user, $plain] = DB::transaction(function () use ($data, $actor) {
             $user = new User([
                 'role_id' => $data['role_id'],
                 'name' => $data['name'],
@@ -89,10 +89,10 @@ class UserController extends Controller
                 'daily_hours' => $data['daily_hours'] ?? null,
             ]);
             $user->setActive((bool) ($data['active'] ?? true), $actor);
-            $this->passwords->issue($user, isReset: false);
 
-            return $user;
+            return [$user, $this->passwords->issue($user)];
         });
+        $this->passwords->send($user, $plain, isReset: false);
 
         $this->audit->log(AuditActionEnum::CREATED, $user, null, $this->snapshot($user));
 
@@ -156,7 +156,7 @@ class UserController extends Controller
 
         $isSelf = $user->is($request->user());
 
-        $this->passwords->issue($user, isReset: true);
+        $this->passwords->send($user, $this->passwords->issue($user), isReset: true);
 
         $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, null, [
             'must_change_password' => true,

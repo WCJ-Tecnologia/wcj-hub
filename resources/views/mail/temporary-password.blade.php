@@ -11,6 +11,12 @@
         @endif
     </p>
     <p style="margin:24px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700;">
+        Login
+    </p>
+    <p style="margin:0;font-size:16px;font-weight:700;color:#111827;word-break:break-all;">
+        {{ $login }}
+    </p>
+    <p style="margin:24px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700;">
         Senha temporária
     </p>
     <p style="margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:22px;letter-spacing:.18em;font-weight:800;color:#2563eb;">

@@ -269,11 +269,11 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Usuários AC 1–12, 14 e 16 com teste cada
-- [ ] Edge cases: convite simultâneo (unique), e-mail que falha mantém o usuário, último admin
-- [ ] Linha "Login: e-mail" no e-mail de convite (texto e HTML)
-- [ ] Testes em `tests/Feature/Nucleo/UserServiceTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Usuários AC 1–12, 14 e 16 com teste cada
+- [x] Edge cases: convite simultâneo (unique), e-mail que falha mantém o usuário, último admin
+- [x] Linha "Login: e-mail" no e-mail de convite (texto e HTML)
+- [x] Testes em `tests/Feature/Nucleo/UserServiceTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

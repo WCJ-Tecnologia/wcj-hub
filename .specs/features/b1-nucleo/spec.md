@@ -231,9 +231,9 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 
 | Requirement ID | Story | Phase | Status |
 |---|---|---|---|
-| NUC-01 | P1: Usuários — convite por e-mail (AC 1–3) | Design | Pending |
-| NUC-02 | P1: Usuários — carga, papel, IA pode escrever e revogação (AC 4–7, 14) | Design | Pending |
-| NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Pending |
+| NUC-01 | P1: Usuários — convite por e-mail (AC 1–3) | Design | Done |
+| NUC-02 | P1: Usuários — carga, papel, IA pode escrever e revogação (AC 4–7, 14) | Design | Done |
+| NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Done |
 | NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | In Progress |
 | NUC-05 | P1: Clientes — criar e validar CNPJ (AC 1–4, 14) | Design | In Progress |
 | NUC-06 | P1: Clientes — gestor cria e edita pelo Service (AC 5–8) | Design | In Progress |

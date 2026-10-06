@@ -37,6 +37,8 @@ class TemporaryPasswordMail extends Mailable
             text: 'mail.temporary-password-text',
             with: [
                 'firstName' => $this->user->firstName(),
+                // N1: o convite leva o endereço do Hub, o login e a senha provisória.
+                'login' => $this->user->email,
                 'temporaryPassword' => $this->temporaryPassword,
                 'loginUrl' => route('login'),
                 'isReset' => $this->isReset,
