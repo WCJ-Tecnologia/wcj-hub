@@ -40,7 +40,7 @@ test('@smoke o modal de usuário passa no axe', async ({ page, axe }) => {
 test.describe('@smoke tema escuro', () => {
     const DARK = [
         { path: '/admin/dashboard', title: 'Dashboard' },
-            { path: '/admin/users', title: 'Usuários' },
+        { path: '/admin/users', title: 'Usuários' },
     ];
 
     for (const screen of DARK) {
