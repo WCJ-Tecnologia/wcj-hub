@@ -2,6 +2,8 @@
 
 Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.0 (aprovado em 06/10/2026), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.txt`](../../../docs/banco.txt) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
 
+**Approved by**: Lucas Scholz, 2026-10-06
+
 **Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
 
 ## Problem Statement
