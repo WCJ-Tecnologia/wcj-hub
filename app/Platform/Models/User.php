@@ -12,15 +12,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\HasApiTokens;
 
 /**
  * Usuário interno (docs/banco.txt, users). Sem document, phone, email_verified_at,
  * last_login_at nem remember_token (seção 9): o login fica em audit_logs.
  */
-class User extends Authenticatable
+class User extends Authenticatable implements OAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use Deactivatable, HasFactory, Notifiable;
+    use Deactivatable, HasApiTokens, HasFactory, Notifiable;
 
     // Sem coluna remember_token (banco.txt, seção 4): o "lembrar de mim" não existe.
     protected $rememberTokenName = '';

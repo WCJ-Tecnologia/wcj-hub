@@ -58,6 +58,14 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        // Prova do MCP (D-GER-17): toda chamada da IA e todo passo do OAuth (IA12, R13).
+        'mcp' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/mcp.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

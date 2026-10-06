@@ -9,6 +9,7 @@ use App\Platform\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -44,5 +45,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Prova do MCP: /mcp e o OAuth respondem JSON (401 sem token, nunca 302 para o login).
+        $exceptions->shouldRenderJsonWhen(
+            fn (Request $request) => $request->is('mcp', 'mcp/*', 'oauth/token', 'oauth/register') || $request->expectsJson()
+        );
     })->create();

@@ -39,16 +39,13 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
-use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Passport entra no B0 só com as tabelas (docs/banco.txt, seção 4). As rotas /oauth/*
-        // ficam desligadas até o B8 (conexões de IA), que as liga com os escopos, o limitador
-        // do /oauth/token (B9) e a tela de autorização.
-        Passport::ignoreRoutes();
+        // Na main, Passport::ignoreRoutes() fica aqui até o B8. Na branch poc/mcp (prova de
+        // conceito do MCP, D-GER-17) as rotas /oauth/* estão ligadas: McpPocServiceProvider.
     }
 
     public function boot(): void

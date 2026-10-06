@@ -23,7 +23,7 @@ class SecurityHeaders
 
         $headers = $response->headers;
 
-        $headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce));
+        $headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce, (array) $request->attributes->get('csp_form_action', [])));
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
         $headers->set('X-Frame-Options', 'SAMEORIGIN');
@@ -36,7 +36,11 @@ class SecurityHeaders
         return $response;
     }
 
-    private function contentSecurityPolicy(string $nonce): string
+    /**
+     * @param  list<string>  $formActionExtra  origens extras do form-action: só a tela de autorização
+     *                                         do OAuth (prova do MCP), cujo 302 vai para o assistente
+     */
+    private function contentSecurityPolicy(string $nonce, array $formActionExtra = []): string
     {
         $dev = app()->environment('local') ? ' http://localhost:5173 http://127.0.0.1:5173' : '';
         $devWs = app()->environment('local') ? ' ws://localhost:5173 ws://127.0.0.1:5173' : '';
@@ -51,7 +55,7 @@ class SecurityHeaders
             "object-src 'none'",
             "base-uri 'self'",
             "frame-ancestors 'self'",
-            "form-action 'self'",
+            trim("form-action 'self' ".implode(' ', $formActionExtra)),
         ]);
     }
 }
