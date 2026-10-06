@@ -216,7 +216,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 #### 2.2 Quadro e etapas
 
 - **P10** Cada projeto tem o próprio quadro. Padrão: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` e `Support`, em inglês. **Padrão.**
-- **P11** O gestor renomeia, cria, remove e reordena etapas. Toda etapa tem um papel (fila, sprint, desenvolvimento, code review, teste, pronto, pausa ou suporte); os indicadores leem o papel, não o nome. As etapas de fila (`Backlog`), sprint (`To do`) e suporte (`Support`) existem sempre, uma de cada, porque o sistema leva o card para elas sozinho: o gestor renomeia e reordena, mas não remove nem duplica.
+- **P11** O gestor renomeia, cria, remove e reordena etapas. Toda etapa tem um papel (fila, sprint, desenvolvimento, code review, teste, pronto, pausa ou suporte); os indicadores leem o papel, não o nome. As etapas de fila (`Backlog`), sprint (`To do`) e suporte (`Support`) existem sempre, uma de cada, porque o sistema leva o card para elas sozinho: o gestor renomeia e reordena, mas não remove nem duplica. Também existe sempre pelo menos uma etapa de desenvolvimento (`Doing`), para onde a reprovação na homologação devolve o card (P43).
 - **P12** Para remover uma etapa que tem tarefas, é preciso dizer para onde elas vão.
 - **P13** Qualquer pessoa alocada move o card entre as etapas, a partir do `To do`. Pôr e tirar da sprint é do gestor e do Administrador (P45).
 - **P14** Toda mudança de etapa grava quem, quando, de onde e para onde. **Fixa.**
@@ -226,9 +226,9 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 - **P16** Chave `<prefixo>-<número>` (ex.: `SGM-17`), sequencial por projeto, nunca reaproveitada.
 - **P17** Criar o card pede só o título: ele nasce no `Backlog` com tipo Melhoria e prioridade Normal, e o resto fica recolhido e opcional (R4). A tarefa de projeto de cliente é escrita, quando houver, no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
-- **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD) e área (lista do projeto, que nasce vazia).
+- **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD; lista geral editável, G7) e área (lista do projeto, que nasce vazia). Melhoria e Suporte se renomeiam, mas não se desativam: o sistema depende deles (P17, P52).
 - **P19** Prioridade: baixa, normal, alta ou urgente.
-- **P20** A tarefa tem **um dev** e, quando a validação de QA está ligada, **um QA**. Os dois podem ficar vazios, como as horas (P27).
+- **P20** A tarefa tem **um dev** e **um QA**. Os dois podem ficar vazios, como as horas (P27).
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).
 - **P22** Quem é definido como dev ou QA da tarefa recebe aviso **no sistema e por e-mail**; quando a tarefa volta para desenvolvimento (P39), o dev dela também recebe os dois (R3). São os únicos avisos de Projetos na v1.
 - **P23** A tarefa aceita nenhum, um ou vários PRs, colados como link.
@@ -267,7 +267,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.7 Pacote (versão)
 
-- **P41** O pacote é a versão (ex.: `1.0.9`) e é **opcional**. O gestor e o Administrador montam o pacote com tarefas prontas e mudam o estado dele.
+- **P41** O pacote é a versão (ex.: `1.0.9`) e é **opcional**. O gestor e o Administrador juntam tarefas no pacote, em geral as prontas, sem exigência de etapa, e marcam o estado dele (P42).
 - **P42** O estado do pacote se deduz de duas datas: início da homologação e entrada em produção (P44). Sem as duas, está em montagem; com a primeira, em homologação; com a segunda, em produção. Não há estados cadastráveis (R10).
 - **P43** A homologação é da equipe WCJ, testando tudo junto; o cliente não participa. Reprovação devolve as tarefas afetadas com retrabalho de origem homologação. A reprovação não tira a tarefa do pacote sozinha; o gestor tira, se quiser.
 - **P44** A data planejada de liberação é definida por projeto, em geral pelo cliente. A data da versão é quando ela entra em produção.
@@ -286,13 +286,13 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 
 #### 2.9 Suporte
 
-- **P52** Enquanto o módulo Chamados não existe, quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail, reunião ou outro), o gestor registra um **card de suporte** na coluna `Support`, com quem pediu (contato), por onde e quando o pedido chegou. O card segue o mesmo quadro, com as validações que o gestor deixar ligadas. Ele nasce fora da sprint, e dali qualquer pessoa alocada o move, como a partir do `To do`. Se quiser, o gestor põe o card na sprint em andamento; isso só liga o card à sprint, sem trocar de coluna.
+- **P52** Enquanto o módulo Chamados não existe, quando o cliente aciona a WCJ direto (WhatsApp, telefone, e-mail, reunião ou outro), o gestor registra um **card de suporte** na coluna `Support`, com quem pediu (contato), por onde e quando o pedido chegou. O card segue o mesmo quadro e a mesma prática de code review, teste cruzado e QA (P32). Ele nasce fora da sprint, e dali qualquer pessoa alocada o move, como a partir do `To do`. Se quiser, o gestor põe o card na sprint em andamento; isso só liga o card à sprint, sem trocar de coluna. Tirar da sprint ou encerrá-la também só desliga o card de suporte: ele fica na coluna em que está, sem ir ao `Backlog` (exceção à P45 e à P50).
 
 #### 2.10 Indicadores
 
 - **P53** Na v1: tempo por etapa, horas previstas × realizadas, data prevista e atraso das tarefas, somados por projeto e por pessoa. Tarefa atrasada = passou da data prevista sem chegar em `Done`, descontado o tempo em etapa de pausa, que é medido à parte (P15, R16). Ao lado das horas lançadas (P30), o realizado mostra também o tempo em etapa de desenvolvimento calculado dos movimentos, em dias úteis × carga do dev, para quando o dev esquece de lançar (R17).
-- **P54** Depois da v1, com os dados já gravados desde a v1: painel de produtividade por dev e indicador de retrabalho. Só o gestor e o Administrador veem. Na v1, os dados de retrabalho já saem pela IA (`retrabalho_do_projeto`, IA14).
-- **P55** Depois da v1: histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição. Na v1, a IA lista as tarefas do pacote para quem quiser redigir as notas (`notas_da_versao`, IA14).
+- **P54** Depois da v1, com os dados já gravados desde a v1: painel de produtividade por dev e indicador de retrabalho. Só o gestor e o Administrador veem. Os dados de retrabalho ficam gravados desde a fatia 1; a ferramenta `retrabalho_do_projeto` entra depois dela (IA14).
+- **P55** Depois da v1: histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição. A ferramenta `notas_da_versao`, que lista as tarefas do pacote para quem for redigir as notas, entra depois da fatia 1 (IA14); até lá, a lista está na ficha do pacote.
 
 ### 3. CRM (v2: fora da fatia 1)
 
@@ -492,7 +492,7 @@ Consequência para a v1 (IA3):
 | To do / Esteira | Coluna dos cards da sprint que ainda não começaram (`Esteira` era o nome no Trello) |
 | Sprint | Período do projeto, com início e fim, que agrupa tarefas. No Histórico de Desenvolvimento aparece como "Fase" (P51) |
 | Carga diária | Horas por dia que a pessoa trabalha na WCJ (ex.: 8 h ou 4 h) (N3) |
-| Capacidade | Carga diária × dias disponíveis na sprint; só referência (P48, P49) |
+| Capacidade | Carga diária × dias úteis da sprint; só referência (P48, P49) |
 | Teste cruzado | Teste da tarefa feito por outro dev, antes do QA (P34) |
 | Retrabalho | Volta da tarefa para desenvolvimento, vinda do code review, do teste cruzado, do QA ou da homologação (P39) |
 | Pacote / versão | Conjunto de tarefas prontas que vai junto para homologação e produção, com número e data (hoje: lista "Produção 1.0.9 10/07/2026") (P41) |

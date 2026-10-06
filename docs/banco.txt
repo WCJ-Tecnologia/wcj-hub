@@ -353,8 +353,8 @@ da v1.
 índices: project_id, stage_role_id
 Regras do Service: o papel não muda depois que a etapa tem movimento (os indicadores leem o papel
 atual da etapa, T1); arquivar etapa com tarefas exige escolher o destino delas (P12); as etapas de
-papel queue, sprint e support se renomeiam e reordenam, mas não se arquivam: "pelo menos 1" de cada
-fica no Service (P11), como no funil (C1).
+papel queue, sprint e support se renomeiam e reordenam, mas não se arquivam: "pelo menos 1" de cada,
+e pelo menos 1 de papel development (destino da reprovação na homologação, P43), fica no Service (P11).
 
 =====================================================================
 task_types                             (cadastrável)
@@ -940,8 +940,8 @@ T1  Regras que o banco não trava sozinho ficam no Service, cobertas por teste a
     (funnel_stages.final_key, coluna gerada + unique). "Pelo menos 1" fica no Service.
     Na Sessão D, pelo mesmo princípio: no máximo 1 etapa ativa de papel queue, sprint e support por
     projeto (board_stages.single_role_key) e uma conexão ativa por usuário e assistente
-    (ai_authorizations.active_assistant_id); "pelo menos 1" etapa de cada um dos três papéis e 1
-    estado de produção do pacote ficam no Service. As travas novas foram testadas no MySQL 8.4.
+    (ai_authorizations.active_assistant_id); "pelo menos 1" etapa de cada um dos três papéis, e de
+    development (P11, destino da reprovação na homologação, P43), fica no Service. As travas novas foram testadas no MySQL 8.4.
     Saiu na Sessão C: a trava de capacidade da sprint com lockForUpdate (a capacidade é só
     referência, P49).
 T2  (saiu com a R8) task_validations não existe mais; o retrabalho lê task_stage_movements e o teste
