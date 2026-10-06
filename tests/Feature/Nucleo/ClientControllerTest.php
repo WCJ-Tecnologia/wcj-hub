@@ -303,7 +303,12 @@ class ClientControllerTest extends TestCase
                 ->where('client.document', '38614817000122')
                 ->where('client.active', true)
                 ->has('contacts', 2)
-                ->where('contacts.0', ['id' => $client->contacts()->where('name', 'Ana Lima')->value('id'), 'name' => 'Ana Lima', 'email' => null, 'phone' => null, 'active' => true, 'deactivated_at' => null, 'deactivated_by' => null])
+                ->where('contacts.0', [
+                    'id' => $client->contacts()->where('name', 'Ana Lima')->value('id'), 'name' => 'Ana Lima', 'email' => null, 'phone' => null,
+                    'client_id' => $client->id, 'client_name' => 'Mercado', 'active' => true, 'anonymized' => false,
+                    'deactivated_at' => null, 'deactivated_by' => null,
+                    'can' => ['update' => true, 'deactivate' => true, 'reactivate' => false, 'delete' => true, 'anonymize' => true],
+                ])
                 ->where('contacts.1.name', 'Bia Reis')
                 ->where('contacts.1.email', 'bia@mercado.test')
                 ->where('contacts.1.phone', '11988880000'));

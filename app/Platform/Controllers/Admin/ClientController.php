@@ -9,6 +9,7 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreClientRequest;
 use App\Platform\Services\ClientService;
+use App\Platform\Services\ContactService;
 use App\Support\LocalTime;
 use App\Support\Paises;
 use Closure;
@@ -24,6 +25,7 @@ class ClientController extends Controller
     public function __construct(
         private readonly ClientService $clients,
         private readonly ClientProjects $projects,
+        private readonly ContactService $contactService,
     ) {}
 
     public function index(Request $request): Response
@@ -55,9 +57,9 @@ class ClientController extends Controller
 
         return Inertia::render('admin/clients/show', [
             'client' => $this->row($client, $user),
-            // F1 §09: contatos só para o Administrador e o gestor dos projetos do cliente, a mesma
-            // regra de editar o cliente. A ContactPolicy (T15) assume esta decisão.
-            'contacts' => $user->can('update', $client) ? $this->contacts($client) : null,
+            'contacts' => $user->can('viewAny', [Contact::class, $client]) ? $this->contacts($client, $user) : null,
+            // Cliente desativado não ganha contato (N11): o botão some em vez de dar erro.
+            'can_create_contact' => $client->isActive() && $user->can('create', [Contact::class, $client]),
         ]);
     }
 
@@ -135,18 +137,15 @@ class ClientController extends Controller
     }
 
     /** @return list<array<string, mixed>> */
-    private function contacts(Client $client): array
+    private function contacts(Client $client, User $user): array
     {
         return $client->contacts()
-            ->with('deactivatedBy:id,name')
+            ->withAnonymized()
+            ->with(['client:id,name', 'deactivatedBy:id,name'])
             ->orderBy('name')
+            ->orderBy('id')
             ->get()
-            ->map(fn (Contact $contact) => [
-                ...$contact->only(['id', 'name', 'email', 'phone']),
-                'active' => $contact->isActive(),
-                'deactivated_at' => LocalTime::format($contact->deactivated_at),
-                'deactivated_by' => $contact->deactivatedBy?->name,
-            ])
+            ->map(fn (Contact $contact) => $this->contactService->row($contact, $user))
             ->all();
     }
 }

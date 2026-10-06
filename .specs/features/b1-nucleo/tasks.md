@@ -821,10 +821,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Toda rota: feliz, 403 com "nada muda", erro de validação; aviso de e-mail repetido chega como flash
-- [ ] Lista do gestor só traz os clientes dele
-- [ ] Testes em `tests/Feature/Nucleo/ContactControllerTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Toda rota: feliz, 403 com "nada muda", erro de validação; aviso de e-mail repetido chega como flash
+- [x] Lista do gestor só traz os clientes dele
+- [x] Testes em `tests/Feature/Nucleo/ContactControllerTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
