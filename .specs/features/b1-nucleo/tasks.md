@@ -660,10 +660,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Toda rota: feliz, 403 com "nada muda" (dev em tudo; gestor em desativar, excluir e editar cliente que não gere), erro de validação
-- [ ] Lista com busca por nome e documento, filtros País e Situação
-- [ ] Testes em `tests/Feature/Nucleo/ClientControllerTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Toda rota: feliz, 403 com "nada muda" (dev em tudo; gestor em desativar, excluir e editar cliente que não gere), erro de validação
+- [x] Lista com busca por nome e documento, filtros País e Situação
+- [x] Testes em `tests/Feature/Nucleo/ClientControllerTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

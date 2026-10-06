@@ -9,6 +9,7 @@ use App\Platform\Policies\ClientPolicy;
 use App\Rules\AlphanumericCnpj;
 use App\Support\Paises;
 use DomainException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent;
@@ -126,6 +127,30 @@ class ClientService
         if (! $deleted) {
             throw new DomainException(self::ALREADY_USED);
         }
+    }
+
+    /**
+     * Lista da tela (F1 §03, §05): desativados só com "Mostrar desativados". A busca no
+     * documento aceita o CNPJ com ou sem máscara.
+     *
+     * @param  array{search: string, country: string|null, show_inactive: bool}  $filters
+     * @return LengthAwarePaginator<int, Client>
+     */
+    public function paginate(array $filters): LengthAwarePaginator
+    {
+        $search = $filters['search'];
+        $unmasked = AlphanumericCnpj::normalize($search);
+
+        return Client::query()
+            ->with('deactivatedBy:id,name')
+            ->when(! $filters['show_inactive'], fn ($query) => $query->active())
+            ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('document', 'like', "%{$search}%")
+                ->when($unmasked !== '', fn ($masked) => $masked->orWhere('document', 'like', "%{$unmasked}%"))))
+            ->when($filters['country'] !== null, fn ($query) => $query->where('country', $filters['country']))
+            ->orderBy('name')
+            ->paginate(20);
     }
 
     /**
