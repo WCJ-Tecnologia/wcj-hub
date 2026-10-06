@@ -116,6 +116,29 @@ class ClientPolicyTest extends TestCase
         $this->assertTrue($admin->can('delete', Client::factory()->create()));
     }
 
+    // N7: o nome se edita (Clientes AC 6); quem identifica a WCJ é o país com o CNPJ da semente.
+    public function test_a_wcj_renomeada_continua_protegida(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('country', 'BR')->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj->update(['name' => 'WCJ Tecnologia e Desenvolvimento de Sistemas Ltda']);
+        $admin = User::factory()->admin()->create();
+
+        $this->assertSame('A WCJ não pode ser desativada', Gate::forUser($admin)->inspect('deactivate', $wcj)->message());
+        $this->assertSame('A WCJ não pode ser excluída', Gate::forUser($admin)->inspect('delete', $wcj)->message());
+    }
+
+    public function test_outro_cliente_com_o_nome_da_wcj_nao_e_a_wcj(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $admin = User::factory()->admin()->create();
+        $homonimo = Client::factory()->create(['country' => 'BR', 'name' => 'WCJ Tecnologia']);
+
+        $this->assertNotSame(WcjClientSeeder::CNPJ, $homonimo->document);
+        $this->assertTrue(Gate::forUser($admin)->inspect('deactivate', $homonimo)->allowed());
+        $this->assertTrue(Gate::forUser($admin)->inspect('delete', $homonimo)->allowed());
+    }
+
     public function test_o_mesmo_documento_em_outro_pais_nao_e_a_wcj(): void
     {
         $admin = User::factory()->admin()->create();

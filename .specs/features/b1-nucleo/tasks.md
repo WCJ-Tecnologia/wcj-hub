@@ -87,6 +87,12 @@ T23 → T24 → T25
 T26 → T27 → T28 → T29
 ```
 
+### Phase 8: Correções do Verifier (rodada 2)
+
+```
+T30
+```
+
 ---
 
 ## Task Breakdown
@@ -882,10 +888,39 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 8: Correções do Verifier (rodada 2)
+
+### T30: A WCJ é identificada pelo país e pelo documento, nunca pelo nome
+
+**What**: testes que separam nome e documento da WCJ: a WCJ renomeada continua sem poder ser desativada nem excluída, e outro cliente BR chamado "WCJ Tecnologia" com outro CNPJ pode ser desativado e excluído.
+**Where**: `tests/Feature/Nucleo/ClientPolicyTest.php`
+**Depends on**: T29
+**Reuses**: `WcjClientSeeder`, `ClientFactory`
+**Requirement**: NUC-07
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] WCJ renomeada: `deactivate` e `delete` negados com as mensagens da Policy
+- [x] Homônimo com outro CNPJ: `deactivate` e `delete` permitidos
+- [x] Mutante R06 do Verifier (isWcj por nome) derrubado pelos testes, conferido numa cópia descartável
+- [x] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `test(clientes): a WCJ é reconhecida pelo documento, não pelo nome`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -896,6 +931,7 @@ Phase 4:  T15 → T16 → T17 → T18 → T19
 Phase 5:  T20 → T21 → T22
 Phase 6:  T23 → T24 → T25
 Phase 7:  T26 → T27 → T28 → T29
+Phase 8:  T30
 ```
 
 ## Task Granularity Check
@@ -948,6 +984,7 @@ Phase 7:  T26 → T27 → T28 → T29
 | T27 | T26 | T26 → T27 | ✅ Match |
 | T28 | T27 | T27 → T28 | ✅ Match |
 | T29 | T28 | T28 → T29 | ✅ Match |
+| T30 | T29 | fase anterior | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -968,3 +1005,4 @@ Phase 7:  T26 → T27 → T28 → T29
 | T25 | Tradução (validação) | integration | integration | ✅ OK |
 | T26, T27 | Service (testes) | integration | integration | ✅ OK |
 | T28, T29 | Página React | e2e | e2e | ✅ OK |
+| T30 | Policy | integration | integration | ✅ OK |
