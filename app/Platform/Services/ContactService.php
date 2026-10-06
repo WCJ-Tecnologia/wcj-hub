@@ -126,6 +126,32 @@ class ContactService
         }
     }
 
+    /**
+     * N12, a pedido do titular: numa transação só, troca o nome, apaga e-mail e telefone, tira
+     * os mesmos campos da auditoria do contato e grava anonymized sem dado pessoal. Também
+     * desativa (D5), para sair das listas de escolha. Irreversível.
+     */
+    public function anonymize(Contact $contact, User $actor): void
+    {
+        DB::transaction(function () use ($contact, $actor) {
+            $locked = Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
+            $this->ensureNotAnonymized($locked);
+            $wasActive = $locked->isActive();
+
+            $locked->forceFill(['name' => Contact::ANONYMIZED_NAME, 'email' => null, 'phone' => null])
+                ->setActive(false, $actor)
+                ->save();
+            $this->audit->scrubPersonalData($locked, ['name', 'email', 'phone']);
+            $this->audit->log(
+                AuditActionEnum::ANONYMIZED,
+                $locked,
+                $wasActive ? ['active' => true] : null,
+                $wasActive ? ['active' => false] : null,
+                $actor->id,
+            );
+        });
+    }
+
     /** "Já existe Fulano (Cliente X) com este e-mail" (N8, F1 §07), entre os contatos ativos. */
     private function duplicateWarning(Contact $contact): ?string
     {

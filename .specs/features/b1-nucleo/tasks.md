@@ -794,10 +794,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Contatos AC 10–12; falha no meio desfaz tudo
-- [ ] Nenhuma linha de `audit_logs` do contato contém nome, e-mail ou telefone antigos
-- [ ] Testes em `tests/Feature/Nucleo/ContactAnonymizeTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Contatos AC 10–12; falha no meio desfaz tudo
+- [x] Nenhuma linha de `audit_logs` do contato contém nome, e-mail ou telefone antigos
+- [x] Testes em `tests/Feature/Nucleo/ContactAnonymizeTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
