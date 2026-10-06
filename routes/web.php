@@ -64,6 +64,8 @@ Route::prefix('admin')
 
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+        Route::post('users/{user}/reactivate', [UserController::class, 'reactivate'])->name('users.reactivate');
 
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     });

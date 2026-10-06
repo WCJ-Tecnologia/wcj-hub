@@ -7,6 +7,7 @@ use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\User;
 use DomainException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
@@ -154,6 +155,28 @@ class UserService
         if (! $deleted) {
             throw new DomainException(self::ALREADY_USED);
         }
+    }
+
+    /**
+     * Lista da tela (F1 §03, §05): desativados só com o filtro "Mostrar desativados".
+     *
+     * @param  array{search: string, role_id: int|null, show_inactive: bool}  $filters
+     * @return LengthAwarePaginator<int, User>
+     */
+    public function paginate(array $filters): LengthAwarePaginator
+    {
+        $search = $filters['search'];
+
+        return User::query()
+            ->withLastLogin()
+            ->with('deactivatedBy:id,name')
+            ->when(! $filters['show_inactive'], fn ($query) => $query->active())
+            ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")))
+            ->when($filters['role_id'] !== null, fn ($query) => $query->where('role_id', $filters['role_id']))
+            ->orderBy('name')
+            ->paginate(20);
     }
 
     /**

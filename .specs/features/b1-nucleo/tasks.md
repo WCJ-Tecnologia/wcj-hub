@@ -297,11 +297,11 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Toda rota de usuário: feliz, 403 com "nada muda" para gestor e dev, erro de validação
-- [ ] `UserControllerTest` existente ajustado sem perder caso; a caixa "ativo" sai
-- [ ] Dívida A6 do `UserController` diminui ou sai do `divida.php`
-- [ ] Testes em `tests/Feature/Nucleo/UserControllerTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Toda rota de usuário: feliz, 403 com "nada muda" para gestor e dev, erro de validação
+- [x] `UserControllerTest` existente ajustado sem perder caso; a caixa "ativo" sai
+- [x] Dívida A6 do `UserController` diminui ou sai do `divida.php`
+- [x] Testes em `tests/Feature/Nucleo/UserControllerTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
