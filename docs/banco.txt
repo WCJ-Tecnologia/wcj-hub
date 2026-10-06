@@ -281,8 +281,10 @@ O limite 60/20 por minuto roda no cache, por autorização, T5.)
 =====================================================================
 projects
 =====================================================================
-client_id                        fk clients    not null  restrict  (P1)
-manager_id                       fk users      not null  restrict  (P1)
+client_id                        fk clients    not null  restrict  (P1; definido na criação, não muda)
+manager_id                       fk users      not null  restrict  gestor responsável (P1). Os demais gestores
+                                                                   do projeto são os alocados com papel
+                                                                   project_manager (P1, P5): sem coluna
 key_prefix                       varchar(10)   not null  unique    (P3; congela após a 1ª tarefa)
 name                             varchar(160)  not null
 starts_on                        date          not null            início (P2)
@@ -304,7 +306,9 @@ só gestor ou admin.
 =====================================================================
 project_members
 =====================================================================
-Alocação: o dev só vê projeto em que está (P5). O gestor põe e tira pessoas a qualquer momento (P5).
+Alocação: o dev só vê projeto em que está (P5). Pessoa alocada com papel project_manager gere o projeto
+como o manager_id (P1, P5): a Policy lê o papel do alocado. O gestor põe e tira pessoas a qualquer
+momento (P5).
 Tirar a pessoa deixa sem dev (developer_id = null) e sem QA (qa_id = null) as tarefas do projeto em
 que ela estava, na mesma transação. O Tech Lead não fica no sistema: a equipe combina e o gestor
 acompanha (P6 saiu na Sessão D).

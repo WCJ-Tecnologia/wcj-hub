@@ -1,6 +1,6 @@
 # F2. Projeto e configuração do quadro
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -29,8 +29,8 @@
 
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
-| Cliente | lista dos clientes ativos (F1) | sim | | Todo projeto é de um cliente (P1). Ao lado, o botão *Novo cliente* abre o cadastro de cliente (campos de F1) sem sair do formulário; ao salvar, o cliente novo já fica escolhido (N6, decisão de 06/10). Cliente desativado sai da lista; o projeto que já é dele continua (N11). |
-| Gestor | lista dos usuários ativos com papel Gestor de projetos ou Administrador | sim | quem está criando, se for Gestor de projetos | Um gestor por projeto (P1). Quem pode ser gestor: ver 10.1. |
+| Cliente | lista dos clientes ativos (F1) | sim | | Todo projeto é de um cliente e o cliente é definido só na criação: não se troca depois (P1). Na edição aparece só leitura. Ao lado, o botão *Novo cliente* abre o cadastro de cliente (campos de F1) sem sair do formulário; ao salvar, o cliente novo já fica escolhido (N6, decisão de 06/10). Cliente desativado sai da lista; o projeto que já é dele continua (N11). |
+| Gestor responsável | lista dos usuários ativos com papel Gestor de projetos ou Administrador | sim | quem está criando, se for Gestor de projetos | O responsável pelo projeto (P1). Outros gestores entram pela alocação: toda pessoa alocada com papel Gestor de projetos gere o projeto como ele (P1, P5). |
 | Prefixo | texto, até 10, único no sistema | sim | | Forma a chave das tarefas: `SGM` → `SGM-17` (P3, P16). Proposta: letras e números, sem espaço, gravado em maiúsculas (ver 10.2). Repetido é recusado, sem diferença de maiúscula e minúscula. Fica só leitura depois que a primeira tarefa do projeto é criada, mesmo que ela seja excluída depois, porque o número nunca é reaproveitado (P3, P16). |
 | Nome | texto, até 160 | sim | | Ex.: "Wpay", "Gestão de multas". |
 | Tipo | escolha: Projeto de entrega / Produto contínuo | sim | Projeto de entrega | Não é guardado à parte: é a Entrega preenchida ou vazia (P2). Escolher Produto contínuo esconde e limpa a Entrega. |
@@ -119,7 +119,7 @@ Estado vazio: Projetos, "Nenhum projeto ainda. *Novo projeto*" (para o dev, sem 
 |---|---|---|---|
 | Novo projeto | Administrador; Gestor de projetos | Cria o projeto com o quadro padrão, sem áreas e com os padrões (P10, P15, P18, P46). | Prefixo repetido: recusa com "O prefixo SGM já é do projeto X" (P3). |
 | Novo cliente (no formulário do projeto) | Administrador; gestor | Cria o cliente com os campos de F1 e o deixa escolhido no projeto (N6). | CNPJ repetido: mesma recusa de F1 (N5). |
-| Editar | Administrador; gestor do projeto | Cliente, gestor, nome, tipo e datas; o prefixo, só até a primeira tarefa (P3). Vale dali para a frente (P8). | Ao trocar o gestor: "Fulano deixa de gerir este projeto e só continua vendo se estiver alocado. Continuar?" (P5) |
+| Editar | Administrador; gestor do projeto | Gestor responsável, nome, tipo e datas; o prefixo, só até a primeira tarefa (P3). O cliente não se edita (P1). Vale dali para a frente (P8). | Ao trocar o responsável: "Fulano deixa de ser o responsável e só continua gerindo se estiver alocado. Continuar?" (P1, P5) |
 | Encerrar | Administrador; gestor do projeto | Marca o projeto como encerrado. Tarefas, sprint e pacotes ficam como estão; ninguém cria tarefa nova, nem pela tela nem pela IA (P7). | "O projeto tem N cards fora da etapa de papel Pronto. Eles continuam no quadro. Encerrar?" |
 | Reabrir | Administrador; gestor do projeto | Volta a aberto e a receber tarefas (P7). | |
 | Excluir | Administrador | Só projeto nunca usado: sem tarefa, sprint nem pacote (G2). Saem junto o quadro, as áreas e as alocações. | "Excluir de verdade. Não dá para desfazer." |
@@ -190,29 +190,32 @@ Não se aplica na fatia 1: nenhuma regra pede exportação de projeto ou de conf
 
 | O quê | Administrador | Gestor de projetos | Desenvolvedor |
 |---|---|---|---|
-| Ver o projeto na lista e abrir | todos | os que gere e os em que está alocado (P5, ver 10.3) | só os em que está alocado (P5) |
+| Ver o projeto na lista e abrir | todos | os que gere: é o responsável ou está alocado (P1, P5) | só os em que está alocado (P5) |
 | Criar projeto | sim | sim | não |
-| Editar dados, trocar o gestor | sim | nos que gere | não |
+| Editar dados, trocar o responsável | sim | nos que gere | não |
 | Encerrar e reabrir | sim | nos que gere (P7) | não |
 | Excluir projeto nunca usado | sim | não | não |
 | Ver dados, pessoas e etapas do projeto | sim | nos que gere | só leitura, nos em que está alocado |
 | Alocar e tirar pessoas | sim | nos que gere (P5) | não |
 | Etapas, áreas e padrões | sim | nos que gere (G7, P11) | não (premissa) |
+| Ser dev ou QA de tarefa | sim, se alocado | sim, se alocado: alocado quer dizer que vai executar (P5) | sim |
 | Tipos de tarefa e motivos de retrabalho: usar no card | sim | sim | sim |
 | Tipos de tarefa e motivos de retrabalho: editar | sim | não (G7) | não |
 | Histórico do projeto | sim | nos que gere | não |
 
-A IA de cada pessoa tem exatamente estas permissões (G4). O Comercial não entra em Projetos (C14).
+"Gere" = é o gestor responsável do projeto ou está alocado nele com papel Gestor de projetos (P1, P5). Em todos os funcionais, "gestor do projeto" quer dizer isso. A IA de cada pessoa tem exatamente estas permissões (G4). O Comercial não entra em Projetos (C14).
 
 ## 10. Pontos a validar
 
-1. **Quem pode ser gestor.** A P1 não diz. Proposta: qualquer usuário ativo com papel Gestor de projetos ou Administrador. Confirmar se os sócios (Administradores) devem aparecer nessa lista.
-2. **Formato do prefixo.** Proposta: até 10 letras e números, sem espaço, gravado em maiúsculas, recusado se repetido sem olhar a caixa. Confirmar se aceita número e hífen (ex.: `PTA2`, `CHQ-KDS`).
-3. **Gestor e alocação.** Proposta: o gestor do projeto vê e gere sem estar alocado; para ser dev ou QA de tarefa, ele se aloca como qualquer pessoa. Um Gestor de projetos alocado no projeto de outro gestor tem ali o mesmo que o desenvolvedor.
-4. **Remover etapa não é retrabalho.** Proposta: mover os cards de uma etapa removida é configuração; o movimento fica gravado, sem origem nem motivo, mesmo que o destino seja de desenvolvimento.
-5. **Quadro sem algum papel.** A P11 só garante Fila, Sprint e Suporte. Proposta: o gestor pode remover a única etapa de Pronto, Teste ou Desenvolvimento; os indicadores desse papel param de contar dali em diante. Confirmar ou dizer se Pronto e Desenvolvimento também devem existir sempre (a reprovação na homologação, no F6, devolve para desenvolvimento).
-6. **Melhoria, Suporte e Outro fixos.** Proposta: renomeiam, mas não se desativam nem se excluem, porque o card novo, o card de suporte e o "outro com texto" dependem deles.
-7. **Trocar o cliente do projeto.** Proposta: permitido a qualquer momento (P8); os cards de suporte antigos continuam citando o contato do cliente anterior.
-8. **O que para no projeto encerrado.** A P7 só fala de tarefa nova. Proposta: só a criação de tarefa para; mover, comentar, lançar horas, sprint e pacote seguem, para fechar o que ficou aberto, e a sprint aberta fica como está.
-9. **Excluir projeto.** Proposta: só o Administrador, e só projeto sem tarefa, sprint nem pacote (G2).
-10. **Etapa removida não volta.** Proposta: na v1 não há "restaurar etapa"; se precisar, cria-se outra com o mesmo papel, e os indicadores somam pelo papel.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P1, P5) e no `banco.txt`.
+
+1. **Quem pode ser gestor.** Sim: qualquer usuário ativo com papel Gestor de projetos ou Administrador, sócios inclusive.
+2. **Formato do prefixo.** OK: até 10 letras, números e hífen, sem espaço, em maiúsculas; repetido é recusado sem olhar a caixa.
+3. **Gestor e alocação.** **Pode haver mais de um gestor por projeto.** O projeto tem um gestor responsável (P1) e toda pessoa com papel Gestor de projetos alocada no projeto gere como ele (mesma visão e mesmos poderes). Gestor pode ser dev ou QA de tarefa: alocado quer dizer que vai executar (P5). ~~Gestor alocado = dev~~ não vale.
+4. **Remover etapa não é retrabalho.** OK.
+5. **Quadro sem algum papel.** OK: Fila, Sprint, Suporte e Desenvolvimento existem sempre (P11); Pronto e Teste podem ser removidos, e os indicadores desse papel param de contar dali em diante.
+6. **Melhoria, Suporte e Outro fixos.** OK: renomeiam, não se desativam nem se excluem (P18, P40).
+7. **Trocar o cliente do projeto.** **Não existe.** O projeto só existe por causa do cliente: definido na criação, não muda (P1). Errou o cliente num projeto nunca usado: exclui e cria de novo.
+8. **Projeto encerrado.** OK: só a criação de tarefa para; o resto segue para fechar o que ficou aberto (P7).
+9. **Excluir projeto.** OK: só o Administrador, e só sem tarefa, sprint nem pacote (G2).
+10. **Etapa removida não volta.** OK: sem restaurar na v1; cria-se outra com o mesmo papel.

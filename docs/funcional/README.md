@@ -44,7 +44,7 @@ Mesmo modelo dos funcionais do Gestor PTA e do Projeto Oficinas. Seção que nã
 | 09 | Permissionamento | Quem vê e quem faz, por papel: Administrador, Gestor de projetos, Desenvolvedor. O Comercial não entra em Projetos (C14). A IA do usuário tem exatamente o que ele tem (G4). |
 | 10 | Pontos a validar | Perguntas que surgiram ao escrever e que o dono do módulo responde na aprovação. Não alteram o escopo. |
 
-Cada frase que vem de uma regra termina com o código dela entre parênteses, por exemplo "(P45)". Cada funcional começa com um cabeçalho fixo: objetivo, regras que alimentam, tabelas do `banco.txt`, depende de, quem aprova.
+Cada frase que vem de uma regra termina com o código dela entre parênteses, por exemplo "(P45)". Em todos os funcionais, **"gestor do projeto"** = o gestor responsável do projeto ou qualquer pessoa com papel Gestor de projetos alocada nele (P1, P5; pode haver mais de um). Cada funcional começa com um cabeçalho fixo: objetivo, regras que alimentam, tabelas do `banco.txt`, depende de, quem aprova.
 
 ## Os blocos
 

@@ -88,9 +88,9 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Telas.** `/projetos` (lista: os que o papel vê); `/projetos/novo` e `/projetos/{id}/editar`, com o botão *Novo cliente* inline que chama o `ClientService` do Platform (N6); `/projetos/{id}/configuracao` com as abas Pessoas, Etapas, Áreas e Padrões; `/admin/listas` com Tipos de tarefa e Motivos de retrabalho. Encerrar e reabrir na ficha do projeto.
 
-**Regras.** P1, P2, P3 (prefixo congela após a 1ª tarefa), P5 (tirar pessoa limpa dev e QA das tarefas na mesma transação), P7, P8, P10 (nasce com as 8 etapas), P11 (papel fixo; uma etapa ativa de `queue`, `sprint` e `support`, travada pela coluna gerada `single_role_key`; "pelo menos uma" no Service), P12 (arquivar etapa com tarefas pede destino), P15 e P46 (padrões), P18, P40, G7, em `Projetos\Services\ProjectService`, `BoardStageService`, `ProjectAreaService` e `Platform\Services\ListService`.
+**Regras.** P1 (cliente fixo após criar; gestor responsável + gestores alocados), P2, P3 (prefixo congela após a 1ª tarefa), P5 (tirar pessoa limpa dev e QA das tarefas na mesma transação), P7, P8, P10 (nasce com as 8 etapas), P11 (papel fixo; uma etapa ativa de `queue`, `sprint` e `support`, travada pela coluna gerada `single_role_key`; "pelo menos uma" no Service), P12 (arquivar etapa com tarefas pede destino), P15 e P46 (padrões), P18, P40, G7, em `Projetos\Services\ProjectService`, `BoardStageService`, `ProjectAreaService` e `Platform\Services\ListService`.
 
-**Permissão.** `ProjectPolicy`: `view` (admin, gestor do projeto, alocado), `manage` (admin, gestor do projeto), `create` (admin, gestor). Listas gerais: só admin.
+**Permissão.** `ProjectPolicy`: `view` (admin, `manager_id`, alocado), `manage` (admin, `manager_id`, ou alocado com papel `project_manager`: pode haver mais de um gestor por projeto, P1/P5), `create` (admin, gestor). `client_id` só na criação (P1). Listas gerais: só admin.
 
 ### B3. Quadro e card
 

@@ -202,13 +202,13 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.1 Projeto
 
-- **P1** Todo projeto pertence a um cliente e tem um gestor responsável.
+- **P1** Todo projeto pertence a um cliente e tem um gestor responsável. O cliente é definido na criação e não muda: sem cliente não há projeto (decisão de 06/10). Pode haver mais de um gestor por projeto: além do responsável, toda pessoa com papel Gestor de projetos alocada no projeto gere o projeto como ele (decisão de 06/10).
 - **P2** Dois tipos de projeto:
   - **projeto de entrega**: tem data de início e data de entrega. A data de entrega é informação para o gestor, que acompanha o prazo por conta própria na v1;
   - **produto contínuo** (ex.: Wpay): só tem data de início e fica em melhoria contínua. O prazo é o de cada sprint.
 - **P3** Cada projeto tem um prefixo (ex.: `SGM`), único no sistema, que não muda depois da primeira tarefa.
 - ~~**P4**~~ Saiu na revisão do banco (Sessão D): a modalidade (tradicional ou 100% IA) não fica no sistema; a equipe combina e o gestor acompanha.
-- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere; o Administrador, todos. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA.
+- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere e os em que está alocado; o Administrador, todos. Gestor alocado num projeto tem ali a visão e os poderes de gestor (P1) e também pode ser dev ou QA de tarefa: alocado quer dizer que vai executar. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA.
 - ~~**P6**~~ Saiu na revisão do banco (Sessão D): o Tech Lead não fica no sistema; a equipe define no dia a dia e o gestor acompanha. P33 e P38 descrevem a prática, sem registro.
 - **P7** O gestor encerra o projeto quando quiser, mesmo com tarefa aberta. Projeto encerrado não recebe tarefa nova; o gestor ou o Administrador reabre.
 - **P8** Mudar a configuração do projeto vale dali para a frente e nunca apaga o que já foi registrado.
