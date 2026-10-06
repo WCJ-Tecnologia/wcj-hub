@@ -363,7 +363,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
 - **Dado** um Dev alocado no projeto, **quando** o assistente dele chama `escrever_tarefa` só com o título, **então** o card nasce no `Backlog` com tipo Melhoria e prioridade Normal (P56, P17); um Dev não alocado recebe "negado" (G4).
 - **Dado** um usuário desativado agora, **quando** o assistente dele chama qualquer ferramenta, **então** recebe "não autorizado" (N4, IA6).
 - **Dado** um texto de cliente que contém instruções ao assistente (com Chamados, a descrição de um chamado), **quando** o técnico pede um resumo pela IA, **então** o conteúdo volta delimitado como dado do cliente e nenhuma escrita acontece sem pedido do técnico (IA10).
-- **Dado** uma tarefa movida pela IA, **quando** o gestor abre o histórico, **então** vê quem moveu, quando, de onde para onde e o canal `ia:claude` ou `ia:chatgpt` (P14, IA11).
+- **Dado** uma tarefa movida pela IA, **quando** o gestor abre o histórico, **então** vê quem moveu, quando, de onde para onde e o canal `ia:claude` ou `ia:codex` (o ChatGPT só lê, IA3) (P14, IA11).
 
 ### 5. Chamados (rascunho)
 

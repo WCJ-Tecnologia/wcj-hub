@@ -18,7 +18,7 @@
 
 **Contatos.** Na ficha do cliente, aba *Contatos*, o Administrador ou o gestor de um projeto desse cliente clica em *Novo contato*, informa nome, e-mail e telefone e confirma (N8). Se já existe contato com o mesmo e-mail, o sistema avisa e deixa seguir (N8). O contato não tem login (N9). A pedido do titular, o Administrador anonimiza o contato: os dados pessoais somem, o histórico fica (N12).
 
-**Auditoria.** O Administrador abre *Administração → Auditoria* e vê, em ordem do mais recente, toda alteração feita em qualquer módulo e toda tentativa negada: quem, quando, por onde (tela ou qual IA), o que mudou (G3). Nada ali se edita nem se apaga (G3). De qualquer ficha (usuário, cliente, contato, projeto, card), o botão *Histórico* abre a auditoria já filtrada naquele registro.
+**Auditoria.** O Administrador abre *Administração → Auditoria* e vê, em ordem do mais recente, toda alteração feita em qualquer módulo e toda tentativa negada: quem, quando, por onde (tela ou qual IA), o que mudou (G3). Nada ali se edita nem se apaga (G3). Nas fichas do Núcleo (usuário, cliente, contato), o botão *Histórico* abre a auditoria já filtrada naquele registro. No card, *Histórico* abre a linha do tempo dos movimentos ([F7](f7-indicadores.md)), que todo alocado vê; de lá, o Administrador tem *Ver na auditoria*.
 
 ## 02. Telas e campos
 
