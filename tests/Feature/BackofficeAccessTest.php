@@ -13,14 +13,14 @@ class BackofficeAccessTest extends TestCase
 
     public function test_guest_is_redirected_to_login_from_every_admin_route(): void
     {
-        foreach (['/', '/admin/dashboard', '/admin/enterprises', '/admin/users', '/admin/audit-logs', '/admin/profile'] as $path) {
+        foreach (['/', '/admin/dashboard', '/admin/users', '/admin/audit-logs', '/admin/profile'] as $path) {
             $this->get($path)->assertRedirect(route('login'));
         }
     }
 
     public function test_backoffice_user_can_sign_in(): void
     {
-        $user = User::factory()->supervisor()->create([
+        $user = User::factory()->projectManager()->create([
             'email' => 'supervisor@example.com',
             'password' => 'password',
         ]);
@@ -36,8 +36,8 @@ class BackofficeAccessTest extends TestCase
 
     public function test_wrong_password_unknown_email_and_inactive_account_get_the_same_message(): void
     {
-        User::factory()->supervisor()->create(['email' => 'ana@example.com', 'password' => 'password']);
-        User::factory()->supervisor()->inactive()->create(['email' => 'inativo@example.com', 'password' => 'password']);
+        User::factory()->projectManager()->create(['email' => 'ana@example.com', 'password' => 'password']);
+        User::factory()->projectManager()->inactive()->create(['email' => 'inativo@example.com', 'password' => 'password']);
 
         foreach ([
             ['email' => 'ana@example.com', 'password' => 'errada'],
@@ -55,7 +55,7 @@ class BackofficeAccessTest extends TestCase
 
     public function test_inactive_session_is_rejected_by_the_backoffice_middleware(): void
     {
-        $user = User::factory()->supervisor()->create();
+        $user = User::factory()->projectManager()->create();
 
         $this->actingAs($user)->get('/admin/dashboard')->assertOk();
 
@@ -75,7 +75,7 @@ class BackofficeAccessTest extends TestCase
     public function test_dashboard_shows_real_counts(): void
     {
         $admin = User::factory()->admin()->create();
-        User::factory()->supervisor()->inactive()->create();
+        User::factory()->projectManager()->inactive()->create();
 
         $this->actingAs($admin)
             ->get('/admin/dashboard')
@@ -83,8 +83,7 @@ class BackofficeAccessTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('admin/dashboard')
                 ->where('summary.users_total', 2)
-                ->where('summary.users_active', 1)
-                ->where('summary.enterprises_total', 0));
+                ->where('summary.users_active', 1));
     }
 
     public function test_health_check_is_public_and_carries_no_data(): void

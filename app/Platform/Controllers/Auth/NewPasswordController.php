@@ -9,7 +9,6 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -51,7 +50,6 @@ class NewPasswordController extends Controller
                 $user->forceFill([
                     'password' => $password,
                     'must_change_password' => false,
-                    'remember_token' => Str::random(60),
                 ])->save();
 
                 $this->sessions->terminateOthers($user);

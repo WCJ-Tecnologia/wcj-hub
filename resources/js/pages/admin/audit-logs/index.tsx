@@ -19,10 +19,13 @@ interface LogRow {
     user_email: string | null;
     action: string;
     action_label: string;
+    /** Alias do morph map (user, client, task…). */
     entity: string;
-    entity_id: number;
-    before_data: Record<string, unknown> | null;
-    after_data: Record<string, unknown> | null;
+    /** Nulo quando a negação veio antes de achar o registro. */
+    entity_id: number | null;
+    outcome: 'success' | 'denied';
+    /** {"campo": [antes, depois]} (docs/banco.txt, audit_logs). */
+    changes: Record<string, [unknown, unknown]> | null;
     ip_address: string | null;
     created_at: string;
 }
@@ -32,6 +35,12 @@ interface Props {
     filters: Record<string, string | number | null>;
     actionOptions: { value: string; label: string }[];
 }
+
+const recordLabel = (log: LogRow) => (log.entity_id === null ? log.entity : `${log.entity} #${log.entity_id}`);
+
+/** Um lado de changes: 0 = antes, 1 = depois. */
+const side = (log: LogRow, index: 0 | 1) =>
+    Object.fromEntries(Object.entries(log.changes ?? {}).map(([field, pair]) => [field, pair[index]]));
 
 export default function AuditLogsIndex({ logs, filters, actionOptions }: Props) {
     const [selected, setSelected] = useState<LogRow | null>(null);
@@ -44,7 +53,7 @@ export default function AuditLogsIndex({ logs, filters, actionOptions }: Props) 
         { key: 'created_at', header: 'Data', className: 'whitespace-nowrap text-muted-foreground tabular-nums' },
         { key: 'user', header: 'Usuário', className: 'font-medium' },
         { key: 'action_label', header: 'Ação', cell: (log) => <Badge variant="outline">{log.action_label}</Badge> },
-        { key: 'entity', header: 'Registro', className: 'text-muted-foreground', cell: (log) => `${log.entity} #${log.entity_id}` },
+        { key: 'entity', header: 'Registro', className: 'text-muted-foreground', cell: (log) => recordLabel(log) },
         { key: 'ip_address', header: 'IP', className: 'font-mono text-xs text-muted-foreground', cell: (log) => log.ip_address ?? '—' },
         {
             key: 'actions',
@@ -112,7 +121,7 @@ export default function AuditLogsIndex({ logs, filters, actionOptions }: Props) 
                             <Badge variant="outline">{log.action_label}</Badge>
                         </div>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            {log.entity} #{log.entity_id} · {log.created_at}
+                            {recordLabel(log)} · {log.created_at}
                         </p>
                     </button>
                 )}
@@ -123,22 +132,23 @@ export default function AuditLogsIndex({ logs, filters, actionOptions }: Props) 
             <Dialog open={selected !== null} onOpenChange={(next) => !next && setSelected(null)}>
                 <DialogContent size="lg">
                     <DialogHeader>
-                        <DialogTitle>{selected ? `${selected.action_label} · ${selected.entity} #${selected.entity_id}` : ''}</DialogTitle>
+                        <DialogTitle>{selected ? `${selected.action_label} · ${recordLabel(selected)}` : ''}</DialogTitle>
                         <DialogDescription>{selected ? `${selected.user} em ${selected.created_at}` : ''}</DialogDescription>
                     </DialogHeader>
                     <DialogBody>
                         {selected && (
                             <div className="space-y-4">
+                                {selected.outcome === 'denied' && <Badge variant="warning">Tentativa negada</Badge>}
                                 <div>
                                     <p className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Antes</p>
                                     <pre className="scrollbar-slim max-h-56 overflow-auto rounded-lg bg-muted p-3 font-mono text-xs">
-                                        {JSON.stringify(selected.before_data ?? {}, null, 2)}
+                                        {JSON.stringify(side(selected, 0), null, 2)}
                                     </pre>
                                 </div>
                                 <div>
                                     <p className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Depois</p>
                                     <pre className="scrollbar-slim max-h-56 overflow-auto rounded-lg bg-muted p-3 font-mono text-xs">
-                                        {JSON.stringify(selected.after_data ?? {}, null, 2)}
+                                        {JSON.stringify(side(selected, 1), null, 2)}
                                     </pre>
                                 </div>
                                 <p className="text-xs text-muted-foreground">

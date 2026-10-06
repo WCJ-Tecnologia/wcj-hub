@@ -4,12 +4,10 @@ namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Platform\Enums\AuditActionEnum;
-use App\Platform\Enums\UserTypeEnum;
-use App\Platform\Models\Enterprise;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
 use App\Platform\Services\AuditService;
-use App\Platform\Services\Scoping;
 use App\Platform\Services\TemporaryPasswordService;
 use App\Support\LocalTime;
 use Illuminate\Http\RedirectResponse;
@@ -20,11 +18,14 @@ use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Tela de usuários do template, ajustada à seção 9 do banco.txt (papel e carga diária). A
+ * tela completa, com convite, conexões de IA e o resto das regras N1 a N4, é do B1.
+ */
 class UserController extends Controller
 {
     public function __construct(
         private readonly AuditService $audit,
-        private readonly Scoping $scoping,
         private readonly TemporaryPasswordService $passwords,
     ) {}
 
@@ -33,17 +34,16 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         $search = (string) $request->string('search');
-        $type = $request->integer('user_type_id');
+        $role = $request->integer('role_id');
         $viewer = $request->user();
 
         $users = User::query()
-            ->with(['enterprises:id,nickname', 'deactivatedBy:id,name'])
+            ->with('deactivatedBy:id,name')
             ->when($search !== '', fn ($query) => $query->where(function ($inner) use ($search) {
                 $inner->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('document', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             }))
-            ->when($type > 0, fn ($query) => $query->where('user_type_id', $type))
+            ->when($role > 0, fn ($query) => $query->where('role_id', $role))
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString()
@@ -51,32 +51,25 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'document' => $user->document,
-                'phone' => $user->phone,
                 'active' => $user->isActive(),
                 // Who deactivated only reaches whoever can edit (seguranca.md §6).
                 ...($viewer->can('update', $user) ? [
                     'deactivated_at' => LocalTime::format($user->deactivated_at),
                     'deactivated_by' => $user->deactivatedBy?->name,
                 ] : []),
-                'user_type_id' => $user->user_type_id,
-                'type_label' => $user->type()->label(),
-                'last_login_at' => LocalTime::format($user->last_login_at),
+                'role_id' => $user->role_id,
+                'role_label' => $user->type()->label(),
+                'daily_hours' => $user->daily_hours,
                 'must_change_password' => $user->must_change_password,
-                'enterprises' => $user->enterprises->map(fn (Enterprise $e) => [
-                    'id' => $e->id,
-                    'nickname' => $e->nickname,
-                ]),
             ]);
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
-            'filters' => ['search' => $search, 'user_type_id' => $type ?: null],
-            'userTypes' => collect(UserTypeEnum::cases())->map(fn (UserTypeEnum $t) => [
-                'id' => $t->value,
-                'label' => $t->label(),
+            'filters' => ['search' => $search, 'role_id' => $role ?: null],
+            'roles' => collect(RoleEnum::cases())->map(fn (RoleEnum $r) => [
+                'id' => $r->value,
+                'label' => $r->label(),
             ]),
-            'enterpriseOptions' => $this->scoping->enterpriseOptions($request->user()),
         ]);
     }
 
@@ -87,18 +80,15 @@ class UserController extends Controller
         $data = $request->validated();
         $actor = $request->user();
 
+        // users.password é not null (N1): a senha provisória nasce junto com a linha.
         $user = DB::transaction(function () use ($data, $actor) {
             $user = new User([
-                'user_type_id' => $data['user_type_id'],
+                'role_id' => $data['role_id'],
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'document' => $data['document'] ?? null,
-                'phone' => $data['phone'] ?? null,
-                'password' => null,
+                'daily_hours' => $data['daily_hours'] ?? null,
             ]);
-            $user->setActive((bool) ($data['active'] ?? true), $actor)->save();
-
-            $this->syncEnterprises($user, $data['enterprise_ids'] ?? []);
+            $user->setActive((bool) ($data['active'] ?? true), $actor);
             $this->passwords->issue($user, isReset: false);
 
             return $user;
@@ -120,23 +110,18 @@ class UserController extends Controller
         $before = $this->snapshot($user);
         $active = (bool) ($data['active'] ?? $user->isActive());
 
-        $staysAdmin = (int) $data['user_type_id'] === UserTypeEnum::ADMIN->value && $active;
-
-        if (! $staysAdmin && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Este é o último administrador ativo. Promova outra pessoa antes de alterar o perfil.');
+        if (! ((int) $data['role_id'] === RoleEnum::ADMIN->value && $active) && $this->isLastActiveAdmin($user)) {
+            return back()->with('error', 'Este é o último administrador ativo. Promova outra pessoa antes de alterar o papel.');
         }
 
         $user->fill([
-            'user_type_id' => $data['user_type_id'],
+            'role_id' => $data['role_id'],
             'name' => $data['name'],
             'email' => $data['email'],
-            'document' => $data['document'] ?? null,
-            'phone' => $data['phone'] ?? null,
+            'daily_hours' => $data['daily_hours'] ?? null,
         ]);
 
         $user->setActive($active, $request->user())->save();
-
-        $this->syncEnterprises($user, $data['enterprise_ids'] ?? []);
 
         $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user));
 
@@ -193,16 +178,6 @@ class UserController extends Controller
         );
     }
 
-    /**
-     * Only the Financial role is scoped by enterprise.
-     *
-     * @param  list<int>  $enterpriseIds
-     */
-    private function syncEnterprises(User $user, array $enterpriseIds): void
-    {
-        $user->enterprises()->sync($user->isFinancial() ? $enterpriseIds : []);
-    }
-
     private function isLastActiveAdmin(User $user): bool
     {
         if (! $user->isAdmin() || ! $user->isActive()) {
@@ -211,7 +186,7 @@ class UserController extends Controller
 
         return ! User::query()
             ->active()
-            ->where('user_type_id', UserTypeEnum::ADMIN->value)
+            ->where('role_id', RoleEnum::ADMIN->value)
             ->whereKeyNot($user->getKey())
             ->exists();
     }
@@ -221,6 +196,6 @@ class UserController extends Controller
      */
     private function snapshot(User $user): array
     {
-        return [...$user->only(['name', 'email', 'user_type_id']), 'active' => $user->isActive()];
+        return [...$user->only(['name', 'email', 'role_id', 'daily_hours']), 'active' => $user->isActive()];
     }
 }

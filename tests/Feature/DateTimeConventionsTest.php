@@ -45,7 +45,7 @@ class DateTimeConventionsTest extends TestCase
 
         // 23:30 in São Paulo is already the next day in UTC.
         $this->travelTo(Carbon::parse('2026-09-24 23:30:00', LocalTime::zone()));
-        $late = AuditLog::query()->create(['user_id' => $admin->id, 'action' => 'updated', 'auditable_type' => User::class, 'auditable_id' => $admin->id]);
+        $late = AuditLog::query()->create(['user_id' => $admin->id, 'action' => 'updated', 'outcome' => 'success', 'auditable_type' => 'user', 'auditable_id' => $admin->id]);
         $this->travelBack();
 
         $this->assertSame('2026-09-25 02:30:00', $late->getRawOriginal('created_at'));

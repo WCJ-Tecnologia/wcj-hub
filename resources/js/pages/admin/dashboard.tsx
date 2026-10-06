@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, Building2, History, UserCheck, Users } from 'lucide-react';
+import { ArrowRight, History, UserCheck, Users } from 'lucide-react';
 
 import { EmptyState } from '@/components/empty-state';
 import { StatCard } from '@/components/stat-card';
@@ -10,8 +10,6 @@ import AppLayout from '@/layouts/app-layout';
 interface Summary {
     users_active: number;
     users_total: number;
-    enterprises_active: number;
-    enterprises_total: number;
 }
 
 interface ActivityRow {
@@ -19,7 +17,7 @@ interface ActivityRow {
     user: string;
     action_label: string;
     entity: string;
-    entity_id: number;
+    entity_id: number | null;
     created_at: string | null;
 }
 
@@ -43,14 +41,6 @@ export default function Dashboard({ summary, activity }: Props) {
                     tone="primary"
                     hint={`${summary.users_total - summary.users_active} inativos`}
                 />
-                <StatCard label="Empresas ativas" value={summary.enterprises_active} icon={Building2} tone="approved" />
-                <StatCard
-                    label="Empresas cadastradas"
-                    value={summary.enterprises_total}
-                    icon={Building2}
-                    tone="primary"
-                    hint={`${summary.enterprises_total - summary.enterprises_active} inativas`}
-                />
             </div>
 
             {activity.length > 0 ? (
@@ -71,7 +61,8 @@ export default function Dashboard({ summary, activity }: Props) {
                                 <li key={row.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                                     <div className="min-w-0">
                                         <p className="truncate font-medium">
-                                            {row.action_label} · {row.entity} #{row.entity_id}
+                                            {row.action_label} · {row.entity}
+                                            {row.entity_id !== null ? ` #${row.entity_id}` : ''}
                                         </p>
                                         <p className="truncate text-xs text-muted-foreground">{row.user}</p>
                                     </div>

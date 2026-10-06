@@ -23,6 +23,56 @@ trait Deactivatable
      */
     abstract public function hasHistory(): bool;
 
+    /**
+     * Foreign keys that point to each table, read once from the database catalog.
+     *
+     * @var array<string, list<array{table: string, column: string}>>
+     */
+    private static array $referencesCache = [];
+
+    /**
+     * "Já usado" (docs/banco.txt, seção 0): some foreign key points to this row. Read from the
+     * catalog, so a table added later is covered without touching the model. A self-reference
+     * from the row to itself (deactivated_by = own id) does not count.
+     *
+     * @param  list<string>  $ignore  "table.column" entries that do not count as history
+     */
+    protected function isReferenced(array $ignore = []): bool
+    {
+        foreach (self::foreignKeysPointingTo($this->getTable()) as $reference) {
+            if (in_array($reference['table'].'.'.$reference['column'], $ignore, true)) {
+                continue;
+            }
+
+            $query = DB::table($reference['table'])->where($reference['column'], $this->getKey());
+
+            if ($reference['table'] === $this->getTable()) {
+                $query->where($this->getKeyName(), '!=', $this->getKey());
+            }
+
+            if ($query->exists()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<array{table: string, column: string}>
+     */
+    private static function foreignKeysPointingTo(string $table): array
+    {
+        return self::$referencesCache[$table] ??= DB::table('information_schema.KEY_COLUMN_USAGE')
+            ->where('TABLE_SCHEMA', DB::raw('DATABASE()'))
+            ->where('REFERENCED_TABLE_NAME', $table)
+            ->orderBy('TABLE_NAME')
+            ->orderBy('COLUMN_NAME')
+            ->get(['TABLE_NAME as table', 'COLUMN_NAME as column'])
+            ->map(fn (object $row) => ['table' => (string) $row->table, 'column' => (string) $row->column])
+            ->all();
+    }
+
     public function initializeDeactivatable(): void
     {
         $this->mergeCasts(['deactivated_at' => 'datetime']);

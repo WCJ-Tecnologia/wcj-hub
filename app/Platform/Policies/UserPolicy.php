@@ -4,16 +4,20 @@ namespace App\Platform\Policies;
 
 use App\Platform\Models\User;
 
+/**
+ * Usuários: só o Administrador (escopo, B1; N1, N2). O gestor e o dev veem nomes de usuários
+ * só pelas telas de Projetos.
+ */
 class UserPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isSupervisor();
+        return $user->isAdmin();
     }
 
     public function view(User $user, User $target): bool
     {
-        return $this->viewAny($user);
+        return $user->isAdmin();
     }
 
     public function create(User $user): bool
@@ -33,6 +37,6 @@ class UserPolicy
 
     public function resetPassword(User $user, User $target): bool
     {
-        return $user->isAdmin() && $target->email !== null;
+        return $user->isAdmin();
     }
 }

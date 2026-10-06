@@ -20,7 +20,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_sixth_login_attempt_for_the_same_account_is_throttled_with_the_generic_message(): void
     {
-        User::factory()->supervisor()->create(['email' => 'ana@example.com', 'password' => 'password']);
+        User::factory()->projectManager()->create(['email' => 'ana@example.com', 'password' => 'password']);
 
         for ($i = 0; $i < 5; $i++) {
             $this->post('/admin/login', ['email' => 'ana@example.com', 'password' => 'errada'])
@@ -49,7 +49,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_the_per_account_key_does_not_block_a_different_account_from_the_same_ip(): void
     {
-        User::factory()->supervisor()->create(['email' => 'bia@example.com', 'password' => 'password']);
+        User::factory()->projectManager()->create(['email' => 'bia@example.com', 'password' => 'password']);
 
         for ($i = 0; $i < 6; $i++) {
             $this->post('/admin/login', ['email' => 'ana@example.com', 'password' => 'errada']);
@@ -79,7 +79,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_reset_password_is_throttled(): void
     {
-        $user = User::factory()->supervisor()->create(['email' => 'ana@example.com']);
+        $user = User::factory()->projectManager()->create(['email' => 'ana@example.com']);
         $token = Password::createToken($user);
 
         for ($i = 0; $i < 5; $i++) {
@@ -101,7 +101,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_first_access_is_throttled(): void
     {
-        $user = User::factory()->supervisor()->mustChangePassword()->create(['password' => 'Temp12abcdef']);
+        $user = User::factory()->projectManager()->mustChangePassword()->create(['password' => 'Temp12abcdef']);
 
         for ($i = 0; $i < 5; $i++) {
             $this->actingAs($user)

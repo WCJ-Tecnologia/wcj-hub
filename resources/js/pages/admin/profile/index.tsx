@@ -6,17 +6,15 @@ import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PhoneInput } from '@/components/ui/masked-input';
 import AppLayout from '@/layouts/app-layout';
 
 interface Props {
-    profile: { name: string; email: string | null; phone: string | null; type_label: string };
+    profile: { name: string; email: string; role_label: string };
 }
 
 export default function ProfilePage({ profile }: Props) {
     const form = useForm({
         name: profile.name,
-        phone: profile.phone ?? '',
         password: '',
         password_confirmation: '',
     });
@@ -39,7 +37,7 @@ export default function ProfilePage({ profile }: Props) {
                         <CardTitle className="flex items-center gap-2 text-base">
                             <UserRound className="size-4" aria-hidden /> Quem é você
                         </CardTitle>
-                        <CardDescription>{profile.type_label}</CardDescription>
+                        <CardDescription>{profile.role_label}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <FormField label="Nome" htmlFor="name" required error={form.errors.name}>
@@ -47,11 +45,7 @@ export default function ProfilePage({ profile }: Props) {
                         </FormField>
 
                         <FormField label="E-mail" htmlFor="email" hint="O e-mail da conta não muda por aqui.">
-                            <Input id="email" value={profile.email ?? ''} disabled />
-                        </FormField>
-
-                        <FormField label="Telefone" htmlFor="phone" error={form.errors.phone}>
-                            <PhoneInput id="phone" value={form.data.phone} onChange={(value) => form.setData('phone', value)} />
+                            <Input id="email" value={profile.email} disabled />
                         </FormField>
 
                         <fieldset className="rounded-lg border border-dashed border-border p-3">

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Building2, History, LayoutDashboard, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { History, LayoutDashboard, UserRound, Users, type LucideIcon } from 'lucide-react';
 
 import { BrandLogo, ProductWordmark } from '@/components/brand-logo';
 import { cn } from '@/lib/utils';
@@ -28,10 +28,7 @@ const NAV: NavGroup[] = [
     },
     {
         title: 'Cadastros',
-        items: [
-            { label: 'Empresas', href: '/admin/enterprises', icon: Building2 },
-            { label: 'Usuários', href: '/admin/users', icon: Users, visible: (a) => a.view_users },
-        ],
+        items: [{ label: 'Usuários', href: '/admin/users', icon: Users, visible: (a) => a.manage_users }],
     },
     {
         title: 'Conta',
@@ -100,7 +97,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <div className="border-t border-sidebar-border p-3">
                 <div className="rounded-lg bg-sidebar-accent/60 px-3 py-2.5">
                     <p className="truncate text-xs font-semibold">{user.name}</p>
-                    <p className="truncate text-2xs text-sidebar-foreground/75">{user.type_label}</p>
+                    <p className="truncate text-2xs text-sidebar-foreground/75">{user.role_label}</p>
                 </div>
                 <ProductWordmark className="mt-2 px-1 text-sidebar-foreground/70" />
             </div>

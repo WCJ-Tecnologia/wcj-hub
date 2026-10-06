@@ -2,12 +2,37 @@
 
 namespace App\Providers;
 
+use App\Domains\Projetos\Models\BoardStage;
+use App\Domains\Projetos\Models\Package;
+use App\Domains\Projetos\Models\Project;
+use App\Domains\Projetos\Models\ProjectArea;
+use App\Domains\Projetos\Models\ProjectMember;
+use App\Domains\Projetos\Models\ReworkReason;
+use App\Domains\Projetos\Models\Sprint;
+use App\Domains\Projetos\Models\StageRole;
+use App\Domains\Projetos\Models\Task;
+use App\Domains\Projetos\Models\TaskAcceptanceCriterion;
+use App\Domains\Projetos\Models\TaskAttachment;
+use App\Domains\Projetos\Models\TaskComment;
+use App\Domains\Projetos\Models\TaskPriority;
+use App\Domains\Projetos\Models\TaskPullRequest;
+use App\Domains\Projetos\Models\TaskStageMovement;
+use App\Domains\Projetos\Models\TaskType;
+use App\Domains\Projetos\Models\TestResult;
+use App\Domains\Projetos\Models\TimeEntry;
+use App\Domains\Projetos\Models\ValidationType;
 use App\Http\Responses\ThrottledAuthResponse;
-use App\Platform\Models\Enterprise;
+use App\Platform\Models\AiAssistant;
+use App\Platform\Models\AiAuthorization;
+use App\Platform\Models\AuditLog;
+use App\Platform\Models\Client;
+use App\Platform\Models\Contact;
+use App\Platform\Models\ContactChannel;
+use App\Platform\Models\Role;
 use App\Platform\Models\User;
-use App\Platform\Policies\EnterprisePolicy;
 use App\Platform\Policies\UserPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->registerMorphMap();
         $this->registerPolicies();
         $this->registerRateLimiters();
         $this->registerPasswordPolicy();
@@ -56,9 +82,49 @@ class AppServiceProvider extends ServiceProvider
         Password::defaults(fn () => Password::min(10)->letters()->numbers());
     }
 
+    /**
+     * Alias de cada Model em audit_logs.auditable_type e notifications.notifiable_type
+     * (docs/banco.txt, audit_logs; ADR-001). enforce: Model fora do mapa falha em vez de
+     * gravar o nome da classe, que muda quando o código muda de pasta. Model novo entra aqui
+     * no mesmo commit.
+     */
+    private function registerMorphMap(): void
+    {
+        Relation::enforceMorphMap([
+            // Platform
+            'role' => Role::class,
+            'user' => User::class,
+            'client' => Client::class,
+            'contact' => Contact::class,
+            'contact_channel' => ContactChannel::class,
+            'audit_log' => AuditLog::class,
+            'ai_assistant' => AiAssistant::class,
+            'ai_authorization' => AiAuthorization::class,
+            // Projetos
+            'project' => Project::class,
+            'project_member' => ProjectMember::class,
+            'stage_role' => StageRole::class,
+            'board_stage' => BoardStage::class,
+            'task_type' => TaskType::class,
+            'project_area' => ProjectArea::class,
+            'task_priority' => TaskPriority::class,
+            'task' => Task::class,
+            'task_stage_movement' => TaskStageMovement::class,
+            'rework_reason' => ReworkReason::class,
+            'task_acceptance_criterion' => TaskAcceptanceCriterion::class,
+            'test_result' => TestResult::class,
+            'validation_type' => ValidationType::class,
+            'task_pull_request' => TaskPullRequest::class,
+            'task_comment' => TaskComment::class,
+            'task_attachment' => TaskAttachment::class,
+            'time_entry' => TimeEntry::class,
+            'package' => Package::class,
+            'sprint' => Sprint::class,
+        ]);
+    }
+
     private function registerPolicies(): void
     {
-        Gate::policy(Enterprise::class, EnterprisePolicy::class);
         Gate::policy(User::class, UserPolicy::class);
 
         Gate::define('view-audit-logs', fn (User $user) => $user->isAdmin());

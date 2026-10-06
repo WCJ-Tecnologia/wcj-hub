@@ -2,18 +2,16 @@
 
 namespace App\Platform\Requests\Admin;
 
-use App\Platform\Enums\UserTypeEnum;
-use App\Platform\Requests\Concerns\NormalizesMaskedInput;
-use App\Rules\Document;
-use App\Rules\PhoneNumber;
+use App\Platform\Enums\RoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
+/**
+ * Ajuste mínimo do B0 à seção 9 do banco.txt (papel e carga diária). A tela completa de
+ * usuários, com as regras N1 a N4, é do B1.
+ */
 class StoreUserRequest extends FormRequest
 {
-    use NormalizesMaskedInput;
-
     public function authorize(): bool
     {
         return true;
@@ -21,7 +19,9 @@ class StoreUserRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->normalizeDigits(['document', 'phone']);
+        if ($this->input('daily_hours') === '') {
+            $this->merge(['daily_hours' => null]);
+        }
     }
 
     /**
@@ -32,26 +32,13 @@ class StoreUserRequest extends FormRequest
         $id = $this->route('user')?->id;
 
         return [
-            'user_type_id' => ['required', 'integer', Rule::in(UserTypeEnum::values())],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.($id ?? 'NULL')],
-            'document' => ['nullable', 'string', new Document],
-            'phone' => ['nullable', 'string', new PhoneNumber],
+            'role_id' => ['required', 'integer', Rule::in(RoleEnum::values())],
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:160', 'unique:users,email,'.($id ?? 'NULL')],
+            // Mesmos limites do CHECK de users.daily_hours.
+            'daily_hours' => ['nullable', 'numeric', 'gt:0', 'lte:24'],
             'active' => ['boolean'],
-            'enterprise_ids' => ['array'],
-            'enterprise_ids.*' => ['integer', 'exists:enterprises,id'],
         ];
-    }
-
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator) {
-            $type = (int) $this->input('user_type_id');
-
-            if ($type === UserTypeEnum::FINANCIAL->value && count((array) $this->input('enterprise_ids', [])) === 0) {
-                $validator->errors()->add('enterprise_ids', 'Selecione ao menos uma empresa para o Financeiro.');
-            }
-        });
     }
 
     /**
@@ -60,10 +47,10 @@ class StoreUserRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'user_type_id' => 'perfil',
+            'role_id' => 'papel',
             'name' => 'nome',
             'email' => 'e-mail',
-            'enterprise_ids' => 'empresas',
+            'daily_hours' => 'carga diária',
         ];
     }
 }

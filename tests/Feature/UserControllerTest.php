@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AuditLog;
-use App\Platform\Models\Enterprise;
 use App\Platform\Models\User;
 use App\Support\LocalTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,26 +29,26 @@ class UserControllerTest extends TestCase
         $this->actingAs($admin)
             ->get('/admin/users')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('admin/users/index')->has('users.data', 1)->has('userTypes', 3));
+            ->assertInertia(fn ($page) => $page->component('admin/users/index')->has('users.data', 1)->has('roles', 4));
 
         $this->actingAs($admin)
             ->post('/admin/users', [
-                'user_type_id' => UserTypeEnum::SUPERVISOR->value,
+                'role_id' => RoleEnum::PROJECT_MANAGER->value,
                 'name' => 'Maria Souza',
                 'email' => 'maria@example.com',
-                'phone' => '(11) 98765-4321',
+                'daily_hours' => '7.5',
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
 
         $maria = User::query()->where('email', 'maria@example.com')->firstOrFail();
-        $this->assertSame('11987654321', $maria->phone);
+        $this->assertSame('7.50', $maria->daily_hours);
         $this->assertTrue($maria->must_change_password);
-        $this->assertDatabaseHas('audit_logs', ['auditable_type' => User::class, 'auditable_id' => $maria->id, 'action' => 'created']);
+        $this->assertDatabaseHas('audit_logs', ['auditable_type' => 'user', 'auditable_id' => $maria->id, 'action' => 'created']);
 
         $this->actingAs($admin)
             ->put('/admin/users/'.$maria->id, [
-                'user_type_id' => UserTypeEnum::SUPERVISOR->value,
+                'role_id' => RoleEnum::PROJECT_MANAGER->value,
                 'name' => 'Maria S. Lima',
                 'email' => 'maria@example.com',
                 'active' => false,
@@ -76,8 +75,8 @@ class UserControllerTest extends TestCase
     public function test_deactivation_keeps_who_and_when_and_reactivation_clears_both(): void
     {
         $admin = User::factory()->admin()->create(['name' => 'Ana Admin']);
-        $target = User::factory()->supervisor()->create();
-        $payload = ['user_type_id' => UserTypeEnum::SUPERVISOR->value, 'name' => $target->name, 'email' => $target->email];
+        $target = User::factory()->projectManager()->create();
+        $payload = ['role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $target->name, 'email' => $target->email];
 
         $this->actingAs($admin)->put('/admin/users/'.$target->id, [...$payload, 'active' => false])->assertSessionHas('success');
         $stamp = $target->fresh()->deactivated_at;
@@ -100,8 +99,7 @@ class UserControllerTest extends TestCase
 
         // The way back is in the audit trail.
         $last = AuditLog::query()->where('auditable_id', $target->id)->where('action', 'updated')->latest('id')->firstOrFail();
-        $this->assertFalse($last->before_data['active']);
-        $this->assertTrue($last->after_data['active']);
+        $this->assertSame(['active' => [false, true]], $last->changes);
     }
 
     public function test_is_active_fails_closed_when_the_column_was_not_loaded(): void
@@ -115,7 +113,7 @@ class UserControllerTest extends TestCase
     public function test_deleting_a_user_never_signed_in_also_drops_the_pending_reset_token(): void
     {
         $admin = User::factory()->admin()->create();
-        $target = User::factory()->supervisor()->create();
+        $target = User::factory()->projectManager()->create();
         Password::broker()->createToken($target);
         $this->assertDatabaseHas('password_reset_tokens', ['email' => $target->email]);
 
@@ -127,12 +125,14 @@ class UserControllerTest extends TestCase
     public function test_a_user_with_history_can_only_be_deactivated(): void
     {
         $admin = User::factory()->admin()->create();
-        $signedIn = User::factory()->supervisor()->create(['last_login_at' => now()]);
-        $author = User::factory()->supervisor()->create();
-        AuditLog::query()->create(['user_id' => $author->id, 'action' => 'updated', 'auditable_type' => User::class, 'auditable_id' => $admin->id]);
+        // The sign-in lives in audit_logs (banco.txt, seção 9), not in a users column.
+        $signedIn = User::factory()->projectManager()->create();
+        AuditLog::query()->create(['user_id' => $signedIn->id, 'action' => 'login', 'outcome' => 'success', 'auditable_type' => 'user', 'auditable_id' => $signedIn->id]);
+        $author = User::factory()->projectManager()->create();
+        AuditLog::query()->create(['user_id' => $author->id, 'action' => 'updated', 'outcome' => 'success', 'auditable_type' => 'user', 'auditable_id' => $admin->id]);
         // Deactivated someone outside the screens (command, job): no audit row, still history.
         $deactivator = User::factory()->admin()->create();
-        User::factory()->supervisor()->create()->setActive(false, $deactivator)->save();
+        User::factory()->projectManager()->create()->setActive(false, $deactivator)->save();
 
         foreach ([$signedIn, $author, $deactivator] as $user) {
             $this->actingAs($admin)
@@ -150,64 +150,30 @@ class UserControllerTest extends TestCase
 
         $this->actingAs($admin)
             ->from('/admin/users')
-            ->post('/admin/users', ['user_type_id' => 2, 'name' => 'Sem e-mail'])
+            ->post('/admin/users', ['role_id' => 2, 'name' => 'Sem e-mail'])
             ->assertSessionHasErrors('email');
 
         $this->actingAs($admin)
             ->from('/admin/users')
-            ->post('/admin/users', ['user_type_id' => 2, 'name' => 'Duplicado', 'email' => 'admin@example.com'])
+            ->post('/admin/users', ['role_id' => 2, 'name' => 'Duplicado', 'email' => 'admin@example.com'])
             ->assertSessionHasErrors('email');
     }
 
-    public function test_financial_requires_at_least_one_enterprise_and_only_financial_keeps_the_scope(): void
+    public function test_project_manager_cannot_list_nor_write_users(): void
     {
-        $admin = User::factory()->admin()->create();
-        $enterprise = Enterprise::factory()->create();
+        // Usuários: só o Administrador (escopo, B1).
+        $supervisor = User::factory()->projectManager()->create();
+        $target = User::factory()->developer()->create();
 
-        $this->actingAs($admin)
-            ->from('/admin/users')
-            ->post('/admin/users', ['user_type_id' => UserTypeEnum::FINANCIAL->value, 'name' => 'Fin', 'email' => 'fin@example.com'])
-            ->assertSessionHasErrors('enterprise_ids');
-
-        $this->actingAs($admin)
-            ->post('/admin/users', [
-                'user_type_id' => UserTypeEnum::FINANCIAL->value,
-                'name' => 'Fin',
-                'email' => 'fin@example.com',
-                'enterprise_ids' => [$enterprise->id],
-            ])
-            ->assertSessionHasNoErrors();
-
-        $fin = User::query()->where('email', 'fin@example.com')->firstOrFail();
-        $this->assertSame([$enterprise->id], $fin->enterprises()->pluck('enterprises.id')->all());
-
-        // Promoted to supervisor: the enterprise scope is dropped.
-        $this->actingAs($admin)
-            ->put('/admin/users/'.$fin->id, [
-                'user_type_id' => UserTypeEnum::SUPERVISOR->value,
-                'name' => 'Fin',
-                'email' => 'fin@example.com',
-                'enterprise_ids' => [$enterprise->id],
-            ])
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame([], $fin->fresh()->enterprises()->pluck('enterprises.id')->all());
-    }
-
-    public function test_supervisor_can_list_but_cannot_write_users(): void
-    {
-        $supervisor = User::factory()->supervisor()->create();
-        $target = User::factory()->financial()->create();
-
-        $this->actingAs($supervisor)->get('/admin/users')->assertOk();
-        $this->actingAs($supervisor)->post('/admin/users', ['user_type_id' => 2, 'name' => 'X', 'email' => 'x@example.com'])->assertForbidden();
-        $this->actingAs($supervisor)->put('/admin/users/'.$target->id, ['user_type_id' => 2, 'name' => 'X', 'email' => $target->email])->assertForbidden();
+        $this->actingAs($supervisor)->get('/admin/users')->assertForbidden();
+        $this->actingAs($supervisor)->post('/admin/users', ['role_id' => 2, 'name' => 'X', 'email' => 'x@example.com'])->assertForbidden();
+        $this->actingAs($supervisor)->put('/admin/users/'.$target->id, ['role_id' => 2, 'name' => 'X', 'email' => $target->email])->assertForbidden();
         $this->actingAs($supervisor)->delete('/admin/users/'.$target->id)->assertForbidden();
     }
 
-    public function test_financial_cannot_even_list_users(): void
+    public function test_developer_cannot_even_list_users(): void
     {
-        $this->actingAs(User::factory()->financial()->create())->get('/admin/users')->assertForbidden();
+        $this->actingAs(User::factory()->developer()->create())->get('/admin/users')->assertForbidden();
     }
 
     public function test_admin_cannot_delete_itself(): void
@@ -225,19 +191,19 @@ class UserControllerTest extends TestCase
 
         // Two admins: demoting one is fine.
         $this->actingAs($admin)
-            ->put('/admin/users/'.$other->id, ['user_type_id' => UserTypeEnum::SUPERVISOR->value, 'name' => $other->name, 'email' => $other->email])
+            ->put('/admin/users/'.$other->id, ['role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $other->name, 'email' => $other->email])
             ->assertSessionHas('success');
 
         // Now $admin is the last one.
         $this->actingAs($other->fresh())
-            ->put('/admin/users/'.$admin->id, ['user_type_id' => UserTypeEnum::ADMIN->value, 'name' => $admin->name, 'email' => $admin->email, 'active' => false])
+            ->put('/admin/users/'.$admin->id, ['role_id' => RoleEnum::ADMIN->value, 'name' => $admin->name, 'email' => $admin->email, 'active' => false])
             ->assertForbidden();
 
         $lastAdmin = User::factory()->admin()->create();
-        User::query()->whereKey($admin->id)->delete();
+        $admin->fresh()->setActive(false, null)->save();
 
         $this->actingAs($lastAdmin)
-            ->put('/admin/users/'.$lastAdmin->id, ['user_type_id' => UserTypeEnum::SUPERVISOR->value, 'name' => $lastAdmin->name, 'email' => $lastAdmin->email])
+            ->put('/admin/users/'.$lastAdmin->id, ['role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $lastAdmin->name, 'email' => $lastAdmin->email])
             ->assertSessionHas('error');
 
         $this->assertTrue($lastAdmin->fresh()->isAdmin());
@@ -245,13 +211,13 @@ class UserControllerTest extends TestCase
 
     public function test_role_never_comes_from_a_self_service_path(): void
     {
-        // The profile endpoint ignores user_type_id and active entirely.
-        $supervisor = User::factory()->supervisor()->create();
+        // The profile endpoint ignores role_id and active entirely.
+        $supervisor = User::factory()->projectManager()->create();
 
         $this->actingAs($supervisor)
-            ->put('/admin/profile', ['name' => 'Novo Nome', 'user_type_id' => UserTypeEnum::ADMIN->value, 'active' => true])
+            ->put('/admin/profile', ['name' => 'Novo Nome', 'role_id' => RoleEnum::ADMIN->value, 'active' => true])
             ->assertSessionHas('success');
 
-        $this->assertTrue($supervisor->fresh()->isSupervisor());
+        $this->assertTrue($supervisor->fresh()->isProjectManager());
     }
 }

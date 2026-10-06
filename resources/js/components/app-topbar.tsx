@@ -53,7 +53,7 @@ export function AppTopbar({ onMenu }: { onMenu?: () => void }) {
                         </Avatar>
                         <span className="hidden text-left leading-tight sm:block">
                             <span className="block max-w-[9rem] truncate text-xs font-semibold">{user?.name}</span>
-                            <span className="block max-w-[9rem] truncate text-2xs text-muted-foreground">{user?.type_label}</span>
+                            <span className="block max-w-[9rem] truncate text-2xs text-muted-foreground">{user?.role_label}</span>
                         </span>
                     </button>
                 </DropdownMenuTrigger>

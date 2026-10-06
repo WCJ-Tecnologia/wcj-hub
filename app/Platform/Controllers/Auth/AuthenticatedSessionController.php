@@ -35,7 +35,8 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Sem "lembrar de mim": users não tem remember_token (docs/banco.txt, seção 4).
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
         }
 
@@ -49,7 +50,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $user->forceFill(['last_login_at' => now()])->save();
         $this->audit->log(AuditActionEnum::LOGIN, $user, null, null, $user->id);
 
         if ($user->must_change_password) {

@@ -7,8 +7,15 @@ use App\Platform\Models\AuditLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Gravação única da auditoria (G3; docs/banco.txt, audit_logs). Por ora só a tela grava
+ * (ai_authorization_id nulo); o canal da IA e a tentativa negada entram com o B1 e o B8.
+ */
 class AuditService
 {
+    /** Senha e token nunca entram em changes (G3). */
+    private const NEVER_AUDITED = ['password', 'remember_token', 'token'];
+
     /**
      * @param  array<string, mixed>|null  $before
      * @param  array<string, mixed>|null  $after
@@ -19,33 +26,44 @@ class AuditService
         ?array $before = null,
         ?array $after = null,
         ?int $userId = null,
+        ?int $aiAuthorizationId = null,
     ): AuditLog {
         return AuditLog::query()->create([
             'user_id' => $userId ?? Auth::id(),
+            'ai_authorization_id' => $aiAuthorizationId,
             'action' => $action->value,
-            'auditable_type' => $auditable::class,
+            'outcome' => AuditLog::OUTCOME_SUCCESS,
+            'auditable_type' => $auditable->getMorphClass(),
             'auditable_id' => $auditable->getKey(),
-            'before_data' => $before ? $this->sanitize($before) : null,
-            'after_data' => $after ? $this->sanitize($after) : null,
+            'changes' => $this->changes($before, $after),
             'ip_address' => request()->ip(),
-            'user_agent' => mb_substr((string) request()->userAgent(), 0, 512),
         ]);
     }
 
     /**
-     * Secrets must never reach the audit trail, even indirectly.
+     * {"campo": [antes, depois]}, só com o que mudou. Criação: antes nulo; exclusão: depois nulo.
      *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
+     * @param  array<string, mixed>|null  $before
+     * @param  array<string, mixed>|null  $after
+     * @return array<string, array{0: mixed, 1: mixed}>|null
      */
-    private function sanitize(array $data): array
+    private function changes(?array $before, ?array $after): ?array
     {
-        foreach (['password', 'remember_token'] as $key) {
-            if (array_key_exists($key, $data)) {
-                $data[$key] = '***';
+        $changes = [];
+
+        foreach (array_unique([...array_keys($before ?? []), ...array_keys($after ?? [])]) as $field) {
+            if (in_array($field, self::NEVER_AUDITED, true)) {
+                continue;
+            }
+
+            $old = $before[$field] ?? null;
+            $new = $after[$field] ?? null;
+
+            if ($old !== $new) {
+                $changes[$field] = [$old, $new];
             }
         }
 
-        return $data;
+        return $changes === [] ? null : $changes;
     }
 }

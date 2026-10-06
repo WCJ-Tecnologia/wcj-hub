@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Platform\Models\Enterprise;
+use App\Platform\Models\Client;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Support\Concorrencia;
 use Tests\Support\UsaBancoDeVerdade;
@@ -31,24 +31,24 @@ class TravaDeleteIfUnusedTest extends TestCase
 
     public function test_the_row_stays_locked_while_the_history_is_checked(): void
     {
-        $enterprise = Enterprise::factory()->create();
+        $client = Client::factory()->create();
 
         // Control: with no transaction open, the same probe finds the row free.
-        $this->assertFalse(Concorrencia::linhaEstaTravada('enterprises', $enterprise->getKey()));
+        $this->assertFalse(Concorrencia::linhaEstaTravada('clients', $client->getKey()));
 
-        ProbedEnterprise::query()->findOrFail($enterprise->getKey())->deleteIfUnused();
+        ProbedClient::query()->findOrFail($client->getKey())->deleteIfUnused();
 
-        $this->assertTrue(ProbedEnterprise::$rowWasLocked, 'hasHistory() ran without the row lock: another process could add history between the check and the delete.');
-        $this->assertDatabaseHas('enterprises', ['id' => $enterprise->getKey()]);
+        $this->assertTrue(ProbedClient::$rowWasLocked, 'hasHistory() ran without the row lock: another process could add history between the check and the delete.');
+        $this->assertDatabaseHas('clients', ['id' => $client->getKey()]);
     }
 }
 
-/** An enterprise that, in the middle of deleteIfUnused(), asks another connection whether its row is locked. */
-class ProbedEnterprise extends Enterprise
+/** A client that, in the middle of deleteIfUnused(), asks another connection whether its row is locked. */
+class ProbedClient extends Client
 {
     public static ?bool $rowWasLocked = null;
 
-    protected $table = 'enterprises';
+    protected $table = 'clients';
 
     public function hasHistory(): bool
     {

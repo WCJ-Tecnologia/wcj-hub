@@ -3,7 +3,6 @@ import { ArrowRight, KeyRound, Loader2, Mail } from 'lucide-react';
 import { type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
@@ -14,7 +13,6 @@ export default function Login() {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
-        remember: false as boolean,
     });
 
     const submit = (event: FormEvent) => {
@@ -90,13 +88,6 @@ export default function Login() {
                         />
                     </div>
                     {errors.password && <p className="text-xs font-medium text-destructive">{errors.password}</p>}
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <Checkbox id="remember" checked={data.remember} onCheckedChange={(checked) => setData('remember', checked === true)} />
-                    <Label htmlFor="remember" className="cursor-pointer font-normal text-muted-foreground">
-                        Manter conectado
-                    </Label>
                 </div>
 
                 <Button type="submit" size="lg" className="w-full" disabled={processing}>

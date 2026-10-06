@@ -38,10 +38,10 @@ class AuditLogController extends Controller
                 'user_email' => $log->user?->email,
                 'action' => $log->action,
                 'action_label' => AuditActionEnum::tryFrom($log->action)?->label() ?? $log->action,
-                'entity' => class_basename($log->auditable_type),
+                'entity' => $log->auditable_type,
                 'entity_id' => $log->auditable_id,
-                'before_data' => $log->before_data,
-                'after_data' => $log->after_data,
+                'outcome' => $log->outcome,
+                'changes' => $log->changes,
                 'ip_address' => $log->ip_address,
                 'created_at' => LocalTime::format($log->created_at, 'd/m/Y H:i:s'),
             ]);

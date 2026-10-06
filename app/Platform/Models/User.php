@@ -3,60 +3,61 @@
 namespace App\Platform\Models;
 
 use App\Mail\ResetPasswordMail;
-use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Concerns\Deactivatable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Usuário interno (docs/banco.txt, users). Sem document, phone, email_verified_at,
+ * last_login_at nem remember_token (seção 9): o login fica em audit_logs.
+ */
 class User extends Authenticatable
 {
+    /** @use HasFactory<UserFactory> */
+    use Deactivatable, HasFactory, Notifiable;
+
+    // Sem coluna remember_token (banco.txt, seção 4): o "lembrar de mim" não existe.
+    protected $rememberTokenName = '';
+
+    protected $fillable = [
+        'role_id',
+        'name',
+        'email',
+        'password',
+        'must_change_password',
+        'daily_hours',
+        'ai_write_allowed',
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
+
     // Fora de App\Models, o Laravel não acha a factory pelo nome (ADR-001).
     protected static function newFactory(): UserFactory
     {
         return UserFactory::new();
     }
 
-    /** @use HasFactory<UserFactory> */
-    use Deactivatable, HasFactory, Notifiable;
-
-    protected $fillable = [
-        'user_type_id',
-        'name',
-        'document',
-        'phone',
-        'email',
-        'password',
-        'must_change_password',
-        'last_login_at',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'last_login_at' => 'datetime',
+            'role_id' => 'integer',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
-            'user_type_id' => 'integer',
+            'daily_hours' => 'decimal:2',
+            'ai_write_allowed' => 'boolean',
         ];
     }
 
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
-        if (! $this->email) {
-            return;
-        }
-
         $resetUrl = url(route('password.reset', [
             'token' => $token,
             'email' => $this->getEmailForPasswordReset(),
@@ -65,39 +66,49 @@ class User extends Authenticatable
         Mail::to($this->email)->send(new ResetPasswordMail($this, $resetUrl));
     }
 
-    public function userType(): BelongsTo
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(UserType::class);
+        return $this->belongsTo(Role::class);
     }
 
-    public function enterprises(): BelongsToMany
+    public function auditLogs(): HasMany
     {
-        return $this->belongsToMany(Enterprise::class, 'user_has_enterprises');
+        return $this->hasMany(AuditLog::class);
     }
 
-    public function type(): UserTypeEnum
+    public function aiAuthorizations(): HasMany
     {
-        return UserTypeEnum::from($this->user_type_id);
+        return $this->hasMany(AiAuthorization::class);
+    }
+
+    public function type(): RoleEnum
+    {
+        return RoleEnum::from($this->role_id);
     }
 
     public function isAdmin(): bool
     {
-        return $this->type() === UserTypeEnum::ADMIN;
+        return $this->type() === RoleEnum::ADMIN;
     }
 
-    public function isSupervisor(): bool
+    public function isProjectManager(): bool
     {
-        return $this->type() === UserTypeEnum::SUPERVISOR;
+        return $this->type() === RoleEnum::PROJECT_MANAGER;
     }
 
-    public function isFinancial(): bool
+    public function isDeveloper(): bool
     {
-        return $this->type() === UserTypeEnum::FINANCIAL;
+        return $this->type() === RoleEnum::DEVELOPER;
+    }
+
+    public function isSales(): bool
+    {
+        return $this->type() === RoleEnum::SALES;
     }
 
     public function isBackofficeUser(): bool
     {
-        return in_array($this->type(), UserTypeEnum::backoffice(), true);
+        return in_array($this->type(), RoleEnum::backoffice(), true);
     }
 
     public function firstName(): string
@@ -106,36 +117,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Enterprise ids this user may read. Null means "every enterprise".
-     *
-     * @return list<int>|null
-     */
-    public function scopedEnterpriseIds(): ?array
-    {
-        if ($this->isAdmin() || $this->isSupervisor()) {
-            return null;
-        }
-
-        // A deactivated enterprise leaves the scope; the link stays for reactivation.
-        return $this->enterprises()->active()->pluck('enterprises.id')->all();
-    }
-
-    /**
-     * A person who ever signed in or acted in the system can only be
-     * deactivated. Deleting would also erase authorship in audit_logs.
+     * Quem já entrou ou agiu no sistema só se desativa (G2): o login e toda autoria estão em
+     * audit_logs (seção 9), e qualquer outra FK que aponte para a pessoa (dev da tarefa,
+     * alocação, horas, quem desativou) também conta.
      */
     public function hasHistory(): bool
     {
-        return $this->last_login_at !== null
-            || AuditLog::query()->where('user_id', $this->getKey())->exists()
-            || self::query()->where('deactivated_by', $this->getKey())->exists()
-            || Enterprise::query()->where('deactivated_by', $this->getKey())->exists();
-    }
-
-    public function canAccessEnterprise(int $enterpriseId): bool
-    {
-        $scope = $this->scopedEnterpriseIds();
-
-        return $scope === null || in_array($enterpriseId, $scope, true);
+        return $this->isReferenced();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use Database\Seeders\UserTypeSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -14,6 +14,6 @@ abstract class TestCase extends BaseTestCase
         // Tests must not depend on a Vite build being present.
         $this->withoutVite();
 
-        $this->seed(UserTypeSeeder::class);
+        $this->seed(RoleSeeder::class);
     }
 }

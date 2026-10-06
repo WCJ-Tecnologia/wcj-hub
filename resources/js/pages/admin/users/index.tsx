@@ -12,46 +12,43 @@ import { StatusPill } from '@/components/status-pill';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
-import { USER_TYPE, UserFormDialog, type UserFormData } from '@/components/users/user-form-dialog';
+import { ROLE, UserFormDialog, type UserFormData } from '@/components/users/user-form-dialog';
 import AppLayout from '@/layouts/app-layout';
-import { formatPhone } from '@/lib/masks';
 import type { Paginated, SharedProps } from '@/types';
 
 interface UserRow {
     id: number;
     name: string;
-    email: string | null;
-    document: string | null;
-    phone: string | null;
+    email: string;
     active: boolean;
     /** Só vem para quem pode editar. */
     deactivated_at?: string | null;
     deactivated_by?: string | null;
-    user_type_id: number;
-    type_label: string;
-    last_login_at: string | null;
+    role_id: number;
+    role_label: string;
+    /** decimal(6,2) como texto ("8.00"); null = sem carga (N3). */
+    daily_hours: string | null;
     must_change_password: boolean;
-    enterprises: { id: number; nickname: string }[];
 }
 
 interface Props {
     users: Paginated<UserRow>;
-    filters: { search: string; user_type_id: number | null };
-    userTypes: { id: number; label: string }[];
-    enterpriseOptions: { id: number; nickname: string }[];
+    filters: { search: string; role_id: number | null };
+    roles: { id: number; label: string }[];
 }
 
 const EMPTY: UserFormData = {
-    user_type_id: USER_TYPE.ADMIN,
+    role_id: ROLE.DEVELOPER,
     name: '',
     email: '',
-    document: '',
-    phone: '',
+    daily_hours: '',
     active: true,
-    enterprise_ids: [],
 };
 
-export default function UsersIndex({ users, filters, userTypes, enterpriseOptions }: Props) {
+/** "8.00" → "8 h"; "7.50" → "7,5 h". */
+const formatHours = (hours: string | null) => (hours === null ? '—' : `${Number(hours).toLocaleString('pt-BR')} h`);
+
+export default function UsersIndex({ users, filters, roles }: Props) {
     const currentUser = usePage<SharedProps>().props.auth.user;
     const canManage = Boolean(currentUser?.abilities.manage_users);
     const canDelete = Boolean(currentUser?.abilities.delete_records);
@@ -63,7 +60,7 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
     const form = useForm<UserFormData>(EMPTY);
 
     const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
-    const canResetPassword = (row: UserRow) => Boolean(currentUser?.abilities.reset_passwords && row.email);
+    const canResetPassword = () => Boolean(currentUser?.abilities.reset_passwords);
 
     const openCreate = () => {
         form.setData(EMPTY);
@@ -74,13 +71,11 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
 
     const openEdit = (row: UserRow) => {
         form.setData({
-            user_type_id: row.user_type_id,
+            role_id: row.role_id,
             name: row.name,
-            email: row.email ?? '',
-            document: row.document ?? '',
-            phone: row.phone ?? '',
+            email: row.email,
+            daily_hours: row.daily_hours ?? '',
             active: row.active,
-            enterprise_ids: row.enterprises.map((enterprise) => enterprise.id),
         });
         form.clearErrors();
         setEditing(row);
@@ -104,10 +99,10 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
         },
     });
 
-    const filterByType = (value: string) =>
+    const filterByRole = (value: string) =>
         router.get(
             '/admin/users',
-            { search: filters.search || undefined, user_type_id: value || undefined },
+            { search: filters.search || undefined, role_id: value || undefined },
             { preserveState: true, replace: true },
         );
 
@@ -127,7 +122,7 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
                         ariaLabel: `Enviar nova senha para ${row.name}`,
                         icon: KeyRound,
                         onClick: () => setConfirmReset(row),
-                        hidden: !canResetPassword(row),
+                        hidden: !canResetPassword(),
                     },
                     { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row) },
                     {
@@ -149,7 +144,6 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
             cell: (row) => (
                 <>
                     <p className="font-medium">{row.name}</p>
-                    {row.last_login_at && <p className="text-xs text-muted-foreground">Último acesso {row.last_login_at}</p>}
                     {row.must_change_password && (
                         <p className="mt-1">
                             <Badge variant="warning">Trocar senha no próximo acesso</Badge>
@@ -158,49 +152,35 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
                 </>
             ),
         },
-        { key: 'type_label', header: 'Perfil', cell: (row) => <Badge variant="info">{row.type_label}</Badge> },
+        { key: 'role_label', header: 'Papel', cell: (row) => <Badge variant="info">{row.role_label}</Badge> },
+        { key: 'email', header: 'E-mail', className: 'text-muted-foreground', cell: (row) => row.email },
         {
-            key: 'contact',
-            header: 'Contato',
-            className: 'text-muted-foreground',
-            cell: (row) => (
-                <>
-                    <p>{row.email ?? '—'}</p>
-                    {row.phone && <p className="text-xs tabular-nums">{formatPhone(row.phone)}</p>}
-                </>
-            ),
-        },
-        {
-            key: 'enterprises',
-            header: 'Empresas',
-            className: 'text-muted-foreground',
-            cell: (row) => (row.enterprises.length === 0 ? '—' : row.enterprises.map((enterprise) => enterprise.nickname).join(', ')),
+            key: 'daily_hours',
+            header: 'Carga diária',
+            className: 'text-muted-foreground tabular-nums',
+            cell: (row) => formatHours(row.daily_hours),
         },
         { key: 'active', header: 'Status', cell: (row) => <StatusPill kind="user" status={row.active} /> },
         { key: 'actions', header: <span className="sr-only">Ações</span>, className: 'text-right', cell: (row) => rowActions(row) },
     ];
 
     return (
-        <AppLayout eyebrow="Cadastros" title="Usuários" subtitle="Quem acessa o sistema e com qual perfil" actions={newButton}>
+        <AppLayout eyebrow="Cadastros" title="Usuários" subtitle="Quem acessa o sistema e com qual papel" actions={newButton}>
             <Head title="Usuários" />
 
             <div className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto]">
                 <SearchInput
                     url="/admin/users"
                     value={filters.search}
-                    params={{ user_type_id: filters.user_type_id }}
-                    placeholder="Buscar por nome, e-mail ou documento…"
+                    params={{ role_id: filters.role_id }}
+                    placeholder="Buscar por nome ou e-mail…"
                     label="Buscar usuários"
                 />
-                <Select
-                    value={String(filters.user_type_id ?? '')}
-                    onChange={(event) => filterByType(event.target.value)}
-                    aria-label="Perfil"
-                >
-                    <option value="">Todos os perfis</option>
-                    {userTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                            {type.label}
+                <Select value={String(filters.role_id ?? '')} onChange={(event) => filterByRole(event.target.value)} aria-label="Papel">
+                    <option value="">Todos os papéis</option>
+                    {roles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                            {role.label}
                         </option>
                     ))}
                 </Select>
@@ -224,18 +204,14 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <p className="truncate font-semibold">{row.name}</p>
-                                <p className="truncate text-xs text-muted-foreground">{row.email ?? 'Sem e-mail'}</p>
+                                <p className="truncate text-xs text-muted-foreground">{row.email}</p>
                             </div>
                             <StatusPill kind="user" status={row.active} size="sm" />
                         </div>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <Badge variant="info">{row.type_label}</Badge>
+                            <Badge variant="info">{row.role_label}</Badge>
+                            <Badge variant="outline">{formatHours(row.daily_hours)}</Badge>
                             {row.must_change_password && <Badge variant="warning">Trocar senha</Badge>}
-                            {row.enterprises.map((enterprise) => (
-                                <Badge key={enterprise.id} variant="outline">
-                                    {enterprise.nickname}
-                                </Badge>
-                            ))}
                         </div>
                         {rowActions(row, true)}
                     </>
@@ -254,8 +230,7 @@ export default function UsersIndex({ users, filters, userTypes, enterpriseOption
                         ? `Desativado em ${editing.deactivated_at}${editing.deactivated_by ? `, por ${editing.deactivated_by}` : ''}.`
                         : null
                 }
-                userTypes={userTypes}
-                enterpriseOptions={enterpriseOptions}
+                roles={roles}
                 onSubmit={submit}
             />
 

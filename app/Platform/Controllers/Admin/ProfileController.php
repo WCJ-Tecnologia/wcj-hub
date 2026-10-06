@@ -4,7 +4,6 @@ namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Platform\Services\SessionService;
-use App\Rules\PhoneNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -23,8 +22,7 @@ class ProfileController extends Controller
             'profile' => [
                 'name' => $user->name,
                 'email' => $user->email,
-                'phone' => $user->phone,
-                'type_label' => $user->type()->label(),
+                'role_label' => $user->type()->label(),
             ],
         ]);
     }
@@ -40,19 +38,13 @@ class ProfileController extends Controller
             ]);
         }
 
-        if (! $request->filled('phone')) {
-            $request->merge(['phone' => null]);
-        }
-
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', new PhoneNumber],
+            'name' => ['required', 'string', 'max:120'],
             'password' => ['nullable', 'confirmed', PasswordRule::defaults()],
         ]);
 
         $user->fill([
             'name' => $data['name'],
-            'phone' => isset($data['phone']) ? preg_replace('/\D+/', '', (string) $data['phone']) ?: null : null,
         ]);
 
         $passwordChanged = ! empty($data['password']);

@@ -7,25 +7,24 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DocumentInput, PhoneInput } from '@/components/ui/masked-input';
 import { Select } from '@/components/ui/select';
 
-/** Espelha App\Enums\UserTypeEnum. */
-export const USER_TYPE = { ADMIN: 1, FINANCIAL: 3 } as const;
+/** Espelha App\Platform\Enums\RoleEnum (docs/banco.txt, roles). */
+export const ROLE = { ADMIN: 1, PROJECT_MANAGER: 2, DEVELOPER: 3, SALES: 4 } as const;
 
 export interface UserFormData {
-    user_type_id: number;
+    role_id: number;
     name: string;
     email: string;
-    document: string;
-    phone: string;
+    /** Carga diária em horas decimais (N3); vazio = sem carga. */
+    daily_hours: string;
     active: boolean;
-    enterprise_ids: number[];
 }
 
 /**
  * Modal de criar/editar usuário. O `useForm` vive na página (um só,
- * reaproveitado para os dois casos); aqui ficam só os campos.
+ * reaproveitado para os dois casos); aqui ficam só os campos. Ajuste mínimo do
+ * B0 (papel e carga diária); a tela completa é do B1.
  */
 export function UserFormDialog({
     open,
@@ -33,8 +32,7 @@ export function UserFormDialog({
     form,
     editing,
     deactivatedNote,
-    userTypes,
-    enterpriseOptions,
+    roles,
     onSubmit,
 }: {
     open: boolean;
@@ -43,17 +41,9 @@ export function UserFormDialog({
     editing: boolean;
     /** "Desativado em …, por …": quem e quando, gravados pelo servidor. */
     deactivatedNote?: string | null;
-    userTypes: { id: number; label: string }[];
-    enterpriseOptions: { id: number; nickname: string }[];
+    roles: { id: number; label: string }[];
     onSubmit: (event: FormEvent) => void;
 }) {
-    const isFinancial = form.data.user_type_id === USER_TYPE.FINANCIAL;
-
-    const toggleEnterprise = (id: number) => {
-        const current = form.data.enterprise_ids;
-        form.setData('enterprise_ids', current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
-    };
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -67,11 +57,11 @@ export function UserFormDialog({
                 </DialogHeader>
                 <DialogBody>
                     <form id="user-form" onSubmit={onSubmit} className="space-y-4">
-                        <FormField label="Perfil" htmlFor="user_type_id" required error={form.errors.user_type_id}>
-                            <Select value={form.data.user_type_id} onChange={(e) => form.setData('user_type_id', Number(e.target.value))}>
-                                {userTypes.map((type) => (
-                                    <option key={type.id} value={type.id}>
-                                        {type.label}
+                        <FormField label="Papel" htmlFor="role_id" required error={form.errors.role_id}>
+                            <Select value={form.data.role_id} onChange={(e) => form.setData('role_id', Number(e.target.value))}>
+                                {roles.map((role) => (
+                                    <option key={role.id} value={role.id}>
+                                        {role.label}
                                     </option>
                                 ))}
                             </Select>
@@ -85,38 +75,18 @@ export function UserFormDialog({
                             <FormField label="E-mail" htmlFor="email" required error={form.errors.email}>
                                 <Input type="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                             </FormField>
-                            <FormField label="Telefone" htmlFor="phone" error={form.errors.phone}>
-                                <PhoneInput value={form.data.phone} onChange={(value) => form.setData('phone', value)} />
+                            <FormField label="Carga diária (horas)" htmlFor="daily_hours" error={form.errors.daily_hours}>
+                                <Input
+                                    type="number"
+                                    inputMode="decimal"
+                                    min="0.25"
+                                    max="24"
+                                    step="0.25"
+                                    value={form.data.daily_hours}
+                                    onChange={(e) => form.setData('daily_hours', e.target.value)}
+                                />
                             </FormField>
                         </div>
-
-                        <FormField label="Documento" htmlFor="document" error={form.errors.document} hint="CPF ou CNPJ, opcional.">
-                            <DocumentInput value={form.data.document} onChange={(value) => form.setData('document', value)} />
-                        </FormField>
-
-                        {isFinancial && (
-                            <FormField
-                                label="Empresas autorizadas"
-                                required
-                                error={form.errors.enterprise_ids}
-                                hint="O Financeiro só enxerga dados das empresas marcadas."
-                            >
-                                <div className="scrollbar-slim max-h-44 space-y-1 overflow-y-auto rounded-md border border-border p-2">
-                                    {enterpriseOptions.map((enterprise) => (
-                                        <div key={enterprise.id} className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-accent/50">
-                                            <Checkbox
-                                                id={`enterprise-${enterprise.id}`}
-                                                checked={form.data.enterprise_ids.includes(enterprise.id)}
-                                                onCheckedChange={() => toggleEnterprise(enterprise.id)}
-                                            />
-                                            <Label htmlFor={`enterprise-${enterprise.id}`} className="cursor-pointer font-normal">
-                                                {enterprise.nickname}
-                                            </Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </FormField>
-                        )}
 
                         <div>
                             <div className="flex items-center gap-2">

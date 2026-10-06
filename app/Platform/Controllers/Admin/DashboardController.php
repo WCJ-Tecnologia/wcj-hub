@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return Inertia::render('admin/dashboard', [
-            'summary' => $this->dashboard->summary($user),
+            'summary' => $this->dashboard->summary(),
             'activity' => $user->isAdmin() ? $this->dashboard->recentActivity() : [],
         ]);
     }

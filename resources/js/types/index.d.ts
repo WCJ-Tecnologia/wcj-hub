@@ -1,15 +1,14 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 
-export type UserTypeSlug = 'admin' | 'supervisor' | 'financial';
+/** Mirror of App\\Platform\\Enums\\RoleEnum (docs/banco.txt, roles). */
+export type RoleSlug = 'admin' | 'project_manager' | 'developer' | 'sales';
 
 /**
  * Mirror of HandleInertiaRequests::userPayload()['abilities']. The front uses
  * these only to show or hide UI; the Policies decide.
  */
 export interface Abilities {
-    manage_enterprises: boolean;
     manage_users: boolean;
-    view_users: boolean;
     delete_records: boolean;
     view_audit_logs: boolean;
     reset_passwords: boolean;
@@ -19,8 +18,8 @@ export interface AuthUser {
     id: number;
     name: string;
     email: string | null;
-    type: UserTypeSlug;
-    type_label: string;
+    role: RoleSlug;
+    role_label: string;
     must_change_password: boolean;
     abilities: Abilities;
 }

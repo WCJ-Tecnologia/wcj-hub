@@ -3,7 +3,6 @@ import { AdminPage } from './pages/admin.page';
 
 const SCREENS = [
     { path: '/admin/dashboard', title: 'Dashboard' },
-    { path: '/admin/enterprises', title: 'Empresas' },
     { path: '/admin/users', title: 'Usuários' },
     { path: '/admin/audit-logs', title: 'Logs de auditoria' },
     { path: '/admin/profile', title: 'Meu perfil' },
@@ -23,11 +22,11 @@ for (const screen of SCREENS) {
     });
 }
 
-test('@smoke o modal de empresa passa no axe', async ({ page, axe }) => {
+test('@smoke o modal de usuário passa no axe', async ({ page, axe }) => {
     const admin = new AdminPage(page);
-    await admin.goto('/admin/enterprises');
+    await admin.goto('/admin/users');
 
-    await page.getByRole('button', { name: 'Nova empresa' }).first().click();
+    await page.getByRole('button', { name: 'Novo usuário' }).first().click();
     await expect(admin.dialog).toBeVisible();
 
     const results = await axe().analyze();
@@ -41,8 +40,7 @@ test('@smoke o modal de empresa passa no axe', async ({ page, axe }) => {
 test.describe('@smoke tema escuro', () => {
     const DARK = [
         { path: '/admin/dashboard', title: 'Dashboard' },
-        { path: '/admin/enterprises', title: 'Empresas' },
-        { path: '/admin/users', title: 'Usuários' },
+            { path: '/admin/users', title: 'Usuários' },
     ];
 
     for (const screen of DARK) {
@@ -59,12 +57,12 @@ test.describe('@smoke tema escuro', () => {
         });
     }
 
-    test('@smoke o modal de empresa passa no axe em dark mode', async ({ page, axe }) => {
+    test('@smoke o modal de usuário passa no axe em dark mode', async ({ page, axe }) => {
         const admin = new AdminPage(page);
-        await admin.goto('/admin/enterprises');
+        await admin.goto('/admin/users');
         await page.evaluate(() => document.documentElement.classList.add('dark'));
 
-        await page.getByRole('button', { name: 'Nova empresa' }).first().click();
+        await page.getByRole('button', { name: 'Novo usuário' }).first().click();
         await expect(admin.dialog).toBeVisible();
 
         const results = await axe().analyze();

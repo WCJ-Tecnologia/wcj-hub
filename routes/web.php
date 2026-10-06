@@ -2,7 +2,6 @@
 
 use App\Platform\Controllers\Admin\AuditLogController;
 use App\Platform\Controllers\Admin\DashboardController;
-use App\Platform\Controllers\Admin\EnterpriseController;
 use App\Platform\Controllers\Admin\ProfileController;
 use App\Platform\Controllers\Admin\UserController;
 use App\Platform\Controllers\Auth\AuthenticatedSessionController;
@@ -62,8 +61,6 @@ Route::prefix('admin')
 
         Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
-
-        Route::resource('enterprises', EnterpriseController::class)->except(['create', 'edit', 'show']);
 
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');

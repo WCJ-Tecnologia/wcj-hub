@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
@@ -47,7 +47,7 @@ class CreateAdminCommand extends Command
         $password = $fixed ?? Str::password(16);
 
         $user = User::query()->create([
-            'user_type_id' => UserTypeEnum::ADMIN->value,
+            'role_id' => RoleEnum::ADMIN->value,
             'name' => $this->option('name') ?: Str::headline(Str::before($email, '@')),
             'email' => $email,
             'password' => $password,

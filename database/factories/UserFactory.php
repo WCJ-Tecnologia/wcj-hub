@@ -2,11 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
@@ -23,29 +22,32 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_type_id' => UserTypeEnum::ADMIN->value,
+            'role_id' => RoleEnum::ADMIN->value,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'must_change_password' => false,
-            'remember_token' => Str::random(10),
         ];
     }
 
     public function admin(): static
     {
-        return $this->state(fn () => ['user_type_id' => UserTypeEnum::ADMIN->value]);
+        return $this->state(fn () => ['role_id' => RoleEnum::ADMIN->value]);
     }
 
-    public function supervisor(): static
+    public function projectManager(): static
     {
-        return $this->state(fn () => ['user_type_id' => UserTypeEnum::SUPERVISOR->value]);
+        return $this->state(fn () => ['role_id' => RoleEnum::PROJECT_MANAGER->value]);
     }
 
-    public function financial(): static
+    public function developer(): static
     {
-        return $this->state(fn () => ['user_type_id' => UserTypeEnum::FINANCIAL->value]);
+        return $this->state(fn () => ['role_id' => RoleEnum::DEVELOPER->value, 'daily_hours' => 8]);
+    }
+
+    public function sales(): static
+    {
+        return $this->state(fn () => ['role_id' => RoleEnum::SALES->value]);
     }
 
     public function inactive(): static

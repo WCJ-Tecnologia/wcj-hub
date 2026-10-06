@@ -21,8 +21,8 @@ class PasswordFlowTest extends TestCase
     {
         Mail::fake();
 
-        $supervisor = User::factory()->supervisor()->create(['email' => 'ana@example.com']);
-        User::factory()->supervisor()->inactive()->create(['email' => 'inativo@example.com']);
+        $supervisor = User::factory()->projectManager()->create(['email' => 'ana@example.com']);
+        User::factory()->projectManager()->inactive()->create(['email' => 'inativo@example.com']);
 
         $this->from('/admin/forgot-password')
             ->post('/admin/forgot-password', ['email' => 'ana@example.com'])
@@ -46,7 +46,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_reset_link_sets_a_new_password_and_clears_the_first_access_flag(): void
     {
-        $user = User::factory()->financial()->mustChangePassword()->create([
+        $user = User::factory()->developer()->mustChangePassword()->create([
             'email' => 'carla@example.com',
             'password' => 'temporary',
         ]);
@@ -68,7 +68,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_reset_token_expires_after_sixty_minutes(): void
     {
-        $user = User::factory()->supervisor()->create(['email' => 'carla@example.com', 'password' => 'antiga-senha-1']);
+        $user = User::factory()->projectManager()->create(['email' => 'carla@example.com', 'password' => 'antiga-senha-1']);
         $token = Password::createToken($user);
 
         $this->travel(61)->minutes();
@@ -87,7 +87,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_reset_token_is_rejected_when_it_does_not_match(): void
     {
-        $user = User::factory()->supervisor()->create(['email' => 'carla@example.com']);
+        $user = User::factory()->projectManager()->create(['email' => 'carla@example.com']);
         Password::createToken($user);
 
         $this->from('/admin/reset-password/x')
@@ -102,7 +102,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_password_policy_requires_ten_chars_letters_and_numbers(): void
     {
-        $user = User::factory()->supervisor()->create(['email' => 'carla@example.com']);
+        $user = User::factory()->projectManager()->create(['email' => 'carla@example.com']);
         $token = Password::createToken($user);
 
         foreach (['curta1', 'somenteletras', '1234567890'] as $weak) {
@@ -119,7 +119,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_first_login_with_temporary_password_goes_to_change_password(): void
     {
-        $user = User::factory()->supervisor()->mustChangePassword()->create([
+        $user = User::factory()->projectManager()->mustChangePassword()->create([
             'email' => 'paulo@example.com',
             'password' => 'Temp12abc',
         ]);
@@ -138,7 +138,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_user_must_pick_a_new_password_before_reaching_the_dashboard(): void
     {
-        $user = User::factory()->supervisor()->mustChangePassword()->create([
+        $user = User::factory()->projectManager()->mustChangePassword()->create([
             'email' => 'paulo@example.com',
             'password' => 'Temp12abc',
         ]);
@@ -160,7 +160,7 @@ class PasswordFlowTest extends TestCase
 
     public function test_new_password_cannot_be_the_temporary_one(): void
     {
-        $user = User::factory()->supervisor()->mustChangePassword()->create([
+        $user = User::factory()->projectManager()->mustChangePassword()->create([
             'password' => 'Temp12abcdef',
         ]);
 
@@ -179,8 +179,8 @@ class PasswordFlowTest extends TestCase
     {
         config(['session.driver' => 'database']);
 
-        $user = User::factory()->supervisor()->mustChangePassword()->create(['password' => 'Temp12abcdef']);
-        $other = User::factory()->supervisor()->create();
+        $user = User::factory()->projectManager()->mustChangePassword()->create(['password' => 'Temp12abcdef']);
+        $other = User::factory()->projectManager()->create();
 
         DB::table('sessions')->insert([
             ['id' => 'stolen-cookie', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()],
@@ -204,7 +204,7 @@ class PasswordFlowTest extends TestCase
     {
         config(['session.driver' => 'database']);
 
-        $user = User::factory()->supervisor()->create(['email' => 'carla@example.com']);
+        $user = User::factory()->projectManager()->create(['email' => 'carla@example.com']);
         DB::table('sessions')->insert(['id' => 'stolen-cookie', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
 
         $this->post('/admin/reset-password', [
@@ -225,7 +225,7 @@ class PasswordFlowTest extends TestCase
 
         $this->actingAs($admin)
             ->post('/admin/users', [
-                'user_type_id' => 2,
+                'role_id' => 2,
                 'name' => 'Maria Souza',
                 'email' => 'maria@example.com',
             ])
@@ -248,7 +248,7 @@ class PasswordFlowTest extends TestCase
         Mail::fake();
 
         $admin = User::factory()->admin()->create();
-        $target = User::factory()->financial()->create([
+        $target = User::factory()->developer()->create([
             'email' => 'joao@example.com',
             'password' => 'antiga-senha',
             'must_change_password' => false,
@@ -277,10 +277,10 @@ class PasswordFlowTest extends TestCase
         ])->assertSessionHasErrors('email');
     }
 
-    public function test_supervisor_cannot_reset_passwords(): void
+    public function test_project_manager_cannot_reset_passwords(): void
     {
-        $supervisor = User::factory()->supervisor()->create();
-        $target = User::factory()->financial()->create();
+        $supervisor = User::factory()->projectManager()->create();
+        $target = User::factory()->developer()->create();
 
         $this->actingAs($supervisor)
             ->post('/admin/users/'.$target->id.'/reset-password')
