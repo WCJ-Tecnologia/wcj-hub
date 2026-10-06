@@ -64,7 +64,7 @@ class ContactControllerTest extends TestCase
 
         $this->actingAs($this->admin)->get('/admin/contacts')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('admin/contacts/index', false)
+            ->assertInertia(fn ($page) => $page->component('admin/contacts/index')
                 ->has('contacts.data', 2)
                 ->where('contacts.data.0.name', 'Ana Lima')
                 ->where('contacts.data.1', [
@@ -143,6 +143,18 @@ class ContactControllerTest extends TestCase
             ->assertSessionHas('success', 'Contato Bia Reis criado.')
             ->assertSessionHas('warning', 'Já existe Ana Lima (Padaria Pão Quente) com este e-mail');
         $this->assertSame(2, Contact::query()->where('email', 'compras@exemplo.test')->count());
+    }
+
+    // AC 3: o aviso chega à tela como flash warning, junto do sucesso (toast de aviso).
+    public function test_aviso_de_email_repetido_chega_a_tela_junto_do_sucesso(): void
+    {
+        Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima', 'email' => 'compras@exemplo.test']);
+
+        $this->actingAs($this->admin)->from('/admin/contacts')->followingRedirects()
+            ->post("/admin/clients/{$this->client->id}/contacts", ['name' => 'Bia Reis', 'email' => 'compras@exemplo.test'])
+            ->assertInertia(fn ($page) => $page->component('admin/contacts/index')
+                ->where('flash.success', 'Contato Bia Reis criado.')
+                ->where('flash.warning', 'Já existe Ana Lima (Padaria Pão Quente) com este e-mail'));
     }
 
     // AC 2 e limites do F1 §02

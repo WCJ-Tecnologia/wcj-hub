@@ -848,9 +848,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Estados vazio, erro e carregando; situação "Anonimizado" sem botões de editar
-- [ ] Smoke e2e com axe nos dois temas e no modal
-- [ ] Gate check passes: Build
+- [x] Estados vazio, erro e carregando; situação "Anonimizado" sem botões de editar
+- [x] Smoke e2e com axe nos dois temas e no modal
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

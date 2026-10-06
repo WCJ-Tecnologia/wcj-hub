@@ -1,56 +1,29 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, History, UserRound } from 'lucide-react';
+import { ArrowLeft, History, Plus, UserRound } from 'lucide-react';
 
 import { documentLabel } from '@/components/clients/client-form-dialog';
 import { deactivation, formatDocument, type ClientRow } from '@/components/clients/client-table';
-import { DataTable, type Column } from '@/components/data-table';
+import { useContactActions } from '@/components/contacts/contact-actions';
+import { ContactTable, type ContactRow } from '@/components/contacts/contact-table';
 import { EmptyState } from '@/components/empty-state';
 import { StatusPill } from '@/components/status-pill';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { formatPhone } from '@/lib/masks';
-import { cn } from '@/lib/utils';
 import type { SharedProps } from '@/types';
-
-interface ContactRow {
-    id: number;
-    name: string;
-    email: string | null;
-    phone: string | null;
-    active: boolean;
-    deactivated_at: string | null;
-    deactivated_by: string | null;
-}
 
 interface Props {
     client: ClientRow;
     /** Nulo para quem não vê os contatos deste cliente (F1 §09). */
     contacts: ContactRow[] | null;
+    /** ContactPolicy::create, e o cliente ativo (N11). */
+    can_create_contact: boolean;
 }
 
-// Desativado fica em cinza (F1 §03).
-const muted = (row: { active: boolean }) => cn(!row.active && 'text-muted-foreground');
-
-const CONTACT_COLUMNS: Column<ContactRow>[] = [
-    { key: 'name', header: 'Nome', cell: (row) => <span className={cn('font-medium', muted(row))}>{row.name}</span> },
-    { key: 'email', header: 'E-mail', className: 'text-muted-foreground', cell: (row) => row.email ?? '—' },
-    { key: 'phone', header: 'Telefone', className: 'text-muted-foreground tabular-nums', cell: (row) => formatPhone(row.phone) || '—' },
-    {
-        key: 'active',
-        header: 'Situação',
-        cell: (row) => (
-            <>
-                <StatusPill kind="contact" status={row.active} />
-                {!row.active && <p className="mt-1 text-xs text-muted-foreground">{deactivation(row)}</p>}
-            </>
-        ),
-    },
-];
-
-/** Ficha do cliente (F1 §01; ADR-004): dados e contatos. Criar e editar contato chegam na fase de contatos. */
-export default function ClientShow({ client, contacts }: Props) {
+/** Ficha do cliente (F1 §01; ADR-004): dados e a aba Contatos, com criar e as ações de cada contato. */
+export default function ClientShow({ client, contacts, can_create_contact }: Props) {
     const abilities = usePage<SharedProps>().props.auth.user?.abilities;
+    const { openCreate, rowActions, dialogs } = useContactActions();
 
     const actions = (
         <>
@@ -66,6 +39,12 @@ export default function ClientShow({ client, contacts }: Props) {
             )}
         </>
     );
+
+    const newContact = can_create_contact ? (
+        <Button onClick={() => openCreate({ id: client.id, name: client.name })}>
+            <Plus className="size-4" aria-hidden /> Novo contato
+        </Button>
+    ) : undefined;
 
     return (
         <AppLayout eyebrow="Cliente" title={client.name} subtitle={client.country_name} actions={actions}>
@@ -98,24 +77,29 @@ export default function ClientShow({ client, contacts }: Props) {
 
             {contacts !== null && (
                 <section aria-labelledby="client-contacts">
-                    <h2 id="client-contacts" className="mb-3 font-heading text-base font-semibold">
-                        Contatos
-                    </h2>
-                    <DataTable
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                        <h2 id="client-contacts" className="font-heading text-base font-semibold">
+                            Contatos
+                        </h2>
+                        {contacts.length > 0 && newContact}
+                    </div>
+                    <ContactTable
                         caption={`Contatos de ${client.name}`}
-                        columns={CONTACT_COLUMNS}
                         rows={contacts}
-                        rowKey={(row) => row.id}
+                        actions={rowActions}
                         emptyState={
                             <EmptyState
                                 icon={<UserRound className="size-5" aria-hidden />}
                                 title="Nenhum contato ainda"
                                 description="As pessoas deste cliente com quem a equipe fala aparecem aqui."
+                                action={newContact}
                             />
                         }
                     />
                 </section>
             )}
+
+            {dialogs}
         </AppLayout>
     );
 }

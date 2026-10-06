@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, X, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, X, XCircle } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { AppSidebar } from '@/components/app-sidebar';
@@ -21,9 +21,11 @@ interface Props {
     children: ReactNode;
 }
 
-type Toast = { type: 'success' | 'error'; msg: string } | null;
+type Toast = { type: 'success' | 'warning' | 'error'; msg: string } | null;
 
 function toastFrom(flash: FlashMessages | undefined): Toast {
+    // O aviso não desfaz o sucesso: o toast diz o que foi feito e o que conferir.
+    if (flash?.warning) return { type: 'warning', msg: [flash.success, flash.warning].filter(Boolean).join(' ') };
     if (flash?.success) return { type: 'success', msg: flash.success };
     if (flash?.error) return { type: 'error', msg: flash.error };
     return null;
@@ -109,6 +111,8 @@ export default function AppLayout({ title, subtitle, eyebrow, actions, width, ch
                             >
                                 {toast.type === 'success' ? (
                                     <CheckCircle2 className="size-5 shrink-0 text-status-approved" aria-hidden />
+                                ) : toast.type === 'warning' ? (
+                                    <AlertTriangle className="size-5 shrink-0 text-status-pending" aria-hidden />
                                 ) : (
                                     <XCircle className="size-5 shrink-0 text-destructive" aria-hidden />
                                 )}

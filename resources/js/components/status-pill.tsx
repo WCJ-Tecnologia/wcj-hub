@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, EyeOff, XCircle } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -30,9 +30,11 @@ const CLIENT: Record<string, Entry> = {
     inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
+// F1 §02: Ativo, Desativado ou Anonimizado (N11, N12).
 const CONTACT: Record<string, Entry> = {
     active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
     inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
+    anonymized: { tone: 'neutral', icon: EyeOff, label: 'Anonimizado' },
 };
 
 const SETS = { user: USER, client: CLIENT, contact: CONTACT };

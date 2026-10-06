@@ -37,6 +37,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // Salvou, mas há o que conferir (ex.: e-mail de contato repetido, N8).
+                'warning' => fn () => $request->session()->get('warning'),
             ],
         ];
     }

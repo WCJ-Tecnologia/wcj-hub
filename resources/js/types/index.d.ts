@@ -27,6 +27,8 @@ export interface AuthUser {
 export interface FlashMessages {
     success?: string;
     error?: string;
+    /** Vem junto do success: a ação foi feita, com um aviso. */
+    warning?: string;
 }
 
 export interface PaginationLink {
