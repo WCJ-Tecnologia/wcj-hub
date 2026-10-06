@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Models\User;
+use App\Platform\Controllers\Auth\AuthenticatedSessionController;
+use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;

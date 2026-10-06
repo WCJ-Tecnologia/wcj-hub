@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserTypeEnum;
-use App\Models\UserType;
+use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Models\UserType;
 use Illuminate\Database\Seeder;
 
 class UserTypeSeeder extends Seeder

@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\EnterpriseController;
-use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ChangePasswordController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\NewPasswordController;
+use App\Platform\Controllers\Admin\AuditLogController;
+use App\Platform\Controllers\Admin\DashboardController;
+use App\Platform\Controllers\Admin\EnterpriseController;
+use App\Platform\Controllers\Admin\ProfileController;
+use App\Platform\Controllers\Admin\UserController;
+use App\Platform\Controllers\Auth\AuthenticatedSessionController;
+use App\Platform\Controllers\Auth\ChangePasswordController;
+use App\Platform\Controllers\Auth\ForgotPasswordController;
+use App\Platform\Controllers\Auth\NewPasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'admin.dashboard' : 'login'));

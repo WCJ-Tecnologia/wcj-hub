@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
-use App\Models\User;
+use App\Platform\Models\AuditLog;
+use App\Platform\Models\User;
 use App\Support\LocalTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -87,7 +87,8 @@ class DateTimeConventionsTest extends TestCase
 
     public function test_no_model_uses_soft_deletes(): void
     {
-        foreach (glob(app_path('Models/*.php')) as $file) {
+        // Por domínio (ADR-001): app/Platform/Models e app/Domains/*/Models.
+        foreach ([...glob(app_path('Platform/Models/*.php')), ...glob(app_path('Domains/*/Models/*.php'))] as $file) {
             $this->assertStringNotContainsString('SoftDeletes', (string) file_get_contents($file), basename($file).': use the Deactivatable trait (banco.md §4)');
         }
     }

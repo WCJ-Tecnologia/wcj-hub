@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Mail\ResetPasswordMail;
 use App\Mail\TemporaryPasswordMail;
-use App\Models\User;
+use App\Platform\Controllers\Auth\ForgotPasswordController;
+use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

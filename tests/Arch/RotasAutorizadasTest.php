@@ -52,12 +52,12 @@ class RotasAutorizadasTest extends TestCase
      * não há recurso de terceiro a autorizar. Chave "Classe@metodo" => motivo.
      */
     private const ACOES_DA_PROPRIA_CONTA = [
-        'App\Http\Controllers\Auth\AuthenticatedSessionController@destroy' => 'logout da própria sessão',
-        'App\Http\Controllers\Auth\ChangePasswordController@edit' => 'primeiro acesso: troca a própria senha',
-        'App\Http\Controllers\Auth\ChangePasswordController@update' => 'primeiro acesso: troca a própria senha',
-        'App\Http\Controllers\Admin\DashboardController@index' => 'painel no escopo de quem está logado (Scoping)',
-        'App\Http\Controllers\Admin\ProfileController@edit' => 'o próprio perfil',
-        'App\Http\Controllers\Admin\ProfileController@update' => 'o próprio perfil',
+        'App\Platform\Controllers\Auth\AuthenticatedSessionController@destroy' => 'logout da própria sessão',
+        'App\Platform\Controllers\Auth\ChangePasswordController@edit' => 'primeiro acesso: troca a própria senha',
+        'App\Platform\Controllers\Auth\ChangePasswordController@update' => 'primeiro acesso: troca a própria senha',
+        'App\Platform\Controllers\Admin\DashboardController@index' => 'painel no escopo de quem está logado (Scoping)',
+        'App\Platform\Controllers\Admin\ProfileController@edit' => 'o próprio perfil',
+        'App\Platform\Controllers\Admin\ProfileController@update' => 'o próprio perfil',
     ];
 
     // Autoriza dentro da ação: Policy, Gate, helper do controller com nome de checagem

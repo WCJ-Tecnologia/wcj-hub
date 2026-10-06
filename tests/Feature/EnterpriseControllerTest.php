@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Enterprise;
-use App\Models\User;
+use App\Platform\Models\Enterprise;
+use App\Platform\Models\User;
 use App\Support\LocalTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

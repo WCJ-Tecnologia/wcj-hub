@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Models\User;
+use App\Platform\Controllers\Auth\AuthenticatedSessionController;
+use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

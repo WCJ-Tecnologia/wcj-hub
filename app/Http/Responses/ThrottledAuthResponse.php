@@ -2,8 +2,8 @@
 
 namespace App\Http\Responses;
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;

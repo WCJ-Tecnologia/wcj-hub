@@ -1,9 +1,11 @@
 # Local services only. Credentials come from .env (never hard-code them here).
-#   cp .env.example .env  →  fill DB_DATABASE / DB_USERNAME / DB_PASSWORD  →  docker compose up -d
+#   cp .env.example .env  →  docker compose up -d mysql
+# The init script creates the test (wcj_hub_test) and e2e (wcj_hub_e2e) databases
+# with grants for DB_USERNAME: tests run on MySQL 8, never SQLite (ADR-002).
 services:
   mysql:
     image: mysql:8.4
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
@@ -13,11 +15,12 @@ services:
       - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
 
   redis:
     image: redis:7-alpine

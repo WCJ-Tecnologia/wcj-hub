@@ -50,7 +50,8 @@ class ArquiteturaTest extends TestCase
 
     public function test_a4_service_nao_conhece_http(): void
     {
-        $this->regraDeUso('A4', 'Service não conhece HTTP', 'app/Services',
+        // Por domínio (ADR-001): os Services moram em app/Platform/Services e app/Domains/*/Services.
+        $this->regraDeUsoEm('A4', 'Service não conhece HTTP', self::pastasDe('Services'),
             // UploadedFile e File ficam de fora: são o arquivo, não a requisição.
             ['Illuminate\\Http\\Request', 'Illuminate\\Http\\Response', 'Illuminate\\Http\\JsonResponse',
                 'Illuminate\\Http\\RedirectResponse', 'Illuminate\\Http\\Resources\\', 'Illuminate\\Http\\Exceptions\\',
@@ -68,8 +69,8 @@ class ArquiteturaTest extends TestCase
         $violacoes = [];
         foreach (Codigo::arquivos('app') as $arquivo) {
             $limite = match (true) {
-                str_starts_with($arquivo, 'app/Http/Controllers/') => self::LINHAS_CONTROLLER,
-                str_starts_with($arquivo, 'app/Services/') => self::LINHAS_SERVICE,
+                self::camada($arquivo) === 'Controllers' => self::LINHAS_CONTROLLER,
+                self::camada($arquivo) === 'Services' => self::LINHAS_SERVICE,
                 default => self::LINHAS_ARQUIVO,
             };
             $linhas = Codigo::linhas($arquivo);
@@ -77,7 +78,8 @@ class ArquiteturaTest extends TestCase
                 $violacoes[] = ['chave' => $arquivo, 'texto' => "{$arquivo} tem {$linhas} linhas (limite {$limite})", 'medida' => $linhas];
             }
         }
-        foreach (Codigo::metodos('app/Http/Controllers') as $metodo) {
+        $metodos = array_merge(...array_map(fn (string $pasta): array => Codigo::metodos($pasta), self::pastasDe('Controllers')));
+        foreach ($metodos as $metodo) {
             if ($metodo['linhas'] > self::LINHAS_METODO_CONTROLLER) {
                 $violacoes[] = [
                     'chave' => "{$metodo['arquivo']}::{$metodo['nome']}",
@@ -107,6 +109,38 @@ class ArquiteturaTest extends TestCase
 
         $this->semViolacoes('A7', 'Domínio não usa Model de outro domínio', $violacoes,
             'chame o Service do outro domínio; a tabela dele só ele lê e grava.');
+    }
+
+    /**
+     * Pastas de uma camada nos domínios (ADR-001): app/Http/<camada> (infraestrutura),
+     * app/Platform/<camada> e app/Domains/*\/<camada>.
+     *
+     * @return list<string>
+     */
+    private static function pastasDe(string $camada): array
+    {
+        $pastas = ["app/Http/{$camada}", "app/Platform/{$camada}"];
+        foreach (glob(Codigo::raiz().'/app/Domains/*', GLOB_ONLYDIR) ?: [] as $dominio) {
+            $pastas[] = 'app/Domains/'.basename($dominio)."/{$camada}";
+        }
+
+        return $pastas;
+    }
+
+    /** A camada do arquivo (Controllers, Services…) em app/Http, app/Platform ou app/Domains/<X>. */
+    private static function camada(string $arquivo): ?string
+    {
+        return preg_match('#^app/(?:Http|Platform|Domains/[^/]+)/([^/]+)/#', $arquivo, $m) === 1 ? $m[1] : null;
+    }
+
+    /**
+     * @param  list<string>  $pastas
+     * @param  list<string>  $alvos
+     */
+    private function regraDeUsoEm(string $regra, string $titulo, array $pastas, array $alvos, string $comoCorrigir): void
+    {
+        $usos = array_merge(...array_map(fn (string $pasta): array => Codigo::violacoes($pasta, $alvos), $pastas));
+        $this->semViolacoes($regra, $titulo, self::violacoesPorArquivo($usos), $comoCorrigir);
     }
 
     /**

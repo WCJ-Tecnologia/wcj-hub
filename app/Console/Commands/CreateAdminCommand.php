@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\UserTypeEnum;
-use App\Models\User;
+use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 

@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Enums\UserTypeEnum;
-use App\Models\AuditLog;
-use App\Models\Enterprise;
-use App\Models\User;
+use App\Platform\Enums\UserTypeEnum;
+use App\Platform\Models\AuditLog;
+use App\Platform\Models\Enterprise;
+use App\Platform\Models\User;
 use App\Support\LocalTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Http\Responses\ThrottledAuthResponse;
-use App\Models\Enterprise;
-use App\Models\User;
-use App\Policies\EnterprisePolicy;
-use App\Policies\UserPolicy;
+use App\Platform\Models\Enterprise;
+use App\Platform\Models\User;
+use App\Platform\Policies\EnterprisePolicy;
+use App\Platform\Policies\UserPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

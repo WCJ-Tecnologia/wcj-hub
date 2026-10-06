@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Enterprise;
+use App\Platform\Models\Enterprise;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Support\Concorrencia;
 use Tests\Support\UsaBancoDeVerdade;
