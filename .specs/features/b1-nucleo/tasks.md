@@ -243,9 +243,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Matriz ability × papel testada (admin, gestor, dev, comercial)
-- [ ] Testes em `tests/Feature/Nucleo/UserPolicyTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Matriz ability × papel testada (admin, gestor, dev, comercial)
+- [x] Testes em `tests/Feature/Nucleo/UserPolicyTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

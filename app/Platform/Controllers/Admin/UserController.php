@@ -152,7 +152,7 @@ class UserController extends Controller
 
     public function resetPassword(Request $request, User $user): RedirectResponse
     {
-        $this->authorize('resetPassword', $user);
+        $this->authorize('resendInvite', $user);
 
         $isSelf = $user->is($request->user());
 
