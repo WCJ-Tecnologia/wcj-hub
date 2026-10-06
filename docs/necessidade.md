@@ -328,7 +328,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
   - ChatGPT Pro: só lê;
   - ChatGPT Plus: não conecta;
   - comercial (hoje o Wilson): pelo GPT "WCJ Hub" no ChatGPT, com áudio, entregue junto com o CRM (v2).
-- **IA4** A conexão é só por login (OAuth), nunca por chave colada. Cada usuário tem uma autorização por assistente, com permissão por módulo (ler ou escrever).
+- **IA4** A conexão é só por login (OAuth), nunca por chave colada. Cada usuário tem uma autorização por assistente, com permissão por módulo (ler ou escrever). **Quem decide se a IA da pessoa pode escrever é o Administrador**, no cadastro do usuário: "IA pode escrever" ligado (padrão) ou só leitura (decisão de 06/10). A tela de autorização não oferece escolha: dá o máximo permitido pelo papel e por essa marca.
 - **IA5** A IA age como o usuário: tem as mesmas permissões da tela, e a permissão da conexão nunca passa do papel. **Fixa.**
 - **IA6** O usuário vê e revoga as próprias conexões; o Administrador, as de todos. Reconectar revoga a conexão anterior. Usuário desativado ou com papel trocado perde as conexões na hora. **Fixa.**
 - **IA7** Limite por conexão: 60 leituras e 20 escritas por minuto, ajustáveis. Quando estoura, a IA recebe um erro legível.

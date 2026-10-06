@@ -1,6 +1,6 @@
 # F8. Conexões de IA e as 6 ferramentas
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -53,7 +53,7 @@ Três palavras aparecem no assistente e nesta tela. **MCP** é o padrão de cone
 | Assistente | só leitura | | | Como o assistente se identifica, conferido na prova de conceito (ver 10.2). |
 | Pessoa | só leitura: nome e e-mail | | | A conexão age como ela (IA5). |
 | Núcleo | só leitura: "ler" | | | Todos os papéis (IA5; ver 10.4). |
-| Projetos | escolha: "ler e escrever" ou "só ler" | sim | o máximo do papel | No ChatGPT, só "ler" (IA3). O Comercial não tem a linha (C14). Ver 10.3. |
+| Projetos | só leitura: "ler e escrever" ou "só ler" | | o máximo permitido pelo papel e pela marca "IA pode escrever" do cadastro da pessoa (F1) | A pessoa não escolhe: quem decide é o Administrador, no cadastro (IA4). No ChatGPT, sempre "ler" (IA3). O Comercial não tem a linha (C14). |
 | Aviso de substituição | texto | | | "Isto substitui a conexão do Claude feita em DD/MM/AAAA." (IA6) |
 
 O que cada papel pode autorizar (IA5). A permissão da conexão nunca passa do papel:
@@ -65,7 +65,7 @@ O que cada papel pode autorizar (IA5). A permissão da conexão nunca passa do p
 | Desenvolvedor | ler | ler e escrever |
 | Comercial | ler | nada |
 
-No ChatGPT, tudo vira só leitura, e quem garante é o Hub, não o ChatGPT (IA3). "Escrever em Projetos" não libera tudo: cada ferramenta confere de novo o papel e a alocação, como a tela (G4).
+No ChatGPT, tudo vira só leitura, e quem garante é o Hub, não o ChatGPT (IA3). O mesmo vale para quem o Administrador marcou como "IA só consulta": qualquer assistente dessa pessoa recebe só leitura (IA4); mudar a marca derruba as conexões dela, como trocar o papel (IA6). "Escrever em Projetos" não libera tudo: cada ferramenta confere de novo o papel e a alocação, como a tela (G4).
 
 ### Conexões de IA (*Administração*)
 
@@ -227,13 +227,15 @@ No ChatGPT, qualquer papel só lê (IA3). O Comercial conecta, só com Núcleo p
 
 ## 10. Pontos a validar
 
-1. **Claude app e Claude Code dividem a conexão?** Na fatia 1 os dois são o mesmo assistente, e o Codex de terminal e o do app também. Conectar um derruba o outro (IA4, IA6). A prova de conceito (D-GER-17) confere. Se o dev precisar dos dois ao mesmo tempo, o Claude Code vira um quarto cartão.
-2. **Como cada assistente se identifica.** Depende da prova de conceito. Quando o assistente declara o próprio nome, o canal na auditoria e o "só leitura" do ChatGPT viram conveniência, e a garantia fica no escopo pelo papel (IA5). Proposta: assistente que o Hub não reconhece como um dos três é recusado na tela de autorização, com "assistente não homologado". Os textos de "onde colar o endereço" em cada assistente saem da prova de conceito.
-3. **Escolher "só ler" na autorização.** IA4 dá permissão por módulo a cada conexão, mas não diz quem escolhe. Proposta: a tela de autorização vem com o máximo do papel e deixa a pessoa baixar Projetos para "só ler". Confirmar, ou dar sempre o máximo do papel.
-4. **"Núcleo: ler" sem ferramenta.** Nenhuma das 6 ferramentas lê o Núcleo; `buscar_cliente` e `resumo_do_cliente` vêm depois. Proposta: mostrar "Núcleo: ler" assim mesmo, para a conexão não precisar ser refeita quando elas chegarem. Confirmar.
-5. **Tirar do Backlog pela IA sem sprint aberta.** Na tela, o Hub propõe criar a sprint e segue (P45, R5). Pela IA isso seriam duas alterações numa chamada (IA8). Proposta: recusar e orientar a abrir a sprint pela tela. Confirmar.
-6. **O que `escrever_tarefa` aceita.** IA14 fala de título, modelo de requisição e critérios. Proposta: tipo, prioridade, área, horas, dev, QA e subitens de critério (CA_4.1) só pela tela na fatia 1. Confirmar.
-7. **Corrigir horas pela IA.** P30 deixa a pessoa corrigir os próprios lançamentos, mas a ferramenta só lança. Proposta: cada chamada cria um lançamento novo; correção pela tela (F5). Confirmar.
-8. **Qual texto volta marcado como dado.** Na fatia 1, o único texto que pode vir do cliente é o do card de suporte, escrito pelo gestor a partir do pedido. Proposta: marcar como dado todo texto livre que as ferramentas devolvem, para não depender de saber quem escreveu (IA10). Confirmar.
-9. **Último uso da conexão.** É pergunta natural ao olhar o cartão, mas as chamadas ficam só no registro do servidor (IA12). Proposta: não mostrar na fatia 1. Confirmar.
-10. **Limites.** Proposta: 60 leituras e 20 escritas por minuto, ajustados pela equipe técnica, sem tela (IA7, D-IA-07). Reavaliar depois do primeiro mês de uso.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, no F1, na `necessidade.md` (IA4) e no `banco.txt` (coluna aditiva em `users`).
+
+1. **Claude app e Claude Code dividem a conexão?** OK: mesmo assistente na fatia 1; a prova de conceito confere; se precisar, o Claude Code vira um quarto cartão.
+2. **Como cada assistente se identifica.** OK: depende da prova de conceito; assistente não reconhecido é recusado como "não homologado".
+3. **Quem escolhe "só ler".** **O Administrador**, no cadastro do usuário (F1): a marca "IA pode escrever" define se a IA da pessoa altera dados ou só consulta (IA4). A tela de autorização não oferece escolha. Mudar a marca derruba as conexões da pessoa (IA6).
+4. **"Núcleo: ler" sem ferramenta.** OK: o escopo aparece desde já.
+5. **Tirar do Backlog pela IA sem sprint aberta.** Decidido no F3: o Service cria a sprint proposta e segue.
+6. **O que `escrever_tarefa` aceita.** OK: título, modelo de requisição e critérios; o resto pela tela.
+7. **Corrigir horas pela IA.** OK: cada chamada é um lançamento novo; correção pela tela.
+8. **Texto marcado como dado.** OK: todo texto livre devolvido.
+9. **Último uso da conexão.** OK: não mostrar na fatia 1.
+10. **Limites.** OK: 60/20 por minuto, ajuste técnico sem tela; reavaliar depois do primeiro mês.

@@ -30,6 +30,7 @@
 | E-mail | e-mail, até 160, único | sim | | É o login. Repetido é recusado. |
 | Papel | lista fixa: Administrador, Gestor de projetos, Desenvolvedor, Comercial | sim | | Só os 4; não se cria papel (N2). Comercial fica pronto para a v2, sem uso hoje. |
 | Carga diária | horas, com decimais, maior que 0 e até 24 | sim para Desenvolvedor; opcional para os outros | | Horas por dia na WCJ, ex.: 8 ou 4 (N3). Usada na data prevista e na capacidade (P28, P48). Mudar vale dali para a frente. |
+| IA pode escrever | sim / não | | sim | O Administrador decide se a IA desta pessoa altera dados ou só consulta (IA4). Mudar derruba as conexões de IA dela, que reconecta (IA6). Ver [F8](f8-conexoes-de-ia.md). |
 | Senha provisória | gerada pelo sistema e enviada por e-mail no convite | | | Trocada no primeiro acesso (N1). Nunca aparece na tela nem na auditoria. |
 | Situação | só leitura: Ativo / Desativado em DD/MM/AAAA por Fulano | | Ativo | (N11) |
 
@@ -78,7 +79,7 @@ Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
 | Convidar usuário | Administrador | Cria a pessoa e manda o convite por e-mail, com o endereço do Hub, o login e a senha provisória (N1). | Se o e-mail se perder, *Reenviar convite* gera outra senha provisória e manda de novo; a anterior deixa de valer. |
-| Editar | Administrador | Nome, e-mail, papel, carga. Trocar o papel derruba as conexões de IA da pessoa (IA6). Mudar a carga vale dali para a frente (N3). | Ao trocar o papel: "As conexões de IA de Fulano serão desconectadas. Continuar?" |
+| Editar | Administrador | Nome, e-mail, papel, carga, IA pode escrever. Trocar o papel ou a marca da IA derruba as conexões de IA da pessoa (IA4, IA6). Mudar a carga vale dali para a frente (N3). | Ao trocar o papel: "As conexões de IA de Fulano serão desconectadas. Continuar?" |
 | Desativar | Administrador | A pessoa perde o acesso agora: sessões encerradas e conexões de IA revogadas (N4, IA6). As tarefas em que ela é dev ou QA continuam apontando para ela (P5 trata só de sair do projeto). | "Fulano perde o acesso imediatamente. Continuar?" |
 | Reativar | Administrador | Volta a entrar com a senha de antes. As conexões de IA não voltam: a pessoa reconecta (IA6). | |
 | Excluir | Administrador | Só quem nunca entrou e não aparece em nada (G2). Quem já usou o sistema não tem o botão. | "Excluir de verdade. Não dá para desfazer." |

@@ -153,6 +153,12 @@ daily_hours           hours          null                 carga diária (N3): ob
 deactivated_at        datetime       null                 (N11; N4: perde o acesso na hora, e o Service
                                                           revoga sessões e conexões de IA, IA6)
 deactivated_by        fk users       null      restrict
+ai_write_allowed      boolean        not null  default true
+                                                          o admin decide se a IA desta pessoa pode
+                                                          escrever (IA4, 06/10): false = os tokens dela
+                                                          saem só com escopos :read, em qualquer
+                                                          assistente. Mudar revoga as conexões ativas
+                                                          (IA6), como trocar o papel
 check: daily_hours is null or (daily_hours > 0 and daily_hours <= 24)
 índices: role_id, deactivated_at
 
@@ -266,7 +272,8 @@ código e nunca passa do papel (IA5):
   projects:read    Projetos: ler         admin, project_manager, developer
   projects:write   Projetos: escrever    admin, project_manager, developer
   (v2) crm:read / crm:write              admin, sales
-ChatGPT (write_allowed = false) recebe só os escopos :read (IA3).
+ChatGPT (write_allowed = false) recebe só os escopos :read (IA3). Usuário com users.ai_write_allowed =
+false também recebe só :read, em qualquer assistente (IA4, 06/10).
 
 (ai_tool_calls saiu, R13: as chamadas da IA, inclusive de leitura, ficam em log de arquivo, canal
 diário do Laravel com rotação de 180 dias, só ids e filtros, IA12. A escrita já está em audit_logs, IA11.
@@ -946,6 +953,9 @@ Decisões do Lucas Scholz na aprovação do F3 (06/10, noite), duas colunas adit
   troca o quadro de "por prioridade" (padrão) para "manual" (P13).
 - tasks.proposed_hours (hours, null): reestimativa proposta pelo dev, que o gestor ou o admin aprova
   ou recusa (P27). Sem tabela nova; o antes e o depois ficam em audit_logs.
+Decisão do Lucas Scholz na aprovação do F8 (06/10, noite), uma coluna aditiva em users:
+- users.ai_write_allowed (boolean, not null, default true): o Administrador decide se a IA da pessoa
+  pode escrever; false = tokens só :read (IA4). Mudar revoga as conexões ativas (IA6).
 - Sem coluna: volta por engano = movimento sem rework_origin_id (P39); coluna de pronto mostra só a
   sprint aberta e a última encerrada (P13); comentário editado ou excluído pelo autor (P24).
 Ficou como aprovado: todo o resto, inclusive as colunas geradas testadas no MySQL 8.4 (T1, T9), o

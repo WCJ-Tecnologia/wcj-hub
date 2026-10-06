@@ -17,6 +17,8 @@ Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, list
 
 Um funcional aprovado vira uma feature na skill. Nada que não esteja no funcional entra na spec; nada que não esteja no `banco.txt` entra no funcional.
 
+**Situação em 06/10/2026:** F1 a F8 aprovados por Lucas Scholz (v1.0), com os "pontos a validar" respondidos e aplicados nos próprios documentos, na `necessidade.md`, no `banco.txt` e no `escopo.md`. Rafael Garcia valida Projetos no uso (bugbash).
+
 ## Fluxo de aprovação
 
 | Passo | Quem | O quê |
