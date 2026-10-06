@@ -65,6 +65,20 @@ export class ClientsPage {
         await expect(this.admin.dialog).toBeHidden();
     }
 
+    /** Na ficha aberta: Anonimizar o contato, digitando ANONIMIZAR (F1 §04). */
+    async anonymizeContact(name: string) {
+        await this.page.getByRole('button', { name: `Anonimizar ${name}` }).click();
+        await expect(this.admin.dialog).toBeVisible();
+        await this.admin.dialog.getByLabel('Confirmação').fill('ANONIMIZAR');
+        await this.admin.dialog.getByRole('button', { name: 'Anonimizar' }).click();
+        await expect(this.admin.dialog).toBeHidden();
+    }
+
+    /** O estado vazio da lista, pelo título dele. */
+    emptyState(title: string): Locator {
+        return this.page.getByRole('heading', { name: title, exact: true }).locator('..');
+    }
+
     /** O botão Histórico da ficha aberta (F1 §01). */
     async openHistory() {
         await this.page.getByRole('button', { name: 'Histórico', exact: true }).click();

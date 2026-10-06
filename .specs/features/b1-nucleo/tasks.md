@@ -845,9 +845,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Clientes AC 4, 9, 13; Contatos AC 12; Usuários AC 13; Auditoria AC 3 e 10 com asserção do valor exato
-- [ ] O spec limpa o que cria
-- [ ] Gate check passes: Build
+- [x] Clientes AC 4, 9, 13; Contatos AC 12; Usuários AC 13; Auditoria AC 3 e 10 com asserção do valor exato
+- [x] O spec limpa o que cria
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

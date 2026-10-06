@@ -24,6 +24,16 @@ export class AuditLogsPage {
         await expect(this.admin.dialog).toBeVisible();
     }
 
+    async goto(query = '') {
+        await this.admin.goto(`/admin/audit-logs${query}`);
+        await expect(this.admin.heading).toHaveText('Auditoria');
+    }
+
+    /** As linhas da tabela com este resultado ("Ok" ou "Negado"). */
+    rowsWithOutcome(outcome: 'Ok' | 'Negado'): Locator {
+        return this.page.getByRole('row').filter({ has: this.page.getByText(outcome, { exact: true }) });
+    }
+
     /** A linha do campo no detalhe: rótulo, antes e depois. */
     changeRow(label: string): Locator {
         return this.admin.dialog.getByRole('row').filter({ has: this.page.getByRole('rowheader', { name: label, exact: true }) });
