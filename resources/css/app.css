@@ -10,100 +10,100 @@
 
 /* Tema claro. Cada valor vem de design/tokens.json (HEX ao lado, em comentário). */
 :root {
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --primary: oklch(0.4882 0.2172 264.38); /* #1D4ED8 */
+    --primary: oklch(0.469 0.1929 261.55); /* #0F4FC4 */
     --primary-foreground: oklch(1 0 0); /* #FFFFFF */
-    --background: oklch(0.9755 0.0045 258.32); /* #F5F7FA */
-    --foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --background: oklch(0.9758 0.0057 264.53); /* #F5F7FB */
+    --foreground: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --card: oklch(1 0 0); /* #FFFFFF */
-    --muted: oklch(0.9595 0.008 253.85); /* #EEF2F7 */
-    --muted-foreground: oklch(0.5053 0.0327 263.26); /* #5B6578 */
-    --border: oklch(0.9288 0.0126 255.51); /* #E2E8F0 */
-    --input: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
-    --accent: oklch(0.9319 0.0316 255.59); /* #DBEAFE */
-    --destructive: oklch(0.5771 0.2152 27.33); /* #DC2626 */
-    --ring: oklch(0.4882 0.2172 264.38); /* #1D4ED8 */
-    --card-foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --muted: oklch(0.9514 0.0116 264.51); /* #EBEFF7 */
+    --muted-foreground: oklch(0.4963 0.0285 267.65); /* #5B6273 */
+    --border: oklch(0.9139 0.0139 258.35); /* #DDE3EC */
+    --input: oklch(0.8564 0.0209 264.46); /* #C9D0DE */
+    --accent: oklch(0.9559 0.0195 260.17); /* #E9F1FE */
+    --destructive: oklch(0.5593 0.204 31.03); /* #D12B15 */
+    --ring: oklch(0.5679 0.2167 260.5); /* #1A6CF3 */
+    --card-foreground: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --popover: oklch(1 0 0); /* #FFFFFF */
-    --popover-foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
-    --secondary: oklch(0.9595 0.008 253.85); /* #EEF2F7 */
-    --secondary-foreground: oklch(0.2795 0.0368 260.03); /* #1E293B */
-    --accent-foreground: oklch(0.4244 0.1809 265.64); /* #1E40AF */
+    --popover-foreground: oklch(0.164 0.0111 268.01); /* #0C0E13 */
+    --secondary: oklch(0.9514 0.0116 264.51); /* #EBEFF7 */
+    --secondary-foreground: oklch(0.3797 0.0306 267.41); /* #3B4253 */
+    --accent-foreground: oklch(0.469 0.1929 261.55); /* #0F4FC4 */
     --destructive-foreground: oklch(1 0 0); /* #FFFFFF */
-    --status-pending: oklch(0.4732 0.1247 46.2); /* #92400E */
-    --status-pending-bg: oklch(0.9619 0.058 95.62); /* #FEF3C7 */
-    --status-approved: oklch(0.5081 0.1049 165.61); /* #047857 */
-    --status-approved-bg: oklch(0.9505 0.0507 163.05); /* #D1FAE5 */
-    --status-rejected: oklch(0.5143 0.1978 16.93); /* #BE123C */
-    --status-rejected-bg: oklch(0.9414 0.0298 12.58); /* #FFE4E6 */
-    --status-neutral: oklch(0.4141 0.0573 269.66); /* #3F4A6B */
-    --status-neutral-bg: oklch(0.9407 0.0138 272.69); /* #E8EBF5 */
-    --sidebar: oklch(0.2077 0.0398 265.75); /* #0F172A */
-    --sidebar-foreground: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
-    --sidebar-primary: oklch(0.5461 0.2152 262.88); /* #2563EB */
-    --sidebar-primary-foreground: oklch(1 0 0); /* #FFFFFF */
-    --sidebar-accent: oklch(0.2795 0.0368 260.03); /* #1E293B */
-    --sidebar-accent-foreground: oklch(0.9683 0.0069 247.9); /* #F1F5F9 */
-    --sidebar-border: oklch(0.2795 0.0368 260.03); /* #1E293B */
-    --sidebar-ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
-    --chart-1: oklch(0.5461 0.2152 262.88); /* #2563EB */
-    --chart-2: oklch(0.5413 0.2466 293.01); /* #7C3AED */
-    --chart-3: oklch(0.7686 0.1647 70.08); /* #F59E0B */
-    --chart-4: oklch(0.6959 0.1491 162.48); /* #10B981 */
-    --chart-5: oklch(0.6847 0.1479 237.32); /* #0EA5E9 */
+    --status-pending: oklch(0.5519 0.1143 75.64); /* #986706 */
+    --status-pending-bg: oklch(0.9748 0.0159 82.79); /* #FCF6EB */
+    --status-approved: oklch(0.5324 0.1158 157.35); /* #1C8051 */
+    --status-approved-bg: oklch(0.975 0.0182 166.39); /* #ECFBF4 */
+    --status-rejected: oklch(0.5593 0.204 31.03); /* #D12B15 */
+    --status-rejected-bg: oklch(0.9574 0.0165 26.65); /* #FCEDEB */
+    --status-neutral: oklch(0.4963 0.0285 267.65); /* #5B6273 */
+    --status-neutral-bg: oklch(0.9514 0.0116 264.51); /* #EBEFF7 */
+    --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
+    --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --sidebar-primary-foreground: oklch(0.1514 0.0248 267.11); /* #070B16 */
+    --sidebar-accent: oklch(0.2052 0.0167 268.83); /* #14171F */
+    --sidebar-accent-foreground: oklch(1 0 0); /* #FFFFFF */
+    --sidebar-border: oklch(0.2846 0.0277 263.98); /* #232A38 */
+    --sidebar-ring: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --chart-1: oklch(0.5679 0.2167 260.5); /* #1A6CF3 */
+    --chart-2: oklch(0.5324 0.1158 157.35); /* #1C8051 */
+    --chart-3: oklch(0.5519 0.1143 75.64); /* #986706 */
+    --chart-4: oklch(0.5539 0.1494 46.6); /* #B6500C */
+    --chart-5: oklch(0.5593 0.204 31.03); /* #D12B15 */
 }
 
 /* Tema escuro. Todo token do claro tem par aqui. */
 .dark {
-    --primary: oklch(0.7137 0.1434 254.62); /* #60A5FA */
-    --primary-foreground: oklch(0.1831 0.0309 263.38); /* #0B1220 */
-    --background: oklch(0.1831 0.0309 263.38); /* #0B1220 */
-    --foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
-    --card: oklch(0.2247 0.0391 265.98); /* #131B2E */
-    --muted: oklch(0.262 0.0399 265.23); /* #1B2438 */
-    --muted-foreground: oklch(0.7194 0.0303 261.45); /* #9AA5B8 */
-    --border: oklch(0.3122 0.0472 267); /* #263049 */
-    --input: oklch(0.3547 0.0516 266.06); /* #2F3B57 */
-    --accent: oklch(0.3117 0.072 264.44); /* #1E2F55 */
-    --destructive: oklch(0.7106 0.1661 22.22); /* #F87171 */
-    --ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
-    --card-foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
-    --popover: oklch(0.2247 0.0391 265.98); /* #131B2E */
-    --popover-foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
-    --secondary: oklch(0.262 0.0399 265.23); /* #1B2438 */
-    --secondary-foreground: oklch(0.8927 0.0181 261.34); /* #D5DCE8 */
-    --accent-foreground: oklch(0.9319 0.0316 255.59); /* #DBEAFE */
-    --destructive-foreground: oklch(0.155 0.0395 22.84); /* #1A0505 */
-    --status-pending: oklch(0.8369 0.1644 84.43); /* #FBBF24 */
-    --status-pending-bg: oklch(0.3013 0.0551 87.06); /* #3A2C07 */
-    --status-approved: oklch(0.7729 0.1535 163.22); /* #34D399 */
-    --status-approved-bg: oklch(0.2698 0.0497 168.78); /* #052E22 */
-    --status-rejected: oklch(0.7192 0.169 13.43); /* #FB7185 */
-    --status-rejected-bg: oklch(0.2487 0.0757 5.55); /* #3D0D1C */
-    --status-neutral: oklch(0.769 0.0508 275.03); /* #AAB2D5 */
-    --status-neutral-bg: oklch(0.2671 0.0544 274.72); /* #1E2340 */
-    --sidebar: oklch(0.1706 0.0284 267.36); /* #0A0F1C */
-    --sidebar-foreground: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
-    --sidebar-primary: oklch(0.5461 0.2152 262.88); /* #2563EB */
-    --sidebar-primary-foreground: oklch(1 0 0); /* #FFFFFF */
-    --sidebar-accent: oklch(0.2449 0.0388 264.35); /* #172033 */
-    --sidebar-accent-foreground: oklch(0.9683 0.0069 247.9); /* #F1F5F9 */
-    --sidebar-border: oklch(0.2614 0.0382 264.48); /* #1B2437 */
-    --sidebar-ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
-    --chart-1: oklch(0.7137 0.1434 254.62); /* #60A5FA */
-    --chart-2: oklch(0.709 0.1592 293.54); /* #A78BFA */
-    --chart-3: oklch(0.8369 0.1644 84.43); /* #FBBF24 */
-    --chart-4: oklch(0.7729 0.1535 163.22); /* #34D399 */
-    --chart-5: oklch(0.7535 0.139 232.66); /* #38BDF8 */
+    --primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --primary-foreground: oklch(0.1514 0.0248 267.11); /* #070B16 */
+    --background: oklch(0.1514 0.0248 267.11); /* #070B16 */
+    --foreground: oklch(1 0 0); /* #FFFFFF */
+    --card: oklch(0.2052 0.0167 268.83); /* #14171F */
+    --muted: oklch(0.2308 0.0143 266.95); /* #1A1D24 */
+    --muted-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --border: oklch(0.2846 0.0277 263.98); /* #232A38 */
+    --input: oklch(0.2846 0.0277 263.98); /* #232A38 */
+    --accent: oklch(0.2134 0.0572 261.09); /* #091833 */
+    --destructive: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
+    --ring: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --card-foreground: oklch(1 0 0); /* #FFFFFF */
+    --popover: oklch(0.2052 0.0167 268.83); /* #14171F */
+    --popover-foreground: oklch(1 0 0); /* #FFFFFF */
+    --secondary: oklch(0.2308 0.0143 266.95); /* #1A1D24 */
+    --secondary-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --accent-foreground: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --destructive-foreground: oklch(0.1514 0.0248 267.11); /* #070B16 */
+    --status-pending: oklch(0.8053 0.1581 78.45); /* #F6B128 */
+    --status-pending-bg: oklch(0.2746 0.0359 83.52); /* #302612 */
+    --status-approved: oklch(0.7577 0.1666 157.29); /* #30CF85 */
+    --status-approved-bg: oklch(0.2813 0.0447 161.26); /* #123022 */
+    --status-rejected: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
+    --status-rejected-bg: oklch(0.2366 0.0432 29.84); /* #301612 */
+    --status-neutral: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --status-neutral-bg: oklch(0.2308 0.0143 266.95); /* #1A1D24 */
+    --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
+    --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --sidebar-primary-foreground: oklch(0.1514 0.0248 267.11); /* #070B16 */
+    --sidebar-accent: oklch(0.2052 0.0167 268.83); /* #14171F */
+    --sidebar-accent-foreground: oklch(1 0 0); /* #FFFFFF */
+    --sidebar-border: oklch(0.2846 0.0277 263.98); /* #232A38 */
+    --sidebar-ring: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --chart-1: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --chart-2: oklch(0.7577 0.1666 157.29); /* #30CF85 */
+    --chart-3: oklch(0.8053 0.1581 78.45); /* #F6B128 */
+    --chart-4: oklch(0.7364 0.1683 50.22); /* #FB8537 */
+    --chart-5: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
 }
 
 @theme inline {
     /* Fontes do sistema por padrão: a CSP não libera origem de terceiros.
        Para webfont, hospede em public/ e aponte em design/tokens.json. */
-    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    --font-heading: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --font-sans: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Space Grotesk', 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);

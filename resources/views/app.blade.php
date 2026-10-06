@@ -8,8 +8,10 @@
         <meta name="application-name" content="{{ config('app.name') }}">
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
 
+        {{-- Ícone da marca WCJ (docs/brand/logo/icone). --}}
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
         <title inertia>{{ config('app.name') }}</title>
 
