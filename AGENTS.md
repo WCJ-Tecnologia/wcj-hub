@@ -74,8 +74,9 @@ Atualizado em 2026-10-06.
 
 | Bloco | Estado |
 |---|---|
-| B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | PR `chore/b0-base` (rascunho) |
-| B1 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
+| B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | branch `feat/b1-nucleo` (Cauã), aguardando Verifier e PR |
+| B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
 
@@ -152,7 +153,9 @@ Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escop
 - Regra na Policy, `authorize()` em todo método; `abilities` no front só esconde botão. Ability nova: `User`, `HandleInertiaRequests`, `types/index.d.ts` e Policy no mesmo commit.
 - Policy fora de `app/Policies`: registrar com `Gate::policy()` no `AppServiceProvider`.
 - A IA conectada age como o usuário dono do token: mesmas Policies; escopo do token nunca passa do papel (IA5).
-- Hoje existe só a `UserPolicy` (admin) e o gate `view-audit-logs`; as demais nascem nos blocos (B1 em diante).
+- Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. As de Projetos nascem a partir do B2.
+- Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. Ability nova precisa estar em `AuditActionEnum::forAbility()`, senão a negação dá 500.
+- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientProjects`, implementado em Projetos (ADR-003): o Núcleo não lê `projects`.
 
 ## Regras de domínio
 
@@ -201,7 +204,9 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 
 - Papel: `RoleEnum` / `roles.slug`. Nunca o rótulo, nunca `user_type`.
 - Ativo: `->active()` / `isActive()` do `Deactivatable`. Nunca `whereNull('deactivated_at')` à mão.
-- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem).
+- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem). Negação: `AuditService::denied()`, chamado só pelo `authorize()` do Controller base. Limpar dado pessoal (anonimização): `AuditService::scrubPersonalData()`.
+- Desativar e reativar: ação própria na linha (`POST …/deactivate`, `…/reactivate`), nunca uma caixa "ativo" no formulário (D3 do B1).
+- CNPJ: `App\Rules\AlphanumericCnpj` (alfanumérico, gravado sem máscara e em maiúscula). País: `App\Support\Paises`.
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
 
