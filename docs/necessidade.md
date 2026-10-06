@@ -343,7 +343,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
   | Módulo | Ferramenta | Tipo | O que faz |
   |---|---|---|---|
   | Projetos | `minhas_tarefas` | leitura | Tarefas do usuário, com filtro por prazo e projeto |
-  | Projetos | `status_do_projeto` | leitura | Etapas, tarefas atrasadas e próximas datas previstas |
+  | Projetos | `status_do_projeto` | leitura | Etapas, tarefas atrasadas e próximas datas previstas. Só gestor e Administrador: nos indicadores o dev não vê nada que não seja dele (P54, 06/10) |
   | Projetos | `escrever_tarefa` | escrita | Cria o card no `Backlog`; só com título, ou com o modelo de requisição e os critérios (P17). Qualquer pessoa alocada (P56) |
   | Projetos | `mover_tarefa` | escrita | Muda a etapa (P13); pede origem e motivo quando a volta é retrabalho (P39) |
   | Projetos | `comentar_tarefa` | escrita | Adiciona comentário (P24) |

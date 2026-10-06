@@ -128,7 +128,7 @@ Lista de todas as conexões, com as colunas da seção 03 e a ação *Revogar*.
 - **Para que serve:** "Como está o projeto SGM?", "O que está atrasado na Wpay?".
 - **O que a pessoa informa:** o projeto (prefixo ou nome). Se o nome bater com mais de um projeto, a ferramenta devolve as opções.
 - **O que volta:** quantas tarefas em cada etapa, na ordem do quadro; as atrasadas (chave, título, dev, data prevista, atraso); as próximas datas previstas (chave, título, dev, data) (P53). As pausas ficam para `tarefas_paradas`, depois da fatia 1.
-- **Quem pode:** Administrador em todos os projetos; Gestor nos que gere; Desenvolvedor nos que está alocado (P5).
+- **Quem pode:** Administrador em todos os projetos; Gestor nos que gere. O Desenvolvedor recebe "negado": nos indicadores ele não vê nada que não seja dele (F7, decisão de 06/10); para ele existe `minhas_tarefas`.
 - **No Hub:** só leitura, com as contas de F7.
 - **Recusas:** projeto fora do acesso ou inexistente: "negado: projeto não encontrado no seu acesso", com registro na auditoria (G3); Comercial, que não entra em Projetos: também "negado", com registro na auditoria (C14); limite estourado.
 
@@ -219,7 +219,7 @@ Não se aplica na fatia 1: nenhuma regra pede exportação de conexões nem de c
 | Ver e revogar as conexões de todos | sim | não | não |
 | O que a conexão pode | Núcleo: ler; Projetos: ler e escrever | Núcleo: ler; Projetos: ler e escrever | Núcleo: ler; Projetos: ler e escrever |
 | `minhas_tarefas` | as próprias | as próprias | as próprias |
-| `status_do_projeto` | todos os projetos | nos que gere | nos que está alocado |
+| `status_do_projeto` | todos os projetos | nos que gere | não (negado; usa `minhas_tarefas`) |
 | `escrever_tarefa`, `comentar_tarefa`, `lancar_horas` | todos os projetos | nos que gere | nos que está alocado (P56, P24, P30) |
 | `mover_tarefa` | tudo | tudo nos que gere, inclusive pôr e tirar da sprint | nos que está alocado, a partir do To do e do Support; não põe nem tira da sprint (P13, P45) |
 

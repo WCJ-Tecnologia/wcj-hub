@@ -156,11 +156,11 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Dados.** Leitura de `task_stage_movements`, `time_entries`, `tasks`, `stage_roles`, `users.daily_hours`.
 
-**Telas.** `/projetos/{id}/cards/{chave}/historico`; `/projetos/{id}/indicadores` (por tarefa e por pessoa); `/indicadores/pessoas` (admin: todos; gestor: pessoas dos projetos dele). O dev vê os próprios números só dentro das próprias tarefas (P54).
+**Telas.** `/projetos/{id}/cards/{chave}/historico`; `/projetos/{id}/indicadores` (por tarefa e por pessoa); `/indicadores/pessoas` (admin: todos; gestor: pessoas dos projetos dele). O dev vê só a aba *Minhas tarefas e horas*: nos indicadores, nada que não seja dele (P54; `status_do_projeto` negado ao dev).
 
 **Regras.** P11 (lê o papel da etapa), P14, P15, P25, P26, P53, R16, R17 em `Projetos\Queries\StageTimeQuery`, `DelayQuery` (atraso = hoje − `due_on` − dias em etapa `paused`), `EffortQuery` (lançado em `time_entries` e, ao lado, dias úteis em etapa `development` × `daily_hours`), `PausedTasksQuery`, `ProductionBugsQuery`. Tarefa arquivada sai de prazo e atraso; as horas dela ficam.
 
-**Permissão.** `ProjectPolicy::view` para o projeto; `viewPeopleIndicators` (gestor e admin).
+**Permissão.** `ProjectPolicy::viewIndicators` (gestor do projeto e admin) para as abas do projeto e para `status_do_projeto`; `viewPeopleIndicators` (gestor e admin); o dev só `/minhas-tarefas` e a linha do tempo dos cards dos projetos dele.
 
 ### B8. Conexões de IA e as 6 ferramentas MCP
 

@@ -1,6 +1,6 @@
 # F7. Indicadores e histórico
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -14,7 +14,7 @@
 
 **Histórico do card.** Em qualquer card, o botão *Histórico* (F3) abre a linha do tempo daquele card. Ela mostra cada mudança de etapa: quem moveu, quando, de onde, para onde e por qual canal, a tela ou qual IA (P14, R14). Nas voltas para desenvolvimento aparecem a origem e o motivo do retrabalho (P39); nas pausas, o motivo (P15). Cada linha diz quanto tempo o card ficou na etapa. No topo, um resumo: etapa atual, data prevista, atraso, horas e tempo por etapa. É a cronologia que o Rafael hoje monta à mão para contar ao cliente.
 
-**Indicadores do projeto.** No quadro do projeto, o gestor abre *Indicadores*. A tela tem cinco abas: *Situação*, *Tempo por etapa*, *Horas*, *Por pessoa* e *Qualidade*. Ele escolhe a sprint (padrão: a sprint em andamento) e lê. Toda linha que cita uma tarefa abre o card; do card, o *Histórico*. O dev abre a mesma tela e vê duas abas: *Situação* e *Minhas tarefas e horas* (ver 10.2).
+**Indicadores do projeto.** No quadro do projeto, o gestor abre *Indicadores*. A tela tem cinco abas: *Situação*, *Tempo por etapa*, *Horas*, *Por pessoa* e *Qualidade*. Ele escolhe a sprint (padrão: a sprint em andamento) e lê. Toda linha que cita uma tarefa abre o card; do card, o *Histórico*. O dev abre a mesma tela e vê uma aba só: *Minhas tarefas e horas*. Nos indicadores, o dev não vê nada que não seja dele (decisão de 06/10); o quadro (F3) e a linha do tempo dos cards ele continua vendo.
 
 **Pela IA.** A pessoa pergunta ao assistente dela. `status_do_projeto` devolve o mesmo que a aba *Situação*, sem as pausas; `minhas_tarefas` devolve o mesmo que *Minhas tarefas e horas*, juntando os projetos da pessoa ([F8](f8-conexoes-de-ia.md)). As outras ferramentas de leitura destes dados ficam para depois da fatia 1 (IA14).
 
@@ -78,7 +78,7 @@ Cinco abas para o gestor e o Administrador, duas para o dev. O conteúdo de cada
 |---|---|---|---|
 | Histórico | Quem vê o card (seção 09) | Abre a linha do tempo do card. | |
 | Ver na auditoria | Administrador | Na linha do tempo, abre a auditoria filtrada no card ([F1](f1-nucleo.md)), com o que a linha do tempo não mostra: edições de campos, reestimativas, trocas de dev e de QA (G3). | |
-| Indicadores | Quem vê o projeto | Abre a tela de indicadores do projeto, na aba *Situação*. | |
+| Indicadores | Quem vê o projeto | Abre a tela de indicadores do projeto: gestor e Administrador na aba *Situação*; o dev, direto em *Minhas tarefas e horas*. | |
 | Abrir card | Quem vê o card | Em qualquer lista, a chave abre o card. | |
 | Trocar sprint e filtros | Quem vê a aba | Refaz as contas com o filtro escolhido (seção 05). | |
 
@@ -148,22 +148,23 @@ Não se aplica na fatia 1: nenhuma regra pede exportação, e o histórico de de
 |---|---|---|---|
 | Linha do tempo de um card | todos os projetos | nos projetos que gere | nos projetos em que está alocado (P5) |
 | Ver na auditoria, a partir do card | sim | não | não |
-| Aba *Situação* | todos os projetos | nos projetos que gere | nos projetos em que está alocado: é o que o quadro já mostra |
-| Abas *Tempo por etapa*, *Horas*, *Por pessoa*, *Qualidade* | todos os projetos | nos projetos que gere | não (P54; ver 10.2) |
+| Abas *Situação*, *Tempo por etapa*, *Horas*, *Por pessoa*, *Qualidade* | todos os projetos | nos projetos que gere | não: nos indicadores o dev não vê nada que não seja dele (P54, decisão de 06/10) |
 | Aba *Minhas tarefas e horas* | sim | sim | sim |
-| `status_do_projeto` pela IA | todos os projetos | nos projetos que gere | nos projetos em que está alocado |
+| `status_do_projeto` pela IA | todos os projetos | nos projetos que gere | não: recebe "negado" e usa `minhas_tarefas` (G4) |
 | `minhas_tarefas` pela IA | sim | sim | sim |
 
 A IA de cada pessoa tem exatamente estas permissões (G4). O Comercial não entra em Projetos (C14): o assistente dele recebe "negado".
 
 ## 10. Pontos a validar
 
-1. **Unidade do tempo por etapa.** P53 não diz a unidade. Proposta: dias úteis com uma casa decimal, contando o relógio só de segunda a sexta. A outra opção, horas de expediente (por exemplo, das 9h às 18h), pede um horário de trabalho que nenhuma regra define. Confirmar.
-2. **O que o dev vê.** P54 deixa o painel de produtividade para depois da v1, só para gestor e Administrador. Proposta para a fatia 1: o dev vê a linha do tempo dos cards dos projetos dele, a aba *Situação*, que repete o quadro, e *Minhas tarefas e horas*. Tempo por etapa, horas de toda a equipe, somas por pessoa e bugs de produção ficam para o gestor e o Administrador. Confirmar se o dev deveria ver também *Tempo por etapa* e *Qualidade*, que não falam de uma pessoa.
-3. **Qual carga entra no tempo em desenvolvimento.** R17 não diz. Proposta: a carga diária atual do dev atual da tarefa. A carga antiga não fica guardada (N3 muda dali para a frente), e o dev pode ter trocado no meio. Confirmar.
-4. **Previsto por pessoa.** As horas previstas são um total só, Dev + QA (P27). Somadas por pessoa, ficam todas com o dev, e o QA aparece só com as horas que lançou. Proposta: manter assim e dizer isso na tela. Confirmar.
-5. **Tarefa arquivada nas outras contas.** P26 tira a arquivada de prazo, atraso e capacidade e mantém as horas lançadas. Não fala do tempo por etapa nem das horas previstas. Proposta: sai das duas. Confirmar.
-6. **Atraso de tarefa já pronta.** P53 define atraso só para a tarefa que não chegou em pronto. Proposta: a tarefa pronta mostra a data prevista e a data em que ficou pronta, lado a lado, sem a palavra "atraso". O "entregou no prazo" por dev é o painel de produtividade (P54). Confirmar.
-7. **O botão *Histórico* do card.** O F1 diz que o *Histórico* de qualquer ficha abre a auditoria filtrada. Proposta: no card, *Histórico* abre esta linha do tempo para todos; o Administrador tem, dentro dela, *Ver na auditoria*. Ajustar o texto do F1 se aprovado.
-8. **Soma por pessoa entre projetos.** P53 pede "por pessoa". Proposta: na fatia 1, por pessoa dentro de cada projeto. A visão de um dev em todos os projetos é o painel de produtividade (P54). Confirmar.
-9. **Contagem de voltas no card.** A linha do tempo mostra cada volta com origem e motivo. Proposta: não mostrar o número de voltas no resumo do card, porque o indicador de retrabalho é depois da v1 (P54). Confirmar.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, no F8 e na `necessidade.md` (IA14).
+
+1. **Unidade do tempo por etapa.** OK: dias úteis com uma casa decimal.
+2. **O que o dev vê.** **Nos indicadores, nada que não seja dele**: só *Minhas tarefas e horas*. Sem *Situação*, *Tempo por etapa* e *Qualidade*; `status_do_projeto` pela IA fica para gestor e Administrador. O quadro (F3) e a linha do tempo dos cards dos projetos dele continuam visíveis, porque são o trabalho, não indicador.
+3. **Carga no tempo em desenvolvimento.** OK: a carga atual do dev atual.
+4. **Previsto por pessoa.** OK: fica com o dev; a tela diz isso.
+5. **Tarefa arquivada.** OK: sai do tempo por etapa e das horas previstas; as lançadas ficam.
+6. **Atraso de tarefa pronta.** OK: data prevista e data de pronto lado a lado, sem "atraso".
+7. **Botão *Histórico* do card.** OK: abre a linha do tempo; o Administrador tem *Ver na auditoria*. F1 ajustado.
+8. **Soma por pessoa entre projetos.** OK: por pessoa dentro de cada projeto.
+9. **Contagem de voltas no card.** OK: não mostrar no resumo.
