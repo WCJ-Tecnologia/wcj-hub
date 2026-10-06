@@ -410,6 +410,16 @@ qa_id                 fk users              null      restrict  o QA da tarefa, 
 estimated_hours       hours                 null      horas previstas da tarefa inteira, Dev + QA (P27):
                                                       opcionais ao criar; o gestor define ou valida na
                                                       montagem da sprint. Reestimar fica em audit_logs
+proposed_hours        hours                 null      reestimativa proposta pelo dev, à espera do gestor
+                                                      ou admin (P27, 06/10). Aprovar copia para
+                                                      estimated_hours e limpa; recusar só limpa. O antes
+                                                      fica em audit_logs
+position              int unsigned          not null  default 0
+                                                      ordem manual dentro da coluna (P13, 06/10): card
+                                                      novo = maior position da coluna + 1; arrastar para
+                                                      cima ou para baixo renumera os da coluna. A ordem
+                                                      padrão da tela (prioridade, depois chave) não lê
+                                                      esta coluna
 title                 varchar(200)          not null
 -- Documento de requisição (P17)
 story_as              varchar(200)          null                ("Sendo")
@@ -442,6 +452,7 @@ requested_at          datetime              null                (quando o pedido
 archived_at           datetime              null
 archive_reason        varchar(500)          null                motivo obrigatório ao arquivar
 check: estimated_hours is null or estimated_hours > 0
+check: proposed_hours is null or proposed_hours > 0
 check: (archived_at is null) = (archive_reason is null)
 check: (cross_tested_by is null) = (cross_tested_at is null)
 unique: (project_id, number)
@@ -926,6 +937,13 @@ Mudou:
 - packages: sai package_status_id; entra homologation_started_at (R10).
 - ai_authorizations: os escopos crm:* ficam para a v2.
 - notifications: ganha o canal mail nas duas notificações de Projetos (R3, P22). Sem tabela nova.
+Decisões do Lucas Scholz na aprovação do F3 (06/10, noite), duas colunas aditivas em tasks:
+- tasks.position (int unsigned, not null, default 0): ordem manual dentro da coluna, quando a pessoa
+  troca o quadro de "por prioridade" (padrão) para "manual" (P13).
+- tasks.proposed_hours (hours, null): reestimativa proposta pelo dev, que o gestor ou o admin aprova
+  ou recusa (P27). Sem tabela nova; o antes e o depois ficam em audit_logs.
+- Sem coluna: volta por engano = movimento sem rework_origin_id (P39); coluna de pronto mostra só a
+  sprint aberta e a última encerrada (P13); comentário editado ou excluído pelo autor (P24).
 Ficou como aprovado: todo o resto, inclusive as colunas geradas testadas no MySQL 8.4 (T1, T9), o
 contador atômico (T4), MySQL nos testes (T6), audit_logs.ip_address (T8) e a semente dos domínios.
 Contagem: 41 − 9 (CRM) − 1 (service_types) − 1 (task_validations) − 1 (sprint_members) − 1

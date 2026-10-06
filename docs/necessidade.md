@@ -219,7 +219,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **P10** Cada projeto tem o próprio quadro. Padrão: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` e `Support`, em inglês. **Padrão.**
 - **P11** O gestor renomeia, cria, remove e reordena etapas. Toda etapa tem um papel (fila, sprint, desenvolvimento, code review, teste, pronto, pausa ou suporte); os indicadores leem o papel, não o nome. As etapas de fila (`Backlog`), sprint (`To do`) e suporte (`Support`) existem sempre, uma de cada, porque o sistema leva o card para elas sozinho: o gestor renomeia e reordena, mas não remove nem duplica. Também existe sempre pelo menos uma etapa de desenvolvimento (`Doing`), para onde a reprovação na homologação devolve o card (P43).
 - **P12** Para remover uma etapa que tem tarefas, é preciso dizer para onde elas vão.
-- **P13** Qualquer pessoa alocada move o card entre as etapas, a partir do `To do`. Pôr e tirar da sprint é do gestor e do Administrador (P45).
+- **P13** Qualquer pessoa alocada move o card entre as etapas, a partir do `To do`. Pôr e tirar da sprint é do gestor e do Administrador (P45). Dentro da coluna, a ordem padrão é por prioridade e, na mesma prioridade, a chave mais antiga primeiro; quem quiser troca o quadro para **ordem manual** e arrasta o card para cima e para baixo (decisão de 06/10). Na coluna de pronto, o quadro mostra só os cards da sprint aberta e da última encerrada; os mais antigos aparecem só se a pessoa pedir (decisão de 06/10).
 - **P14** Toda mudança de etapa grava quem, quando, de onde e para onde. **Fixa.**
 - **P15** Ir para `Paused` pede motivo, e o tempo parado conta à parte. **Padrão** (o gestor pode desligar o motivo).
 
@@ -233,7 +233,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).
 - **P22** Quem é definido como dev ou QA da tarefa recebe aviso **no sistema e por e-mail**; quando a tarefa volta para desenvolvimento (P39), o dev dela também recebe os dois (R3). São os únicos avisos de Projetos na v1.
 - **P23** A tarefa aceita nenhum, um ou vários PRs, colados como link.
-- **P24** A tarefa tem anexos e comentários.
+- **P24** A tarefa tem anexos e comentários. O autor edita e exclui o próprio comentário, com o antes no histórico; qualquer alocado remove anexo; tamanho e tipos de anexo são os do template (decisão de 06/10).
 - **P25** Bug achado em produção vira tarefa nova, ligada à original, do mesmo projeto. Conta como indicador de qualidade do projeto, não como retrabalho do dev.
 - **P26** O gestor e o Administrador tiram qualquer card do quadro, a qualquer momento:
   - o card **nunca usado** (não saiu do `Backlog` e não tem horas, comentários, anexos nem PRs) pode ser **excluído** de verdade;
@@ -244,7 +244,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.4 Horas e prazo
 
-- **P27** Horas previstas: **um total só, Dev + QA**, opcionais ao criar. Na montagem da sprint, o gestor, com o diretor de tecnologia, define ou valida as horas. Tarefa sem horas pode entrar na sprint: só fica sem data prevista. Reestimar fica no histórico.
+- **P27** Horas previstas: **um total só, Dev + QA**, opcionais ao criar. Na montagem da sprint, o gestor, com o diretor de tecnologia, define ou valida as horas. Tarefa sem horas pode entrar na sprint: só fica sem data prevista. O dev pode **propor uma reestimativa** a qualquer momento; ela só vale, e só mexe na data prevista (P28), quando o gestor ou o Administrador aprova (decisão de 06/10). Gestor e Administrador reestimam direto. Reestimar fica no histórico.
 - **P28** A **data prevista** é calculada quando a tarefa entra em `Doing` pela primeira vez: horas previstas ÷ carga diária do dev, em dias úteis de segunda a sexta. Só muda se o gestor reestimar; nem retrabalho nem pausa empurram a data. Sem dev ou sem horas, a tarefa fica sem data prevista até ter os dois, e a conta parte da primeira entrada em `Doing`.
   Exemplo: 16 h com um dev de 8 h/dia = 2 dias úteis; com um dev de 4 h/dia = 4 dias úteis.
 - **P29** Feriados não contam na v1.
@@ -263,7 +263,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.6 Retrabalho
 
-- **P39** Toda volta para desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA ou homologação) e **motivo**.
+- **P39** Toda volta para desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA ou homologação) e **motivo**. Exceção: quem move pode marcar que a volta **foi engano** (card arrastado para a coluna errada); aí o movimento fica gravado, mas sem origem nem motivo, e não conta retrabalho (decisão de 06/10).
 - **P40** Os motivos são uma lista geral, editada pelo Administrador (G7, R11), sempre com "outro" com texto. Nasce com: ajuste visual, regra de negócio, erro/bug, requisito incompleto ou mal documentado, outro.
 
 #### 2.7 Pacote (versão)

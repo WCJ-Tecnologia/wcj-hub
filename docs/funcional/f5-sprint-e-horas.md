@@ -64,7 +64,7 @@ Exemplo do fim: início terça 06/10/2026 com duração de 10 dias úteis. Conta
 - dev de 8 h/dia: 2 dias úteis (quinta e sexta), data prevista sexta 09/10/2026;
 - dev de 4 h/dia: 4 dias úteis (08, 09, 12 e 13/10), data prevista terça 13/10/2026. O dia 12/10 é feriado nacional, mas conta como dia útil na v1 (P29).
 
-A data só muda quando alguém reestima: o sistema refaz a conta com as horas novas, a partir da mesma primeira entrada em desenvolvimento (P28). Pausa e retrabalho não empurram a data (P28). Mudar a carga diária do dev não mexe nas datas já calculadas (N3). Sem dev, sem horas ou com dev sem carga diária, a data fica vazia (P28, N3); quando a tarefa passa a ter os dois, a data é calculada contando da primeira entrada em `Doing`, que pode já ter passado (P28).
+A data só muda quando alguém reestima: o sistema refaz a conta com as horas novas, a partir da mesma primeira entrada em desenvolvimento (P28). Reestimar é do gestor e do Administrador; o dev propõe um valor novo na ficha do card e a data só muda quando a proposta é aprovada (P27; F3). Na tela da sprint, as tarefas com proposta pendente aparecem com a marca "reestimativa proposta", para o gestor decidir ali. Pausa e retrabalho não empurram a data (P28). Mudar a carga diária do dev não mexe nas datas já calculadas (N3). Sem dev, sem horas ou com dev sem carga diária, a data fica vazia (P28, N3); quando a tarefa passa a ter os dois, a data é calculada contando da primeira entrada em `Doing`, que pode já ter passado (P28).
 
 ### Lançar horas (no card e em *Minhas horas*)
 

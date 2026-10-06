@@ -1,6 +1,6 @@
 # F3. Quadro e card
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -49,7 +49,7 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 | Prioridade | lista fixa: Baixa, Normal, Alta, Urgente | sim | Normal | (P19) |
 | Dev | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só. Pode ficar vazio em qualquer coluna. Definir avisa a pessoa (P20, P22). Quem sai do projeto deixa o card sem dev (P5). |
 | QA | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só, opcional. Definir avisa a pessoa (P20, P22). |
-| Horas previstas | horas com decimais, maior que 0 | não | vazio | Total da tarefa, Dev + QA (P27). Quem define ou valida é o gestor, na montagem da sprint (F5). Mudar o valor é reestimar e recalcula a data prevista (P28; ver 10.4). |
+| Horas previstas | horas com decimais, maior que 0 | não | vazio | Total da tarefa, Dev + QA (P27). Quem define ou valida é o gestor, na montagem da sprint (F5). Gestor e Administrador mudam direto; o dev **propõe** um valor novo, que fica ao lado como "Proposta: 12 h, aguardando o gestor" até ser aprovado ou recusado (P27). Só a aprovação é reestimar e recalcula a data prevista (P28). |
 | Sendo | texto, até 200 | não | | Documento de requisição, bloco recolhido (P17). |
 | Quero | texto longo | não | | Idem. |
 | Para | texto longo | não | | Idem. |
@@ -97,8 +97,9 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
-| Origem | lista fixa: Code review, Teste cruzado, QA, Homologação | sim | | (P39) |
-| Motivo | lista geral: Ajuste visual, Regra de negócio, Erro / bug, Requisito incompleto ou mal documentado, Outro, e o que o Administrador cadastrar | sim | | Só itens ativos (P40, G7). |
+| Foi engano | caixa de marcar: "Arrastei para a coluna errada; não é retrabalho" | não | desmarcada | Marcada, esconde origem e motivo; o movimento fica gravado sem eles e não conta retrabalho (P39). |
+| Origem | lista fixa: Code review, Teste cruzado, QA, Homologação | sim, salvo engano | | (P39) |
+| Motivo | lista geral: Ajuste visual, Regra de negócio, Erro / bug, Requisito incompleto ou mal documentado, Outro, e o que o Administrador cadastrar | sim, salvo engano | | Só itens ativos (P40, G7). |
 | Texto do motivo | texto, até 500 | sim quando o motivo é "Outro" | | (P40) |
 
 ### Diálogo de arquivar
@@ -109,7 +110,7 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 ## 03. Listagem
 
-**O quadro.** Uma coluna por etapa ativa do projeto, na ordem de F2. No título de cada coluna, o nome e a contagem de cards nela. Dentro da coluna, os cards ficam por prioridade (Urgente primeiro) e, na mesma prioridade, pela chave, do mais antigo para o mais novo (ver 10.1).
+**O quadro.** Uma coluna por etapa ativa do projeto, na ordem de F2. No título de cada coluna, o nome e a contagem de cards nela. Dentro da coluna, a ordem padrão é por prioridade (Urgente primeiro) e, na mesma prioridade, pela chave, do mais antigo para o mais novo. O seletor *Ordem: Prioridade | Manual* no alto do quadro troca para a ordem manual, em que a pessoa arrasta o card para cima e para baixo e o quadro guarda a posição (P13). A escolha do seletor é de cada pessoa, lembrada no navegador. Na coluna de pronto aparecem só os cards da sprint aberta e da última encerrada; os mais antigos vêm com o filtro *Mostrar prontos antigos* (P13).
 
 **O que aparece em cada card do quadro:**
 
@@ -142,14 +143,18 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 | Arrastar e soltar (mover) | Qualquer alocado, a partir do `To do` e do `Support` | Leva o card para a coluna escolhida e grava o movimento (P13, P14). Na ficha, *Mover para…* faz o mesmo. Pela IA: `mover_tarefa`. | Pausa e retrabalho abrem os diálogos abaixo; o resto move direto. |
 | Pôr na sprint | Gestor do projeto, Administrador | Arrastar do `Backlog` para o `To do`. O diálogo da sprint é F5 (P45). | Dev que tenta: "Só o gestor do projeto e o Administrador põem card na sprint" (P45). |
 | Levar para o `Backlog` | Gestor do projeto, Administrador | Tira o card da sprint, se estiver numa, e o leva ao `Backlog`. Não conta retrabalho (P45; F5). | Dev que tenta: mesma recusa. |
+| Reordenar na coluna | Qualquer alocado | Só com *Ordem: Manual*: arrasta o card para cima ou para baixo e a posição fica guardada para todos (P13). Com *Ordem: Prioridade*, o arraste vertical não faz nada. | |
 | Ir para a pausa | Qualquer alocado | Pede o motivo, quando o projeto exige (P15). | Cancelar o diálogo deixa o card onde estava. |
-| Devolver (retrabalho) | Qualquer alocado | De `Code-review`, `In test` ou `Done` para `To do` ou `Doing`: pede origem e motivo; o card se move do mesmo jeito e conta um ciclo (P39, P40). Limpa a marca de teste cruzado e volta o roteiro para A testar (P34, P37; F4). Avisa o dev (P22). Pela IA: `mover_tarefa`, com origem e motivo. | Cancelar o diálogo deixa o card onde estava (ver 10.6). |
+| Devolver (retrabalho) | Qualquer alocado | De `Code-review`, `In test` ou `Done` para `To do` ou `Doing`: pede origem e motivo; o card se move do mesmo jeito e conta um ciclo (P39, P40). Com *Foi engano* marcado, move sem origem nem motivo e não conta (P39). Limpa a marca de teste cruzado e volta o roteiro para A testar (P34, P37; F4). Avisa o dev (P22). Pela IA: `mover_tarefa`, com origem e motivo, ou com a marca de engano. | Cancelar o diálogo deixa o card onde estava. |
 
 ### Na ficha
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Editar campos | Qualquer alocado | Título, tipo, área, prioridade, dev, QA, requisição, tarefa de origem (P17 a P20, P25). Horas previstas: ver 10.4. | Ao definir dev ou QA: "Fulano será avisado no sistema e por e-mail" (P22). |
+| Editar campos | Qualquer alocado | Título, tipo, área, prioridade, dev, QA, requisição, tarefa de origem (P17 a P20, P25). | Ao definir dev ou QA: "Fulano será avisado no sistema e por e-mail" (P22). Quem se define a si mesmo não recebe aviso. |
+| Horas previstas: definir ou reestimar | Gestor do projeto, Administrador | Grava o valor; se a data prevista já existe, recalcula (P27, P28). | "A data prevista vai de DD/MM para DD/MM. Confirmar?" |
+| Horas previstas: propor | Desenvolvedor alocado | Grava a proposta ao lado do valor atual; o card ganha a marca "reestimativa proposta" no quadro e na lista de tarefas da sprint (P27). | |
+| Aprovar ou recusar a proposta | Gestor do projeto, Administrador | Aprovar passa a proposta a valer e recalcula a data prevista; recusar só limpa a proposta. O antes fica no histórico (P27, P28). | |
 | Adicionar critério / subitem | Qualquer alocado | Novo `CA_n` no fim, ou `CA_n.m` no fim do pai (P17, T9). | |
 | Editar critério | Qualquer alocado | Muda a descrição. | Já testado: "Este critério volta para A testar" (P37). |
 | Excluir critério | Qualquer alocado | Só enquanto o critério, e cada subitem dele, está A testar (T1). Os subitens saem junto. O número não volta a ser usado. | "Excluir CA_3? O número não será reaproveitado." Testado: o botão não aparece (ver 10.9). |
@@ -180,7 +185,7 @@ As ferramentas chamam a mesma regra da tela e têm exatamente a permissão da pe
 
 | Onde | Busca | Filtros |
 |---|---|---|
-| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev ou QA); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas, sem os prontos de sprints encerradas); marcas: Atrasado, Em pausa, Com retrabalho, Suporte; *Mostrar prontos de sprints encerradas*; *Arquivados* (troca o quadro pela lista de arquivados) |
+| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev ou QA); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas); marcas: Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta; *Mostrar prontos antigos* (prontos de sprints anteriores à última encerrada, P13); *Arquivados* (troca o quadro pela lista de arquivados); seletor *Ordem: Prioridade | Manual* (P13) |
 | Tarefa de origem (na ficha) | chave ou título | só cards do mesmo projeto |
 | Quem pediu (card de suporte) | nome ou e-mail | só contatos ativos do cliente do projeto |
 
@@ -229,18 +234,20 @@ Não se aplica na fatia 1: nenhuma regra pede exportar o quadro ou o card (P55 f
 
 ## 10. Pontos a validar
 
-1. **Ordem dos cards na coluna.** O Trello deixa arrastar para cima e para baixo; nenhuma regra pede isso, e o banco não guarda posição dentro da coluna. Proposta: prioridade (Urgente primeiro) e, dentro dela, a chave mais antiga primeiro. Ordem manual voltaria com um campo novo, se alguém pedir (G5).
-2. **Soltar um card do `Backlog` direto em `Doing`.** No Wpay, 10 de 21 saídas do `Backlog` pularam a Esteira. Proposta: o gestor solta onde quiser; o sistema põe o card na sprint (vai ao `To do`) e em seguida o move para a coluna escolhida, e o histórico mostra os dois movimentos.
-3. **`Done` sem fim.** Com o tempo, a coluna `Done` acumula centenas de cards. Proposta: por padrão o quadro esconde os prontos de sprints encerradas; o filtro *Mostrar prontos de sprints encerradas* traz de volta.
-4. **Quem muda as horas previstas.** P27 deixa as horas opcionais ao criar, e P28 diz que a data prevista só muda "se o gestor reestimar". Proposta: qualquer alocado preenche enquanto o card está no `Backlog`; dali em diante, só o gestor e o Administrador. Confirmar se o dev pode reestimar depois de começar.
-5. **Aviso para si mesmo.** Quando a pessoa se define como dev ou QA, recebe e-mail sobre o que ela mesma fez. Proposta: não avisar; o aviso existe para quem não sabia (item 20 da ata).
-6. **Volta por engano.** P39 diz que toda volta conta retrabalho, e o movimento não se apaga (P14). Proposta: cancelar o diálogo desfaz o arraste; confirmada a volta, ela conta, mesmo que tenha sido engano.
-7. **Trocar o tipo para ou de Suporte.** O card de suporte nasce pela coluna `Support`. Proposta: num card comum, escolher Suporte pede quem pediu, por onde e quando, sem trocar de coluna; trocar de Suporte para outro tipo apaga esses três campos (o antes fica no histórico).
-8. **Dev cria card de suporte?** P52 diz "o gestor registra"; P56 deixa qualquer alocado criar card, mas no `Backlog`. Proposta: card de suporte só pelo gestor e pelo Administrador, como escrito na P52. Se o dev atende cliente direto, abrir para qualquer alocado.
-9. **Excluir critério "não testado".** O banco diz "só enquanto não testado". Depois de um retrabalho todos voltam para A testar (P37). Proposta: vale o resultado atual; com A testar, o critério pode ser excluído, mesmo que já tenha sido testado antes.
-10. **Comentário: editar e excluir.** P24 não diz. Proposta: o autor edita e exclui o próprio comentário; o antes fica no histórico (G3). Gestor e Administrador não mexem no comentário dos outros.
-11. **Anexo: tamanho e tipos.** Nenhuma regra limita. Proposta: o limite do template `ai-systems`, e qualquer alocado remove anexo.
-12. **Card arquivado.** Proposta: a ficha continua abrindo pelo filtro *Arquivados* e pela busca da chave, e nada nela fica bloqueado; ele só não aparece no quadro nem nas contas (P26).
-13. **Quadro de projeto encerrado.** P7 só proíbe card novo. Proposta: mover, comentar e anexar seguem funcionando, para fechar o que ficou aberto.
-14. **Tipo do bug de produção.** Seria natural o card com tarefa de origem já nascer como Correção de bug, mas esse item da lista não tem marca que o código reconheça. Proposta: na fatia 1 a pessoa escolhe o tipo à mão; pré-preencher pede um ajuste pequeno na semente da lista.
-15. **IA pondo card na sprint sem sprint aberta.** Na tela, o diálogo propõe criar a sprint (P45). Proposta: pela IA, o Service cria a sprint com os mesmos valores propostos e segue, como a tela faria com *Confirmar* (detalhe em F5 e F8).
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P13, P24, P27, P39) e no `banco.txt` (duas colunas aditivas em `tasks`: posição manual e reestimativa proposta).
+
+1. **Ordem dos cards na coluna.** Padrão por prioridade; **ordem manual quando a pessoa quiser** (seletor no quadro, posição guardada; P13).
+2. **Soltar do `Backlog` direto em `Doing`.** OK: entra na sprint e segue para a coluna escolhida, com os dois movimentos no histórico.
+3. **`Done` sem fim.** A coluna de pronto mostra os cards da **sprint aberta e da última encerrada**; da penúltima para trás, só pelo filtro *Mostrar prontos antigos* (P13).
+4. **Horas previstas.** O dev **pode reestimar: propõe, e o gestor ou o Administrador aprova** (P27). Gestor e Administrador mudam direto.
+5. **Aviso para si mesmo.** OK: quem se define como dev ou QA não recebe aviso.
+6. **Volta por engano.** **Não conta retrabalho**: a caixa *Foi engano* no diálogo grava o movimento sem origem nem motivo (P39).
+7. **Trocar o tipo para ou de Suporte.** OK.
+8. **Dev cria card de suporte?** OK: só gestor e Administrador (P52).
+9. **Excluir critério "não testado".** OK: vale o resultado atual.
+10. **Comentário.** OK: o autor edita e exclui o próprio; o antes fica no histórico (P24).
+11. **Anexo.** OK: limite do template; qualquer alocado remove (P24).
+12. **Card arquivado.** OK: ficha continua abrindo; só sai do quadro e das contas.
+13. **Quadro de projeto encerrado.** OK: mover, comentar e anexar seguem (P7).
+14. **Tipo do bug de produção.** OK: escolhido à mão na fatia 1.
+15. **IA pondo card na sprint sem sprint aberta.** OK: o Service cria a sprint proposta e segue.
