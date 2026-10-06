@@ -713,9 +713,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] `docs/adr/004-ficha-do-cliente.md`
-- [ ] Smoke e2e com axe
-- [ ] Gate check passes: Build
+- [x] `docs/adr/004-ficha-do-cliente.md`
+- [x] Smoke e2e com axe
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

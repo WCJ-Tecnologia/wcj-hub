@@ -30,7 +30,12 @@ const CLIENT: Record<string, Entry> = {
     inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
-const SETS = { user: USER, client: CLIENT };
+const CONTACT: Record<string, Entry> = {
+    active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT };
 
 /**
  * Status is never communicated by colour alone — every pill carries an icon and

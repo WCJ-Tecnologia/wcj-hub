@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
 import { BRASIL } from '@/components/clients/client-form-dialog';
@@ -27,7 +28,7 @@ export const formatDocument = (row: Pick<ClientRow, 'country' | 'document'>) =>
     row.document === null ? '—' : row.country === BRASIL ? maskAlphanumericCnpj(row.document) : row.document;
 
 /** "em DD/MM/AAAA por Fulano" (F1 §02, Situação). */
-const deactivation = (row: ClientRow) =>
+export const deactivation = (row: Pick<ClientRow, 'deactivated_at' | 'deactivated_by'>) =>
     `em ${row.deactivated_at?.slice(0, 10) ?? '—'}${row.deactivated_by ? ` por ${row.deactivated_by}` : ''}`;
 
 export const situation = (row: ClientRow) => (row.active ? 'Ativo' : `Desativado ${deactivation(row)}`);
@@ -36,7 +37,9 @@ export const situation = (row: ClientRow) => (row.active ? 'Ativo' : `Desativado
 const muted = (row: ClientRow) => cn(!row.active && 'text-muted-foreground');
 
 const NameLink = ({ row, className }: { row: ClientRow; className?: string }) => (
-    <p className={cn('font-medium', muted(row), className)}>{row.name}</p>
+    <Link href={`/admin/clients/${row.id}`} className={cn('font-medium underline-offset-4 hover:underline', muted(row), className)}>
+        {row.name}
+    </Link>
 );
 
 /** Lista de clientes com as colunas do F1 §03; tabela no desktop, cards no celular. */

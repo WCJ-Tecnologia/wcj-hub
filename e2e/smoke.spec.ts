@@ -45,6 +45,23 @@ test('@smoke o modal de cliente passa no axe', async ({ page, axe }) => {
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
 });
 
+/** A ficha do cliente (ADR-004), aberta pelo nome na lista: a WCJ existe em toda instalação (N7). */
+async function openWcjSheet(admin: AdminPage) {
+    await admin.goto('/admin/clients');
+    await admin.page.getByRole('link', { name: 'WCJ Tecnologia' }).first().click();
+    await expect(admin.heading).toHaveText('WCJ Tecnologia');
+}
+
+test('@smoke a ficha do cliente renderiza sem erro e passa no axe', async ({ page, axe }) => {
+    const admin = new AdminPage(page);
+    await openWcjSheet(admin);
+
+    await expect(page.getByRole('heading', { name: 'Contatos' })).toBeVisible();
+
+    const results = await axe().analyze();
+    expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+});
+
 /**
  * Tema escuro: todo token tem valor nos dois temas e o gate de contraste vale
  * para os dois. A classe é aplicada como o anti-FOUC do app.blade.php faz.
@@ -77,6 +94,17 @@ test.describe('@smoke tema escuro', () => {
 
         await page.getByRole('button', { name: 'Novo usuário' }).first().click();
         await expect(admin.dialog).toBeVisible();
+
+        const results = await axe().analyze();
+        expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
+    });
+
+    test('@smoke a ficha do cliente passa no axe em dark mode', async ({ page, axe }) => {
+        const admin = new AdminPage(page);
+        await openWcjSheet(admin);
+
+        await page.evaluate(() => document.documentElement.classList.add('dark'));
+        await expect(page.locator('html')).toHaveClass(/dark/);
 
         const results = await axe().analyze();
         expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);

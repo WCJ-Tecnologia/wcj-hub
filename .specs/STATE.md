@@ -28,6 +28,14 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 - **Date**: 2026-10-06
 - **Status**: active (aceita por Cauã; a confirmar pelo Lucas Scholz no PR do B1)
 
+### AD-004
+- **Decision**: A ficha do cliente é uma página própria (`pages/admin/clients/show.tsx`, `GET /admin/clients/{client}`) com as seções Dados e Contatos; criar e editar o cliente seguem no modal da lista. Ver `docs/adr/004-ficha-do-cliente.md`.
+- **Reason**: o cliente tem mais de um bloco (dados e contatos) e o F1 cria o contato a partir do cliente; o gabarito de UI pede página com ADR nesse caso (D7 do design do B1).
+- **Trade-off**: duas telas para o cliente; sem componente de abas, as "abas" do F1 são seções da página até haver um terceiro bloco.
+- **Scope**: `ClientController::show`, a ficha e a fase de contatos do B1, que põe *Novo contato* e as ações do contato nela.
+- **Date**: 2026-10-06
+- **Status**: active (aceita por Cauã; a confirmar pelo Lucas Scholz no PR do B1)
+
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.

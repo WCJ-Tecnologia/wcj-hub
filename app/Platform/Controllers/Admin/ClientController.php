@@ -58,7 +58,6 @@ class ClientController extends Controller
             // F1 §09: contatos só para o Administrador e o gestor dos projetos do cliente, a mesma
             // regra de editar o cliente. A ContactPolicy (T15) assume esta decisão.
             'contacts' => $user->can('update', $client) ? $this->contacts($client) : null,
-            'countries' => Paises::opcoes(),
         ]);
     }
 

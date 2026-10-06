@@ -297,7 +297,7 @@ class ClientControllerTest extends TestCase
 
         $this->actingAs($this->admin)->get("/admin/clients/{$client->id}")
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('admin/clients/show', false)
+            ->assertInertia(fn ($page) => $page->component('admin/clients/show')
                 ->where('client.name', 'Mercado')
                 ->where('client.country_name', 'Brasil')
                 ->where('client.document', '38614817000122')
