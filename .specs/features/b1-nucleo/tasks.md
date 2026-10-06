@@ -212,12 +212,12 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Gestor por `manager_id` e gestor alocado em `project_members` contam; dev alocado não conta; projeto de outro cliente não conta
-- [ ] `openProjectsCount` conta só `finished_at` nulo
-- [ ] `docs/adr/003-nucleo-consulta-projetos-por-contrato.md` e `AD-003` no `.specs/STATE.md`
-- [ ] A7 e A9 verdes
-- [ ] Testes em `tests/Feature/Nucleo/ClientProjectsTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Gestor por `manager_id` e gestor alocado em `project_members` contam; dev alocado não conta; projeto de outro cliente não conta
+- [x] `openProjectsCount` conta só `finished_at` nulo
+- [x] `docs/adr/003-nucleo-consulta-projetos-por-contrato.md` e `AD-003` no `.specs/STATE.md`
+- [x] A7 e A9 verdes
+- [x] Testes em `tests/Feature/Nucleo/ClientProjectsTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

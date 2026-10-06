@@ -236,7 +236,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Pending |
 | NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | Pending |
 | NUC-05 | P1: Clientes — criar e validar CNPJ (AC 1–4, 14) | Design | In Progress |
-| NUC-06 | P1: Clientes — gestor cria e edita pelo Service (AC 5–8) | Design | Pending |
+| NUC-06 | P1: Clientes — gestor cria e edita pelo Service (AC 5–8) | Design | In Progress |
 | NUC-07 | P1: Clientes — desativar, WCJ, excluir, lista (AC 9–13) | Design | Pending |
 | NUC-08 | P1: Contatos — criar, aviso de e-mail, gestor (AC 1–6, 13) | Design | Pending |
 | NUC-09 | P1: Contatos — desativar, excluir (AC 7–9) | Design | Pending |
