@@ -1,0 +1,34 @@
+# Régua dos testes técnicos (skill wcj-testes): mudança aqui só com aprovação de quem responde
+# pela régua do projeto (o dev sênior ou tech lead definido no escopo).
+# 1. Troque @dono-da-regua pelo usuário do GitHub dessa pessoa.
+# 2. Fique só com o bloco da stack do projeto e copie para .github/CODEOWNERS.
+# 3. Só vale com "Require review from Code Owners" ligado na proteção do branch main
+#    (configuração de dono da organização).
+# Os scripts test:arquitetura, test:banco e test:benchmark (composer.json, package.json) não
+# entram aqui, para não travar toda troca de dependência: o testes.sh da skill acusa quando
+# eles mudam.
+
+# ---- Laravel ----
+# arquitetura: regras, exceções (rotas públicas) e dívida
+/tests/Arch/                                @dono-da-regua
+/phpunit.xml                                @dono-da-regua
+# banco de verdade: imagem do banco dos testes, trava e corrida
+/tests/bootstrap.php                        @dono-da-regua
+/tests/Support/                             @dono-da-regua
+# benchmark: volume, orçamentos, mínimo de linhas e a referência
+/tests/Benchmark/                           @dono-da-regua
+
+# ---- TypeScript (Next, Nest) ----
+/.dependency-cruiser.cjs                    @dono-da-regua
+/.dependency-cruiser-known-violations.json  @dono-da-regua
+/eslint.config.*                            @dono-da-regua
+/eslint.divida.mjs                          @dono-da-regua
+/testes/banco-*.mjs                         @dono-da-regua
+/bench/                                     @dono-da-regua
+
+# ---- carga: perfis, cenários e limiares de aborto ----
+/testes/carga/                              @dono-da-regua
+
+# ---- o CI que roda tudo isso, e este arquivo ----
+/.github/workflows/                         @dono-da-regua
+/.github/CODEOWNERS                         @dono-da-regua

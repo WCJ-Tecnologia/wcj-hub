@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP (Pint + PHPUnit on MySQL 8.4)
+    runs-on: ubuntu-latest
+    # Tests run on MySQL 8, never SQLite (ADR-002, D-GER-22): generated columns, CHECK,
+    # LAST_INSERT_ID(expr) and the accent-insensitive unique only exist there.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: wcj_hub_test
+          MYSQL_USER: wcj_hub
+          MYSQL_PASSWORD: wcj_hub_local
+          MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uwcj_hub -pwcj_hub_local"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, intl, gd
+          coverage: none
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Pint
+        run: composer lint
+      - name: PHPUnit on MySQL 8.4 (.env.testing; includes the Arquitetura suite)
+        run: php artisan test
+      - name: Proof that the suite ran on MySQL
+        run: |
+          php -r '$p = new PDO("mysql:host=127.0.0.1;port=3306;dbname=wcj_hub_test", "wcj_hub", "wcj_hub_local");
+            $v = $p->query("select version()")->fetchColumn();
+            $n = $p->query("select count(*) from migrations")->fetchColumn();
+            echo "MySQL {$v}, {$n} migrations\n"; exit($n > 0 ? 0 : 1);'
+
+  js:
+    name: JS (typecheck + lint + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - name: Agent guard hooks
+        run: npm run test:guard
+      - name: Skills (copies in .claude, .cursor and .codex match .ai/skills; installer and specs gate tests)
+        run: python3 --version && npm run test:skills
+      - name: Specs gate (.specs/ checked by the tlc-spec-driven validators)
+        run: npm run specs:check
+
+  gitleaks:
+    name: Secrets scan (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A gitleaks-action exige licença paga em repositório de organização; o binário é livre.
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          base=https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}
+          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing "gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # The .gitleaks.toml cases in guard.test.mjs are skipped where gitleaks is not installed; here they must run.
+      - name: Signing secret rules (.gitleaks.toml cases)
+        env:
+          GITLEAKS_BIN: ${{ github.workspace }}/gitleaks
+        run: node --test --test-name-pattern='^(acha|passa) ' .ai/adapters/guard/guard.test.mjs
+      - name: Scan full history
+        run: ./gitleaks git --config .gitleaks.toml --redact --verbose .
+
+  e2e:
+    name: E2E (Playwright, chromium)
+    runs-on: ubuntu-latest
+    needs: [php, js]
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: wcj_hub_e2e
+          MYSQL_USER: wcj_hub
+          MYSQL_PASSWORD: wcj_hub_local
+          MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uwcj_hub -pwcj_hub_local"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, intl, gd
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: npm ci
+      - run: npm run build
+      - name: Prepare the e2e database (.env.e2e from the example, random admin password, MySQL service)
+        run: npm run e2e:prepare
+      - run: npx playwright install --with-deps chromium
+      - name: Start the application
+        run: |
+          APP_ENV=e2e nohup php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:8000/up > /dev/null && exit 0
+            sleep 1
+          done
+          echo "server did not start"; cat storage/logs/serve.log; exit 1
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+            storage/logs/serve.log
+          retention-days: 7
