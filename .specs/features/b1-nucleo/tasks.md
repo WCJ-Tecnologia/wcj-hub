@@ -81,6 +81,12 @@ T20 → T21 → T22
 T23 → T24 → T25
 ```
 
+### Phase 7: Correções do Verifier (rodada 1)
+
+```
+T26 → T27 → T28 → T29
+```
+
 ---
 
 ## Task Breakdown
@@ -765,10 +771,121 @@ T23 → T24 → T25
 
 ---
 
+### Phase 7: Correções do Verifier (rodada 1)
+
+Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviventes, textos de tela sem asserção e P3 AC 1 sem evidência. Ficam fora, por decisão já registrada para o Lucas Scholz: os três `destroy` com toast em vez de 403, o P2 AC 3 (rota que o D6 não cria), a mensagem do último admin ao se desativar e os textos que a spec não define.
+
+### T26: Atomicidade do UserService
+
+**What**: testes que forçam uma falha depois da primeira escrita de `deactivate` e de `update` (troca de papel e de "IA pode escrever") e provam que o usuário, as sessões e as `ai_authorizations` ficam como estavam; correção do Service se ele não for atômico.
+**Where**: `tests/Feature/Nucleo/UserServiceTest.php`
+**Depends on**: T25
+**Reuses**: `UserService`; dublê do `AuditService` e do `SessionService` no container
+**Requirement**: NUC-02, NUC-03
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Desativar com falha na auditoria da revogação: usuário ativo, sem `deactivated_at`/`deactivated_by`, sessões e conexões de IA intactas, nenhuma linha de auditoria nova (Usuários AC 8)
+- [ ] Desativar com falha depois de encerrar as sessões: as sessões voltam junto com o resto (Usuários AC 8)
+- [ ] Trocar papel e trocar "IA pode escrever" com falha na revogação: papel, marca, conexões e auditoria como estavam (Usuários AC 6, 7)
+- [ ] M10 e M33 reaplicados numa cópia descartável em `/tmp` (com `vendor` copiado) fazem os testes novos falharem; a cópia é removida
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `test(usuarios): atomicidade de desativar e de trocar papel ou marca da IA`
+
+---
+
+### T27: IP na auditoria
+
+**What**: os testes afirmam o `ip_address` das linhas de sucesso e da negação com o IP da requisição de teste.
+**Where**: `tests/Feature/Nucleo/IpNaAuditoriaTest.php`
+**Depends on**: T26
+**Reuses**: os helpers `assertAudited` dos testes de Service
+**Requirement**: NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Os helpers `assertAudited` de `UserServiceTest`, `ClientServiceTest` e `ContactServiceTest` afirmam o `ip_address` da linha de sucesso
+- [ ] Uma requisição com IP próprio grava esse IP na linha de sucesso e na de negação (Auditoria AC 1, 2)
+- [ ] M34 reaplicado numa cópia descartável faz os testes falharem
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `test(auditoria): ip da requisição nas linhas de sucesso e de negação`
+
+---
+
+### T28: Textos e estados das telas que a spec define
+
+**What**: e2e que afirma os textos montados no front: rótulo "CNPJ" no Brasil e "Identificador fiscal" fora; a confirmação "O cliente X tem N projetos abertos; eles continuam. Desativar?"; "Nenhum cliente ainda" com *Novo cliente*; a situação "Anonimizado" sem editar, reativar nem anonimizar; o usuário desativado em cinza com *Mostrar desativados*; "Nenhum registro com esses filtros"; a linha negada em destaque, com ícone e "Negado".
+**Where**: `e2e/textos-nucleo.spec.ts`
+**Depends on**: T27
+**Reuses**: `ClientsPage`, `AuditLogsPage`, `AdminPage`, fixtures; Page Objects novos de Usuários e Contatos; helper de dado do e2e
+**Requirement**: NUC-04, NUC-05, NUC-07, NUC-10, NUC-12
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Clientes AC 4, 9, 13; Contatos AC 12; Usuários AC 13; Auditoria AC 3 e 10 com asserção do valor exato
+- [ ] O spec limpa o que cria
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): textos e estados das telas do Núcleo que a spec define`
+
+---
+
+### T29: Estados vazio, erro e carregando das listas
+
+**What**: spec e2e parametrizado para Usuários, Clientes, Contatos e Auditoria: vazio (filtro que não acha nada), carregando (visita Inertia atrasada) e erro (visita respondida com 500); a tela que não tiver o estado ganha no padrão do `hooks/use-list-visit.ts`.
+**Where**: `e2e/estados-das-listas.spec.ts`
+**Depends on**: T28
+**Reuses**: `useListVisit`, fixtures, Page Objects
+**Requirement**: NUC-14
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] As quatro listas: texto do vazio com a ação dele, indicador de carregando e mensagem de erro com *Tentar de novo* afirmados
+- [ ] Sem `waitForTimeout`
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): estados vazio, carregando e erro das quatro listas`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -778,6 +895,7 @@ Phase 3:  T10 → T11 → T12 → T13 → T14
 Phase 4:  T15 → T16 → T17 → T18 → T19
 Phase 5:  T20 → T21 → T22
 Phase 6:  T23 → T24 → T25
+Phase 7:  T26 → T27 → T28 → T29
 ```
 
 ## Task Granularity Check
@@ -794,6 +912,8 @@ Phase 6:  T23 → T24 → T25
 | T23 | abilities nos 4 pontos que o AGENTS.md manda mudar juntos | ⚠️ Coeso |
 | T24 | 1 spec e2e | ✅ Granular |
 | T25 | 1 arquivo de tradução | ✅ Granular |
+| T26, T27 | testes de 1 Service / do IP da auditoria (helpers dos testes de Service junto) | ⚠️ Coeso |
+| T28, T29 | 1 spec e2e (com os Page Objects dele) | ✅ Granular |
 
 ## Diagram-Definition Cross-Check
 
@@ -824,6 +944,10 @@ Phase 6:  T23 → T24 → T25
 | T23 | T22 | fase anterior | ✅ Match |
 | T24 | T23 | T23 → T24 | ✅ Match |
 | T25 | T24 | T24 → T25 | ✅ Match |
+| T26 | T25 | fase anterior | ✅ Match |
+| T27 | T26 | T26 → T27 | ✅ Match |
+| T28 | T27 | T27 → T28 | ✅ Match |
+| T29 | T28 | T28 → T29 | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -842,3 +966,5 @@ Phase 6:  T23 → T24 → T25
 | T23 | Middleware + página (menu) | integration + e2e | e2e (com teste de abilities) | ✅ OK |
 | T24 | e2e | e2e | e2e | ✅ OK |
 | T25 | Tradução (validação) | integration | integration | ✅ OK |
+| T26, T27 | Service (testes) | integration | integration | ✅ OK |
+| T28, T29 | Página React | e2e | e2e | ✅ OK |
