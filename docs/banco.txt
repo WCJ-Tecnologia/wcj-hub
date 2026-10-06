@@ -630,7 +630,8 @@ Pacote = versão (ex.: "1.0.9"), opcional (P41). O gestor e o admin montam o pac
 põem e tiram tarefas (tasks.package_id) de qualquer etapa. O estado se deriva de duas datas (P42, R10):
 as duas nulas = em montagem; homologation_started_at preenchida = em homologação; released_at preenchida
 = em produção, e é a data da versão (P44). A reprovação na homologação devolve as tarefas afetadas com
-retrabalho de origem homologação (P43) e não as tira do pacote sozinha.
+retrabalho de origem homologação (P43), por padrão para a etapa de papel sprint (To do; decisão de
+06/10, P39), e não as tira do pacote sozinha.
 project_id               fk projects   not null  restrict
 name                     varchar(40)   not null            ("1.0.9")
 planned_release_on       date          null      data planejada, definida por projeto, em geral

@@ -116,7 +116,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Telas.** Na ficha do card: bloco Teste cruzado (marcar e desmarcar) e bloco Roteiro de QA (item por critério: a testar, aprovado, reprovado, anexo de evidência). `/minhas-tarefas` ganha a aba "Para testar" (sou QA e a tarefa está em etapa de papel `test`).
 
-**Regras.** P32 a P38 em `TaskService::markCrossTested` (recusa o dev da tarefa, P34) e `CriterionService::setResult` (critério editado volta para `pending`, P37; evidência é anexo ligado ao critério). Reprovar leva ao diálogo de retrabalho do B3 com a origem já preenchida.
+**Regras.** P32 a P38 em `TaskService::markCrossTested` (recusa o dev da tarefa, P34) e `CriterionService::setResult` (critério editado volta para `pending`, P37; evidência é anexo ligado ao critério). Reprovar leva ao diálogo de retrabalho do B3 com a origem já preenchida e o destino padrão `To do` (P39). Mover para etapa de papel `done` com critério `failed` ou `pending` devolve um aviso que a tela mostra e deixa seguir (P38).
 
 **Permissão.** `TaskPolicy::crossTest` (alocado, não o dev), `TaskPolicy::runQa` (alocado; o QA da tarefa é o caso normal, sem trava).
 
@@ -144,7 +144,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Telas.** `/projetos/{id}/pacotes` (lista com estado derivado); ficha do pacote (nome, data planejada, as duas datas, tarefas; pôr e tirar de qualquer etapa; "Reprovar na homologação" escolhendo as tarefas); pacote na ficha do card (B3).
 
-**Regras.** P41 a P44, P39 em `PackageService` (estado = `homologation_started_at`/`released_at`; marcar e limpar datas; reprovar = mover as tarefas escolhidas para a etapa de papel `development` com `rework_origin_id = homologation` e motivo, sem tirar do pacote).
+**Regras.** P41 a P44, P39 em `PackageService` (estado = `homologation_started_at`/`released_at`; marcar e limpar datas; reprovar = mover as tarefas escolhidas para a etapa escolhida, padrão a de papel `sprint` (To do, P39), com `rework_origin_id = homologation` e motivo, sem tirar do pacote).
 
 **Permissão.** `PackagePolicy` (gestor e admin gerenciam; alocado vê).
 

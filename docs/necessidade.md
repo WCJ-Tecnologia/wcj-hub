@@ -259,11 +259,11 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **P35** Em `In test`, a ordem normal é teste cruzado e depois QA.
 - **P36** O QA testa no próprio ambiente local. Executa o roteiro, em que cada critério de aceite é um item: marca aprovado ou reprovado e anexa a evidência no item.
 - **P37** Critério editado depois de testado volta para "a testar". Depois de um retrabalho, o roteiro inteiro volta para "a testar".
-- **P38** Aprovada no QA, a tarefa recebe o merge (normalmente pelo Tech Lead) e vai para `Done`.
+- **P38** Aprovada no QA, a tarefa recebe o merge (normalmente pelo Tech Lead) e vai para `Done`. Mover para `Done` com item do roteiro reprovado ou ainda a testar mostra um aviso que deixa seguir (decisão de 06/10).
 
 #### 2.6 Retrabalho
 
-- **P39** Toda volta para desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA ou homologação) e **motivo**. Exceção: quem move pode marcar que a volta **foi engano** (card arrastado para a coluna errada); aí o movimento fica gravado, mas sem origem nem motivo, e não conta retrabalho (decisão de 06/10).
+- **P39** Toda volta para desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA ou homologação) e **motivo**. O destino padrão de toda devolução (atalho da tela de teste, reprovação na homologação, IA) é o `To do`: o dev leva para `Doing` quando estiver de fato fazendo (decisão de 06/10); quem devolve pode escolher outra etapa. Exceção: quem move pode marcar que a volta **foi engano** (card arrastado para a coluna errada); aí o movimento fica gravado, mas sem origem nem motivo, e não conta retrabalho (decisão de 06/10).
 - **P40** Os motivos são uma lista geral, editada pelo Administrador (G7, R11), sempre com "outro" com texto. Nasce com: ajuste visual, regra de negócio, erro/bug, requisito incompleto ou mal documentado, outro.
 
 #### 2.7 Pacote (versão)

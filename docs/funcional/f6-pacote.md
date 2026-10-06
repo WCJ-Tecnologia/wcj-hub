@@ -67,7 +67,7 @@ Não existem estados cadastráveis nem configuração de estados por projeto (P4
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
 | Tarefas | caixas de marcar com as tarefas do pacote | sim, ao menos uma | nenhuma marcada | Só as afetadas (P43). |
-| Volta para | lista das etapas do projeto de papel Desenvolvimento ou Sprint | sim | a primeira etapa de papel Desenvolvimento no quadro (ex.: Doing) | É a volta para desenvolvimento da P39. Ver 10.5. |
+| Volta para | lista das etapas do projeto de papel Sprint ou Desenvolvimento | sim | a etapa de papel Sprint (`To do`): o dev leva para `Doing` quando estiver fazendo (decisão de 06/10) | É a volta para desenvolvimento da P39. |
 | Origem | fixa | | Homologação | (P39, P43) |
 | Motivo | lista geral de motivos de retrabalho ativos ([F2](f2-projeto-e-configuracao.md)) | sim | | Proposta: um motivo para todas as tarefas marcadas (ver 10.4) (P40). |
 | Texto | texto, até 500 | sim quando o motivo pede texto, como o "Outro" | | (P40) |
@@ -94,7 +94,7 @@ Estado vazio: Pacotes, "Nenhum pacote neste projeto. *Novo pacote*" (para o dev,
 | Em produção | Administrador; gestor do projeto | Grava a entrada em produção, que é a data da versão (P44). Sem trava: vale sem ter passado por homologação e com tarefas fora de Pronto (P41, premissa, ver 10.3). | Diálogo da data, com "Marcar o pacote 1.0.9 como em produção em DD/MM/AAAA?" |
 | Voltar para homologação | Administrador; gestor do projeto; aparece em produção | Limpa a entrada em produção (P42). | "A data de produção é apagada; o histórico guarda. Continuar?" |
 | Voltar para montagem | Administrador; gestor do projeto; aparece em homologação | Limpa o início da homologação (P42). Do estado em produção, volta-se primeiro para homologação. | "A data de homologação é apagada; o histórico guarda. Continuar?" |
-| Reprovar na homologação | Administrador; gestor do projeto; aparece em homologação (ver 10.6) | Para cada tarefa marcada, grava a volta para a etapa escolhida como retrabalho de origem Homologação, com o motivo, em nome de quem reprovou (P14, P39, P43). Como em toda volta para desenvolvimento: avisa o dev da tarefa no sistema e por e-mail (P22), limpa a marca de teste cruzado (P34) e o roteiro volta para "a testar" (P37); detalhes no [F3](f3-quadro-e-card.md) e no [F4](f4-teste-e-qualidade.md). As tarefas continuam no pacote, e o pacote continua em homologação (P43). | "N tarefas voltam para Doing como retrabalho de homologação. Continuar?" |
+| Reprovar na homologação | Administrador; gestor do projeto; aparece em homologação (ver 10.6) | Para cada tarefa marcada, grava a volta para a etapa escolhida como retrabalho de origem Homologação, com o motivo, em nome de quem reprovou (P14, P39, P43). Como em toda volta para desenvolvimento: avisa o dev da tarefa no sistema e por e-mail (P22), limpa a marca de teste cruzado (P34) e o roteiro volta para "a testar" (P37); detalhes no [F3](f3-quadro-e-card.md) e no [F4](f4-teste-e-qualidade.md). As tarefas continuam no pacote, e o pacote continua em homologação (P43). | "N tarefas voltam para To do como retrabalho de homologação. Continuar?" |
 | Excluir | Administrador; gestor do projeto | Só pacote sem tarefa e ainda em montagem (G2, ver 10.8). | "Excluir de verdade. Não dá para desfazer." |
 | Histórico | Administrador; gestor do projeto | Auditoria filtrada no pacote: quem criou, pôs e tirou tarefas, marcou e limpou cada data (G3, F1). | |
 
@@ -148,7 +148,7 @@ A IA de cada pessoa tem exatamente estas permissões (G4). O Comercial não entr
 2. **Data das marcações.** Proposta: o diálogo vem com agora e aceita outra data e hora, para registrar o momento real quando o gestor marca depois.
 3. **Produção sem homologação.** Proposta: permitido, pela premissa; a data de homologação fica vazia. Confirmar.
 4. **Um motivo para a reprovação inteira.** Proposta: um motivo e um texto para todas as tarefas marcadas; com motivos diferentes, o gestor reprova em mais de uma vez ou devolve pelo card.
-5. **Para onde a reprovação devolve.** Proposta: padrão na primeira etapa de papel Desenvolvimento, podendo escolher outra de Desenvolvimento ou a de Sprint. Se o gestor tiver removido todas as etapas de Desenvolvimento, só a de Sprint aparece (ver F2, 10.5).
+5. **Para onde a reprovação devolve.** Respondido por Lucas Scholz em 06/10 (no F4, item 8): padrão no `To do`, podendo escolher uma etapa de Desenvolvimento.
 6. **Reprovar só em homologação.** Proposta: o botão aparece só com o pacote em homologação; em produção, a falha vira tarefa nova (P25). Pelo card, a origem Homologação fica sempre disponível.
 7. **Tarefa em pacote já em produção.** Proposta: permitido e sem aviso, porque nenhuma data recusa tarefa (P41). Confirmar se o gestor quer ao menos um aviso.
 8. **Excluir pacote.** Proposta: só sem tarefa e em montagem, pelo gestor ou pelo Administrador; pacote que já teve data marcada fica.

@@ -145,6 +145,7 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 | Levar para o `Backlog` | Gestor do projeto, Administrador | Tira o card da sprint, se estiver numa, e o leva ao `Backlog`. Não conta retrabalho (P45; F5). | Dev que tenta: mesma recusa. |
 | Reordenar na coluna | Qualquer alocado | Só com *Ordem: Manual*: arrasta o card para cima ou para baixo e a posição fica guardada para todos (P13). Com *Ordem: Prioridade*, o arraste vertical não faz nada. | |
 | Ir para a pausa | Qualquer alocado | Pede o motivo, quando o projeto exige (P15). | Cancelar o diálogo deixa o card onde estava. |
+| Mover para `Done` | Qualquer alocado | Como qualquer movimento; se o roteiro tem item reprovado ou a testar, avisa e deixa seguir (P38; F4). | "O roteiro tem N itens reprovados e M a testar. Mover mesmo assim?" |
 | Devolver (retrabalho) | Qualquer alocado | De `Code-review`, `In test` ou `Done` para `To do` ou `Doing`: pede origem e motivo; o card se move do mesmo jeito e conta um ciclo (P39, P40). Com *Foi engano* marcado, move sem origem nem motivo e não conta (P39). Limpa a marca de teste cruzado e volta o roteiro para A testar (P34, P37; F4). Avisa o dev (P22). Pela IA: `mover_tarefa`, com origem e motivo, ou com a marca de engano. | Cancelar o diálogo deixa o card onde estava. |
 
 ### Na ficha

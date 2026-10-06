@@ -1,6 +1,6 @@
 # F4. Teste cruzado e roteiro de QA
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -73,7 +73,7 @@ Estado vazio do roteiro: "Esta tarefa não tem critérios de aceite. *Novo crit�
 | Marcar item: Aprovado, Reprovado ou A testar | Qualquer pessoa alocada; o normal é o QA da tarefa | Grava o resultado do item. Quem marcou e quando ficam no histórico do item (G3). Marcar um item reprovado não move o card (premissa). | Nenhuma. |
 | Anexar evidência no item | Qualquer pessoa alocada | Prende o arquivo ao item e à lista de anexos do card (P24, P36). | Nenhuma. |
 | Excluir evidência | Mesma regra de excluir anexo de F3 | Apaga o arquivo e o registro juntos. | "Excluir o arquivo X? Não dá para desfazer." |
-| Devolver para desenvolvimento | Qualquer pessoa alocada (P13) | Atalho da seção *Teste*: abre o diálogo de volta para desenvolvimento de F3, com destino na etapa de desenvolvimento (`Doing` no padrão) e a origem já escolhida: "Teste cruzado" quando chamado do bloco do teste cruzado, "QA" quando chamado do roteiro. Motivo obrigatório, da lista geral (P39, P40). Ao confirmar: conta um ciclo de retrabalho (P39), limpa o teste cruzado (P34), põe o roteiro inteiro em "A testar" (P37) e avisa o dev (P22). | O diálogo é o de F3. A origem pode ser trocada lá. |
+| Devolver para desenvolvimento | Qualquer pessoa alocada (P13) | Atalho da seção *Teste*: abre o diálogo de volta de F3, com destino padrão no `To do` (o dev leva para `Doing` quando estiver de fato fazendo; P39) e a origem já escolhida: "Teste cruzado" quando chamado do bloco do teste cruzado, "QA" quando chamado do roteiro. Motivo obrigatório, da lista geral (P39, P40). Ao confirmar: conta um ciclo de retrabalho (P39), limpa o teste cruzado (P34), põe o roteiro inteiro em "A testar" (P37) e avisa o dev (P22). | O diálogo é o de F3. A origem pode ser trocada lá. |
 | Mover para `Done` | Qualquer pessoa alocada (P13) | Movimento normal de F3, depois do merge (P38). | Nenhum aviso, mesmo com item reprovado ou a testar (proposta, ver 10.7). |
 | Abrir a lista *Para testar* | Qualquer pessoa alocada em algum projeto | Ver seção 03. | |
 
@@ -118,20 +118,23 @@ Não se aplica: nenhuma regra pede exportar o roteiro nem a lista (G5). As evid�
 | Anexar evidência no item | sim | sim | sim |
 | Excluir evidência | como em F3 | como em F3 | como em F3 |
 | Devolver para desenvolvimento | sim | sim | sim (P13) |
+| Mover para `Done` com item reprovado ou a testar | sim, com aviso | sim, com aviso | sim, com aviso (P38) |
 | Lista *Para testar* | as tarefas em que é QA | as tarefas em que é QA | as tarefas em que é QA |
 
 A IA de cada pessoa tem exatamente estas permissões, nem mais nem menos (G4). O Comercial não entra em Projetos (C14).
 
 ## 10. Pontos a validar
 
-1. **Quem marca o roteiro.** A P36 diz que o QA marca, mas não diz que só ele. Proposta, pela premissa: qualquer pessoa alocada marca, e o histórico mostra quem. Restringir ao QA da tarefa (mais gestor e Administrador)?
-2. **Desfazer a marca do teste cruzado.** Nenhuma regra fala em desmarcar. Proposta: quem marcou, o gestor e o Administrador desfazem, para corrigir clique errado. Confirmar.
-3. **Ordem teste cruzado → QA.** A P35 diz "ordem normal". Proposta: a tela só mostra a situação do teste cruzado no topo do roteiro, sem aviso quando o QA começa antes. Confirmar que não quer aviso.
-4. **Item pai e subitens.** Pai e subitem têm resultado próprio. Proposta: cada um é marcado à parte; o pai não se calcula dos subitens. Confirmar.
-5. **Evidência depois do retrabalho.** O roteiro volta para "A testar", mas as evidências antigas ficam no item, em ordem de data, para comparar. Proposta: manter; o QA anexa a nova. Confirmar.
-6. **Tarefa sem critério.** O QA testa sem roteiro e nada fica registrado além do movimento para `Done`. Proposta: basta, e quem quiser comenta no card. Precisa de algum registro de "testado pelo QA" sem roteiro?
-7. **`Done` com item reprovado ou a testar.** Proposta: sem aviso, como no Trello. Ou um aviso que deixa seguir ("O roteiro tem 1 item reprovado. Mover mesmo assim?")?
-8. **Destino do atalho *Devolver para desenvolvimento*.** Proposta: a etapa de desenvolvimento (`Doing`), trocável no diálogo de F3. Ou o `To do`?
-9. **Aviso ao QA quando o teste cruzado é marcado.** Seria útil para o QA saber que pode começar, mas a P22 diz que os avisos de Projetos são só dois. Proposta: sem aviso; o QA usa a lista *Para testar*.
-10. **`minhas_tarefas` pela IA.** Proposta: a ferramenta traz também as tarefas em que a pessoa é QA, com a etapa, para o QA perguntar "o que tenho para testar?". Confirmar.
-11. **Filtro *Teste cruzado pendente*.** Proposta: na mesma lista, para o dev achar o que pode testar de outro dev. Fica ou sai?
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima e na `necessidade.md` (P38, P39).
+
+1. **Quem marca o roteiro.** **Qualquer alocado**; o histórico mostra quem.
+2. **Desfazer a marca do teste cruzado.** OK: quem marcou, o gestor e o Administrador.
+3. **Ordem teste cruzado → QA.** OK: sem aviso; a situação do teste cruzado aparece no topo do roteiro.
+4. **Item pai e subitens.** OK: cada um marcado à parte.
+5. **Evidência depois do retrabalho.** OK: as antigas ficam; o QA anexa a nova.
+6. **Tarefa sem critério.** OK: sem registro além do movimento; quem quiser comenta.
+7. **`Done` com item reprovado ou a testar.** **Aviso que deixa seguir**: "O roteiro tem N itens reprovados e M a testar. Mover mesmo assim?" (P38).
+8. **Destino do atalho *Devolver*.** **`To do`**: o dev leva para `Doing` quando estiver de fato fazendo (P39). Vale para toda devolução, inclusive a reprovação na homologação (F6); quem devolve pode escolher outra etapa no diálogo.
+9. **Aviso ao QA quando o teste cruzado é marcado.** OK: sem aviso; o QA usa a lista *Para testar*.
+10. **`minhas_tarefas` pela IA.** OK: traz também as tarefas em que a pessoa é QA, com a etapa.
+11. **Filtro *Teste cruzado pendente*.** **Fica.**
