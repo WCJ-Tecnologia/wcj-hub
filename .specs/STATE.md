@@ -22,11 +22,11 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 
 ## Handoff
 
-- **Feature**: B0 (repositório, migrações e base), sem pasta em `.specs/features/`: é base, fora do trilho da skill.
-- **Phase / Task**: concluído no PR `chore/b0-base`.
-- **Completed**: B0
+- **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
+- **Phase / Task**: Specify concluída em 06/10/2026 (`.specs/features/b1-nucleo/spec.md`, `validate_spec.py` limpo). Aguarda aprovação de Lucas Scholz antes de Design/Tasks/Execute (Cauã).
+- **Completed**: B0 (PR #1, mergeado em 06/10).
 - **In-progress** (file:line): none
-- **Next step**: onda 1, B1 (Núcleo, trilho completo) ∥ B2 (Projeto e configuração, trilho leve), depois do merge do B0.
+- **Next step**: Lucas Scholz aprova a spec → Cauã roda Design (opcional) e Tasks → Execute em `feat/b1-nucleo`, PR em rascunho → Verifier → pronto. Em paralelo, B2 (Vitinho, trilho leve, sem pasta em `.specs/`).
 - **Blockers**: none
 - **Uncommitted files**: none
-- **Branch**: chore/b0-base
+- **Branch**: feat/b1-nucleo
