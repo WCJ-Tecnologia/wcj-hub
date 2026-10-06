@@ -12,6 +12,10 @@ export interface Abilities {
     delete_records: boolean;
     view_audit_logs: boolean;
     reset_passwords: boolean;
+    /** ClientPolicy::viewAny: Administrador e Gestor de projetos. */
+    view_clients: boolean;
+    /** ContactPolicy::viewAny: Administrador e Gestor de projetos (só os clientes dele). */
+    view_contacts: boolean;
 }
 
 export interface AuthUser {

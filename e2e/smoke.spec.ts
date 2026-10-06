@@ -24,11 +24,21 @@ for (const screen of SCREENS) {
     });
 }
 
+test('@smoke o menu Administração do administrador tem os quatro itens', async ({ page }) => {
+    const admin = new AdminPage(page);
+    await admin.goto('/admin/dashboard');
+
+    await expect(admin.sidebar.getByText('Administração')).toBeVisible();
+    for (const item of ['Usuários', 'Clientes', 'Contatos', 'Auditoria']) {
+        await expect(admin.sidebar.getByRole('link', { name: item })).toBeVisible();
+    }
+});
+
 test('@smoke o modal de usuário passa no axe', async ({ page, axe }) => {
     const admin = new AdminPage(page);
     await admin.goto('/admin/users');
 
-    await page.getByRole('button', { name: 'Novo usuário' }).first().click();
+    await page.getByRole('button', { name: 'Convidar usuário' }).first().click();
     await expect(admin.dialog).toBeVisible();
 
     const results = await axe().analyze();
@@ -160,7 +170,7 @@ test.describe('@smoke tema escuro', () => {
         await admin.goto('/admin/users');
         await page.evaluate(() => document.documentElement.classList.add('dark'));
 
-        await page.getByRole('button', { name: 'Novo usuário' }).first().click();
+        await page.getByRole('button', { name: 'Convidar usuário' }).first().click();
         await expect(admin.dialog).toBeVisible();
 
         const results = await axe().analyze();

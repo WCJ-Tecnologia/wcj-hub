@@ -125,7 +125,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
 
     const newButton = can?.manage_users ? (
         <Button onClick={openCreate}>
-            <Plus className="size-4" aria-hidden /> Novo usuário
+            <Plus className="size-4" aria-hidden /> Convidar usuário
         </Button>
     ) : undefined;
 

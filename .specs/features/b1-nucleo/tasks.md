@@ -956,9 +956,9 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Admin vê os quatro itens; gestor vê Clientes e Contatos; dev não vê nenhum
-- [ ] Teste das abilities em `tests/Feature/Nucleo/AbilitiesTest.php` e smoke e2e verdes
-- [ ] Gate check passes: Build
+- [x] Admin vê os quatro itens; gestor vê Clientes e Contatos; dev não vê nenhum
+- [x] Teste das abilities em `tests/Feature/Nucleo/AbilitiesTest.php` e smoke e2e verdes
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build
