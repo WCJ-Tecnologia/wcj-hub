@@ -55,7 +55,7 @@ class RotasAutorizadasTest extends TestCase
         'App\Platform\Controllers\Auth\AuthenticatedSessionController@destroy' => 'logout da própria sessão',
         'App\Platform\Controllers\Auth\ChangePasswordController@edit' => 'primeiro acesso: troca a própria senha',
         'App\Platform\Controllers\Auth\ChangePasswordController@update' => 'primeiro acesso: troca a própria senha',
-        'App\Platform\Controllers\Admin\DashboardController@index' => 'painel no escopo de quem está logado (Scoping)',
+        'App\Platform\Controllers\Admin\DashboardController@index' => 'painel de quem está logado: contagens gerais; a atividade recente só chega ao admin',
         'App\Platform\Controllers\Admin\ProfileController@edit' => 'o próprio perfil',
         'App\Platform\Controllers\Admin\ProfileController@update' => 'o próprio perfil',
     ];
