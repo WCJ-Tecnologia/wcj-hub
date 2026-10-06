@@ -741,10 +741,10 @@ T23 → T24
 
 **Done when**:
 
-- [ ] Matriz ability × papel × situação do contato
-- [ ] `Contact::isAnonymized()` e `newFactory()`
-- [ ] Testes em `tests/Feature/Nucleo/ContactPolicyTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Matriz ability × papel × situação do contato
+- [x] `Contact::isAnonymized()` e `newFactory()`
+- [x] Testes em `tests/Feature/Nucleo/ContactPolicyTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
