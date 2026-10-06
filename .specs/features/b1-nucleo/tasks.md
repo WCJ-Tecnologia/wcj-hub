@@ -818,10 +818,10 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Os helpers `assertAudited` de `UserServiceTest`, `ClientServiceTest` e `ContactServiceTest` afirmam o `ip_address` da linha de sucesso
-- [ ] Uma requisição com IP próprio grava esse IP na linha de sucesso e na de negação (Auditoria AC 1, 2)
-- [ ] M34 reaplicado numa cópia descartável faz os testes falharem
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Os helpers `assertAudited` de `UserServiceTest`, `ClientServiceTest` e `ContactServiceTest` afirmam o `ip_address` da linha de sucesso
+- [x] Uma requisição com IP próprio grava esse IP na linha de sucesso e na de negação (Auditoria AC 1, 2)
+- [x] M34 reaplicado numa cópia descartável faz os testes falharem
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

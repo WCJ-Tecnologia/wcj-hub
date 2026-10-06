@@ -47,6 +47,8 @@ class ContactServiceTest extends TestCase
         $this->assertSame(($by ?? $this->admin)->id, $log->user_id);
         $this->assertSame(AuditLog::OUTCOME_SUCCESS, $log->outcome);
         $this->assertNull($log->ai_authorization_id);
+        // Auditoria AC 1: o IP da requisição de teste.
+        $this->assertSame('127.0.0.1', $log->ip_address);
         // O JSON do MySQL reordena as chaves: compara sem ordem, com o tipo de cada valor.
         $actual = $log->changes;
         if ($changes !== null && $actual !== null) {
