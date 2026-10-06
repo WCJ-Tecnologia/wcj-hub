@@ -186,7 +186,7 @@ As ferramentas chamam a mesma regra da tela e têm exatamente a permissão da pe
 
 | Onde | Busca | Filtros |
 |---|---|---|
-| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev ou QA); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas); marcas: Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta; *Mostrar prontos antigos* (prontos de sprints anteriores à última encerrada, P13); *Arquivados* (troca o quadro pela lista de arquivados); seletor *Ordem: Prioridade | Manual* (P13) |
+| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev ou QA); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas); Pacote (para a homologação, F6); marcas: Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta; *Mostrar prontos antigos* (prontos de sprints anteriores à última encerrada, P13); *Arquivados* (troca o quadro pela lista de arquivados); seletor *Ordem: Prioridade | Manual* (P13) |
 | Tarefa de origem (na ficha) | chave ou título | só cards do mesmo projeto |
 | Quem pediu (card de suporte) | nome ou e-mail | só contatos ativos do cliente do projeto |
 

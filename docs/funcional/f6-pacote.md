@@ -1,6 +1,6 @@
 # F6. Pacote (versão)
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -144,13 +144,15 @@ A IA de cada pessoa tem exatamente estas permissões (G4). O Comercial não entr
 
 ## 10. Pontos a validar
 
-1. **Formato do nome.** Proposta: texto livre até 40 caracteres, único no projeto, sem conferir sequência (ex.: "1.0.9", "2026.10").
-2. **Data das marcações.** Proposta: o diálogo vem com agora e aceita outra data e hora, para registrar o momento real quando o gestor marca depois.
-3. **Produção sem homologação.** Proposta: permitido, pela premissa; a data de homologação fica vazia. Confirmar.
-4. **Um motivo para a reprovação inteira.** Proposta: um motivo e um texto para todas as tarefas marcadas; com motivos diferentes, o gestor reprova em mais de uma vez ou devolve pelo card.
-5. **Para onde a reprovação devolve.** Respondido por Lucas Scholz em 06/10 (no F4, item 8): padrão no `To do`, podendo escolher uma etapa de Desenvolvimento.
-6. **Reprovar só em homologação.** Proposta: o botão aparece só com o pacote em homologação; em produção, a falha vira tarefa nova (P25). Pelo card, a origem Homologação fica sempre disponível.
-7. **Tarefa em pacote já em produção.** Proposta: permitido e sem aviso, porque nenhuma data recusa tarefa (P41). Confirmar se o gestor quer ao menos um aviso.
-8. **Excluir pacote.** Proposta: só sem tarefa e em montagem, pelo gestor ou pelo Administrador; pacote que já teve data marcada fica.
-9. **Tarefa arquivada no pacote.** Proposta: continua no pacote, em cinza, e não aparece em *Adicionar tarefas*. Desarquivar não muda o pacote.
-10. **Filtro por pacote no quadro.** Não há regra. Proposta: levar ao F3 um filtro "só o pacote X" no quadro, para a homologação; decidir lá.
+Respondidos por Lucas Scholz em 06/10/2026; as propostas valem como escritas nas seções acima.
+
+1. **Formato do nome.** OK: texto livre até 40 caracteres, único no projeto.
+2. **Data das marcações.** OK: vem com agora, aceita outra data e hora.
+3. **Produção sem homologação.** OK: permitido; a data de homologação fica vazia.
+4. **Um motivo para a reprovação inteira.** OK.
+5. **Para onde a reprovação devolve.** `To do` por padrão (F4, item 8).
+6. **Reprovar só em homologação.** OK: em produção, a falha vira bug de produção (P25).
+7. **Tarefa em pacote já em produção.** OK: permitido, sem aviso.
+8. **Excluir pacote.** OK: só sem tarefa e em montagem.
+9. **Tarefa arquivada no pacote.** OK: continua no pacote, em cinza.
+10. **Filtro por pacote no quadro.** OK: entrou nos filtros do quadro, no F3 (seção 05).
