@@ -1,6 +1,6 @@
 # F1. Núcleo: usuários, clientes, contatos e auditoria
 
-**Documento funcional.** Versão 0.2, de 06/10/2026: pontos a validar respondidos por Lucas Scholz no mesmo dia (seção 10). Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
