@@ -662,6 +662,9 @@ unique: (project_id, name)
 Regras do Service:
 - uma sprint aberta (closed_at null) por projeto (P45): com uma aberta, não se cria outra; a próxima
   nasce no encerramento da atual (P50);
+- reabrir (P50, 06/10): closed_at volta a null, só gestor e admin, e só se não houver outra sprint aberta
+  no projeto (a trava de uma aberta vale na reabertura, com a linha do projeto travada); não move
+  tarefa. A próxima sprint nasce com starts_on = 1º dia útil após ends_on da anterior (P50);
 - encerrar (P50): o que não chegou a etapa de papel done vai para a próxima sprint (troca de sprint_id)
   ou volta ao Backlog (sprint_id null, etapa de papel queue), como o gestor decidir; o rastro fica em
   audit_logs (T3). O que está em done fica com esta sprint (P51);

@@ -1,6 +1,6 @@
 # F5. Sprint, horas e data prevista
 
-**Documento funcional.** Versão 0.1, de 06/10/2026, para aprovação. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -48,7 +48,7 @@ Exemplo do fim: início terça 06/10/2026 com duração de 10 dias úteis. Conta
 | Tarefas que não chegaram a `Done` | lista: Chave, Título, Etapa, Dev | | | Só leitura. Arquivadas não entram (P26). |
 | Destino, em cada tarefa | escolha: Próxima sprint / `Backlog` | sim | Próxima sprint | (P50) |
 | Criar a próxima sprint | sim / não | | sim | Sempre sim quando alguma tarefa vai para a próxima. Proposta: ver 10.4. |
-| Próxima sprint: nome, objetivo, início, fim | os mesmos campos da sprint | nome, início e fim | "Sprint N+1", hoje, início + duração padrão | Proposta: ver 10.3. |
+| Próxima sprint: nome, objetivo, início, fim | os mesmos campos da sprint | nome, início e fim | "Sprint N+1"; início = 1º dia útil depois do fim da sprint que está sendo encerrada; fim = início + duração padrão, contando o início como 1º dia útil | O gestor edita as datas (P50, P46). |
 
 ### Horas e data prevista (na ficha do card)
 
@@ -103,6 +103,7 @@ Estados vazios: "Nenhuma sprint ainda. *Nova sprint*". "Nenhuma tarefa nesta spr
 | Tirar card da sprint | Gestor do projeto, Administrador | Arrastar o card para o `Backlog`, ou o botão *Tirar da sprint* no card. Devolve ao `Backlog`, fora de sprint (P45). Não conta como retrabalho (F3). | Nenhuma. |
 | Pôr card de suporte na sprint | Gestor do projeto, Administrador | Liga o card à sprint aberta sem trocar de coluna (P52, F3). | |
 | Encerrar sprint | Gestor do projeto, Administrador | Abre o diálogo da seção 02. Fecha a sprint, cria a próxima e manda cada tarefa não pronta para a próxima ou para o `Backlog` (P50). A volta ao `Backlog` não conta como retrabalho. | "Encerrar a Sprint 4? N tarefas prontas ficam nela; M vão para a Sprint 5 e K voltam ao `Backlog`." |
+| Reabrir sprint | Gestor do projeto, Administrador | Volta a sprint encerrada a aberta (P50). Não traz de volta as tarefas que foram para a próxima: o gestor as move se quiser. Só quando não há outra sprint aberta no projeto (P45). | Com outra aberta: "Encerre a Sprint 5 antes de reabrir a Sprint 4." |
 | Excluir sprint | Gestor do projeto, Administrador | Só a sprint aberta que nunca teve tarefa, ex.: criada por engano (G2). | "Excluir a Sprint 5? Não dá para desfazer." |
 
 ### Horas
@@ -159,11 +160,11 @@ Não se aplica: nenhuma regra pede exportar sprints nem horas na fatia 1 (G5). O
 | O quê | Administrador | Gestor de projetos | Desenvolvedor |
 |---|---|---|---|
 | Ver a lista de sprints e as tarefas de cada uma | sim | nos projetos dele | nos projetos em que está (P5) |
-| Criar, editar, encerrar e excluir sprint | sim | nos projetos dele | não (P45) |
+| Criar, editar, encerrar, reabrir e excluir sprint | sim | nos projetos dele | não (P45, P50) |
 | Pôr e tirar card da sprint | sim | nos projetos dele | não (P45) |
-| Ver o painel *Capacidade* | sim | nos projetos dele | não: é referência para o gestor (P49, ver 10.17) |
+| Ver o painel *Capacidade* | sim | nos projetos dele | não: é referência para o gestor (P49) |
 | Informar horas previstas (tarefa sem data prevista) | sim | sim | sim, nos projetos em que está |
-| Reestimar (tarefa com data prevista) | sim | nos projetos dele | não (P28) |
+| Reestimar (tarefa com data prevista) | sim | nos projetos dele | propõe; o gestor ou o Administrador aprova (P27; F3) |
 | Lançar as próprias horas | sim | sim | sim, nos projetos em que está (P30) |
 | Corrigir e excluir as próprias horas | sim | sim | sim (P30) |
 | Corrigir e excluir horas de outra pessoa | sim | nos projetos dele | não (P30) |
@@ -174,20 +175,22 @@ A IA de cada pessoa tem exatamente estas permissões, nem mais nem menos (G4). O
 
 ## 10. Pontos a validar
 
-1. **Fim da sprint.** Proposta: o dia de início conta como o 1º dia útil, para a sprint de 10 dias úteis ter 10 dias na capacidade (início 06/10 → fim 19/10). Se "início + 10" não contar o início, o fim seria 20/10 e a sprint teria 11 dias úteis.
-2. **Nome "Sprint N".** Proposta: N = quantas sprints o projeto já teve + 1, sempre editável. Confirmar.
-3. **Início da próxima sprint no encerramento.** Proposta: hoje, como no diálogo de criar, editável. Ou o próximo dia útil depois do encerramento?
-4. **Próxima sprint quando nada passa para ela.** Proposta: o diálogo cria a próxima mesmo assim, com a opção de não criar (ex.: projeto terminando); sem ela, a próxima nasce quando o gestor arrastar o primeiro card. Confirmar.
-5. **Card de suporte no encerramento.** Proposta: as opções são "vai para a próxima sprint" ou "sai da sprint", e o card fica na coluna `Support` nos dois casos, em vez de ir ao `Backlog`. Confirmar.
-6. **Reabrir sprint.** Nenhuma regra pede. Proposta: não há reabrir; o que ficou de fora se põe na próxima. Confirmar.
-7. **Quem reestima.** A P28 diz "só muda se o gestor reestimar". Proposta: qualquer pessoa alocada informa as horas enquanto a tarefa não tem data prevista (o dev estima, ata de 24/09, item 9); depois disso, só gestor e Administrador mudam. Confirmar.
-8. **Troca de dev.** Pela P28, a data só muda ao reestimar; trocar o dev de uma tarefa que já tem data não refaz a conta, mesmo que a carga do novo dev seja outra. Confirmar.
-9. **Detalhes da conta da data prevista.** Proposta: o dia da entrada em `Doing` conta como o 1º dia; fração de dia arredonda para cima (10 h ÷ 8 h = 2 dias); entrada no sábado ou no domingo conta a partir da segunda. Confirmar.
-10. **Tarefa em `Done` no "faltam".** A regra diz previstas − lançadas. Uma tarefa pronta com horas sobrando apareceria como trabalho que falta. Proposta: tarefa em `Done` conta zero. Confirmar.
-11. **Capacidade da sprint inteira.** A P48 usa os dias úteis da sprint inteira, mesmo no meio dela, enquanto o "faltam" diminui com os lançamentos. Proposta: manter como a regra diz. Ou contar só os dias úteis que faltam?
-12. **Lançamento com data futura e soma do dia.** Proposta: recusar data futura; não conferir a soma do dia (cada lançamento vale até 24 h sozinho). Confirmar.
-13. **Excluir lançamento.** A P30 fala em corrigir. Proposta: corrigir inclui excluir o lançamento feito por engano, com registro na auditoria. Confirmar.
-14. **Gestor lançar horas pelo dev.** Proposta: não; quem trabalhou lança (P30), e o gestor só corrige. Confirmar.
-15. **IA sem sprint aberta.** Cada escrita da IA altera uma coisa só (IA8), então ela não cria a sprint e põe o card na mesma chamada. Proposta: erro legível e criar pela tela. Confirmar.
-16. **Arrastar do `Backlog` direto para `Doing`.** No Wpay isso aconteceu em 10 de 21 saídas do `Backlog`. Proposta: só o gestor e o Administrador fazem; o card entra na sprint aberta e vai para o `To do`, como diz o banco, e o gestor o leva adiante. Ou o card fica onde foi solto?
-17. **Dev ver a capacidade.** A P49 diz que é referência para o gestor. Proposta: o dev não vê o painel; vê as tarefas e as horas da sprint. Confirmar.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P27, P46, P50) e no `banco.txt`.
+
+1. **Fim da sprint.** Confirmado: o gestor informa o início e o sistema calcula o fim, 10 dias úteis contando o início como o 1º (P46). Editável.
+2. **Nome "Sprint N".** OK.
+3. **Início da próxima sprint.** **1º dia útil depois do fim da anterior**, por padrão; o gestor edita (P50).
+4. **Próxima sprint quando nada passa para ela.** OK: cria mesmo assim, com opção de não criar.
+5. **Card de suporte no encerramento.** OK: fica na coluna `Support` nos dois casos.
+6. **Reabrir sprint.** **Pode**, gestor e Administrador (P50). Premissa decidida junto: só quando não há outra sprint aberta no projeto (P45), e reabrir não traz de volta as tarefas que foram para a próxima.
+7. **Quem reestima.** Decidido no F3: o dev propõe, o gestor ou o Administrador aprova (P27).
+8. **Troca de dev.** OK: não refaz a data prevista.
+9. **Conta da data prevista.** OK: dia da entrada conta como 1º; fração arredonda para cima; fim de semana conta da segunda.
+10. **Tarefa em `Done` no "faltam".** OK: conta zero.
+11. **Capacidade da sprint inteira.** OK: dias úteis da sprint inteira.
+12. **Lançamento com data futura e soma do dia.** OK: recusa data futura; não confere a soma do dia.
+13. **Excluir lançamento.** OK: corrigir inclui excluir, auditado.
+14. **Gestor lançar horas pelo dev.** OK: não; só corrige.
+15. **IA sem sprint aberta.** Decidido no F3: o Service cria a sprint proposta e segue.
+16. **Arrastar do `Backlog` direto para `Doing`.** Decidido no F3: entra na sprint e vai para a coluna escolhida, com os dois movimentos no histórico.
+17. **Dev ver a capacidade.** OK: não vê o painel; vê as tarefas e as horas da sprint.

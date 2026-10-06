@@ -278,11 +278,11 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 #### 2.8 Sprint
 
 - **P45** A sprint é **obrigatória**: é por ela que o card sai do `Backlog`. Arrastar o card do `Backlog` para o `To do` é pô-lo na sprint aberta; sem sprint aberta, o sistema propõe criar uma, já preenchida (nome "Sprint N", início hoje, fim pela duração padrão), e segue (R5). O objetivo da sprint é opcional. Só o gestor e o Administrador põem ou tiram card da sprint; o dev não. Tirar devolve ao `Backlog`. **Uma sprint em andamento por projeto**: é a sprint aberta, ainda não encerrada.
-- **P46** Duração padrão de 10 dias úteis (2 semanas), ajustável por projeto. **Padrão.**
+- **P46** Duração padrão de 10 dias úteis (2 semanas), ajustável por projeto. **Padrão.** O gestor informa o início; o fim é calculado contando o dia de início como o 1º dia útil (10 dias úteis: início 06/10 → fim 19/10) e pode ser editado (decisão de 06/10).
 - ~~**P47**~~ Saiu (R9): a sprint não tem time cadastrado. O time é quem tem tarefa nela.
 - **P48** Capacidade de cada dev na sprint = carga diária (N3) × dias úteis da sprint, de segunda a sexta entre o início e o fim. Férias e folga ficam fora da v1 (R9).
 - **P49** O sistema mostra, por dev, as horas que faltam das tarefas dele na sprint (previstas − já lançadas) contra a capacidade dele. É **só referência** para o gestor: nunca impede nada. Tarefa sem dev ou sem horas aparece à parte. A capacidade do QA não entra na conta na v1.
-- **P50** O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog`, como o gestor decidir; fica o histórico.
+- **P50** O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog`, como o gestor decidir; fica o histórico. A próxima sprint começa, por padrão, no 1º dia útil depois do fim da anterior; o gestor edita (decisão de 06/10). O gestor e o Administrador podem **reabrir** uma sprint encerrada, desde que não haja outra aberta no projeto (uma aberta por projeto, P45); reabrir não traz de volta as tarefas que foram para a próxima (decisão de 06/10).
 - **P51** A sprint é a "Fase" do Histórico de Desenvolvimento entregue ao cliente.
 
 #### 2.9 Suporte
