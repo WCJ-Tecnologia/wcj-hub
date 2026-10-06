@@ -871,9 +871,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] As quatro listas: texto do vazio com a ação dele, indicador de carregando e mensagem de erro com *Tentar de novo* afirmados
-- [ ] Sem `waitForTimeout`
-- [ ] Gate check passes: Build
+- [x] As quatro listas: texto do vazio com a ação dele, indicador de carregando e mensagem de erro com *Tentar de novo* afirmados
+- [x] Sem `waitForTimeout`
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build
