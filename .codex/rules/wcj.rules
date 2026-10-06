@@ -1,0 +1,334 @@
+# Travas do padrão WCJ para o Codex (política de execução). Ver .ai/adapters/README.md.
+#
+# A regra do Codex casa o COMEÇO do comando, palavra por palavra. Por isso ela é mais
+# grossa que o hook do Claude Code e do Cursor: não vê flag no fim do comando
+# (git push origin main --force) nem sabe se o banco é local. Onde não dá para saber,
+# a decisão é "prompt": o humano confirma.
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr", "-Rf", "-fR", "-RF", "-r", "-R", "--recursive"]],
+    decision = "forbidden",
+    justification = "Apagar recursivamente não tem volta. Peça ao humano (.ai/core/git.md, seção 3a).",
+    match = ["rm -rf app", "rm -r storage"],
+    not_match = ["rm arquivo.txt"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--mirror"]],
+    decision = "forbidden",
+    justification = "git push --force reescreve o histórico do remoto (.ai/core/git.md, seção 3a).",
+    match = ["git push --force origin main", "git push -f"],
+    not_match = ["git push origin main"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", ["--force-with-lease", "--force-if-includes"]],
+    decision = "prompt",
+    justification = "Ainda reescreve histórico publicado; só com um humano.",
+    match = ["git push --force-with-lease origin feat/x"],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "git reset --hard apaga o que não está em commit. Use git stash.",
+    match = ["git reset --hard origin/main"],
+    not_match = ["git reset --soft HEAD~1"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", ["-f", "-fd", "-df", "-fdx", "-fxd", "-dfx", "-xdf", "-fx", "-xf", "-ff", "-ffd", "-ffdx", "--force"]],
+    decision = "forbidden",
+    justification = "git clean -f apaga arquivo não versionado. Liste antes com git clean -n.",
+    match = ["git clean -fd"],
+    not_match = ["git clean -n"],
+)
+
+prefix_rule(
+    pattern = [["php", "sail", "./vendor/bin/sail"], "artisan", ["migrate:fresh", "migrate:refresh", "migrate:reset", "db:wipe"]],
+    decision = "prompt",
+    justification = "Apaga o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["php artisan migrate:fresh --seed", "sail artisan db:wipe"],
+    not_match = ["php artisan migrate"],
+)
+
+prefix_rule(
+    pattern = [["php", "sail", "./vendor/bin/sail"], "artisan", "migrate", "--force"],
+    decision = "prompt",
+    justification = "--force pula a confirmação de produção. O humano confirma que é local.",
+    match = ["php artisan migrate --force"],
+)
+
+# Prisma: sem como saber se a DATABASE_URL é local, o humano confirma. `npm run db:reset` (script que
+# chama o Prisma) o Codex não enxerga; o hook do Claude Code e do Cursor lê o package.json.
+prefix_rule(
+    pattern = [["npx", "bunx", "pnpx", "pnpm", "yarn"], "prisma", "migrate", "reset"],
+    decision = "prompt",
+    justification = "Apaga o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["npx prisma migrate reset --force", "pnpm prisma migrate reset"],
+    not_match = ["npx prisma migrate status"],
+)
+
+prefix_rule(
+    pattern = ["prisma", "migrate", "reset"],
+    decision = "prompt",
+    justification = "Apaga o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["prisma migrate reset --force"],
+)
+
+prefix_rule(
+    pattern = [["npx", "bunx", "pnpx", "pnpm", "yarn"], "prisma", "db", "push", ["--force-reset", "--accept-data-loss"]],
+    decision = "prompt",
+    justification = "Apaga dado. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["npx prisma db push --force-reset"],
+    not_match = ["npx prisma db pull"],
+)
+
+prefix_rule(
+    pattern = ["prisma", "db", "push", ["--force-reset", "--accept-data-loss"]],
+    decision = "prompt",
+    justification = "Apaga dado. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["prisma db push --accept-data-loss"],
+)
+
+# Prisma migrate resolve (marca migração sem rodar) e db execute (SQL direto no banco).
+prefix_rule(
+    pattern = [["npx", "bunx", "pnpx", "pnpm", "yarn"], "prisma", ["migrate", "db"], ["resolve", "execute"]],
+    decision = "prompt",
+    justification = "Muda o banco sem migração. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["npx prisma migrate resolve --applied 20240101_init", "npx prisma db execute --file limpa.sql"],
+    not_match = ["npx prisma migrate status"],
+)
+
+prefix_rule(
+    pattern = ["prisma", ["migrate", "db"], ["resolve", "execute"]],
+    decision = "prompt",
+    justification = "Muda o banco sem migração. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["prisma db execute --stdin"],
+)
+
+# Alembic: aplicar (upgrade), desfazer (downgrade) e carimbar a versão (stamp) mudam o banco. Sem como saber
+# se a URL é local, o humano confirma. O hook do Claude Code e do Cursor lê o alembic.ini, o env.py e o .env.
+prefix_rule(
+    pattern = ["alembic", ["upgrade", "downgrade", "stamp"]],
+    decision = "prompt",
+    justification = "Muda o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["alembic upgrade head", "alembic downgrade base", "alembic stamp head"],
+    not_match = ["alembic current", "alembic history"],
+)
+
+prefix_rule(
+    pattern = [["uv", "poetry", "pipenv", "pdm"], "run", "alembic", ["upgrade", "downgrade", "stamp"]],
+    decision = "prompt",
+    justification = "Muda o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["uv run alembic upgrade head", "poetry run alembic downgrade -1"],
+    not_match = ["uv run alembic current"],
+)
+
+prefix_rule(
+    pattern = [["python", "python3"], "-m", "alembic", ["upgrade", "downgrade", "stamp"]],
+    decision = "prompt",
+    justification = "Muda o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["python -m alembic upgrade head"],
+    not_match = ["python -m alembic current"],
+)
+
+prefix_rule(
+    pattern = ["uvx", "alembic", ["upgrade", "downgrade", "stamp"]],
+    decision = "prompt",
+    justification = "Muda o banco. Só no ambiente local, e o humano confirma que é local (.ai/core/banco.md).",
+    match = ["uvx alembic upgrade head"],
+)
+
+# Vercel: deploy de produção pela CLI e troca do deploy que está no ar. `--prod` no fim do comando
+# (vercel deploy --yes --prod) a regra não vê; a política de aprovação pergunta do mesmo jeito.
+prefix_rule(
+    pattern = [["vercel", "vc"], ["--prod", "promote", "rollback", "redeploy", "alias", "rolling-release", "rr"]],
+    decision = "prompt",
+    justification = "Mexe no que está no ar em produção, fora do deploy do git (.ai/core/deploy.md).",
+    match = ["vercel --prod", "vercel promote https://app-abc123.vercel.app", "vc rollback", "vercel redeploy https://app-abc123.vercel.app", "vercel alias set app-abc123.vercel.app www.exemplo.com.br", "vercel rr approve"],
+    not_match = ["vercel", "vercel build --prod"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], "deploy", ["--prod", "--target=production"]],
+    decision = "prompt",
+    justification = "Deploy de produção pela CLI, fora do deploy do git (.ai/core/deploy.md).",
+    match = ["vercel deploy --prod", "vercel deploy --target=production"],
+    not_match = ["vercel deploy --prebuilt"],
+)
+
+prefix_rule(
+    pattern = [["npx", "bunx", "pnpx", "pnpm", "yarn"], "vercel", ["--prod", "promote", "rollback", "redeploy", "alias", "rolling-release", "rr"]],
+    decision = "prompt",
+    justification = "Mexe no que está no ar em produção, fora do deploy do git (.ai/core/deploy.md).",
+    match = ["npx vercel --prod", "pnpm vercel promote https://app-abc123.vercel.app", "npx vercel redeploy https://app-abc123.vercel.app"],
+    not_match = ["npx vercel"],
+)
+
+prefix_rule(
+    pattern = [["npx", "bunx", "pnpx", "pnpm", "yarn"], "vercel", "deploy", ["--prod", "--target=production"]],
+    decision = "prompt",
+    justification = "Deploy de produção pela CLI, fora do deploy do git (.ai/core/deploy.md).",
+    match = ["npx vercel deploy --prod"],
+    not_match = ["npx vercel deploy"],
+)
+
+# Vercel além do deploy: apagar, API, compra e toda sub-ação que muda projeto, time ou conta pedem confirmação.
+prefix_rule(
+    pattern = [["vercel", "vc"], ["rm", "remove", "api", "buy", "cache", "install", "i", "ln"]],
+    decision = "prompt",
+    justification = "Apaga deploy, chama a API com a conta do humano, compra, instala integração, troca o alias ou limpa o cache de produção (.ai/core/deploy.md).",
+    match = ["vercel rm app-abc123.vercel.app", "vercel api /v9/projects", "vercel cache purge"],
+    not_match = ["vercel ls"],
+)
+
+prefix_rule(
+    pattern = [
+        ["vercel", "vc"],
+        ["env", "project", "projects", "domains", "domain", "dns", "certs", "cert", "blob", "webhooks", "webhook", "deploy-hooks", "deploy-hook", "routes", "redirects", "redirect", "teams", "team", "integration", "ir", "integration-resource", "connect", "microfrontends", "mf", "crons", "cron", "git", "firewall", "edge-config", "flags", "oauth-apps", "tokens", "sandbox"],
+        ["add", "rm", "remove", "update", "buy", "move", "transfer-in", "import", "issue", "put", "del", "copy", "cp", "create", "create-store", "delete-store", "empty-store", "publish", "discard", "restore", "promote", "upload", "delete", "edit", "enable", "disable", "reorder", "invite", "connect", "disconnect", "rename", "run", "attach", "detach", "revoke-tokens", "create-group", "add-to-group", "remove-from-group", "delete-group", "accept-terms", "claim", "create-threshold", "discard-staging", "set", "split", "rollout", "archive", "prepare", "override", "register", "dismiss", "install", "fork", "exec", "stop", "snapshot"],
+    ],
+    decision = "prompt",
+    justification = "Muda o projeto, o time ou a conta na Vercel (.ai/core/deploy.md).",
+    match = ["vercel project rm meu-projeto", "vercel env rm DATABASE_URL production", "vercel domains rm cliente.com.br", "vercel env run -- npm run dev"],
+    not_match = ["vercel env ls", "vercel domains ls"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], ["firewall", "ai-gateway", "sandbox", "edge-config"], ["rules", "ip-blocks", "system-bypass", "attack-mode", "system-mitigations", "api-keys", "snapshots", "sessions", "config", "items"], ["add", "rm", "remove", "edit", "enable", "disable", "reorder", "set", "update", "delete", "create"]],
+    decision = "prompt",
+    justification = "Muda o projeto, o time ou a conta na Vercel (.ai/core/deploy.md).",
+    match = ["vercel firewall rules add", "vercel sandbox snapshots delete snap_1"],
+    not_match = ["vercel firewall rules list"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], "env", "pull", ["/dev/stdout", "/dev/stderr", "/dev/tty", "/dev/fd/1", "/dev/fd/2", "-"]],
+    decision = "forbidden",
+    justification = "Joga as variáveis, com os segredos, no contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["vercel env pull /dev/stdout"],
+    not_match = ["vercel env pull"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], ["project", "projects", "connect"], "token"],
+    decision = "forbidden",
+    justification = "Imprime um token, que vai para o contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["vercel project token", "vercel connect token scl_abc"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], "tokens", "add"],
+    decision = "forbidden",
+    justification = "Cria e imprime um token, que vai para o contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["vercel tokens add ci"],
+    not_match = ["vercel tokens ls"],
+)
+
+prefix_rule(
+    pattern = [["vercel", "vc"], "ai-gateway", "api-keys", "create"],
+    decision = "forbidden",
+    justification = "Cria e imprime uma chave de API, que vai para o contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["vercel ai-gateway api-keys create"],
+)
+
+# CLIs de cofre de segredo e de plataforma que imprimem o valor das variáveis na tela.
+prefix_rule(
+    pattern = [["doppler"], "secrets", ["get", "download", "substitute"]],
+    decision = "forbidden",
+    justification = "Imprime os segredos do cofre no contexto do agente; quem consulta o valor é o humano (.ai/core/seguranca.md, seção 12).",
+    match = ["doppler secrets get DATABASE_URL --plain"],
+    not_match = ["doppler secrets set FOO"],
+)
+
+prefix_rule(
+    pattern = [["doppler", "infisical"], "secrets"],
+    decision = "prompt",
+    justification = "Sem subcomando, lista os segredos com o valor; o hook do Claude Code e do Cursor nega (.ai/core/seguranca.md, seção 12).",
+    match = ["doppler secrets", "infisical secrets"],
+)
+
+prefix_rule(
+    pattern = [["op"], ["read", "inject"]],
+    decision = "forbidden",
+    justification = "Imprime o valor do cofre no contexto do agente; quem consulta o valor é o humano (.ai/core/seguranca.md, seção 12).",
+    match = ["op read op://prod/db/password", "op inject -i config.tpl"],
+    not_match = ["op item list"],
+)
+
+prefix_rule(
+    pattern = [["heroku"], ["config", "config:get"]],
+    decision = "forbidden",
+    justification = "Imprime as variáveis do app, com os segredos, no contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["heroku config -a app", "heroku config:get DATABASE_URL -a app"],
+    not_match = ["heroku logs --tail"],
+)
+
+prefix_rule(
+    pattern = [["infisical"], "export"],
+    decision = "forbidden",
+    justification = "Imprime os segredos do cofre no contexto do agente (.ai/core/seguranca.md, seção 12).",
+    match = ["infisical export --env=prod"],
+)
+
+prefix_rule(
+    pattern = [["railway"], ["variables", "vars", "variable"]],
+    decision = "prompt",
+    justification = "Sem --set, imprime as variáveis com os segredos; o hook do Claude Code e do Cursor nega (.ai/core/seguranca.md, seção 12).",
+    match = ["railway variables"],
+)
+
+# Ferramenta que injeta ambiente (cofre de segredo, CLI de plataforma): o hook do Claude Code e do Cursor desembrulha e
+# nega comando de banco atrás dela; aqui o humano confirma. heroku run e fly ssh console rodam no servidor.
+prefix_rule(
+    pattern = [["doppler", "infisical", "op", "dotenvx", "railway"], "run"],
+    decision = "prompt",
+    justification = "Roda o comando com um ambiente que a trava não vê; comando de banco atrás dela é do humano (.ai/core/banco.md, seção 7).",
+    match = ["doppler run -- alembic upgrade head", "op run -- npm run dev", "railway run npm start"],
+    not_match = ["doppler setup"],
+)
+
+prefix_rule(
+    pattern = [["aws-vault", "direnv"], "exec"],
+    decision = "prompt",
+    justification = "Roda o comando com um ambiente que a trava não vê; comando de banco atrás dela é do humano (.ai/core/banco.md, seção 7).",
+    match = ["aws-vault exec producao -- aws s3 ls", "direnv exec . alembic upgrade head"],
+)
+
+prefix_rule(
+    pattern = [["doppler", "infisical", "op", "dotenvx"], "run", "--", ["printenv", "env"]],
+    decision = "forbidden",
+    justification = "Imprime as variáveis que a ferramenta injeta, com os segredos do cofre (.ai/core/seguranca.md, seção 12).",
+    match = ["doppler run -- printenv", "op run -- env"],
+)
+
+prefix_rule(
+    pattern = ["railway", "run", ["printenv", "env"]],
+    decision = "forbidden",
+    justification = "Imprime as variáveis que a ferramenta injeta, com os segredos do cofre (.ai/core/seguranca.md, seção 12).",
+    match = ["railway run printenv"],
+)
+
+prefix_rule(
+    pattern = [["heroku", "fly", "flyctl", "railway"], ["run", "run:detached", "run:inside", "ssh"]],
+    decision = "prompt",
+    justification = "Roda o comando no servidor da plataforma, que pode ser produção (.ai/core/principios.md, seção 5).",
+    match = ["heroku run bash -a cliente", "fly ssh console -C uptime", "railway ssh -s api"],
+    not_match = ["heroku logs --tail"],
+)
+
+prefix_rule(
+    pattern = [["ssh", "scp", "sftp", "rsync", "mosh"]],
+    decision = "prompt",
+    justification = "Servidor remoto pode ser produção (.ai/core/principios.md, seção 5).",
+    match = ["ssh deploy@servidor", "scp dump.sql deploy@servidor:/tmp/"],
+)
+
+prefix_rule(
+    pattern = [["cat", "less", "more", "head", "tail", "source", ".", "cp"], [".env", "./.env", ".env.local", ".env.production", ".env.staging", "prod.env", "./prod.env", "production.env", "deploy.env", ".env-prod"]],
+    decision = "forbidden",
+    justification = "O agente não lê segredo. Procure o NOME da variável no código ou no .env.example (.ai/core/seguranca.md, seção 12).",
+    match = ["cat .env", "source .env", ". ./prod.env"],
+    not_match = ["cat .env.example"],
+)

@@ -1,0 +1,221 @@
+/* GERADO por scripts/build-theme.mjs a partir de design/tokens.json — não edite à mão */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Tema claro. Cada valor vem de design/tokens.json (HEX ao lado, em comentário). */
+:root {
+    --radius: 0.5rem;
+
+    --primary: oklch(0.4882 0.2172 264.38); /* #1D4ED8 */
+    --primary-foreground: oklch(1 0 0); /* #FFFFFF */
+    --background: oklch(0.9755 0.0045 258.32); /* #F5F7FA */
+    --foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --card: oklch(1 0 0); /* #FFFFFF */
+    --muted: oklch(0.9595 0.008 253.85); /* #EEF2F7 */
+    --muted-foreground: oklch(0.5053 0.0327 263.26); /* #5B6578 */
+    --border: oklch(0.9288 0.0126 255.51); /* #E2E8F0 */
+    --input: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
+    --accent: oklch(0.9319 0.0316 255.59); /* #DBEAFE */
+    --destructive: oklch(0.5771 0.2152 27.33); /* #DC2626 */
+    --ring: oklch(0.4882 0.2172 264.38); /* #1D4ED8 */
+    --card-foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --popover: oklch(1 0 0); /* #FFFFFF */
+    --popover-foreground: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --secondary: oklch(0.9595 0.008 253.85); /* #EEF2F7 */
+    --secondary-foreground: oklch(0.2795 0.0368 260.03); /* #1E293B */
+    --accent-foreground: oklch(0.4244 0.1809 265.64); /* #1E40AF */
+    --destructive-foreground: oklch(1 0 0); /* #FFFFFF */
+    --status-pending: oklch(0.4732 0.1247 46.2); /* #92400E */
+    --status-pending-bg: oklch(0.9619 0.058 95.62); /* #FEF3C7 */
+    --status-approved: oklch(0.5081 0.1049 165.61); /* #047857 */
+    --status-approved-bg: oklch(0.9505 0.0507 163.05); /* #D1FAE5 */
+    --status-rejected: oklch(0.5143 0.1978 16.93); /* #BE123C */
+    --status-rejected-bg: oklch(0.9414 0.0298 12.58); /* #FFE4E6 */
+    --status-neutral: oklch(0.4141 0.0573 269.66); /* #3F4A6B */
+    --status-neutral-bg: oklch(0.9407 0.0138 272.69); /* #E8EBF5 */
+    --sidebar: oklch(0.2077 0.0398 265.75); /* #0F172A */
+    --sidebar-foreground: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
+    --sidebar-primary: oklch(0.5461 0.2152 262.88); /* #2563EB */
+    --sidebar-primary-foreground: oklch(1 0 0); /* #FFFFFF */
+    --sidebar-accent: oklch(0.2795 0.0368 260.03); /* #1E293B */
+    --sidebar-accent-foreground: oklch(0.9683 0.0069 247.9); /* #F1F5F9 */
+    --sidebar-border: oklch(0.2795 0.0368 260.03); /* #1E293B */
+    --sidebar-ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
+    --chart-1: oklch(0.5461 0.2152 262.88); /* #2563EB */
+    --chart-2: oklch(0.5413 0.2466 293.01); /* #7C3AED */
+    --chart-3: oklch(0.7686 0.1647 70.08); /* #F59E0B */
+    --chart-4: oklch(0.6959 0.1491 162.48); /* #10B981 */
+    --chart-5: oklch(0.6847 0.1479 237.32); /* #0EA5E9 */
+}
+
+/* Tema escuro. Todo token do claro tem par aqui. */
+.dark {
+    --primary: oklch(0.7137 0.1434 254.62); /* #60A5FA */
+    --primary-foreground: oklch(0.1831 0.0309 263.38); /* #0B1220 */
+    --background: oklch(0.1831 0.0309 263.38); /* #0B1220 */
+    --foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
+    --card: oklch(0.2247 0.0391 265.98); /* #131B2E */
+    --muted: oklch(0.262 0.0399 265.23); /* #1B2438 */
+    --muted-foreground: oklch(0.7194 0.0303 261.45); /* #9AA5B8 */
+    --border: oklch(0.3122 0.0472 267); /* #263049 */
+    --input: oklch(0.3547 0.0516 266.06); /* #2F3B57 */
+    --accent: oklch(0.3117 0.072 264.44); /* #1E2F55 */
+    --destructive: oklch(0.7106 0.1661 22.22); /* #F87171 */
+    --ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
+    --card-foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
+    --popover: oklch(0.2247 0.0391 265.98); /* #131B2E */
+    --popover-foreground: oklch(0.9336 0.0129 266.7); /* #E5E9F2 */
+    --secondary: oklch(0.262 0.0399 265.23); /* #1B2438 */
+    --secondary-foreground: oklch(0.8927 0.0181 261.34); /* #D5DCE8 */
+    --accent-foreground: oklch(0.9319 0.0316 255.59); /* #DBEAFE */
+    --destructive-foreground: oklch(0.155 0.0395 22.84); /* #1A0505 */
+    --status-pending: oklch(0.8369 0.1644 84.43); /* #FBBF24 */
+    --status-pending-bg: oklch(0.3013 0.0551 87.06); /* #3A2C07 */
+    --status-approved: oklch(0.7729 0.1535 163.22); /* #34D399 */
+    --status-approved-bg: oklch(0.2698 0.0497 168.78); /* #052E22 */
+    --status-rejected: oklch(0.7192 0.169 13.43); /* #FB7185 */
+    --status-rejected-bg: oklch(0.2487 0.0757 5.55); /* #3D0D1C */
+    --status-neutral: oklch(0.769 0.0508 275.03); /* #AAB2D5 */
+    --status-neutral-bg: oklch(0.2671 0.0544 274.72); /* #1E2340 */
+    --sidebar: oklch(0.1706 0.0284 267.36); /* #0A0F1C */
+    --sidebar-foreground: oklch(0.869 0.0198 252.89); /* #CBD5E1 */
+    --sidebar-primary: oklch(0.5461 0.2152 262.88); /* #2563EB */
+    --sidebar-primary-foreground: oklch(1 0 0); /* #FFFFFF */
+    --sidebar-accent: oklch(0.2449 0.0388 264.35); /* #172033 */
+    --sidebar-accent-foreground: oklch(0.9683 0.0069 247.9); /* #F1F5F9 */
+    --sidebar-border: oklch(0.2614 0.0382 264.48); /* #1B2437 */
+    --sidebar-ring: oklch(0.7137 0.1434 254.62); /* #60A5FA */
+    --chart-1: oklch(0.7137 0.1434 254.62); /* #60A5FA */
+    --chart-2: oklch(0.709 0.1592 293.54); /* #A78BFA */
+    --chart-3: oklch(0.8369 0.1644 84.43); /* #FBBF24 */
+    --chart-4: oklch(0.7729 0.1535 163.22); /* #34D399 */
+    --chart-5: oklch(0.7535 0.139 232.66); /* #38BDF8 */
+}
+
+@theme inline {
+    /* Fontes do sistema por padrão: a CSP não libera origem de terceiros.
+       Para webfont, hospede em public/ e aponte em design/tokens.json. */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-heading: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+
+    /* Tamanho abaixo de xs para rótulos e eyebrows; nada de text-[Npx] em componente. */
+    --text-2xs: 0.6875rem;
+    --text-2xs--line-height: 1rem;
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-accent: var(--accent);
+    --color-destructive: var(--destructive);
+    --color-ring: var(--ring);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-status-pending: var(--status-pending);
+    --color-status-pending-bg: var(--status-pending-bg);
+    --color-status-approved: var(--status-approved);
+    --color-status-approved-bg: var(--status-approved-bg);
+    --color-status-rejected: var(--status-rejected);
+    --color-status-rejected-bg: var(--status-rejected-bg);
+    --color-status-neutral: var(--status-neutral);
+    --color-status-neutral-bg: var(--status-neutral-bg);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+    * {
+        border-color: var(--border);
+        outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+    }
+    body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-heading {
+        font-family: var(--font-heading);
+    }
+    /* Foco visível padronizado: nunca remova o outline. */
+    :focus-visible {
+        outline: 2px solid var(--ring);
+        outline-offset: 2px;
+    }
+}
+
+/*
+ * iOS dá zoom na página quando um campo focado tem menos de 16px. O text-sm
+ * (14px) do Tailwind venceria o @layer base, então isto vive em utilities e
+ * fixa 16px no celular sem travar o pinch-zoom.
+ */
+@layer utilities {
+    @media (max-width: 767px) {
+        input:not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']):not([type='range']):not([type='button']):not([type='submit']):not([type='reset']),
+        select,
+        textarea {
+            font-size: 16px !important;
+        }
+    }
+
+    .scrollbar-slim {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in oklab, var(--primary) 40%, transparent) transparent;
+    }
+    .scrollbar-slim::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    .scrollbar-slim::-webkit-scrollbar-thumb {
+        background: color-mix(in oklab, var(--primary) 35%, transparent);
+        border-radius: 999px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

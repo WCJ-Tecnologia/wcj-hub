@@ -1,0 +1,93 @@
+# Extends the default gitleaks rules. Only the two versioned test env files are
+# allow-listed: they hold a throwaway APP_KEY and an e2e-only password that never
+# leave the test database. Anything else that looks like a secret still fails CI.
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+    '''^\.env\.testing$''',
+    '''^\.env\.e2e\.example$''',
+]
+
+# Signing secrets written in Python/JS/TS code. The default generic rule needs high
+# entropy, so JWT_SECRET = "changeme", a settings default like SECRET_KEY: str = "dev",
+# app.config["SECRET_KEY"] = "..." or os.getenv("SECRET_KEY", "dev-secret") pass
+# unnoticed. .ai/core/seguranca.md, section 9: no key, token or password in a string
+# in code, not even as a development default. Test folders and files are exempt, and
+# so is a value that is only the name of an environment variable ("JWT_SECRET_KEY").
+# Assignment (=, annotated or keyword argument): any value, spaces and b"..." included.
+[[rules]]
+id = "hardcoded-signing-secret"
+description = "Signing secret (JWT_SECRET, SECRET_KEY, SIGNING_KEY, AUTH_SECRET) assigned a literal in Python/JS/TS"
+regex = '''(?i)\b(?:jwt_?secret(?:_?key)?|jwt_?key|secret_?key|signing_?key|(?:next_?)?auth_?secret)\b["']?\]?\s*(?::\s*[\w.\[\], |]+?\s*)?=\s*(?:Field\(\s*(?:default\s*=\s*)?)?[rbu]{0,2}["'`]([^"'`\r\n${}]{3,})["'`]'''
+secretGroup = 1
+path = '''\.(?:py|[cm]?[jt]sx?|vue|svelte)$'''
+keywords = ["secret", "jwt", "signing"]
+
+[[rules.allowlists]]
+paths = ['''(?:^|/)(?:tests?|__tests__|spec)/''', '''(?:^|/)(?:test_[^/]*|[^/]*_test)\.py$''', '''\.(?:test|spec)\.[cm]?[jt]sx?$''', '''(?:^|/)conftest\.py$''']
+
+[[rules.allowlists]]
+regexTarget = "secret"
+regexes = ['''^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$''']
+
+# Dict or object entry ({"SECRET_KEY": "dev"}, { jwtSecret: 'x' }). A value with
+# spaces or a single capitalized word is a label ({"secret_key": "Segredo"}), a dotted
+# value is a translation key ('settings.secretKey.label') and a TS literal union
+# ({ signingKey: 'hmac' | 'rsa' }) is a type: none of them is a secret.
+[[rules]]
+id = "hardcoded-signing-secret-entry"
+description = "Signing secret (JWT_SECRET, SECRET_KEY, SIGNING_KEY, AUTH_SECRET) given a literal in a dict or object in Python/JS/TS"
+regex = '''(?i)\b(?:jwt_?secret(?:_?key)?|jwt_?key|secret_?key|signing_?key|(?:next_?)?auth_?secret)\b["']?\s*:\s*[rbu]{0,2}["'`]([^"'`\s${}]{3,})["'`]'''
+secretGroup = 1
+path = '''\.(?:py|[cm]?[jt]sx?|vue|svelte)$'''
+keywords = ["secret", "jwt", "signing"]
+
+[[rules.allowlists]]
+paths = ['''(?:^|/)(?:tests?|__tests__|spec)/''', '''(?:^|/)(?:test_[^/]*|[^/]*_test)\.py$''', '''\.(?:test|spec)\.[cm]?[jt]sx?$''', '''(?:^|/)conftest\.py$''']
+
+[[rules.allowlists]]
+regexTarget = "secret"
+regexes = ['''^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$''', '''^\p{Lu}\p{Ll}+$''', '''^[a-z][\w-]*(?:\.[\w-]+)+$''']
+
+[[rules.allowlists]]
+regexTarget = "line"
+regexes = ['''["'`][^"'`]*["'`]\s*\|\s*["'`]''']
+
+[[rules]]
+id = "hardcoded-signing-secret-fallback"
+description = "Literal fallback for a signing secret read from the environment (getenv, environ.get, decouple/environs, process.env)"
+regex = '''(?i)(?:(?:getenv|environ\.get|\bconfig|\benv(?:\.\w+)?)\(\s*["'][a-z_]*(?:secret(?:_key)?|signing_key|jwt_key)["']\s*(?:,\s*(?:default\s*=\s*)?|\)\s*or\s+)|process\.env(?:\.[a-z_]*(?:secret(?:_key)?|signing_key|jwt_key)|\[\s*["'`][a-z_]*(?:secret(?:_key)?|signing_key|jwt_key)["'`]\s*\])\s*(?:\|\||\?\?)\s*)[rbu]{0,2}["'`]([^"'`\r\n${}]{3,})["'`]'''
+secretGroup = 1
+path = '''\.(?:py|[cm]?[jt]sx?|vue|svelte)$'''
+keywords = ["secret", "signing", "jwt"]
+
+[[rules.allowlists]]
+paths = ['''(?:^|/)(?:tests?|__tests__|spec)/''', '''(?:^|/)(?:test_[^/]*|[^/]*_test)\.py$''', '''\.(?:test|spec)\.[cm]?[jt]sx?$''', '''(?:^|/)conftest\.py$''']
+
+[[rules]]
+id = "hardcoded-jwt-secret-call"
+description = "Literal secret passed straight to jwt.encode/decode/sign/verify in Python/JS/TS"
+regex = '''\bjwt\.(?:encode|decode|sign|verify)\(\s*(?:[\w.]+|\{[^{}]*\})\s*,\s*(?:key\s*=\s*)?[rbuRBU]{0,2}["'`]([^"'`\r\n${}]{3,})["'`]'''
+secretGroup = 1
+path = '''\.(?:py|[cm]?[jt]sx?|vue|svelte)$'''
+keywords = ["jwt."]
+
+[[rules.allowlists]]
+paths = ['''(?:^|/)(?:tests?|__tests__|spec)/''', '''(?:^|/)(?:test_[^/]*|[^/]*_test)\.py$''', '''\.(?:test|spec)\.[cm]?[jt]sx?$''', '''(?:^|/)conftest\.py$''']
+
+# jose (SignJWT, jwtVerify) takes the HMAC key as bytes: new TextEncoder().encode("...")
+# assigned to a secret/signing-key variable, as the first argument of .sign()/.encrypt()
+# (SignJWT, EncryptJWT) or anywhere in jwtVerify and the other jose verifiers. The text
+# that crypto.subtle.sign/encrypt receive is data, not the key, and stays out.
+[[rules]]
+id = "hardcoded-jose-secret"
+description = "Literal secret encoded with TextEncoder for jose (sign, jwtVerify) in JS/TS"
+regex = '''(?i)(?:\b\w*(?:secret|signing_?key|jwt_?key|hmac_?key)\w*\s*=\s*|\.(?:sign|encrypt)\(\s*|\b(?:jwtVerify|jwtDecrypt|compactVerify|flattenedVerify|generalVerify|compactDecrypt)\([^()]*?)new\s+TextEncoder\(\)\.encode\(\s*["'`]([^"'`\r\n${}]{3,})["'`]'''
+secretGroup = 1
+path = '''\.(?:[cm]?[jt]sx?|vue|svelte)$'''
+keywords = ["textencoder"]
+
+[[rules.allowlists]]
+paths = ['''(?:^|/)(?:tests?|__tests__|spec)/''', '''\.(?:test|spec)\.[cm]?[jt]sx?$''']

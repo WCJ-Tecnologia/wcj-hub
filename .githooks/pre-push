@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Push gate: static analysis and tests before anything leaves the machine.
+# Enable with:  git config core.hooksPath .githooks
+# (If a global core.hooksPath dispatcher is in use, point it at this file.)
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "→ composer lint"
+composer lint
+
+echo "→ npm run typecheck"
+npm run typecheck
+
+echo "→ php artisan test"
+php artisan test

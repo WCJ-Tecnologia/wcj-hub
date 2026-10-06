@@ -1,0 +1,53 @@
+# Comece aqui: <Nome do sistema>
+
+Documento de entrada. Quem abre este repositório pela primeira vez, pessoa ou IA, lê isto antes de qualquer outra coisa.
+
+## O produto em um parágrafo
+
+<Para quem, para quê, o que substitui, quem é o cliente.>
+
+## Estado atual
+
+Atualizado em <AAAA-MM-DD>.
+
+| Bloco | Estado | Onde |
+|---|---|---|
+| <Autenticação e papéis> | no ar | |
+| <Cadastro de X> | no ar | |
+| <Relatório Y> | em construção | `docs/escopo.md` §3 |
+| <Módulo Z> | fora da v1 | |
+
+## Ambientes
+
+| Ambiente | URL | Branch | Quem acessa |
+|---|---|---|---|
+
+## Como rodar
+
+Ver `AGENTS.md`, seção "Como rodar". <Ou os comandos aqui, se preferir.>
+
+## Hierarquia dos documentos
+
+Quando dois documentos divergem, vale esta ordem:
+
+1. **Atas com o cliente** (`docs/atas/`): são a fonte do requisito.
+2. **`docs/escopo.md`** e as specs aprovadas em `.specs/features/`: o que foi combinado construir.
+3. **`docs/banco.txt`**: o modelo de dados aprovado.
+4. **Este documento** e o `AGENTS.md`: o estado atual e as regras do repositório.
+5. Qualquer outro documento de desenho ou plano.
+
+Sobre o que **já foi construído**, este documento vence os demais.
+
+## Ordem de leitura
+
+1. `AGENTS.md` (regras e armadilhas).
+2. `.specs/STATE.md`: as decisões ativas e onde o trabalho parou.
+3. `docs/escopo.md`, o bloco em que você vai trabalhar, e a spec dele em `.specs/features/`.
+4. `docs/banco.txt`, as tabelas envolvidas.
+5. O playbook da tarefa em `.ai/playbooks/`.
+
+## Ponto de retomada
+
+<O próximo passo do produto. Ex.: "Bloco B4 do escopo: a spec está aprovada, falta a fase 2 das tarefas.">
+
+O ponto exato de uma feature em andamento (tarefa, arquivo, próximo passo) fica no Handoff do `.specs/STATE.md`, que a skill atualiza quando o trabalho pausa.

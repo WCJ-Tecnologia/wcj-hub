@@ -1,0 +1,9 @@
+vendor
+node_modules
+public/build
+storage
+bootstrap/cache
+playwright-report
+test-results
+package-lock.json
+composer.lock

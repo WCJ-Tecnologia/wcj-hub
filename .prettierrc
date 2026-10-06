@@ -1,0 +1,10 @@
+{
+    "printWidth": 140,
+    "tabWidth": 4,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "semi": true,
+    "plugins": ["prettier-plugin-tailwindcss"],
+    "tailwindStylesheet": "resources/css/app.css",
+    "tailwindFunctions": ["cn", "cva"]
+}
