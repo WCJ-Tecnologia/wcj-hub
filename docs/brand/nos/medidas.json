@@ -1,0 +1,21 @@
+{
+ "raio_no": 83.3,
+ "passo_na_fileira": 235.37,
+ "desencontro": 117.685,
+ "entre_fileiras": 181.134,
+ "entre_vizinhos": 216.008,
+ "tom": {
+  "fundo-escuro": "#091833",
+  "fundo-claro": "#E3ECFA"
+ },
+ "no_azul": "#1A6CF3",
+ "nos_de_cima_na_trilha": 12,
+ "trilha": [
+  2991.04,
+  347.73
+ ],
+ "recorte": [
+  637.34,
+  347.73
+ ]
+}

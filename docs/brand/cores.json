@@ -1,0 +1,40 @@
+{
+ "aprovado_em": "2026-10-05",
+ "azul": {
+  "primario": "#1A6CF3",
+  "brilhante": "#4D90FF",
+  "profundo": "#0F4FC4",
+  "tint": "#E9F1FE"
+ },
+ "alerta": {
+  "destaque": "#FF5A45",
+  "texto": "#D12B15"
+ },
+ "estados": {
+  "critico": { "texto": "#D12B15", "selo": "#FCEDEB", "no_escuro": "#FF5A45", "selo_no_escuro": "#301612" },
+  "alto": { "texto": "#B6500C", "selo": "#FCF2EB", "no_escuro": "#FB8537", "selo_no_escuro": "#301E12" },
+  "medio": { "texto": "#986706", "selo": "#FCF6EB", "no_escuro": "#F6B128", "selo_no_escuro": "#302612" },
+  "bom": { "texto": "#1C8051", "selo": "#ECFBF4", "no_escuro": "#30CF85", "selo_no_escuro": "#123022" }
+ },
+ "cinzas": {
+  "0": { "cor": "#FFFFFF", "papel": "Superfície: cartão, página de documento" },
+  "50": { "cor": "#F5F7FB", "papel": "Fundo de página claro" },
+  "100": { "cor": "#EBEFF7", "papel": "Faixa alternada e zebra de tabela" },
+  "200": { "cor": "#DDE3EC", "papel": "Borda e régua" },
+  "300": { "cor": "#C9D0DE", "papel": "Borda forte, contorno de campo" },
+  "400": { "cor": "#AEB6C6", "papel": "Texto suave sobre fundo escuro" },
+  "500": { "cor": "#8590A6", "papel": "Ícone e texto desativado" },
+  "600": { "cor": "#5B6273", "papel": "Texto suave sobre fundo claro" },
+  "700": { "cor": "#3B4253", "papel": "Texto secundário forte" },
+  "800": { "cor": "#1A1D24", "papel": "Corpo de texto em documento" },
+  "850": { "cor": "#14171F", "papel": "Cartão sobre fundo escuro" },
+  "900": { "cor": "#0C0E13", "papel": "Ink: faixas escuras, títulos, o \"wcj\" do logo" },
+  "950": { "cor": "#070B16", "papel": "Navy: hero e capa, o tom mais escuro" }
+ },
+ "borda_no_escuro": "#232A38",
+ "nos": {
+  "fundo_escuro": "#091833",
+  "fundo_claro": "#E3ECFA",
+  "no_azul": "#1A6CF3"
+ }
+}
