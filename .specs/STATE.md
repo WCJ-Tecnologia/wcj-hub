@@ -39,10 +39,10 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
-- **Phase / Task**: Execute concluído, T1 a T25 (25 tarefas em 6 fases, um commit por tarefa em `feat/b1-nucleo`). Gate Build verde no fim do lote: PHPUnit em MySQL, typecheck, lint, build, `test:guard` e Playwright (smoke com axe nos dois temas e o `@critical` de `e2e/nucleo.spec.ts`).
+- **Phase / Task**: Execute concluído (T1–T31, fases 1–9) e Verifier PASS na rodada 4 (focada, autorizada por Cauã) em 06/10/2026 (`validation.md`). Rodadas 1–3 reprovaram e foram corrigidas pelas fases 7–9.
 - **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T25.
 - **In-progress** (file:line): none
-- **Next step**: Verifier em agente separado (quem não implementou), sobre `spec.md` e o intervalo de commits do B1, com o sensor de mutação nas regras de permissão, exclusão e anonimização; depois PR em rascunho e revisão do Lucas Scholz. Pendências para o PR: SPEC_DEVIATION dos três `destroy` (toast em vez de 403, AC 12/12/9) e a busca da auditoria por chave de card ("SGM-17"), que entra com o B3 pelo domínio de Projetos (A9).
+- **Next step**: revisão final (prints, quatro perguntas por entidade, revisão de segurança dirigida) e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+".
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo

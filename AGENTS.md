@@ -75,7 +75,7 @@ Atualizado em 2026-10-06.
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | branch `feat/b1-nucleo` (Cauã), aguardando Verifier e PR |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | branch `feat/b1-nucleo` (Cauã), Verifier PASS em 06/10; PR a abrir |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
