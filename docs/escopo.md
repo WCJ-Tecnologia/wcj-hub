@@ -206,7 +206,7 @@ O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Sch
 | Trava | Com quem | Bloqueia |
 |---|---|---|
 | ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28). Rafael Garcia valida Projetos no bugbash. | Rafael Garcia | Nada: as specs podem começar. |
-| Lucas Alencar confere a diferença da fatia 1 (`banco.txt` §7), em especial a R15 e as 3 colunas aditivas de 06/10. Se ele preferir as FKs compostas, elas voltam como migração aditiva, sem mudar Service. | Lucas Alencar | Nada: B0 segue com a asserção no Service. |
+| ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira (`banco.txt` §7, R15 e as 3 colunas de 06/10) em 06/10. | Lucas Alencar | Nada. |
 | Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | ele mesmo | B8 |
 | Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | ele mesmo | O canal `mail` do B3 (o `database` não espera). |
 | Acesso à VPS do DaaS, capacidade e separação do banco; DNS do subdomínio. | Alaor Rodrigues | B10 e a homologação pública do B8. |

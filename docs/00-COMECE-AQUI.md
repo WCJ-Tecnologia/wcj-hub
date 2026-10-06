@@ -13,7 +13,7 @@ Atualizado em 2026-10-06.
 | Etapa (playbook `aplicacao-nova`) | Estado | Onde |
 |---|---|---|
 | 1. Necessidade | **Fatia 1 aplicada em 06/10** (D-GER-23 a D-GER-28): revisão de 01/10 aceita por inteiro (R1 a R17); CRM marcado como v2; P17, P22, P32, P34, P40, P42, P45, P47, P48, P53, P56 reescritas. Antes: Sessão C e D (24/09). Chamados é rascunho (D-GER-12) | `docs/necessidade.md` |
-| 2. Banco | **APROVADO por Lucas Alencar em 06/10** (41 tabelas, D-GER-23). No mesmo dia virou a **fatia 1: 27 tabelas** (R7 a R15). A diferença para o aprovado está na seção 7, para ele conferir (em especial a R15: asserção no Service no lugar das FKs compostas). As colunas geradas foram testadas no MySQL 8.4 | `docs/banco.txt` |
+| 2. Banco | **APROVADO por Lucas Alencar em 06/10** (41 tabelas, D-GER-23). No mesmo dia virou a **fatia 1: 27 tabelas** (R7 a R15). A diferença (seção 7: R15 e as 3 colunas aditivas de 06/10) também foi aprovada por ele em 06/10. Migrações no PR #1 (B0). As colunas geradas foram testadas no MySQL 8.4 | `docs/banco.txt` |
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | Funcionais | **Escritos em 06/10**, versão 0.1 para aprovação: F1 a F8 em `docs/funcional/` (D-GER-28). **F1 a F8 APROVADOS por Lucas Scholz em 06/10 (v1.0)**, com todos os pontos a validar respondidos; Rafael Garcia valida Projetos no uso (bugbash). Colunas aditivas decididas na aprovação: `tasks.position`, `tasks.proposed_hours`, `users.ai_write_allowed` (seção 7 do `banco.txt`). Cada um tem a seção 10 "Pontos a validar" | `docs/funcional/README.md` |
 | 4. Escopo | **VALIDADO por Lucas Scholz em 06/10 (etapa 5)**: blocos B0 a B10, apontando para os funcionais. Ele é o responsável por todas as travas da seção 7 | `docs/escopo.md` |
@@ -89,9 +89,9 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 **Próximos passos, nesta ordem** (detalhe em `docs/plano-de-desenvolvimento.md`, seção 8):
 
 1. ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10. Rafael Garcia lê F2 a F7 e valida no bugbash.
-2. Lucas Alencar confere o `banco.txt` §7 (a R15 em especial). Não bloqueia o B0.
+2. ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira em 06/10.
 3. ~~Escopo~~ validado por Lucas Scholz em 06/10 (etapa 5).
-4. **B0** (etapa 3): template `ai-systems` 0.6.0 neste repositório, por domínio, 27 migrações, sementes, CI em MySQL 8, `AGENTS.md`, ADR-001 e ADR-002. Prompt abaixo.
+4. **B0** (etapa 3): FEITO em 06/10 = PR #1 (branch `chore/b0-base`, CI verde, setup em 32 s), aguarda merge do Lucas Scholz. Decisões do PR aceitas por ele em 06/10 (primária clara `#0F4FC4`, usuários só admin, `composer audit` em PR próprio). Prompt usado abaixo.
 5. Prova de conceito do MCP (D-GER-17), em paralelo ao B0.
 6. Reunião de partida com Cauã e Vitinho; onda 1 (B1 ∥ B2).
 

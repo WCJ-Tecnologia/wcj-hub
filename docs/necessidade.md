@@ -542,7 +542,7 @@ Consequência para a v1 (IA3):
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
 - [x] Lucas Scholz revisou o `banco.txt` (Sessão D, 24/09).
 - [x] Lucas Alencar aprovou o `banco.txt` em 06/10 (D-GER-23).
-- [ ] Lucas Alencar confere a diferença da fatia 1 (seção 7 do `banco.txt`), em especial a R15 (asserção no Service no lugar das FKs compostas).
+- [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.txt`, R15 e colunas de 06/10) em 06/10.
 - [ ] Rafael Garcia aprova os funcionais de Projetos (`docs/funcional/`, D-GER-28); Lucas Scholz, os de Núcleo e IA.
 - [ ] Prova de conceito: ver se Claude app e Claude Code (e Codex CLI e Codex no app) usam a mesma conexão ou uma cada. Como a conexão é uma por assistente (IA4, IA6), conectar um derrubaria o outro; se o dev precisar dos dois, `claude_code` volta a ser um assistente separado.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.

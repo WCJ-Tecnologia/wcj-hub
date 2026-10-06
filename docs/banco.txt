@@ -11,8 +11,9 @@ Contrato fica FORA DA V1 (N10): não há tabela contracts; a seção 5 mostra co
 Regras: .ai/core/banco.md. Fonte do requisito: docs/necessidade.md. Telas: docs/funcional/.
 Escopo desta versão: Núcleo (Platform) e Projetos. CRM (seção 3) é proposta da v2, fora da aprovação.
 Chamados fica fora; a seção 5 mostra o que ele acrescenta sem migração destrutiva.
-Situação: APROVADO (fatia 1). A migração parte daqui; mudança passa por nova revisão técnica.
-Aprovado por: Lucas Alencar  em: 2026-10-06   (41 tabelas; a diferença da fatia 1, seção 7, a conferir)
+Situação: APROVADO (fatia 1). Lucas Alencar aprovou também a diferença da seção 7 (R15, asserção no
+Service, e as 3 colunas aditivas de 06/10) em 06/10/2026. A migração está no PR #1 (B0).
+Aprovado por: Lucas Alencar  em: 2026-10-06   (41 tabelas) e, no mesmo dia, a fatia 1 de 27 tabelas (seção 7)
 
 
 =====================================================================
@@ -918,7 +919,7 @@ Tudo abaixo é tabela nova, coluna nula nova ou valor novo em domínio: nenhuma 
 
 
 #####################################################################
-#  7. O QUE MUDOU DEPOIS DA APROVAÇÃO (06/10, fatia 1) — para o Lucas Alencar conferir
+#  7. O QUE MUDOU DEPOIS DA APROVAÇÃO (06/10, fatia 1) — CONFERIDO E APROVADO pelo Lucas Alencar em 06/10
 #  O Lucas Alencar aprovou a versão de 41 tabelas em 06/10. No mesmo dia, Lucas Scholz aceitou a
 #  revisão de 01/10 (R1 a R17). Esta seção é a diferença entre o aprovado e esta versão. O histórico
 #  do enxugamento de 24/09 (Sessões C e D, T10) está no git, até o commit e4ca644.
