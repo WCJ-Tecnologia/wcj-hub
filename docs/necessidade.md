@@ -1,8 +1,10 @@
 # Necessidade: WCJ Hub
 
-Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.4.0). Serve de entrada para o modelo de banco (etapa 2, `docs/banco.txt`) e para o escopo (etapa 4).
+Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Serve de entrada para o modelo de banco (etapa 2, `docs/banco.txt`) e para o escopo (etapa 4).
 
 **Situação:** as regras são as aprovadas por Lucas Scholz na revisão das regras de 24/09/2026 (revisão 4), reescritas aqui na Sessão C. As lacunas fechadas pela premissa nessa reescrita e a exclusão pelo padrão 0.4.0 foram confirmadas por ele no mesmo dia. Na revisão do banco (Sessão D, 24/09), ele tirou a P4 e a P6 e completou N5, P11, P25 e P42. O documento aguarda o Comitê de IA. Chamados continua em rascunho (D-GER-12). **[LEVANTAR]** marca o que depende do dono do módulo. **[DECIDIR]** marca o que depende do comitê ou de quem estiver indicado.
+
+**06/10/2026:** o `banco.txt` foi aprovado por Lucas Alencar (D-GER-23) e Lucas Scholz aceitou a revisão de 01/10 por inteiro (R1 a R17, D-GER-24 a D-GER-27). A primeira entrega é a **fatia 1: Núcleo + Projetos + MCP com 6 ferramentas**; o CRM e o GPT do Wilson são a **v2** e têm a própria rodada de necessidade e banco antes de construir. As regras de CRM (seção 3) ficam aqui como escritas em 24/09, sem valer como requisito da fatia 1. O que cada bloco faz na tela está nos documentos funcionais (`docs/funcional/`); o lado técnico, no `docs/escopo.md`; quem faz o quê e em que ordem, no `docs/plano-de-desenvolvimento.md`.
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (o Trello é ferramenta genérica). A ordem é: regras e fluxo primeiro; depois a IA propõe o modelo de dados; por fim a pessoa técnica valida, na etapa 2.
 
@@ -11,7 +13,7 @@ Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` v0.4.0). Serve de
 A gestão de projetos da v1 é um **kanban simples, como o Trello de hoje**. O time é pequeno e respeita o fluxo, então **o sistema não trava o fluxo**:
 
 - **Administrador e gestor** mexem em tudo, a qualquer momento: criam, editam, arquivam e excluem card; põem e tiram card da sprint; montam pacote; mudam a configuração do projeto.
-- **O dev** executa o que está no quadro. Ele não cria, exclui nem arquiva card, e não mexe na sprint, no pacote nem na configuração. As demandas nascem do gestor.
+- **O dev** cria card no `Backlog` e executa o que está no quadro (P56, revertida em 06/10). Ele não exclui nem arquiva card, e não mexe na sprint, no pacote nem na configuração.
 - Número de controle, como horas × capacidade da sprint, é **referência para o gestor, nunca impeditivo**.
 - Regra nova só entra se for simples. Na dúvida, fica a opção mais aberta.
 
@@ -45,6 +47,12 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.txt` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo (G5). Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
 | D-GER-21 | 24/09/2026 | Banco de dados: **MySQL 8**, o mesmo do template da casa. |
 | D-GER-22 | 24/09/2026 | **Testes também em MySQL 8**, local e no CI; nada de SQLite, embora o template use SQLite nos testes. O teste roda o mesmo banco da produção (T6 do `banco.txt`). |
+| D-GER-23 | 06/10/2026 | **`banco.txt` aprovado por Lucas Alencar** (41 tabelas, D-GER-01). Os cortes da fatia 1 (D-GER-27) foram aplicados depois da aprovação; ele confere só a diferença, listada na seção 7 do `banco.txt`. |
+| D-GER-24 | 06/10/2026 | **v1 fatiada** (R1). Fatia 1 = Núcleo mínimo (usuários, papéis, clientes, contatos), Projetos inteiro e o servidor MCP com 6 ferramentas (R12). CRM e GPT "WCJ Hub" = **v2**, com rodada própria de necessidade e banco. O funil do DaaS continua no ar até lá: a D-GER-03 muda só no prazo. |
+| D-GER-25 | 06/10/2026 | **Execução:** Cauã e Vitinho desenvolvem, com IA (por inteiro ou em parte); Lucas Scholz supervisiona, aprova funcional, spec e PR, e faz o teste técnico do MCP. Substitui a execução da D-GER-17. O padrão `ai-systems` (0.6.0, skill `tlc-spec-driven`) continua valendo, no **trilho leve** (R6): trilho completo só em autenticação e papéis, Policies, OAuth e MCP, auditoria, desativação e exclusão; o resto com spec no PR, teste e uso no navegador. |
+| D-GER-26 | 06/10/2026 | Regras de uso revertidas (R2 a R5): qualquer pessoa alocada cria card no `Backlog` (P56); e-mail ao definir dev ou QA e ao devolver para desenvolvimento (P22); o card nasce só com título (P17); arrastar do `Backlog` para o `To do` põe na sprint aberta, sem cerimônia, e o objetivo da sprint é opcional (P45). |
+| D-GER-27 | 06/10/2026 | Cortes da fatia 1 no banco (R7 a R11, R13 a R15): saem CRM, `service_types`, `task_validations` e as flags `requires_*`, `sprint_members`, `package_statuses` e `ai_tool_calls`; motivos de retrabalho viram lista geral; o movimento do card guarda quem moveu e o canal; a integridade por projeto é conferida no Service, não por FK composta (Lucas Alencar confere). 41 → 27 tabelas. Indicadores: o atraso desconta a pausa e o realizado tem fallback no tempo em desenvolvimento (R16, R17). |
+| D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado pelo dono do módulo (Projetos: Rafael Garcia; Núcleo e IA: Lucas Scholz) antes da spec. O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
 | D-CRM-04 | 24/09/2026 | Quando o contrato entrar (fora da v1, N10), o Hub é a **única fonte de contratos** e o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão, também depois da v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
@@ -65,7 +73,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 | **CRM** | Funil de prospecção do DaaS (D-GER-03) + [LEVANTAR] planilha / WhatsApp | Lead e tratativa não ficam registrados num lugar só; o follow-up depende de alguém lembrar. |
 | **Chamados** (último, D-GER-12) | Nada formal; GLPI em avaliação (D-CHM-01) | O cliente de sustentação e o de projeto em andamento não têm canal formal. Não se mede prazo de atendimento nem existe histórico por cliente. |
 
-**Base comum (Núcleo):** usuários, papéis, clientes, contatos e a lista de tipos de serviço (N10). É o que liga os módulos: o lead ganho no CRM vira cliente, e o cliente tem projetos. O contrato fica fora da v1 (N10).
+**Base comum (Núcleo):** usuários, papéis, clientes e contatos (a lista de tipos de serviço entra com o CRM, N10). É o que liga os módulos: o lead ganho no CRM vira cliente, e o cliente tem projetos. O contrato fica fora da v1 (N10).
 
 **Princípio de desenho:** padrão pronto, ajustável por projeto (G1), e em Projetos um kanban sem trava (premissa).
 
@@ -77,7 +85,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 |---|---|---|---|
 | Administrador | Sócios, inclusive o Wilson | Tudo | — |
 | Gestor de projetos | Rafael Garcia; Lucas Scholz nos projetos 100% IA | Tudo nos projetos que gere | Pipeline comercial e valores de proposta (C14) |
-| Desenvolvedor | Devs PJ | Nos projetos em que está alocado, em todas as tarefas: move, edita, comenta, anexa, lança horas e puxa teste cruzado | CRM; painel de produtividade (P54). Não cria nem exclui card e não mexe em sprint, pacote nem configuração (P56, premissa) |
+| Desenvolvedor | Devs PJ | Nos projetos em que está alocado: cria card no `Backlog`, move, edita, comenta, anexa, lança horas e faz teste cruzado | CRM; painel de produtividade (P54). Não exclui nem arquiva card e não mexe em sprint, pacote nem configuração (P26, P45, premissa) |
 | Comercial | Ninguém no início | Vê todos os leads, edita os próprios e converte lead em cliente | Tarefas internas de projeto |
 
 - O papel Comercial fica pronto para quando houver comercial. Hoje o Wilson é sócio e entra como Administrador.
@@ -91,7 +99,7 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 
 1. O Administrador convida os usuários, atribui o papel e define a carga diária (N1–N3).
 2. O cliente nasce de duas formas: cadastro direto pelo Administrador ou lead ganho no CRM (C10). Nos dois casos, nasce sem contrato (N6).
-3. Os contatos são cadastrados pelo Administrador, pelo gestor (nos clientes dos projetos dele) ou pelo CRM, junto com o lead (N8). O contato não tem login na v1 (N9).
+3. Os contatos são cadastrados pelo Administrador, pelo gestor (nos clientes dos projetos dele) ou, na v2, pelo CRM, junto com o lead (N8). O contato não tem login na v1 (N9).
 4. O Administrador desativa e reativa usuário, cliente e contato, e anonimiza o contato a pedido do titular (N11, N12).
 
 ### Projetos
@@ -99,17 +107,17 @@ Um sistema único para a operação interna da WCJ, com três módulos sobre uma
 Base: quadro Trello "Wpay" ([`levantamento/trello-wpay.md`](levantamento/trello-wpay.md)), reunião com Rafael Garcia em 24/09/2026 ([ata](atas/2026-09-24-projetos-rafael.md)), modelos enviados por ele ([`levantamento/modelos-rafael.md`](levantamento/modelos-rafael.md)) e fluxo de desenvolvimento do Lucas Alencar ([`levantamento/fluxo-desenvolvimento.md`](levantamento/fluxo-desenvolvimento.md)). Escopo da v1: as funcionalidades do Trello mais o controle do tempo, num kanban sem trava (premissa).
 
 1. O gestor cria o projeto: cliente, prefixo, tipo (projeto de entrega ou produto contínuo) e datas. Aloca as pessoas (P1–P5). O quadro nasce com as etapas padrão (P10).
-2. O gestor, ou a IA dele, escreve os cards no modelo de requisição, com os critérios de aceite (P17, P56). Pode já pôr horas, dev e QA; nada disso é obrigatório (P20, P27). As validações vêm ligadas (P32). O card nasce no `Backlog`.
-3. O gestor monta a sprint: nome, objetivo, início, fim e time. Põe os cards nela, e eles vão para o `To do` (P45–P48). Com o diretor de tecnologia, define ou valida as horas (P27). A capacidade por dev aparece como referência (P49).
+2. Qualquer pessoa alocada cria o card: título e Enter bastam (P17, P56). O gestor, ou a IA dele, escreve os cards de projeto de cliente no modelo de requisição, com os critérios de aceite. Pode já pôr horas, dev e QA; nada disso é obrigatório (P20, P27). O card nasce no `Backlog`.
+3. O gestor arrasta os cards do `Backlog` para o `To do`: isso os põe na sprint aberta; sem sprint aberta, o sistema propõe criar uma, já preenchida, e segue (P45, P46). Com o diretor de tecnologia, define ou valida as horas (P27). A capacidade por dev, carga diária × dias úteis da sprint, aparece como referência (P48, P49).
 4. O dev leva o card para `Doing`, e o sistema calcula a data prevista (P28). O dev trabalha na branch, cola os PRs no card (P23) e passa para `Code-review`, onde na prática o Tech Lead aprova (P33).
-5. Em `In test`, primeiro o teste cruzado, feito por qualquer dev alocado menos o dev da tarefa, e depois o QA, que executa o roteiro de critérios e anexa a evidência em cada item (P34–P36). Quem trabalhou lança as horas (P30).
+5. Em `In test`, primeiro o teste cruzado, feito por qualquer dev alocado menos o dev da tarefa, que marca na tarefa que testou; depois o QA, que executa o roteiro de critérios e anexa a evidência em cada item (P34–P36). Quem trabalhou lança as horas (P30).
 6. Aprovada no QA, a tarefa recebe o merge, normalmente do Tech Lead, e vai para `Done` (P38). Reprovada em qualquer validação, volta para desenvolvimento com origem e motivo (P39).
 7. Se o projeto usa pacote, o gestor junta as tarefas prontas numa versão, que passa por homologação e produção (P41–P44).
 8. O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog` (P50).
 9. Quando o cliente aciona a WCJ direto, o gestor registra um card de suporte na coluna `Support` (P52).
 10. O gestor acompanha tempo por etapa, horas previstas × realizadas e atraso, por projeto e por pessoa (P53).
 
-### CRM
+### CRM (v2, fora da fatia 1)
 
 1. O comercial, ou o Administrador, cadastra o lead: empresa, contatos, origem, tipo de serviço, valor e dono. O sistema avisa se o CNPJ já é cliente ou tem lead aberto (C2, C3).
 2. O lead anda livre pelas etapas do funil (C1).
@@ -172,20 +180,20 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **G4** O que o papel não vê na tela, a IA dele também não vê nem altera.
 - **G5** Dado sem regra que o use não entra no sistema. Volta quando alguém pedir, com o motivo.
 - **G6** Na v1 não existem: aprovação em dois níveis, ranking ou metas, mensagem ao cliente por WhatsApp e aplicativo nativo (a v1 é web responsiva).
-- **G7** Listas gerais (tipos de tarefa, tipos de serviço, funil, origens, motivos de perda, tipos de compromisso): quem edita é o Administrador. Listas do projeto (etapas, áreas, motivos de retrabalho, estados do pacote): quem edita é o gestor do projeto.
+- **G7** Listas gerais (tipos de tarefa, motivos de retrabalho e, na v2, tipos de serviço, funil, origens, motivos de perda e tipos de compromisso): quem edita é o Administrador. Listas do projeto (etapas, áreas): quem edita é o gestor do projeto.
 
 ### 1. Núcleo
 
 - **N1** O usuário é convidado pelo Administrador, com senha provisória trocada no primeiro acesso.
 - **N2** Cada usuário tem um papel, entre os 4 fixos, atribuído pelo Administrador. Não se cria papel novo.
-- **N3** Carga diária (ex.: 8 h ou 4 h): obrigatória para o Desenvolvedor, opcional para os outros papéis, definida pelo Administrador. Só entra no time da sprint quem tem carga. Mudar a carga vale dali para a frente.
+- **N3** Carga diária (ex.: 8 h ou 4 h): obrigatória para o Desenvolvedor, opcional para os outros papéis, definida pelo Administrador. Sem carga, a tarefa do dev fica sem data prevista e sem capacidade. Mudar a carga vale dali para a frente.
 - **N4** Usuário desativado perde o acesso na hora, inclusive as conexões de IA.
 - **N5** Cliente brasileiro é identificado pelo CNPJ, numérico ou alfanumérico (o CNPJ com letras vale desde julho de 2026), e CNPJ repetido é recusado. Empresa estrangeira: país + identificador fiscal do país, opcional. Pessoa física não é cliente.
 - **N6** O cliente nasce por cadastro direto ou por lead ganho, sempre sem contrato.
 - **N7** A própria WCJ é um cliente: é a dona dos projetos internos e dos produtos (ex.: Wpay).
 - **N8** O contato é um cadastro só, seja pessoa de cliente ou de lead: nome, e-mail e telefone. Quando o lead vira cliente, o contato não é redigitado. O sistema avisa quando já existe contato com o mesmo e-mail, sem recusar. O gestor também cadastra contato dos clientes dos projetos dele.
 - **N9** O contato não tem login na v1.
-- **N10** O contrato fica fora da v1. Fica a lista de **tipos de serviço** (projeto, sustentação, auditoria, alocação de dev, infraestrutura), que o lead usa para dizer o que está sendo vendido.
+- **N10** O contrato fica fora da v1. A lista de **tipos de serviço** (projeto, sustentação, auditoria, alocação de dev, infraestrutura), que o lead usa para dizer o que está sendo vendido, entra com o CRM, na v2: nada da fatia 1 a lê (R7).
 - **N11** O Administrador desativa e reativa usuário, cliente e contato. Ter algo aberto não impede.
 - **N12** LGPD: a pedido do titular, o Administrador anonimiza o contato. Nome, e-mail e telefone viram "removido a pedido do titular", e o histórico continua, sem os dados pessoais.
 
@@ -217,12 +225,12 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 #### 2.3 Tarefa
 
 - **P16** Chave `<prefixo>-<número>` (ex.: `SGM-17`), sequencial por projeto, nunca reaproveitada.
-- **P17** A tarefa é escrita no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
+- **P17** Criar o card pede só o título: ele nasce no `Backlog` com tipo Melhoria e prioridade Normal, e o resto fica recolhido e opcional (R4). A tarefa de projeto de cliente é escrita, quando houver, no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
 - **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD) e área (lista do projeto, que nasce vazia).
 - **P19** Prioridade: baixa, normal, alta ou urgente.
 - **P20** A tarefa tem **um dev** e, quando a validação de QA está ligada, **um QA**. Os dois podem ficar vazios, como as horas (P27).
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).
-- **P22** Quem é atribuído à tarefa recebe aviso **no sistema**. É o único aviso da v1; não há e-mail.
+- **P22** Quem é definido como dev ou QA da tarefa recebe aviso **no sistema e por e-mail**; quando a tarefa volta para desenvolvimento (P39), o dev dela também recebe os dois (R3). São os únicos avisos de Projetos na v1.
 - **P23** A tarefa aceita nenhum, um ou vários PRs, colados como link.
 - **P24** A tarefa tem anexos e comentários.
 - **P25** Bug achado em produção vira tarefa nova, ligada à original, do mesmo projeto. Conta como indicador de qualidade do projeto, não como retrabalho do dev.
@@ -231,7 +239,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
   - o card com histórico é **arquivado**, com motivo. Sai do quadro e das contas de prazo, atraso e capacidade; as horas lançadas nele continuam nos indicadores de horas. Desarquivar devolve ao `Backlog`.
 
   O dev não exclui nem arquiva. Tudo fica na auditoria (G3).
-- **P56** Só o gestor e o Administrador criam card. As demandas nascem do gestor; o dev executa o que está no quadro. Vale também pela IA (G4).
+- **P56** Qualquer pessoa alocada no projeto cria card, que nasce no `Backlog` (revertida em 06/10, R2). Pôr na sprint (P45), excluir e arquivar (P26) continuam só do gestor e do Administrador. Vale também pela IA (G4).
 
 #### 2.4 Horas e prazo
 
@@ -244,9 +252,9 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.5 Validações: code review, teste cruzado, QA
 
-- **P32** Code review, teste cruzado e QA vêm **ligados** em toda tarefa. Cada um desliga por projeto e por tarefa. **Padrão.**
+- **P32** Code review, teste cruzado e QA são a prática de toda tarefa (P33 a P36); o sistema não tem flag para ligar ou desligar nem parecer por validação (R8). O que fica registrado: o PR (P23), quem fez o teste cruzado e quando (P34) e o roteiro por critério (P36).
 - **P33** Code review: na prática, quem aprova é o Tech Lead do projeto; o sistema não trava.
-- **P34** Teste cruzado: qualquer dev alocado puxa, menos o dev da tarefa.
+- **P34** Teste cruzado: qualquer dev alocado faz, menos o dev da tarefa, e marca na tarefa que testou (quem e quando). A volta para desenvolvimento (P39) limpa a marca.
 - **P35** Em `In test`, a ordem normal é teste cruzado e depois QA.
 - **P36** O QA testa no próprio ambiente local. Executa o roteiro, em que cada critério de aceite é um item: marca aprovado ou reprovado e anexa a evidência no item.
 - **P37** Critério editado depois de testado volta para "a testar". Depois de um retrabalho, o roteiro inteiro volta para "a testar".
@@ -255,12 +263,12 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 #### 2.6 Retrabalho
 
 - **P39** Toda volta para desenvolvimento conta um ciclo de retrabalho, com **origem** (code review, teste cruzado, QA ou homologação) e **motivo**.
-- **P40** Os motivos são uma lista editável por projeto, sempre com "outro" com texto. Padrão: ajuste visual, regra de negócio, erro/bug, requisito incompleto ou mal documentado, outro.
+- **P40** Os motivos são uma lista geral, editada pelo Administrador (G7, R11), sempre com "outro" com texto. Nasce com: ajuste visual, regra de negócio, erro/bug, requisito incompleto ou mal documentado, outro.
 
 #### 2.7 Pacote (versão)
 
 - **P41** O pacote é a versão (ex.: `1.0.9`) e é **opcional**. O gestor e o Administrador montam o pacote com tarefas prontas e mudam o estado dele.
-- **P42** Estados do pacote: em montagem → em homologação → homologado → em produção. O gestor pode renomear, criar e remover estados no projeto. Sempre existe pelo menos um estado de produção, que dá a data da versão (P44).
+- **P42** O estado do pacote se deduz de duas datas: início da homologação e entrada em produção (P44). Sem as duas, está em montagem; com a primeira, em homologação; com a segunda, em produção. Não há estados cadastráveis (R10).
 - **P43** A homologação é da equipe WCJ, testando tudo junto; o cliente não participa. Reprovação devolve as tarefas afetadas com retrabalho de origem homologação. A reprovação não tira a tarefa do pacote sozinha; o gestor tira, se quiser.
 - **P44** A data planejada de liberação é definida por projeto, em geral pelo cliente. A data da versão é quando ela entra em produção.
 
@@ -268,10 +276,10 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 
 #### 2.8 Sprint
 
-- **P45** A sprint é **obrigatória**: é por ela que o card sai do `Backlog`. O gestor e o Administrador criam a sprint (nome, objetivo, início e fim) e põem ou tiram card dela a qualquer momento; o dev não. Pôr na sprint leva o card para o `To do`; tirar devolve ao `Backlog`. **Uma sprint em andamento por projeto**: é a sprint aberta, ainda não encerrada.
+- **P45** A sprint é **obrigatória**: é por ela que o card sai do `Backlog`. Arrastar o card do `Backlog` para o `To do` é pô-lo na sprint aberta; sem sprint aberta, o sistema propõe criar uma, já preenchida (nome "Sprint N", início hoje, fim pela duração padrão), e segue (R5). O objetivo da sprint é opcional. Só o gestor e o Administrador põem ou tiram card da sprint; o dev não. Tirar devolve ao `Backlog`. **Uma sprint em andamento por projeto**: é a sprint aberta, ainda não encerrada.
 - **P46** Duração padrão de 10 dias úteis (2 semanas), ajustável por projeto. **Padrão.**
-- **P47** A sprint tem um time, formado por quem tem carga diária (N3).
-- **P48** Capacidade de cada pessoa na sprint = carga diária × dias disponíveis. O gestor reduz os dias por férias ou folga.
+- ~~**P47**~~ Saiu (R9): a sprint não tem time cadastrado. O time é quem tem tarefa nela.
+- **P48** Capacidade de cada dev na sprint = carga diária (N3) × dias úteis da sprint, de segunda a sexta entre o início e o fim. Férias e folga ficam fora da v1 (R9).
 - **P49** O sistema mostra, por dev, as horas que faltam das tarefas dele na sprint (previstas − já lançadas) contra a capacidade dele. É **só referência** para o gestor: nunca impede nada. Tarefa sem dev ou sem horas aparece à parte. A capacidade do QA não entra na conta na v1.
 - **P50** O gestor encerra a sprint. O que não terminou vai para a próxima sprint, criada nesse momento, ou volta ao `Backlog`, como o gestor decidir; fica o histórico.
 - **P51** A sprint é a "Fase" do Histórico de Desenvolvimento entregue ao cliente.
@@ -282,11 +290,13 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 
 #### 2.10 Indicadores
 
-- **P53** Na v1: tempo por etapa, horas previstas × realizadas, data prevista e atraso das tarefas, somados por projeto e por pessoa. Tarefa atrasada = passou da data prevista sem chegar em `Done`.
+- **P53** Na v1: tempo por etapa, horas previstas × realizadas, data prevista e atraso das tarefas, somados por projeto e por pessoa. Tarefa atrasada = passou da data prevista sem chegar em `Done`, descontado o tempo em etapa de pausa, que é medido à parte (P15, R16). Ao lado das horas lançadas (P30), o realizado mostra também o tempo em etapa de desenvolvimento calculado dos movimentos, em dias úteis × carga do dev, para quando o dev esquece de lançar (R17).
 - **P54** Depois da v1, com os dados já gravados desde a v1: painel de produtividade por dev e indicador de retrabalho. Só o gestor e o Administrador veem. Na v1, os dados de retrabalho já saem pela IA (`retrabalho_do_projeto`, IA14).
 - **P55** Depois da v1: histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição. Na v1, a IA lista as tarefas do pacote para quem quiser redigir as notas (`notas_da_versao`, IA14).
 
-### 3. CRM
+### 3. CRM (v2: fora da fatia 1)
+
+As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão revisadas na rodada própria de necessidade e banco do CRM (D-GER-24). Nada daqui entra na fatia 1; o funil do DaaS continua no ar até lá.
 
 - **C1** Um funil só. As etapas padrão são as do DaaS: Prospecção → Contato → Reunião → Proposta → Ganhou / Perdido. São editáveis, mas sempre existe uma etapa de ganho e uma de perda. O lead anda livre entre as etapas.
 - **C2** O lead tem: empresa (nome, país, CNPJ ou identificador), contato(s), origem, tipo de serviço, **valor** e dono. O valor é obrigatório para ganhar. Não tem previsão de fechamento. Origens: lista editável que nasce com Indicação, Tráfego e Site.
@@ -316,7 +326,7 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
   - devs: Claude (app ou Claude Code) ou Codex, lendo e escrevendo;
   - ChatGPT Pro: só lê;
   - ChatGPT Plus: não conecta;
-  - comercial (hoje o Wilson): pelo GPT "WCJ Hub" no ChatGPT, com áudio, entregue junto com a v1 do CRM.
+  - comercial (hoje o Wilson): pelo GPT "WCJ Hub" no ChatGPT, com áudio, entregue junto com o CRM (v2).
 - **IA4** A conexão é só por login (OAuth), nunca por chave colada. Cada usuário tem uma autorização por assistente, com permissão por módulo (ler ou escrever).
 - **IA5** A IA age como o usuário: tem as mesmas permissões da tela, e a permissão da conexão nunca passa do papel. **Fixa.**
 - **IA6** O usuário vê e revoga as próprias conexões; o Administrador, as de todos. Reconectar revoga a conexão anterior. Usuário desativado ou com papel trocado perde as conexões na hora. **Fixa.**
@@ -325,37 +335,24 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 - **IA9** As ferramentas são marcadas como leitura ou escrita, para o assistente pedir confirmação antes de escrever. A segurança não depende disso: o servidor confere tudo.
 - **IA10** Texto vindo de cliente volta para a IA como dado, marcado como conteúdo externo.
 - **IA11** Toda escrita feita pela IA fica na auditoria com o canal (`ia:claude`, `ia:chatgpt`, `ia:codex`, `ia:gpt`).
-- **IA12** Toda chamada da IA, inclusive de leitura, fica registrada por 180 dias (só ids e filtros), e o Administrador consulta numa tela.
+- **IA12** Toda chamada da IA, inclusive de leitura, fica registrada por 180 dias (só ids e filtros) em log de arquivo do servidor, com rotação (R13). A tela de consulta do Administrador fica para quando alguém pedir; a escrita já está na auditoria (IA11).
 - **IA13** O resumo do cliente pela IA mostra só o que o papel vê.
-- **IA14** Ferramentas da v1, validadas por quem desenvolve o Hub (Lucas Scholz e Cauã):
+- **IA14** Ferramentas da fatia 1 (R12): seis. Cada ferramenta é Service + Policy + definição + teste, por isso só entram as de uso certo; as demais vêm com uso real, nas versões seguintes.
 
   | Módulo | Ferramenta | Tipo | O que faz |
   |---|---|---|---|
-  | Núcleo | `buscar_cliente` | leitura | Busca por nome ou CNPJ, dentro do que o papel vê |
-  | Núcleo | `resumo_do_cliente` | leitura | Projetos em andamento e último contato comercial, cada parte só para o papel que a vê (IA13) |
   | Projetos | `minhas_tarefas` | leitura | Tarefas do usuário, com filtro por prazo e projeto |
   | Projetos | `status_do_projeto` | leitura | Etapas, tarefas atrasadas e próximas datas previstas |
-  | Projetos | `linha_do_tempo_da_tarefa` | leitura | Etapas por onde a tarefa passou, com o tempo em cada uma (P53) |
-  | Projetos | `horas_do_projeto` | leitura | Horas previstas × realizadas, por tarefa e por pessoa (P53) |
-  | Projetos | `retrabalho_do_projeto` | leitura | Voltas para desenvolvimento, com origem e motivo, sem painel (P39). Só gestor e Administrador (P54) |
-  | Projetos | `tarefas_paradas` | leitura | Tarefas em pausa, com o motivo (P15) |
-  | Projetos | `notas_da_versao` | leitura | Tarefas do pacote, para a IA redigir as notas (P41). O documento de notas de versão fica para depois da v1 (P55) |
-  | Projetos | `escrever_tarefa` | escrita | Cria o card no modelo de requisição, com os critérios (P17). Só para gestor e Administrador (P56) |
-  | Projetos | `mover_tarefa` | escrita | Muda a etapa (P13) |
+  | Projetos | `escrever_tarefa` | escrita | Cria o card no `Backlog`; só com título, ou com o modelo de requisição e os critérios (P17). Qualquer pessoa alocada (P56) |
+  | Projetos | `mover_tarefa` | escrita | Muda a etapa (P13); pede origem e motivo quando a volta é retrabalho (P39) |
   | Projetos | `comentar_tarefa` | escrita | Adiciona comentário (P24) |
   | Projetos | `lancar_horas` | escrita | Lança horas realizadas (P30) |
-  | Projetos | `anexar_pr` | escrita | Cola o link de um PR (P23) |
-  | Projetos | `devolver_para_desenvolvimento` | escrita | Devolve a tarefa, com origem e motivo (P39) |
-  | CRM | `meus_followups` | leitura | Vencidos, de hoje e da semana (C8) |
-  | CRM | `minha_agenda` | leitura | Compromissos do dia ou da semana (C9) |
-  | CRM | `historico_do_lead` | leitura | Tratativas em ordem, etapa e situação atual (C5, C6) |
-  | CRM | `cadastrar_lead` | escrita | Cria o lead e avisa se já há cliente ou lead aberto com o mesmo CNPJ (C3) |
-  | CRM | `registrar_tratativa` | escrita | Registra a conversa, atualiza a situação atual e, se pedido, agenda o próximo compromisso (C5–C7) |
-  | CRM | `mover_lead` | escrita | Muda a etapa do funil; ganho e perdido seguem C10–C12 |
-  | CRM | `agendar_compromisso` | escrita | Cria, remarca ou cancela follow-up ou reunião e dispara o convite (C7, C9) |
-  | CRM | `atualizar_situacao_do_lead` | escrita | Reescreve a situação atual (C6) |
 
-  Decidido por Lucas Scholz em 24/09: `retrabalho_do_projeto` e `notas_da_versao` ficam na v1, lendo os dados que a v1 já grava. O painel de retrabalho (P54) e o documento de notas de versão (P55) continuam depois da v1.
+  Depois da fatia 1, com uso real (lendo dados que a fatia 1 já grava): `buscar_cliente`, `resumo_do_cliente` (IA13), `linha_do_tempo_da_tarefa` (P53), `horas_do_projeto` (P53), `retrabalho_do_projeto` (P39, só gestor e Administrador, P54), `tarefas_paradas` (P15), `notas_da_versao` (P41, P55), `anexar_pr` (P23) e `devolver_para_desenvolvimento` (P39).
+
+  Na v2, com o CRM: `meus_followups`, `minha_agenda`, `historico_do_lead`, `cadastrar_lead`, `registrar_tratativa`, `mover_lead`, `agendar_compromisso` e `atualizar_situacao_do_lead` (C3, C5 a C12), também pelo GPT "WCJ Hub".
+
+  Decidido por Lucas Scholz em 24/09 e mantido em 06/10: o painel de retrabalho (P54) e o documento de notas de versão (P55) continuam depois da v1; os dados já ficam gravados desde a fatia 1.
 
   Caso de uso citado pelo Rafael: a IA do gestor escreve as tarefas detalhadas a partir do escopo (P56), e a do dev avança as tarefas e documenta enquanto ele trabalha.
 
@@ -363,7 +360,7 @@ Como o QA testa no ambiente local (P36) e as tarefas só se encontram depois do 
 
 - **Dado** um Comercial, que não tem acesso ao projeto P, **quando** o assistente dele chama `status_do_projeto(P)`, **então** recebe "negado" e a tentativa fica na auditoria (G3, G4).
 - **Dado** um Dev com conexão só de leitura, **quando** o assistente chama `mover_tarefa`, **então** recebe "escopo insuficiente" e nada muda (IA4).
-- **Dado** um Dev, **quando** o assistente dele chama `escrever_tarefa`, **então** recebe "negado" (P56, G4).
+- **Dado** um Dev alocado no projeto, **quando** o assistente dele chama `escrever_tarefa` só com o título, **então** o card nasce no `Backlog` com tipo Melhoria e prioridade Normal (P56, P17); um Dev não alocado recebe "negado" (G4).
 - **Dado** um usuário desativado agora, **quando** o assistente dele chama qualquer ferramenta, **então** recebe "não autorizado" (N4, IA6).
 - **Dado** um texto de cliente que contém instruções ao assistente (com Chamados, a descrição de um chamado), **quando** o técnico pede um resumo pela IA, **então** o conteúdo volta delimitado como dado do cliente e nenhuma escrita acontece sem pedido do técnico (IA10).
 - **Dado** uma tarefa movida pela IA, **quando** o gestor abre o histórico, **então** vê quem moveu, quando, de onde para onde e o canal `ia:claude` ou `ia:chatgpt` (P14, IA11).
@@ -399,13 +396,13 @@ A levantar em Chamados:
 | Integração | Direção | Na v1? |
 |---|---|---|
 | Claude, Codex e ChatGPT Pro via MCP | entrada (consulta e escrita pelo usuário; o ChatGPT Pro só consulta) | **Sim** (IA3) |
-| GPT personalizado "WCJ Hub" (Actions + API REST) | entrada (comercial) | **Sim, com a v1 do CRM** (IA3) |
+| GPT personalizado "WCJ Hub" (Actions + API REST) | entrada (comercial) | **v2, com o CRM** (IA3, D-GER-24) |
 | GitHub (webhooks de PR) | entrada (eventos) | **Em avaliação** (D-GER-13). Na v1, o PR entra como link (P23) |
 | Trello | importação | **Não**: começa do zero com os projetos ativos |
 | Funil e CRM pós-auditoria do DaaS | importação | **Não** (C15) |
 | DaaS consulta contratos no Hub | saída | Depois da v1 (N10, D-CRM-04) |
 | DaaS: abrir auditoria a partir de lead ganho | saída | **Não** (C13) |
-| E-mail interno (convites de calendário `.ics` e resumo diário) | saída | **Sim, com a v1 do CRM** (C9). Projetos não manda e-mail (P22) |
+| E-mail interno | saída | **Sim**: Projetos avisa dev e QA por e-mail (P22, SMTP Zoho da WCJ, como no sistema de obras). Convites `.ics` e resumo diário entram com o CRM (v2, C9) |
 | E-mail de suporte | entrada (e-mail vira chamado) e saída (avisos ao cliente) | Com o módulo Chamados (D-CHM-02) |
 | GLPI | entrada e saída pela API | Em avaliação (D-CHM-01) |
 | WhatsApp | — | **Não** (G6) |
@@ -441,14 +438,15 @@ Consequência para a v1 (IA3):
   - A API das Actions chama a **mesma camada de serviço** do MCP e da tela; as regras IA valem igual, com o canal `ia:gpt` na auditoria.
   - Escopo inicial: **CRM** (leitura e escrita) e **Núcleo** (leitura), com as ferramentas de CRM da IA14.
   - Toda ação de escrita é marcada como "consequencial", para o ChatGPT pedir confirmação antes (IA9).
-  - É entregue **junto com a v1 do CRM**, não antes.
+  - É entregue **junto com o CRM (v2)**, não antes.
 
-**Prova de conceito antes da etapa 4** (teste técnico, Lucas Scholz, D-GER-17): servidor MCP mínimo, HTTPS público, OAuth, uma ferramenta de leitura e uma de escrita. O teste é feito no **Claude (app)**, no **Codex dentro do app do ChatGPT (plano Plus)**, no **Codex CLI**, no **Claude Code** e no **ChatGPT Pro (só leitura)**. Em paralelo, um **GPT com uma Action de leitura e uma de escrita**, com OAuth, no plano do Wilson.
+**Prova de conceito antes da etapa 4** (teste técnico, Lucas Scholz, D-GER-17): servidor MCP mínimo, HTTPS público, OAuth, uma ferramenta de leitura e uma de escrita. O teste é feito no **Claude (app)**, no **Codex dentro do app do ChatGPT (plano Plus)**, no **Codex CLI**, no **Claude Code** e no **ChatGPT Pro (só leitura)**. O **GPT com Actions**, no plano do Wilson, fica para a v2, com o CRM.
 
 ## Fora da primeira versão
 
+- **CRM inteiro e o GPT "WCJ Hub"** (v2, D-GER-24), incluindo os tipos de serviço (N10), o convite `.ics` e o resumo diário (C9).
 - **Contrato:** cadastro, contrato no projeto e consulta pelo DaaS (N10, D-CRM-04).
-- **Projetos:** feriados (P29); restrição de etapa por função; vínculo automático com o GitHub (D-GER-13); migração do Trello; prazo do projeto pelo sistema (P9); aviso por e-mail (P22).
+- **Projetos:** feriados (P29); restrição de etapa por função; vínculo automático com o GitHub (D-GER-13); migração do Trello; prazo do projeto pelo sistema (P9); time da sprint, férias e folga na capacidade (P47, P48); estados de pacote cadastráveis (P42); parecer por validação e flags de ligar e desligar (P32); tela das chamadas da IA (IA12); as ferramentas de IA além das 6 da fatia 1 (IA14).
 - **Projetos, depois da v1 com os dados da v1:** painel de produtividade por dev e indicador de retrabalho (P54); histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e geração do documento de requisição (P55).
 - **Ideias do levantamento sem prioridade:** roteiro de teste padrão por tipo e perfil de produto, com bloco CRUD reutilizável (Trello Wpay, modelos SGM); painel de impedimentos (Trello Wpay).
 - **CRM:** oportunidades pós-auditoria; integração CRM → DaaS (C13); assistente de voz embutido (IA2); contrato gerado pelo lead ganho (C10); previsão de fechamento (C2).
@@ -460,14 +458,15 @@ Consequência para a v1 (IA3):
 ## O que não pode
 
 - Trava no fluxo de Projetos. O sistema não exige dev, horas, PR nem parecer de validação para mover card, e número de controle nunca recusa nada (premissa, P49). Só é fixo o que protege segurança e auditoria (G1).
-- O dev criar, excluir ou arquivar card, ou mexer em sprint, pacote e configuração (premissa, P56).
+- O dev excluir ou arquivar card, ou mexer em sprint, pacote e configuração (premissa, P26, P45). Criar card ele pode (P56).
+- Construir o CRM, o GPT "WCJ Hub" ou ferramenta de IA fora das 6 da fatia 1 antes da hora (D-GER-24, IA14).
 - Excluir de verdade registro já usado, e usar `deleted_at` (G2, `core/banco.md` §4).
 - Apagar ou editar a auditoria. A única exceção é limpar os dados pessoais do contato anonimizado (G3, N12).
 - Ferramenta de IA que exclua, altere em lote ou execute consulta livre, como SQL ou filtro arbitrário sobre qualquer tabela (IA8).
 - O sistema chamar modelo de IA por conta própria ou guardar chave de API de provedor de IA (IA2).
 - Conectar assistente por chave de API colada (IA4).
 - O gestor ver o pipeline comercial ou o dev ver o CRM (C14).
-- Aviso por e-mail em Projetos (P22).
+- E-mail em Projetos além dos da P22 (definir dev ou QA; volta para desenvolvimento).
 - Mensagem ao cliente pelo WhatsApp, aprovação em dois níveis, ranking, metas ou gamificação (G6).
 - Com Chamados: o contato do cliente ver comentário interno, nome de outro cliente ou dado do CRM (RN-CHM-05).
 
@@ -505,13 +504,15 @@ Consequência para a v1 (IA3):
 | SLA | Prazo de atendimento do chamado, definido pelo contrato e pela prioridade |
 | Assistente / IA | Claude, ChatGPT ou Codex do próprio usuário, conectado pelo MCP (ou o GPT "WCJ Hub", pelas Actions) |
 | Conector | A autorização de um assistente para acessar o sistema em nome do usuário (IA4) |
+| Funcional | Documento por bloco que descreve tela, campos, ações e permissões em linguagem de quem usa; aprovado pelo dono do módulo antes da spec (D-GER-28) |
+| Fatia 1 | Primeira entrega: Núcleo + Projetos + MCP com 6 ferramentas (D-GER-24). CRM é a v2 |
 
 ## Restrições
 
 - Stack: template da casa (`stacks/laravel-inertia.md`), confirmada (D-GER-09). Banco MySQL 8 (D-GER-21).
 - Estrutura do código (D-GER-15), por domínio desde o primeiro commit:
-  - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, tipos de serviço, auditoria, notificações, OAuth);
-  - `app/Domains/Projetos/`, `app/Domains/Crm/` e, depois, `app/Domains/Chamados/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e **`Mcp`** (as ferramentas de IA daquele domínio, chamando o `Service` do próprio domínio);
+  - `app/Platform/`: o Núcleo, compartilhado por todos (usuários, papéis, clientes, contatos, auditoria, notificações, OAuth);
+  - `app/Domains/Projetos/` e, depois, `app/Domains/Crm/` (v2) e `app/Domains/Chamados/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e **`Mcp`** (as ferramentas de IA daquele domínio, chamando o `Service` do próprio domínio);
   - um domínio não lê nem grava a tabela de outro: chama o `Service` dele (ex.: o lead ganho cria o cliente pelo `Service` do Platform).
 - Servidor MCP com `laravel/mcp` e OAuth com Passport (D-IA-07), confirmados na prova de conceito.
 - Servidor MCP em HTTPS público desde a homologação (os assistentes chamam da nuvem deles).
@@ -531,17 +532,19 @@ Consequência para a v1 (IA3):
 | Chamados | Alaor Rodrigues (D-GER-04) |
 | Interface de IA | Lucas Scholz (produto) + Lucas Alencar (técnico) (D-GER-07) |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
-| **Execução** | Lucas Scholz e Cauã, com Claude (D-GER-17) |
+| **Execução** | Cauã e Vitinho, com IA; supervisão, aprovação de funcional, spec e PR por Lucas Scholz (D-GER-25) |
 | Infraestrutura (VPS) | Alaor Rodrigues (D-GER-19) |
 
 ## Em aberto
 
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
 - [x] Lucas Scholz revisou o `banco.txt` (Sessão D, 24/09).
-- [ ] Lucas Alencar aprova o `banco.txt` (D-GER-01). As perguntas técnicas T6–T10 foram respondidas por Lucas Scholz em 24/09.
+- [x] Lucas Alencar aprovou o `banco.txt` em 06/10 (D-GER-23).
+- [ ] Lucas Alencar confere a diferença da fatia 1 (seção 7 do `banco.txt`), em especial a R15 (asserção no Service no lugar das FKs compostas).
+- [ ] Rafael Garcia aprova os funcionais de Projetos (`docs/funcional/`, D-GER-28); Lucas Scholz, os de Núcleo e IA.
 - [ ] Prova de conceito: ver se Claude app e Claude Code (e Codex CLI e Codex no app) usam a mesma conexão ou uma cada. Como a conexão é uma por assistente (IA4, IA6), conectar um derrubaria o outro; se o dev precisar dos dois, `claude_code` volta a ser um assistente separado.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
-- [ ] Prova de conceito: testar se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.
+- [ ] (v2) Prova de conceito: testar se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.
 - [ ] Enquete interna de ferramentas (em andamento): para cada pessoa, **qual assistente**, **qual plano** e **onde usa** (app web/desktop, celular, Claude Code, Codex).
 - [ ] [LEVANTAR] Os outros quadros do Trello, em especial um de projeto de cliente com prazo (ex.: gestão de multas), para comparar com o Wpay.
 - [ ] [LEVANTAR] Modelo do relatório de fechamento para pagamento (P55, depois da v1; P-01 e P-02 da ata de Projetos).
@@ -559,4 +562,6 @@ Consequência para a v1 (IA3):
 - 24/09/2026: revisão do `banco.txt` por Lucas Scholz, tabela por tabela (Sessão D). O que mudou está no `banco.txt`, seção 7, "Sessão D".
 - Preparação das reuniões: `docs/pautas/` (histórico, não é requisito).
 - Funil de prospecção e CRM pós-auditoria do DaaS: repositório `wcj-ui` (referência de funcionalidade; dados não migrados, C15).
+- 01/10/2026: revisão independente (R1 a R17) em `docs/revisoes/2026-10-01-revisao-fable.md`, aceita por inteiro por Lucas Scholz em 06/10.
+- 06/10/2026: aprovação do `banco.txt` por Lucas Alencar e decisões D-GER-23 a D-GER-28 (Lucas Scholz).
 - Atas do Comitê de IA: `docs/atas/`.
