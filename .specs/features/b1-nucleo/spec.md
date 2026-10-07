@@ -4,7 +4,7 @@ Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-
 
 **Approved by**: Lucas Scholz, 2026-10-06
 
-**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
+**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. **Revisada em 07/10/2026** (ponto do Vitinho, aceito por Lucas Scholz): as Policies não leem `projects`; perguntam ao contrato `Platform\Contracts\ClientManagement` (ver premissas e NUC-06/NUC-08). Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
 
 ## Problem Statement
 
@@ -23,6 +23,7 @@ O Hub nasce com o template: login, usuários (nome, e-mail, papel, carga, "IA po
 | Feature | Reason |
 |---|---|
 | Botão *Novo cliente* dentro do formulário do projeto | É tela do B2 (F2 §02). B1 entrega o `ClientService::create` e a `ClientPolicy::create` para o gestor, que o B2 chama |
+| Saber quais clientes um gestor gere (ler `projects` e `project_members`) | É dado de Projetos; o Platform não lê tabela de domínio (teste A9, ADR-001). B1 entrega só o contrato `Platform\Contracts\ClientManagement` e a implementação vazia; a real é do B2 |
 | Conexões de IA (conectar, revogar pela tela, tokens do Passport) | B8 (F8). B1 só marca `revoked_at` nas autorizações ao desativar, trocar papel ou a marca da IA; a revogação de token do Passport entra no B8, quando houver token |
 | Contato sem cliente (pessoa de lead) | v2, CRM (D-GER-24). Na fatia 1 o Service exige cliente |
 | Papel Comercial com uso | Sem uso na fatia 1 (C14). Só existe na lista de papéis |
@@ -45,7 +46,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | "Já usado" para excluir usuário | `hasHistory()` do template: alguma FK aponta para a linha ou há `audit_logs` de login dela | É a definição do `banco.txt` §0 e do template | y |
 | "Já usado" para excluir cliente | Existe `contacts.client_id` ou `projects.client_id` apontando | F1 §04: "só cliente sem projeto e sem contato"; `isReferenced()` já cobre | y |
 | "Já usado" para excluir contato | Existe `tasks.requester_contact_id` apontando | F1 §04: "só contato nunca citado em card de suporte" | y |
-| Gestor "dos projetos do cliente" antes de o B2 existir | `ContactPolicy` e `ClientPolicy::update` consultam `projects` (manager_id = gestor ou gestor alocado em `project_members`); sem projeto, o gestor não cria nem edita contato daquele cliente | A tabela existe desde o B0; a regra é a do F1 §09 e da P1/P5. B2 só põe a tela | y |
+| Gestor "dos projetos do cliente" antes de o B2 existir | `ContactPolicy` e `ClientPolicy::update` perguntam ao contrato `Platform\Contracts\ClientManagement` (`manages(User $user, Client $client): bool` e `managedClientIds(User $user): array`). O B1 entrega o contrato e a implementação vazia `Platform\Services\NoClientManagement` (ninguém gere cliente algum), ligada no `AppServiceProvider`; os testes das Policies usam um dublê do contrato. O B2 entrega `Projetos\Services\ProjectClientManagement` (`projects.manager_id` ou gestor alocado em `project_members`, P1/P5) e troca a ligação | O Platform não lê `projects` (teste A9, ADR-001): a regra é a do F1 §09, mas o dado é de Projetos. Revisão do Vitinho em 07/10, aceita por Lucas Scholz | y |
 | Desativar usuário derruba conexões de IA | Marca `revoked_at` em todas as `ai_authorizations` ativas da pessoa, na mesma transação; os tokens do Passport são revogados pelo B8, que passa a chamar o mesmo ponto | N4, IA6; o B8 não existe ainda, então a revogação é só na tabela do Hub | y |
 | Trocar papel ou "IA pode escrever" derruba conexões | Mesmo mecanismo da desativação | IA6, IA4 (06/10) | y |
 | Canal na auditoria do B1 | Sempre "Tela" (`ai_authorization_id` nulo); o label "IA: Claude/Codex/ChatGPT" aparece quando a coluna estiver preenchida (B8) | IA11; a tela já nasce pronta para o canal | y |
@@ -106,8 +107,8 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 3. IF já existe cliente com o mesmo país e documento, ignorando caixa THEN o sistema SHALL recusar com "Já existe o cliente X com este CNPJ", citando o nome do cliente existente, e não criar nem alterar (N5).
 4. WHEN o país não é `BR` THEN o sistema SHALL aceitar o documento vazio e rotular o campo como "Identificador fiscal" (N5).
 5. WHEN um Gestor de projetos chama o Service de criar cliente THEN o sistema SHALL criar o cliente com as mesmas validações e auditar com o `user_id` do gestor (N6; consumido pelo B2).
-6. WHEN um Gestor de projetos edita um cliente de um projeto que ele gere THEN o sistema SHALL aplicar a alteração com as mesmas validações (N6, P1).
-7. IF um Gestor de projetos edita um cliente que não é de nenhum projeto dele, ou tenta desativar, reativar ou excluir qualquer cliente THEN o sistema SHALL responder 403 e manter o cliente sem mudança (F1 §09).
+6. WHEN um Gestor de projetos edita um cliente que o contrato `ClientManagement` diz que ele gere THEN o sistema SHALL aplicar a alteração com as mesmas validações (N6, P1).
+7. IF um Gestor de projetos edita um cliente que o contrato `ClientManagement` não lista para ele (com a implementação vazia do B1, nenhum), ou tenta desativar, reativar ou excluir qualquer cliente THEN o sistema SHALL responder 403 e manter o cliente sem mudança (F1 §09).
 8. IF um Desenvolvedor acessa qualquer rota de clientes THEN o sistema SHALL responder 403 (F1 §09).
 9. WHEN o Administrador desativa um cliente com projetos abertos THEN o sistema SHALL desativar mesmo assim, após a confirmação "O cliente X tem N projetos abertos; eles continuam. Desativar?", e tirar o cliente das listas de escolha (N11).
 10. IF o Administrador tenta desativar o cliente WCJ (documento `38614817000122`) THEN o sistema SHALL responder 403 com "A WCJ não pode ser desativada" (N7).
@@ -131,8 +132,8 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 1. WHEN o Administrador cria um contato na aba *Contatos* de um cliente com nome válido THEN o sistema SHALL criar o contato ligado àquele cliente, com e-mail e telefone opcionais, e gravar `created` na auditoria (N8).
 2. IF o nome está vazio ou o cliente não está ativo THEN o sistema SHALL recusar com erro de validação e não criar (N8, N11).
 3. WHEN o e-mail informado já existe em outro contato ativo THEN o sistema SHALL salvar mesmo assim e devolver o aviso "Já existe Fulano (Cliente X) com este e-mail" na resposta (N8).
-4. WHEN um Gestor de projetos cria ou edita um contato de um cliente de um projeto que ele gere THEN o sistema SHALL aplicar com as mesmas regras do Administrador (N8).
-5. IF um Gestor de projetos cria ou edita contato de cliente que não é de projeto dele, ou tenta desativar, excluir ou anonimizar qualquer contato THEN o sistema SHALL responder 403 e manter o contato sem mudança (F1 §09).
+4. WHEN um Gestor de projetos cria ou edita um contato de um cliente que o contrato `ClientManagement` diz que ele gere THEN o sistema SHALL aplicar com as mesmas regras do Administrador (N8).
+5. IF um Gestor de projetos cria ou edita contato de cliente que o contrato `ClientManagement` não lista para ele, ou tenta desativar, excluir ou anonimizar qualquer contato THEN o sistema SHALL responder 403 e manter o contato sem mudança (F1 §09).
 6. IF um Desenvolvedor acessa as rotas de contatos THEN o sistema SHALL responder 403 (F1 §09; o nome em "quem pediu" chega pelo card, no B3).
 7. WHEN o Administrador desativa um contato THEN o sistema SHALL gravar `deactivated_at` e `deactivated_by` e tirá-lo das listas de escolha, mantendo-o onde já é citado (N11).
 8. WHEN o Administrador exclui um contato nunca citado em card de suporte THEN o sistema SHALL apagar a linha e gravar `deleted` (G2).
@@ -140,7 +141,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 10. WHEN o Administrador confirma a anonimização digitando `ANONIMIZAR` THEN o sistema SHALL, numa só transação, trocar o nome por "removido a pedido do titular", apagar e-mail e telefone, apagar os mesmos campos dentro de `changes` de toda linha de `audit_logs` daquele contato e gravar `anonymized` sem dados pessoais (N12).
 11. IF a confirmação da anonimização não é exatamente `ANONIMIZAR` THEN o sistema SHALL recusar e não alterar nada (F1 §04).
 12. WHILE um contato está anonimizado the sistema SHALL mostrá-lo com situação "Anonimizado", sem botões de editar, reativar ou anonimizar de novo (N12).
-13. The sistema SHALL ter a lista geral *Administração → Contatos* com Nome, E-mail, Telefone, Cliente e Situação, busca por nome, e-mail e telefone, filtros Cliente e Situação, para o Administrador e, nos clientes dos projetos dele, para o gestor (F1 §03).
+13. The sistema SHALL ter a lista geral *Administração → Contatos* com Nome, E-mail, Telefone, Cliente e Situação, busca por nome, e-mail e telefone, filtros Cliente e Situação, para o Administrador e, nos clientes que `managedClientIds` devolve, para o gestor (F1 §03).
 
 **Independent Test**: Criar dois contatos com o mesmo e-mail em clientes diferentes e ver o aviso sem recusa; anonimizar um e conferir que a auditoria dele não tem mais o nome.
 
@@ -236,9 +237,9 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Done |
 | NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | Done |
 | NUC-05 | P1: Clientes — criar e validar CNPJ (AC 1–4, 14) | Design | Done |
-| NUC-06 | P1: Clientes — gestor cria e edita pelo Service (AC 5–8) | Design | Done |
+| NUC-06 | P1: Clientes — gestor cria e edita pelo Service; contrato `ClientManagement` + implementação vazia (AC 5–8) | Design | In Progress |
 | NUC-07 | P1: Clientes — desativar, WCJ, excluir, lista (AC 9–13) | Design | Done |
-| NUC-08 | P1: Contatos — criar, aviso de e-mail, gestor (AC 1–6, 13) | Design | Done |
+| NUC-08 | P1: Contatos — criar, aviso de e-mail, gestor (AC 1–6, 13) | Design | In Progress |
 | NUC-09 | P1: Contatos — desativar, excluir (AC 7–9) | Design | Done |
 | NUC-10 | P1: Contatos — anonimizar (AC 10–12) | Design | Done |
 | NUC-11 | P1: Auditoria — gravação com canal e resultado, negações (AC 1, 2, 8, 9) | Design | Done |
