@@ -52,6 +52,44 @@ test('desativar cliente pede a confirmação; sem projetos abertos, a variante s
     }
 });
 
+test('desativar cliente com projetos abertos mostra o texto da spec com a contagem', async ({ page }) => {
+    const name = `E2E Cliente com projetos ${Date.now()}`;
+    const id = createClient(name);
+    const clients = new ClientsPage(page);
+
+    // Com a implementação vazia do ClientManagement, o servidor sempre manda 0 projetos abertos
+    // até o B2. A resposta da busca é reescrita com 2, para provar o texto do Clientes AC 9.
+    await page.route(
+        (url) => url.pathname === '/admin/clients' && url.searchParams.get('search') === name,
+        async (route) => {
+            const response = await route.fetch();
+            const body = await response.json();
+            body.props.clients.data = body.props.clients.data.map((row: { name: string }) =>
+                row.name === name ? { ...row, open_projects: 2 } : row,
+            );
+            await route.fulfill({ response, json: body });
+        },
+    );
+
+    try {
+        await clients.goto();
+        // O cliente já pode aparecer na primeira página; só a resposta da busca traz a contagem.
+        const busca = page.waitForResponse((r) => new URL(r.url()).searchParams.get('search') === name);
+        await clients.find(name);
+        await busca;
+        await page.getByRole('button', { name: `Desativar ${name}` }).click();
+
+        await expect(
+            clients.admin.dialog.getByText(`O cliente ${name} tem 2 projetos abertos; eles continuam. Desativar?`, {
+                exact: true,
+            }),
+        ).toBeVisible();
+        await clients.admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
+    } finally {
+        deleteClient(id);
+    }
+});
+
 test('lista de clientes vazia mostra "Nenhum cliente ainda" com o botão Novo cliente', async ({ page }) => {
     const clients = new ClientsPage(page);
     await clients.goto();

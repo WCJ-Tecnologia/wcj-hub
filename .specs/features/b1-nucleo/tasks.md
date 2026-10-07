@@ -105,6 +105,12 @@ T31
 T32 → T33 → T34 → T35
 ```
 
+### Phase 11: Correções do Verifier (rodada 5)
+
+```
+T36
+```
+
 ---
 
 ## Task Breakdown
@@ -1069,10 +1075,38 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 11: Correções do Verifier (rodada 5)
+
+### T36: O texto do Clientes AC 9 com N projetos abertos volta a ter teste
+
+**What**: spec e2e que reescreve a resposta da busca de clientes com `open_projects = 2` e afirma o texto exato da spec na confirmação de desativar; com a implementação vazia, o servidor sempre manda 0 até o B2.
+**Where**: `e2e/textos-nucleo.spec.ts`
+**Depends on**: T35
+**Reuses**: o `page.route` do teste do estado vazio, `ClientsPage`, `e2e/helpers/dados.ts`
+**Requirement**: NUC-07
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] "O cliente X tem 2 projetos abertos; eles continuam. Desativar?" afirmado com `exact: true`
+- [x] Mutante T11 (texto com N trocado em `pages/admin/clients/index.tsx`) derrubado pelo teste novo, numa cópia descartável com build próprio
+- [x] Gate check passes: Build (e2e inteiro: 49 passed)
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): texto da confirmação de desativar com N projetos abertos`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -1086,6 +1120,7 @@ Phase 7:  T26 → T27 → T28 → T29
 Phase 8:  T30
 Phase 9:  T31
 Phase 10: T32 → T33 → T34 → T35
+Phase 11: T36
 ```
 
 ## Task Granularity Check
@@ -1144,6 +1179,7 @@ Phase 10: T32 → T33 → T34 → T35
 | T33 | T32 | T32 → T33 | ✅ Match |
 | T34 | T33 | T33 → T34 | ✅ Match |
 | T35 | T34 | T34 → T35 | ✅ Match |
+| T36 | T35 | fase anterior | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1169,3 +1205,4 @@ Phase 10: T32 → T33 → T34 → T35
 | T32, T33 | Service, Policy | integration | integration | ✅ OK |
 | T34 | e2e | e2e | e2e | ✅ OK |
 | T35 | Docs, `.specs` | none | none | ✅ OK |
+| T36 | e2e | e2e | e2e | ✅ OK |
