@@ -7,9 +7,8 @@ import { EmptyState } from '@/components/empty-state';
 import { Pagination } from '@/components/pagination';
 import { RowActions } from '@/components/row-actions';
 import { SearchInput } from '@/components/search-input';
+import { ShowInactiveToggle } from '@/components/show-inactive-toggle';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { ROLE, UserFormDialog, type UserFormData } from '@/components/users/user-form-dialog';
 import { situation, UserTable, type UserRow } from '@/components/users/user-table';
@@ -204,16 +203,10 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                         </option>
                     ))}
                 </Select>
-                <div className="flex items-center gap-2 sm:px-2">
-                    <Checkbox
-                        id="show_inactive"
-                        checked={filters.show_inactive}
-                        onCheckedChange={(checked) => visit({ show_inactive: checked === true ? 1 : undefined })}
-                    />
-                    <Label htmlFor="show_inactive" className="cursor-pointer">
-                        Mostrar desativados
-                    </Label>
-                </div>
+                <ShowInactiveToggle
+                    checked={filters.show_inactive}
+                    onChange={(checked) => visit({ show_inactive: checked ? 1 : undefined })}
+                />
             </div>
 
             {list.failed ? (

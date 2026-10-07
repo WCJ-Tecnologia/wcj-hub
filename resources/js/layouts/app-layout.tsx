@@ -99,15 +99,16 @@ export default function AppLayout({ title, subtitle, eyebrow, actions, width, ch
                     </main>
                 </div>
 
-                {/* Server flash → toast. role=status + aria-live so screen readers announce it. */}
-                <div role="status" aria-live="polite">
+                {/* Server flash → toast. role=status + aria-live so screen readers announce it.
+                    No topo, centralizado (pedido do Cauã, 07/10): embaixo à direita ninguém via. */}
+                <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 top-4 z-[60] flex justify-center px-4">
                     <AnimatePresence>
                         {toast && (
                             <motion.div
-                                initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                                initial={{ opacity: 0, y: -24, scale: 0.96 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 24, scale: 0.96 }}
-                                className="fixed right-4 bottom-6 z-[60] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-lg sm:right-6"
+                                exit={{ opacity: 0, y: -24, scale: 0.96 }}
+                                className="pointer-events-auto flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-lg"
                             >
                                 {toast.type === 'success' ? (
                                     <CheckCircle2 className="size-5 shrink-0 text-status-approved" aria-hidden />
