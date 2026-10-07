@@ -240,15 +240,16 @@ ai_assistants                          (fechado)
 IA3 (quem usa o quê) e IA4 (uma autorização por assistente). write_allowed = false emite token só de
 leitura (ChatGPT Pro, IA3). O slug dá o canal da auditoria: ia:<slug> (IA11, T10).
 id   slug         label            write_allowed
-1    claude       Claude           true      (app e Claude Code)
-2    chatgpt      ChatGPT          false
+1    claude       Claude           true      (app claude.ai; redirect https://claude.ai/...)
+2    chatgpt      ChatGPT          false     (condicional à parte 2 da prova; se der trabalho, v2)
 3    codex        Codex            true      (CLI, IDE e app)
 4    gpt          GPT "WCJ Hub"    true      (v2, com o CRM; fica na semente para o canal existir)
+5    claude_code  Claude Code      true      (terminal, IDE, desktop; redirect localhost; D-GER-30)
 colunas: write_allowed boolean not null
-Claude app e Claude Code são o mesmo assistente, e o Codex CLI e o Codex no app também. Se cada um
-fizer a própria conexão, conectar um derruba o outro (uma conexão por assistente, IA4, IA6). Fica
-como está; a prova de conceito (D-GER-17) confere. Se o dev precisar dos dois, claude_code volta a
-ser um assistente separado (Sessão D).
+Prova de conceito de 06/10 (D-GER-30): o Claude Code conectado pelo terminal é outro cliente OAuth e
+derrubava a conexão do app (uma por assistente, IA4, IA6), então virou o assistente 5. O servidor os
+distingue pelo redirect_uri (claude.ai × localhost) e pelo client_name. Codex CLI × Codex no app: a
+parte 2 da prova diz se também separam.
 
 =====================================================================
 ai_authorizations
@@ -527,12 +528,15 @@ Mesmo projeto (R15): as duas etapas são do projeto da tarefa; asserção no Ser
 rework_reasons                         (cadastrável)
 =====================================================================
 P40: lista geral, editada pelo Administrador (G7, R11), sempre com "outro" com texto. Sem cópia por
-projeto e sem FK composta.
+projeto e sem FK composta. O código depende só do slug 'other' (o "Outro" não se desativa, não se
+exclui e sempre pede texto; o nome não serve porque o Administrador renomeia); os outros itens nascem
+sem slug, como em task_types (07/10).
+slug                  varchar(20)   null      unique          (só o "outro")
 label                 varchar(80)   not null  unique
 requires_text         boolean       not null  default false   (o "outro")
 deactivated_at / deactivated_by
 Semente (P40): Ajuste visual · Regra de negócio · Erro / bug · Requisito incompleto ou mal documentado
-· Outro (requires_text).
+· Outro (slug other, requires_text).
 
 =====================================================================
 task_acceptance_criteria
@@ -959,6 +963,11 @@ Decisão do Lucas Scholz na aprovação do F8 (06/10, noite), uma coluna aditiva
   pode escrever; false = tokens só :read (IA4). Mudar revoga as conexões ativas (IA6).
 - Sem coluna: volta por engano = movimento sem rework_origin_id (P39); coluna de pronto mostra só a
   sprint aberta e a última encerrada (P13); comentário editado ou excluído pelo autor (P24).
+Revisão do Vitinho (07/10), uma coluna aditiva em rework_reasons, migração própria
+(2026_10_07_000010):
+- rework_reasons.slug (varchar(20), null, unique): só o "Outro" recebe 'other'. Motivo: o código
+  precisa achar o Outro (P40: não se desativa, não se exclui, sempre pede texto) e o nome não serve
+  porque o Administrador renomeia; id fixo da semente é frágil. É o mesmo padrão de task_types.
 Ficou como aprovado: todo o resto, inclusive as colunas geradas testadas no MySQL 8.4 (T1, T9), o
 contador atômico (T4), MySQL nos testes (T6), audit_logs.ip_address (T8) e a semente dos domínios.
 Contagem: 41 − 9 (CRM) − 1 (service_types) − 1 (task_validations) − 1 (sprint_members) − 1
