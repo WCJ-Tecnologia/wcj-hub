@@ -14,7 +14,7 @@ graph TD
     UI[Página Inertia] -->|POST/PUT/DELETE| C[Controller fino]
     C -->|authorize| P[Policy]
     P -->|negado| D[Controller::authorize grava outcome=denied e lança 403]
-    P -->|gestor? ClientProjects| M[Domains/Projetos: ProjectClientProjects]
+    P -->|gestor? ClientManagement| M[Platform: NoClientManagement no B1; Projetos: ProjectClientManagement no B2]
     C --> S[UserService / ClientService / ContactService]
     S -->|mesma transação| A[AuditService]
     S --> DB[(MySQL)]
@@ -53,7 +53,7 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 
 | System | Integration Method |
 | --- | --- |
-| Projetos (`projects`, `project_members`) | Só pela interface `App\Platform\Contracts\ClientProjects`, implementada em `App\Domains\Projetos\Services\ProjectClientProjects` e ligada no `AppServiceProvider` (D1) |
+| Projetos (`projects`, `project_members`) | Só pelo contrato `App\Platform\Contracts\ClientManagement`, ligado no `AppServiceProvider` (D1, ADR-001). No B1, a implementação vazia `App\Platform\Services\NoClientManagement`; o B2 entrega `Projetos\Services\ProjectClientManagement` e troca a ligação |
 | Conexões de IA (`ai_authorizations`) | O `UserService` marca `revoked_at` nas ativas; o B8 passa a revogar o token do Passport no mesmo ponto |
 | B2 (formulário do projeto) | Consome `ClientService::create` com a `ClientPolicy::create` do gestor e as listas de escolha (`UserService::choiceList`, `ClientService::choiceList`) |
 | B3 (card de suporte) | Usa `Contact::active()` para "quem pediu"; a exclusão de contato já considera `tasks.requester_contact_id` pelo catálogo |
@@ -92,12 +92,13 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 - **Location**: `app/Rules/AlphanumericCnpj.php`
 - **Interfaces**: `validate()`; `static normalize(string): string` (tira máscara, maiúsculas)
 
-### `ClientProjects` (interface) e `ProjectClientProjects`
+### `ClientManagement` (contrato) e `NoClientManagement`
 
-- **Purpose**: responder "o gestor X gere algum projeto do cliente Y?" sem o Núcleo ler tabela de Projetos (A9).
-- **Location**: `app/Platform/Contracts/ClientProjects.php`; `app/Domains/Projetos/Services/ProjectClientProjects.php`
-- **Interfaces**: `managedBy(User $manager): list<int>` (ids dos clientes); `manages(User $manager, int $clientId): bool`; `openProjectsCount(int $clientId): int` (para a confirmação de desativar, F1 §04)
-- **Regra**: projeto com `manager_id` = gestor, ou gestor (papel `project_manager`) alocado em `project_members`.
+- **Purpose**: responder "o gestor X gere o cliente Y?" sem o Núcleo ler tabela de Projetos (A9). Desenho da revisão de 07/10 (ponto do Vitinho, aceito por Lucas Scholz), no padrão da ADR-001: contrato no Platform, implementação vazia no Platform, a real no módulo.
+- **Location**: `app/Platform/Contracts/ClientManagement.php`; `app/Platform/Services/NoClientManagement.php`
+- **Interfaces**: `manages(User $user, Client $client): bool`; `managedClientIds(User $user): list<int>`; `openProjectsCount(Client $client): int` (para a confirmação de desativar, F1 §04; acrescentado no B1, pendente de aprovação do Lucas Scholz no PR)
+- **No B1**: a `NoClientManagement` responde `false`, `[]` e `0`. O gestor vê, cria e escolhe cliente, mas não edita cliente nem cria ou edita contato; a lista de contatos dele vem vazia; a confirmação de desativar sai sem a contagem. Os testes de gestor usam o dublê `tests/Support/ClientManagementFalso.php`.
+- **No B2**: `Projetos\Services\ProjectClientManagement` (projeto com `manager_id` = gestor, ou gestor alocado em `project_members`, P1/P5; projetos sem `finished_at`) substitui a ligação.
 
 ### Policies
 
@@ -177,7 +178,7 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 | --- | --- | --- | --- |
 | Auditoria gravada fora da transação da escrita | `app/Platform/Controllers/Admin/UserController.php:96` | Usuário criado sem linha de auditoria se o log falhar | Services gravam a escrita e o log no mesmo `DB::transaction` |
 | E-mail enviado dentro da gravação da senha | `app/Platform/Services/TemporaryPasswordService.php:30` | Falha de SMTP desfaria o usuário, ou o e-mail sairia antes do commit | Separar `issue` (grava) de `send` (envia depois do commit) |
-| Núcleo precisa saber os clientes do gestor, mas A9 proíbe ler `projects` | `tests/Arch/ArquiteturaTest.php:123` | Policy do gestor não teria como decidir | Interface no Platform, implementação no domínio (D1) |
+| Núcleo precisa saber os clientes do gestor, mas A9 proíbe ler `projects` | `tests/Arch/ArquiteturaTest.php:123` | Policy do gestor não teria como decidir | Contrato `ClientManagement` com a implementação vazia no B1 e a real no B2 (D1, ADR-001). Até o B2, gestor não edita cliente nem contato |
 | Controllers da dívida A6 (UserController 201 linhas, AuditLogController::index 43) | `tests/Arch/divida.php` | Crescer o controller quebra o teto | A regra sai para Services e `AuditLogQuery`; a dívida diminui e sai do `divida.php` |
 | `e2e:serve` fixa a porta 8000, a mesma do `composer dev` | `package.json` (script `e2e:serve`) | E2E e servidor de desenvolvimento colidem | Na verificação, servir o e2e em outra porta com `E2E_BASE_URL` |
 | `ClientFactory` gera documento numérico aleatório, quase nunca um CNPJ válido | `database/factories/ClientFactory.php:25` | Teste que passa pelo Service com documento da factory falha | Factory passa a gerar CNPJ válido (dígito calculado) |
@@ -188,7 +189,7 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 
 | Decision | Choice | Rationale |
 | --- | --- | --- |
-| D1 Clientes do gestor | Interface `ClientProjects` no Platform, implementação em `Domains/Projetos`, ligada no `AppServiceProvider` | A spec manda a Policy consultar `projects`; o A9 proíbe o Núcleo de ler tabela de módulo. A interface tem uma implementação só, exceção consciente à regra "interface só com duas" porque a alternativa quebra o A9. ADR-003 e AD-003 |
+| D1 Clientes do gestor | Contrato `ClientManagement` no Platform; implementação vazia `NoClientManagement` no B1, ligada no `AppServiceProvider`; a real (`ProjectClientManagement`) é do B2 | Revisão de 07/10 (Vitinho, aceita por Lucas Scholz): o Platform não lê `projects` (A9) e o B1 não entrega código de Projetos. Padrão registrado na ADR-001; a ADR-003 e o AD-003 do desenho anterior saíram |
 | D2 Caminhos das rotas | Inglês (`/admin/clients`), como o template | `stacks/laravel-inertia.md` §6; o `escopo.md` cita `/admin/clientes` de forma descritiva (o `/perfil` dele é `/admin/profile` no template) |
 | D3 Desativar | Ação própria na linha, com a confirmação do F1 §04, em vez da caixa "ativo" no formulário | O funcional manda na tela e pede confirmação com texto próprio ("Fulano perde o acesso imediatamente"); a auditoria registra `deactivated`/`reactivated`, como a spec pede |
 | D4 Reenviar convite | A rota `reset-password` do template, renomeada na tela | Premissa confirmada na spec |

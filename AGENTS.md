@@ -155,7 +155,7 @@ Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escop
 - A IA conectada age como o usuário dono do token: mesmas Policies; escopo do token nunca passa do papel (IA5).
 - Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. As de Projetos nascem a partir do B2.
 - Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. Ability nova precisa estar em `AuditActionEnum::forAbility()`, senão a negação dá 500.
-- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientProjects`, implementado em Projetos (ADR-003): o Núcleo não lê `projects`.
+- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientManagement` (ADR-001): o Núcleo não lê `projects`. No B1 a ligação é a implementação vazia `App\Platform\Services\NoClientManagement` (ninguém gere cliente algum); o B2 entrega a real em `Projetos\Services\ProjectClientManagement` e troca a ligação no `AppServiceProvider`. Teste de gestor usa o dublê `tests/Support/ClientManagementFalso.php`.
 
 ## Regras de domínio
 

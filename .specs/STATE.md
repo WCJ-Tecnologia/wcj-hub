@@ -31,10 +31,10 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
-- **Phase / Task**: Execute concluído (T1–T31, fases 1–9) e Verifier PASS na rodada 4 (focada, autorizada por Cauã) em 06/10/2026 (`validation.md`). Rodadas 1–3 reprovaram e foram corrigidas pelas fases 7–9.
-- **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T25.
+- **Phase / Task**: Execute concluído (T1–T35, fases 1–10). Verifier PASS na rodada 4 (focada, autorizada por Cauã) em 06/10/2026 (`validation.md`), antes da fase 10. A fase 10 (07/10) aplica a spec revisada pelo Lucas Scholz (revisão do Vitinho): as Policies perguntam ao contrato `ClientManagement`, com a implementação vazia `NoClientManagement` no B1 e a real no B2 (ADR-001).
+- **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T35.
 - **In-progress** (file:line): none
-- **Next step**: revisão final (prints, quatro perguntas por entidade, revisão de segurança dirigida) e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+".
+- **Next step**: Verifier focado na fase 10 (T32–T35: contrato, implementação vazia, Policies e Services pelo contrato, dublê nos testes, e2e com a variante sem contagem); depois, revisão final (prints, quatro perguntas por entidade, revisão de segurança dirigida) e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: `openProjectsCount` no contrato `ClientManagement` (acrescentado no B1 para o Clientes AC 9), 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+".
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo

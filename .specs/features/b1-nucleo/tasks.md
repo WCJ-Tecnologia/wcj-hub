@@ -223,6 +223,8 @@ T32 → T33 → T34 → T35
 
 ### T5: Contrato ClientProjects e a implementação de Projetos
 
+> Substituída na fase 10 (T32–T33, spec revisada em 07/10): o contrato agora é `ClientManagement`, com a implementação vazia no B1 e a real no B2. O texto abaixo é o registro do que a T5 fez.
+
 **What**: interface `App\Platform\Contracts\ClientProjects` e `App\Domains\Projetos\Services\ProjectClientProjects` (clientes geridos, `manages`, projetos abertos), ligada no `AppServiceProvider`, com ADR-003 e AD-003.
 **Where**: `app/Domains/Projetos/Services/ProjectClientProjects.php`
 **Depends on**: None
@@ -1056,9 +1058,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Nenhuma menção a `ClientProjects` fora do histórico do git
-- [ ] `conferir-specs.mjs` sem problema além do `validation.md` da rodada anterior
-- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+- [x] Nenhuma menção a `ClientProjects` fora do histórico do git
+- [x] `conferir-specs.mjs` sem problema além do `validation.md` da rodada anterior
+- [x] Gate check passes: `node .ai/skills/conferir-specs.mjs`
 
 **Tests**: none
 **Gate**: build
