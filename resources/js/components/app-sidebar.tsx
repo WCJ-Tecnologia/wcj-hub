@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { History, LayoutDashboard, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { FolderKanban, History, LayoutDashboard, UserRound, Users, type LucideIcon } from 'lucide-react';
 
 import { BrandLogo, ProductWordmark } from '@/components/brand-logo';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,10 @@ const NAV: NavGroup[] = [
     {
         title: 'Visão geral',
         items: [{ label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard }],
+    },
+    {
+        title: 'Projetos',
+        items: [{ label: 'Projetos', href: '/projetos', icon: FolderKanban, visible: (a) => a.view_projects }],
     },
     {
         title: 'Cadastros',

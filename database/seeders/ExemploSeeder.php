@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Projetos\Models\BoardStage;
 use App\Domains\Projetos\Models\Project;
 use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
@@ -10,6 +9,7 @@ use App\Domains\Projetos\Models\TaskAcceptanceCriterion;
 use App\Domains\Projetos\Models\TaskPriority;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
+use App\Domains\Projetos\Services\BoardStageService;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -24,8 +24,8 @@ use Illuminate\Support\Str;
  * (App\Support\Exemplo: nome começa com "[Exemplo] ", e-mail em exemplo.wcj.test) e apagado por
  * `php artisan app:limpar-exemplo`. Nunca em produção.
  *
- * Grava direto nas tabelas, sem os Services (que nascem do B1 em diante), mas dentro das regras
- * do banco.txt: projeto com as 8 etapas padrão (P10), pessoas alocadas (P5), cards no Backlog
+ * Grava direto nas tabelas, mas dentro das regras do banco.txt; o quadro vem do BoardStageService
+ * (B2), o mesmo da tela: projeto com as 8 etapas padrão (P10), pessoas alocadas (P5), cards no Backlog
  * com tipo 'improvement' e prioridade normal (P17, R4), número pelo contador (P16) e o movimento
  * de criação (P14).
  *
@@ -34,22 +34,6 @@ use Illuminate\Support\Str;
  */
 class ExemploSeeder extends Seeder
 {
-    /**
-     * As 8 etapas padrão, na ordem da P10. Provisório: quando o B2 entregar o Service que cria o
-     * quadro (ProjectService/BoardStageService), o seeder passa a chamá-lo e esta lista sai, para a
-     * ordem não morar em dois lugares.
-     */
-    private const ETAPAS = [
-        [StageRole::QUEUE, 'Backlog'],
-        [StageRole::SPRINT, 'To do'],
-        [StageRole::DEVELOPMENT, 'Doing'],
-        [StageRole::PAUSED, 'Paused'],
-        [StageRole::CODE_REVIEW, 'Code-review'],
-        [StageRole::TEST, 'In test'],
-        [StageRole::DONE, 'Done'],
-        [StageRole::SUPPORT, 'Support'],
-    ];
-
     private const CARDS = [
         ['title' => 'Tela de login com o logo do cliente', 'criteria' => ['Mostra o logo na tela de login', 'Funciona no celular (375 px)']],
         ['title' => 'Cardápio por categoria', 'criteria' => ['Lista as categorias na ordem cadastrada']],
@@ -97,16 +81,9 @@ class ExemploSeeder extends Seeder
             ]);
             $project->users()->attach([$gestora->id, $dev->id, $qa->id]);
 
-            $backlog = null;
-            foreach (self::ETAPAS as $posicao => [$papel, $nome]) {
-                $etapa = BoardStage::query()->create([
-                    'project_id' => $project->id,
-                    'stage_role_id' => $papel,
-                    'name' => $nome,
-                    'position' => $posicao + 1,
-                ]);
-                $backlog ??= $etapa;
-            }
+            // O quadro padrão mora no Service do quadro (P10, PR #4): a ordem não fica em dois lugares.
+            app(BoardStageService::class)->createDefaultBoard($project);
+            $backlog = $project->boardStages()->where('stage_role_id', StageRole::QUEUE)->firstOrFail();
 
             $melhoria = TaskType::query()->where('slug', TaskType::IMPROVEMENT)->value('id');
 

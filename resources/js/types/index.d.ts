@@ -12,6 +12,10 @@ export interface Abilities {
     delete_records: boolean;
     view_audit_logs: boolean;
     reset_passwords: boolean;
+    /** ProjectPolicy::viewAny: todos menos o Comercial (C14). */
+    view_projects: boolean;
+    /** ProjectPolicy::create: Administrador e Gestor de projetos. */
+    manage_projects: boolean;
 }
 
 export interface AuthUser {

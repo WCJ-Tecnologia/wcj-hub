@@ -21,6 +21,7 @@ use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\TimeEntry;
 use App\Domains\Projetos\Models\ValidationType;
+use App\Domains\Projetos\Policies\ProjectPolicy;
 use App\Http\Responses\ThrottledAuthResponse;
 use App\Platform\Models\AiAssistant;
 use App\Platform\Models\AiAuthorization;
@@ -130,6 +131,7 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
 
         Gate::define('view-audit-logs', fn (User $user) => $user->isAdmin());
     }

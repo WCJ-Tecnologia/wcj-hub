@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Projetos\Models\Project;
 use App\Platform\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -61,6 +62,9 @@ class HandleInertiaRequests extends Middleware
                 'delete_records' => $user->isAdmin(),
                 'view_audit_logs' => $user->isAdmin(),
                 'reset_passwords' => $user->isAdmin(),
+                // Da ProjectPolicy (F2 §09): o Comercial não entra em Projetos (C14).
+                'view_projects' => $user->can('viewAny', Project::class),
+                'manage_projects' => $user->can('create', Project::class),
             ],
         ];
     }

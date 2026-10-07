@@ -4,6 +4,7 @@ import { AdminPage } from './pages/admin.page';
 const SCREENS = [
     { path: '/admin/dashboard', title: 'Dashboard' },
     { path: '/admin/users', title: 'Usuários' },
+    { path: '/projetos', title: 'Projetos' },
     { path: '/admin/audit-logs', title: 'Logs de auditoria' },
     { path: '/admin/profile', title: 'Meu perfil' },
 ];

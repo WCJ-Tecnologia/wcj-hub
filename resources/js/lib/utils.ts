@@ -35,3 +35,13 @@ export function money(value: number | string | null | undefined): string {
 export function percent(value: number): string {
     return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 }
+
+/**
+ * Data de negócio ("2026-10-07", coluna date) para a tela: "07/10/2026". Sem passar por Date,
+ * que leria a data como meia-noite UTC e mostraria o dia anterior no fuso de Brasília.
+ */
+export function dateBr(value: string | null | undefined): string {
+    if (!value) return '—';
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
+}

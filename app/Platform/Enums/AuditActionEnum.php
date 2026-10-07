@@ -9,6 +9,8 @@ enum AuditActionEnum: string
     case DELETED = 'deleted';
     case LOGIN = 'login';
     case PASSWORD_RESET = 'password_reset';
+    case FINISHED = 'finished';
+    case REOPENED = 'reopened';
 
     public function label(): string
     {
@@ -18,6 +20,8 @@ enum AuditActionEnum: string
             self::DELETED => 'Excluído',
             self::LOGIN => 'Login',
             self::PASSWORD_RESET => 'Senha redefinida',
+            self::FINISHED => 'Encerrado',
+            self::REOPENED => 'Reaberto',
         };
     }
 }
