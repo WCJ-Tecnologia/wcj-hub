@@ -99,6 +99,12 @@ T30
 T31
 ```
 
+### Phase 10: Spec revisada em 07/10 (contrato ClientManagement)
+
+```
+T32 → T33 → T34 → T35
+```
+
 ---
 
 ## Task Breakdown
@@ -951,10 +957,120 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 10: Spec revisada em 07/10 (contrato ClientManagement)
+
+### T32: Contrato ClientManagement e a implementação vazia
+
+**What**: interface `Platform\Contracts\ClientManagement` com `manages(User $user, Client $client): bool`, `managedClientIds(User $user): array` e `openProjectsCount(Client $client): int` (este último para o Clientes AC 9, a confirmar pelo Lucas), e `Platform\Services\NoClientManagement` (ninguém gere cliente algum; zero projetos abertos), ligada no `AppServiceProvider`. Saem `ClientProjects`, `Domains\Projetos\Services\ProjectClientProjects` (a real é do B2), o `ClientProjectsTest`, a ADR-003 e o AD-003 (o padrão agora está na ADR-001).
+**Where**: `app/Platform/Services/NoClientManagement.php`
+**Depends on**: T31
+**Reuses**: o contrato `ClientProjects` que sai
+**Requirement**: NUC-06
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] `app(ClientManagement::class)` é a `NoClientManagement`; ela devolve `false`, `[]` e `0`
+- [ ] Nada de `App\Domains\` no Platform; A7 e A9 verdes
+- [ ] ADR-003 e AD-003 removidos, com a ADR-001 citada no lugar
+- [ ] Testes em `tests/Feature/Nucleo/ClientManagementTest.php`
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `refactor(nucleo): contrato ClientManagement com a implementação vazia do B1`
+
+---
+
+### T33: Policies e Services perguntam ao ClientManagement
+
+**What**: `ClientPolicy`, `ContactPolicy`, `ClientService` (projetos abertos) e `ContactService` (clientes visíveis ao gestor) passam a usar o `ClientManagement`. Os testes de gestor usam um dublê do contrato; com a vazia, o gestor não edita cliente nem contato de ninguém.
+**Where**: `app/Platform/Policies/ClientPolicy.php`
+**Depends on**: T32
+**Reuses**: as Policies e os Services existentes
+**Requirement**: NUC-06, NUC-08
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Clientes AC 6 e 7 e Contatos AC 4, 5 e 13 com o dublê (gere / não gere)
+- [ ] Com a `NoClientManagement` ligada, gestor recebe 403 ao editar qualquer cliente e criar ou editar contato, e a lista de contatos dele vem vazia
+- [ ] Clientes AC 9: a contagem vem de `openProjectsCount`, provada com o dublê
+- [ ] Dublê em `tests/Support/`
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `refactor(nucleo): policies e services de clientes e contatos pelo ClientManagement`
+
+---
+
+### T34: e2e com a implementação vazia
+
+**What**: os specs e2e que dependiam de um gestor gerir cliente ou de projetos abertos contados passam a refletir a `NoClientManagement`: a confirmação de desativar sem a contagem (variante zero) e o gestor sem edição.
+**Where**: `e2e/textos-nucleo.spec.ts`
+**Depends on**: T33
+**Reuses**: Page Objects e `e2e/helpers/dados.ts`
+**Requirement**: NUC-07, NUC-14
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Suíte e2e inteira verde (porta 8001, worktree)
+- [ ] Nenhum spec e2e cria projeto para provar gestão de cliente
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): telas de clientes e contatos com a implementação vazia do ClientManagement`
+
+---
+
+### T35: Documentos do B1 acompanham a revisão
+
+**What**: `design.md` (D1, componentes e integração), `AGENTS.md` (a linha do contrato), `.specs/STATE.md` (handoff) e o rastreamento da spec (NUC-06 e NUC-08 em Done).
+**Where**: `.specs/features/b1-nucleo/design.md`
+**Depends on**: T34
+**Reuses**: os textos atuais
+**Requirement**: NUC-06, NUC-08
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Nenhuma menção a `ClientProjects` fora do histórico do git
+- [ ] `conferir-specs.mjs` sem problema além do `validation.md` da rodada anterior
+- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+
+**Tests**: none
+**Gate**: build
+
+**Commit**: `docs(spec): design, AGENTS e estado do B1 com o contrato ClientManagement`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -967,6 +1083,7 @@ Phase 6:  T23 → T24 → T25
 Phase 7:  T26 → T27 → T28 → T29
 Phase 8:  T30
 Phase 9:  T31
+Phase 10: T32 → T33 → T34 → T35
 ```
 
 ## Task Granularity Check
@@ -1021,6 +1138,10 @@ Phase 9:  T31
 | T29 | T28 | T28 → T29 | ✅ Match |
 | T30 | T29 | fase anterior | ✅ Match |
 | T31 | T30 | fase anterior | ✅ Match |
+| T32 | T31 | fase anterior | ✅ Match |
+| T33 | T32 | T32 → T33 | ✅ Match |
+| T34 | T33 | T33 → T34 | ✅ Match |
+| T35 | T34 | T34 → T35 | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1043,3 +1164,6 @@ Phase 9:  T31
 | T28, T29 | Página React | e2e | e2e | ✅ OK |
 | T30 | Policy | integration | integration | ✅ OK |
 | T31 | Regra de validação | unit | unit | ✅ OK |
+| T32, T33 | Service, Policy | integration | integration | ✅ OK |
+| T34 | e2e | e2e | e2e | ✅ OK |
+| T35 | Docs, `.specs` | none | none | ✅ OK |
