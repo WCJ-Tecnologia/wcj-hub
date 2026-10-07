@@ -12,6 +12,7 @@ use Database\Seeders\WcjClientSeeder;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use Tests\Support\ClientManagementFalso;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
 
@@ -196,12 +197,12 @@ class ClientServiceTest extends TestCase
         $this->assertRefused(fn () => $this->service->create($this->data(['name' => 'Outra', 'document' => '123']), $manager), ['document' => 'Informe um CNPJ válido.']);
     }
 
-    // AC 6
+    // AC 6: quem decide se ele gere é a ClientPolicy; o Service aplica as mesmas validações.
     public function test_gestor_edita_cliente_do_projeto_dele_com_as_mesmas_validacoes(): void
     {
         $manager = User::factory()->projectManager()->create();
         $client = Client::factory()->create(['name' => 'Nome antigo', 'document' => '38614817000122']);
-        $this->project($client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $client);
 
         $this->service->update($client, $this->data(['name' => 'Nome novo', 'document' => '38.614.817/0001-22']), $manager);
 

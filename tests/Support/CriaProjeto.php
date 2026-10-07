@@ -15,8 +15,10 @@ use Database\Seeders\TaskTypeSeeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Projeto mínimo para os testes do Núcleo que dependem de "gestor do cliente" (P1, P5) ou de
- * projeto aberto (N11). O B2 ainda não tem Service de projeto: grava direto na tabela.
+ * Projeto mínimo para os testes do Núcleo em que o projeto precisa existir no banco: cliente
+ * com projeto é "já usado" (G2) e desativa mesmo com projeto aberto (N11). "Gestor do cliente"
+ * não sai daqui: vem do contrato ClientManagement (dublê ClientManagementFalso). O B2 ainda não
+ * tem Service de projeto: grava direto na tabela.
  */
 trait CriaProjeto
 {

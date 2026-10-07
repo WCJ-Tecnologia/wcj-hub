@@ -3,7 +3,7 @@
 namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Platform\Contracts\ClientProjects;
+use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
@@ -24,7 +24,7 @@ class ClientController extends Controller
 {
     public function __construct(
         private readonly ClientService $clients,
-        private readonly ClientProjects $projects,
+        private readonly ClientManagement $management,
         private readonly ContactService $contactService,
     ) {}
 
@@ -126,7 +126,7 @@ class ClientController extends Controller
             'deactivated_at' => LocalTime::format($client->deactivated_at),
             'deactivated_by' => $client->deactivatedBy?->name,
             // Para a confirmação de desativar (F1 §04): só quem pode desativar precisa do número.
-            'open_projects' => $canDeactivate ? $this->projects->openProjectsCount($client->id) : null,
+            'open_projects' => $canDeactivate ? $this->management->openProjectsCount($client) : null,
             'can' => [
                 'update' => $user->can('update', $client),
                 'deactivate' => $canDeactivate,

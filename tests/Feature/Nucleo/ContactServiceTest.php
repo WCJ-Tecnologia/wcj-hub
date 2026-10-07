@@ -12,13 +12,14 @@ use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Tests\Support\ClientManagementFalso;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
 
 /**
- * B1 T16: ContactService (Contatos AC 1–4, 7–9; NUC-08, NUC-09). As recusas por papel (AC 5,
- * 6) são da ContactPolicy (ContactPolicyTest) e das rotas (ContactControllerTest); a
- * anonimização (AC 10–12), do ContactAnonymizeTest.
+ * B1 T16, T33: ContactService (Contatos AC 1–4, 7–9, 13; NUC-08, NUC-09). As recusas por
+ * papel (AC 5, 6) são da ContactPolicy (ContactPolicyTest) e das rotas (ContactControllerTest);
+ * a anonimização (AC 10–12), do ContactAnonymizeTest. "Gere" vem do dublê do ClientManagement.
  */
 class ContactServiceTest extends TestCase
 {
@@ -176,7 +177,7 @@ class ContactServiceTest extends TestCase
     public function test_gestor_cria_e_edita_com_as_mesmas_regras(): void
     {
         $manager = User::factory()->projectManager()->create();
-        $this->project($this->client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
 
         ['contact' => $contact] = $this->service->create($this->client, ['name' => 'Ana Lima'], $manager);
         $this->service->update($contact, ['name' => 'Ana Souza'], $manager);
@@ -186,6 +187,35 @@ class ContactServiceTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->service->create($this->client, ['name' => ''], $manager);
+    }
+
+    // AC 13: o gestor vê os contatos e o filtro só dos clientes que o contrato lista; o Administrador, todos.
+    public function test_lista_e_filtro_do_gestor_seguem_os_clientes_que_o_contrato_lista(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        $other = Client::factory()->create(['name' => 'Outro Cliente']);
+        Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima']);
+        Contact::factory()->create(['client_id' => $other->id, 'name' => 'Bia Reis']);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
+        $service = app(ContactService::class);
+        $filters = ['search' => '', 'client_id' => null, 'show_inactive' => false];
+
+        $this->assertSame(['Ana Lima'], $service->paginate($filters, $manager)->pluck('name')->all());
+        $this->assertSame([['id' => $this->client->id, 'name' => 'Padaria Pão Quente']], $service->clientOptions($manager));
+        $this->assertSame(['Ana Lima', 'Bia Reis'], $service->paginate($filters, $this->admin)->pluck('name')->all());
+        $this->assertCount(2, $service->clientOptions($this->admin));
+    }
+
+    // AC 13 com a implementação vazia do B1: o gestor não vê contato nem cliente no filtro.
+    public function test_com_a_implementacao_vazia_lista_e_filtro_do_gestor_vem_vazios(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima']);
+        $filters = ['search' => '', 'client_id' => null, 'show_inactive' => true];
+
+        $this->assertSame(0, $this->service->paginate($filters, $manager)->total());
+        $this->assertSame([], $this->service->clientOptions($manager));
+        $this->assertSame(1, $this->service->paginate($filters, $this->admin)->total());
     }
 
     // AC 7: desativa com quem e quando, sai das listas de escolha, o card continua citando.

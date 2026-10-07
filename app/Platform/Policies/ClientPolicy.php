@@ -2,15 +2,15 @@
 
 namespace App\Platform\Policies;
 
-use App\Platform\Contracts\ClientProjects;
+use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
 use Illuminate\Auth\Access\Response;
 
 /**
  * Clientes (F1 §09; N5 a N7, N11). O gestor vê, cria e escolhe cliente para montar projeto;
- * edita só o cliente de projeto que gere (ClientProjects, ADR-001). Desativar, reativar e
- * excluir são do Administrador.
+ * edita só o cliente que o ClientManagement diz que ele gere (ADR-001; vazio até o B2).
+ * Desativar, reativar e excluir são do Administrador.
  */
 class ClientPolicy
 {
@@ -18,7 +18,7 @@ class ClientPolicy
 
     public const WCJ_NOT_DELETABLE = 'A WCJ não pode ser excluída';
 
-    public function __construct(private readonly ClientProjects $projects) {}
+    public function __construct(private readonly ClientManagement $management) {}
 
     public function viewAny(User $user): bool
     {
@@ -38,7 +38,7 @@ class ClientPolicy
 
     public function update(User $user, Client $client): bool
     {
-        return $user->isAdmin() || ($user->isProjectManager() && $this->projects->manages($user, $client->id));
+        return $user->isAdmin() || ($user->isProjectManager() && $this->management->manages($user, $client));
     }
 
     /** N7: a WCJ é dona dos projetos internos; a mensagem chega na resposta 403. */

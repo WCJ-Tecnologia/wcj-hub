@@ -8,17 +8,18 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use Database\Seeders\WcjClientSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Support\CriaProjeto;
+use Tests\Support\ClientManagementFalso;
 use Tests\TestCase;
 
 /**
- * B1 T12: rotas de clientes sobre o ClientService (Clientes AC 2, 3, 5–13; NUC-05, NUC-07).
- * Feliz, 403 com "nada muda" (dev em tudo; gestor em desativar, reativar, excluir e editar
- * cliente que não gere), erro de validação.
+ * B1 T12, T33: rotas de clientes sobre o ClientService (Clientes AC 2, 3, 5–13; NUC-05, NUC-06,
+ * NUC-07). Feliz, 403 com "nada muda" (dev em tudo; gestor em desativar, reativar, excluir e
+ * editar cliente que não gere), erro de validação. "Gere" e os projetos abertos vêm do dublê do
+ * ClientManagement; sem dublê, da implementação vazia do B1.
  */
 class ClientControllerTest extends TestCase
 {
-    use CriaProjeto, RefreshDatabase;
+    use RefreshDatabase;
 
     private User $admin;
 
@@ -98,19 +99,27 @@ class ClientControllerTest extends TestCase
         $this->assertCount(3, $names('country=XX'));
     }
 
-    // AC 9: a confirmação mostra quantos projetos abertos o cliente tem.
+    // AC 9: a confirmação mostra quantos projetos abertos o contrato conta para o cliente.
     public function test_lista_traz_os_projetos_abertos_para_a_confirmacao_de_desativar(): void
     {
         $client = Client::factory()->create();
-        $manager = User::factory()->projectManager()->create();
-        $this->project($client, $manager);
-        $this->project($client, $manager);
-        $this->project($client, $manager, finishedAt: now());
+        ClientManagementFalso::ligar()->projetosAbertos($client, 2);
 
         $this->actingAs($this->admin)->get('/admin/clients')
             ->assertInertia(fn ($page) => $page
                 ->where('clients.data.0.open_projects', 2)
                 ->where('clients.data.0.can', ['update' => true, 'deactivate' => true, 'reactivate' => false, 'delete' => true]));
+    }
+
+    // AC 9 com a implementação vazia do B1: zero, e a tela mostra a confirmação sem a contagem.
+    public function test_com_a_implementacao_vazia_a_lista_traz_zero_projetos_abertos(): void
+    {
+        Client::factory()->create();
+
+        $this->actingAs($this->admin)->get('/admin/clients')
+            ->assertInertia(fn ($page) => $page
+                ->where('clients.data.0.open_projects', 0)
+                ->where('clients.data.0.can.deactivate', true));
     }
 
     // AC 10: a WCJ não oferece desativar.
@@ -204,13 +213,13 @@ class ClientControllerTest extends TestCase
         $this->assertModelExists($client);
     }
 
-    // AC 5, 6, 13: o gestor vê a lista e a ficha, cria e edita o cliente do projeto dele.
+    // AC 5, 6, 13: o gestor vê a lista e a ficha, cria e edita o cliente que o contrato lista.
     public function test_gestor_ve_cria_e_edita_o_cliente_do_projeto_dele(): void
     {
         $manager = User::factory()->projectManager()->create();
         $mine = Client::factory()->create(['name' => 'Meu cliente']);
         $other = Client::factory()->create(['name' => 'Outro cliente']);
-        $this->project($mine, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $mine);
         $this->actingAs($manager);
 
         $this->get('/admin/clients')->assertOk()->assertInertia(fn ($page) => $page
@@ -235,7 +244,7 @@ class ClientControllerTest extends TestCase
     {
         $manager = User::factory()->projectManager()->create();
         $mine = Client::factory()->create();
-        $this->project($mine, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $mine);
         $other = Client::factory()->create();
         $inactive = Client::factory()->inactive()->create();
         $before = $this->snapshot();
@@ -262,8 +271,8 @@ class ClientControllerTest extends TestCase
     {
         $dev = User::factory()->developer()->create();
         $client = Client::factory()->create();
-        // Alocado num projeto do cliente: ainda assim não acessa o cadastro.
-        $this->project($client, User::factory()->projectManager()->create(), members: [$dev]);
+        // Mesmo que o contrato o listasse para o cliente: ainda assim não acessa o cadastro.
+        ClientManagementFalso::ligar()->gere($dev, $client);
         $inactive = Client::factory()->inactive()->create();
         $before = $this->snapshot();
 
@@ -294,6 +303,7 @@ class ClientControllerTest extends TestCase
         Contact::query()->create(['client_id' => $client->id, 'name' => 'Bia Reis', 'email' => 'bia@mercado.test', 'phone' => '11988880000']);
         Contact::query()->create(['client_id' => $client->id, 'name' => 'Ana Lima', 'email' => null, 'phone' => null]);
         Contact::query()->create(['client_id' => Client::factory()->create()->id, 'name' => 'De outro cliente']);
+        $management = ClientManagementFalso::ligar();
 
         $this->actingAs($this->admin)->get("/admin/clients/{$client->id}")
             ->assertOk()
@@ -318,8 +328,26 @@ class ClientControllerTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('client.name', 'Mercado')->where('contacts', null));
 
-        $this->project($client, $manager);
+        $management->gere($manager, $client);
         $this->actingAs($manager)->get("/admin/clients/{$client->id}")
             ->assertInertia(fn ($page) => $page->has('contacts', 2));
+    }
+
+    // AC 7 com a implementação vazia do B1: o gestor vê e cria, mas editar qualquer cliente dá 403 e nada muda.
+    public function test_com_a_implementacao_vazia_o_gestor_recebe_403_ao_editar_qualquer_cliente(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        $client = Client::factory()->create(['name' => 'Mercado']);
+        $before = $this->snapshot();
+        $this->actingAs($manager);
+
+        $this->get('/admin/clients')->assertOk()->assertInertia(fn ($page) => $page
+            ->where('can.create', true)
+            ->where('clients.data.0.can', ['update' => false, 'deactivate' => false, 'reactivate' => false, 'delete' => false]));
+        $this->put("/admin/clients/{$client->id}", $this->data(['name' => 'Invadido']))->assertForbidden();
+
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $manager->id, 'action' => 'updated', 'outcome' => 'denied', 'auditable_type' => 'client', 'auditable_id' => $client->id]);
+        $this->assertEquals($before, $this->snapshot());
+        $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->count());
     }
 }

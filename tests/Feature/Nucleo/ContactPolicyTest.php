@@ -14,17 +14,17 @@ use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionMethod;
-use Tests\Support\CriaProjeto;
+use Tests\Support\ClientManagementFalso;
 use Tests\TestCase;
 
 /**
- * B1 T15: matriz ability × papel × situação da ContactPolicy (F1 §09; Contatos AC 4–6, 12;
- * NUC-08, NUC-09, NUC-10). O gestor vê, cria e edita só nos clientes de projeto que gere;
- * desativar, reativar, excluir e anonimizar são do Administrador; anonimizado é estado final.
+ * B1 T15, T33: matriz ability × papel × situação da ContactPolicy (F1 §09; Contatos AC 4–6, 12;
+ * NUC-08, NUC-09, NUC-10). O gestor vê, cria e edita só nos clientes que o ClientManagement
+ * diz que ele gere (dublê aqui; com a implementação vazia, nenhum); desativar, reativar, excluir e anonimizar são do Administrador; anonimizado é estado final.
  */
 class ContactPolicyTest extends TestCase
 {
-    use CriaProjeto, RefreshDatabase;
+    use RefreshDatabase;
 
     private Client $client;
 
@@ -56,7 +56,7 @@ class ContactPolicyTest extends TestCase
 
     /**
      * @return array<string, array{RoleEnum, bool, bool, bool, bool}>
-     *                                                                papel, gere um projeto do cliente, lista geral, vê/cria/edita no cliente, desativa/reativa/exclui/anonimiza
+     *                                                                papel, o contrato o lista como gestor do cliente, lista geral, vê/cria/edita no cliente, desativa/reativa/exclui/anonimiza
      */
     public static function papeis(): array
     {
@@ -64,19 +64,19 @@ class ContactPolicyTest extends TestCase
             'administrador' => [RoleEnum::ADMIN, false, true, true, true],
             'gestor que gere o cliente' => [RoleEnum::PROJECT_MANAGER, true, true, true, false],
             'gestor que não gere o cliente' => [RoleEnum::PROJECT_MANAGER, false, true, false, false],
-            // Alocado no projeto do cliente: lê "quem pediu" pelo card (B3), não pela tela de contatos.
-            'desenvolvedor alocado' => [RoleEnum::DEVELOPER, true, false, false, false],
+            // Mesmo que o contrato o listasse: lê "quem pediu" pelo card (B3), não pela tela de contatos.
+            'desenvolvedor listado pelo contrato' => [RoleEnum::DEVELOPER, true, false, false, false],
             'comercial' => [RoleEnum::SALES, false, false, false, false],
         ];
     }
 
     #[DataProvider('papeis')]
-    public function test_matriz_de_abilities_por_papel_em_contato_ativo_e_desativado(RoleEnum $papel, bool $noProjeto, bool $lista, bool $noCliente, bool $admin): void
+    public function test_matriz_de_abilities_por_papel_em_contato_ativo_e_desativado(RoleEnum $papel, bool $listado, bool $lista, bool $noCliente, bool $admin): void
     {
         $actor = User::factory()->create(['role_id' => $papel->value, 'daily_hours' => 8]);
-        if ($noProjeto) {
-            $manager = $papel === RoleEnum::PROJECT_MANAGER ? $actor : User::factory()->projectManager()->create();
-            $this->project($this->client, $manager, members: $papel === RoleEnum::PROJECT_MANAGER ? [] : [$actor]);
+        $management = ClientManagementFalso::ligar();
+        if ($listado) {
+            $management->gere($actor, $this->client);
         }
         $active = Contact::factory()->create(['client_id' => $this->client->id]);
         $inactive = Contact::factory()->inactive()->create(['client_id' => $this->client->id]);
@@ -93,17 +93,29 @@ class ContactPolicyTest extends TestCase
         }
     }
 
-    // Contatos AC 4: gestor alocado num projeto do cliente com o papel de gestor também gere.
-    public function test_gestor_alocado_como_gestor_cria_e_edita_no_cliente(): void
+    // Contatos AC 4 e 5: a pergunta é pelo cliente do contato; gerir um não abre os outros.
+    public function test_gestor_cria_e_edita_so_no_cliente_que_o_contrato_lista(): void
     {
-        $allocated = User::factory()->projectManager()->create();
-        $this->project($this->client, User::factory()->projectManager()->create(), members: [$allocated]);
+        $manager = User::factory()->projectManager()->create();
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
         $other = Client::factory()->create();
 
-        $this->assertTrue($allocated->can('create', [Contact::class, $this->client]));
-        $this->assertTrue($allocated->can('update', Contact::factory()->create(['client_id' => $this->client->id])));
-        $this->assertFalse($allocated->can('create', [Contact::class, $other]));
-        $this->assertFalse($allocated->can('update', Contact::factory()->create(['client_id' => $other->id])));
+        $this->assertTrue($manager->can('create', [Contact::class, $this->client]));
+        $this->assertTrue($manager->can('update', Contact::factory()->create(['client_id' => $this->client->id])));
+        $this->assertFalse($manager->can('create', [Contact::class, $other]));
+        $this->assertFalse($manager->can('update', Contact::factory()->create(['client_id' => $other->id])));
+    }
+
+    // Contatos AC 5 e 13 com a implementação vazia do B1: a lista geral abre, vazia; nada se cria nem edita.
+    public function test_com_a_implementacao_vazia_o_gestor_nao_cria_nem_edita_contato(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        $contact = Contact::factory()->create(['client_id' => $this->client->id]);
+
+        $this->assertTrue($manager->can('viewAny', Contact::class));
+        $this->assertFalse($manager->can('viewAny', [Contact::class, $this->client]));
+        $this->assertFalse($manager->can('create', [Contact::class, $this->client]));
+        $this->assertFalse($manager->can('update', $contact));
     }
 
     // Contatos AC 12 (D5): anonimizado não se edita, não se reativa, não se anonimiza de novo.
@@ -111,7 +123,7 @@ class ContactPolicyTest extends TestCase
     {
         $admin = User::factory()->admin()->create();
         $manager = User::factory()->projectManager()->create();
-        $this->project($this->client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
         $contact = $this->anonymized();
 
         foreach (['update', 'reactivate', 'anonymize'] as $ability) {

@@ -2,7 +2,7 @@
 
 namespace App\Platform\Services;
 
-use App\Platform\Contracts\ClientProjects;
+use App\Platform\Contracts\ClientManagement;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -28,7 +28,7 @@ class ContactService
 
     public function __construct(
         private readonly AuditService $audit,
-        private readonly ClientProjects $projects,
+        private readonly ClientManagement $management,
     ) {}
 
     /** @return array<string, mixed> */
@@ -159,8 +159,8 @@ class ContactService
     }
 
     /**
-     * Lista geral (F1 §03, §05). O gestor só vê os clientes dos projetos dele (F1 §09). A busca
-     * no telefone aceita o número com máscara.
+     * Lista geral (F1 §03, §05). O gestor só vê os clientes que o ClientManagement lista para ele
+     * (F1 §09; nenhum até o B2). A busca no telefone aceita o número com máscara.
      *
      * @param  array{search: string, client_id: int|null, show_inactive: bool}  $filters
      * @return LengthAwarePaginator<int, Contact>
@@ -187,7 +187,8 @@ class ContactService
     }
 
     /**
-     * Os clientes do filtro Cliente: todos para o Administrador, os dos projetos dele para o gestor.
+     * Os clientes do filtro Cliente: todos para o Administrador; para o gestor, os que o
+     * ClientManagement lista.
      *
      * @return list<array{id: int, name: string}>
      */
@@ -206,7 +207,7 @@ class ContactService
     /** @return list<int>|null nulo: todos */
     private function visibleClientIds(User $viewer): ?array
     {
-        return $viewer->isAdmin() ? null : $this->projects->managedBy($viewer);
+        return $viewer->isAdmin() ? null : $this->management->managedClientIds($viewer);
     }
 
     /**

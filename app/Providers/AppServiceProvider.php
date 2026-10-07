@@ -21,10 +21,8 @@ use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\TimeEntry;
 use App\Domains\Projetos\Models\ValidationType;
-use App\Domains\Projetos\Services\ProjectClientProjects;
 use App\Http\Responses\ThrottledAuthResponse;
 use App\Platform\Contracts\ClientManagement;
-use App\Platform\Contracts\ClientProjects;
 use App\Platform\Models\AiAssistant;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\AuditLog;
@@ -60,7 +58,6 @@ class AppServiceProvider extends ServiceProvider
         // O Núcleo não conhece módulo (A9, ADR-001): pergunta pelo contrato. O B2 troca a
         // implementação vazia pela de Projetos.
         $this->app->bind(ClientManagement::class, NoClientManagement::class);
-        $this->app->bind(ClientProjects::class, ProjectClientProjects::class);
     }
 
     public function boot(): void

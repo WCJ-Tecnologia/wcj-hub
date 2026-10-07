@@ -10,17 +10,18 @@ use Database\Seeders\WcjClientSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Support\CriaProjeto;
+use Tests\Support\ClientManagementFalso;
 use Tests\TestCase;
 
 /**
- * B1 T10: matriz ability × papel da ClientPolicy (F1 §09; Clientes AC 5–8, 10; NUC-06, NUC-07).
- * O gestor vê, cria e escolhe; edita só o cliente de projeto que gere; desativar, reativar e
- * excluir são do Administrador, e a WCJ nunca se desativa.
+ * B1 T10, T33: matriz ability × papel da ClientPolicy (F1 §09; Clientes AC 5–8, 10; NUC-06,
+ * NUC-07). O gestor vê, cria e escolhe; edita só o cliente que o ClientManagement diz que ele
+ * gere (dublê aqui; com a implementação vazia, nenhum); desativar, reativar e excluir são do
+ * Administrador, e a WCJ nunca se desativa.
  */
 class ClientPolicyTest extends TestCase
 {
-    use CriaProjeto, RefreshDatabase;
+    use RefreshDatabase;
 
     private const SEM_REGISTRO = ['viewAny', 'create', 'viewChoiceList'];
 
@@ -42,7 +43,7 @@ class ClientPolicyTest extends TestCase
 
     /**
      * @return array<string, array{RoleEnum, bool, bool, bool, bool}>
-     *                                                                papel, gere um projeto do cliente, vê/cria/escolhe, edita, desativa/reativa/exclui
+     *                                                                papel, o contrato o lista como gestor do cliente, vê/cria/escolhe, edita, desativa/reativa/exclui
      */
     public static function papeis(): array
     {
@@ -50,19 +51,19 @@ class ClientPolicyTest extends TestCase
             'administrador' => [RoleEnum::ADMIN, false, true, true, true],
             'gestor que gere o cliente' => [RoleEnum::PROJECT_MANAGER, true, true, true, false],
             'gestor que não gere o cliente' => [RoleEnum::PROJECT_MANAGER, false, true, false, false],
-            // Alocado no projeto do cliente: trabalha nele, mas não o gere (P5).
-            'desenvolvedor alocado' => [RoleEnum::DEVELOPER, true, false, false, false],
+            // Mesmo que o contrato o listasse, dev não edita cliente (P5): a Policy confere o papel.
+            'desenvolvedor listado pelo contrato' => [RoleEnum::DEVELOPER, true, false, false, false],
             'comercial' => [RoleEnum::SALES, false, false, false, false],
         ];
     }
 
     #[DataProvider('papeis')]
-    public function test_matriz_de_abilities_por_papel(RoleEnum $papel, bool $noProjeto, bool $ve, bool $edita, bool $admin): void
+    public function test_matriz_de_abilities_por_papel(RoleEnum $papel, bool $listado, bool $ve, bool $edita, bool $admin): void
     {
         $actor = User::factory()->create(['role_id' => $papel->value, 'daily_hours' => 8]);
-        if ($noProjeto) {
-            $manager = $papel === RoleEnum::PROJECT_MANAGER ? $actor : User::factory()->projectManager()->create();
-            $this->project($this->client, $manager, members: $papel === RoleEnum::PROJECT_MANAGER ? [] : [$actor]);
+        $management = ClientManagementFalso::ligar();
+        if ($listado) {
+            $management->gere($actor, $this->client);
         }
 
         foreach (self::SEM_REGISTRO as $ability) {
@@ -76,14 +77,26 @@ class ClientPolicyTest extends TestCase
         }
     }
 
-    public function test_gestor_alocado_como_gestor_no_projeto_edita_o_cliente(): void
+    // Clientes AC 6 e 7: a pergunta é por cliente; gerir um não abre os outros.
+    public function test_gestor_edita_so_o_cliente_que_o_contrato_lista(): void
     {
-        $responsible = User::factory()->projectManager()->create();
-        $allocated = User::factory()->projectManager()->create();
-        $this->project($this->client, $responsible, members: [$allocated]);
+        $manager = User::factory()->projectManager()->create();
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
 
-        $this->assertTrue($allocated->can('update', $this->client));
-        $this->assertFalse($allocated->can('update', Client::factory()->create()));
+        $this->assertTrue($manager->can('update', $this->client));
+        $this->assertFalse($manager->can('update', Client::factory()->create()));
+    }
+
+    // Clientes AC 7 com a implementação vazia do B1: o gestor ainda vê, cria e escolhe, mas não edita.
+    public function test_com_a_implementacao_vazia_o_gestor_nao_edita_cliente_algum(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+
+        $this->assertFalse($manager->can('update', $this->client));
+        $this->assertTrue($manager->can('view', $this->client));
+        foreach (self::SEM_REGISTRO as $ability) {
+            $this->assertTrue($manager->can($ability, Client::class), $ability);
+        }
     }
 
     // Clientes AC 10: a resposta traz a mensagem que o 403 mostra.

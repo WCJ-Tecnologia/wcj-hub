@@ -1002,11 +1002,11 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Clientes AC 6 e 7 e Contatos AC 4, 5 e 13 com o dublê (gere / não gere)
-- [ ] Com a `NoClientManagement` ligada, gestor recebe 403 ao editar qualquer cliente e criar ou editar contato, e a lista de contatos dele vem vazia
-- [ ] Clientes AC 9: a contagem vem de `openProjectsCount`, provada com o dublê
-- [ ] Dublê em `tests/Support/`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Clientes AC 6 e 7 e Contatos AC 4, 5 e 13 com o dublê (gere / não gere)
+- [x] Com a `NoClientManagement` ligada, gestor recebe 403 ao editar qualquer cliente e criar ou editar contato, e a lista de contatos dele vem vazia
+- [x] Clientes AC 9: a contagem vem de `openProjectsCount`, provada com o dublê
+- [x] Dublê em `tests/Support/`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

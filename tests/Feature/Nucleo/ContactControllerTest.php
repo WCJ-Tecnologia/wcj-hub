@@ -8,13 +8,15 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Services\ContactService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\ClientManagementFalso;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
 
 /**
- * B1 T18: rotas de contatos sobre o ContactService (Contatos AC 1–13; NUC-08, NUC-09, NUC-10).
- * Feliz, 403 com "nada muda" (dev em tudo; gestor fora dos clientes dele e em desativar,
- * reativar, excluir e anonimizar), erro de validação; o aviso de e-mail repetido chega como flash.
+ * B1 T18, T33: rotas de contatos sobre o ContactService (Contatos AC 1–13; NUC-08, NUC-09,
+ * NUC-10). Feliz, 403 com "nada muda" (dev em tudo; gestor fora dos clientes que o
+ * ClientManagement lista para ele e em desativar, reativar, excluir e anonimizar), erro de
+ * validação; o aviso de e-mail repetido chega como flash. "Gere" vem do dublê do contrato.
  */
 class ContactControllerTest extends TestCase
 {
@@ -106,11 +108,11 @@ class ContactControllerTest extends TestCase
         $this->assertSame(['Ana Lima', 'Bia Reis'], $this->names('client_id=999999'));
     }
 
-    // AC 13, F1 §09: o gestor só vê os contatos e o filtro dos clientes dos projetos dele.
+    // AC 13, F1 §09: o gestor só vê os contatos e o filtro dos clientes que o contrato lista.
     public function test_gestor_ve_so_os_contatos_dos_clientes_dele(): void
     {
         $manager = User::factory()->projectManager()->create();
-        $this->project($this->client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
         $other = Client::factory()->create(['name' => 'Outro Cliente']);
         Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima']);
         Contact::factory()->create(['client_id' => $other->id, 'name' => 'Bia Reis']);
@@ -124,7 +126,7 @@ class ContactControllerTest extends TestCase
         $this->assertSame(['Ana Lima'], $this->names("client_id={$other->id}"));
         $this->assertSame([], $this->names('search=bia'));
 
-        // Sem projeto, nenhum cliente: lista vazia, sem erro.
+        // O contrato não lista cliente algum para ele: lista vazia, sem erro.
         $this->actingAs(User::factory()->projectManager()->create());
         $this->get('/admin/contacts')->assertOk()->assertInertia(fn ($page) => $page->has('contacts.data', 0)->where('clients', []));
     }
@@ -261,11 +263,11 @@ class ContactControllerTest extends TestCase
         $this->assertSame($rows, AuditLog::query()->where('outcome', 'success')->count());
     }
 
-    // AC 4: o gestor cria e edita nos clientes dos projetos dele.
+    // AC 4: o gestor cria e edita nos clientes que o contrato lista para ele.
     public function test_gestor_cria_e_edita_no_cliente_do_projeto_dele(): void
     {
         $manager = User::factory()->projectManager()->create();
-        $this->project($this->client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
         $this->actingAs($manager);
 
         $this->post("/admin/clients/{$this->client->id}/contacts", ['name' => 'Ana Lima'])->assertSessionHas('success', 'Contato Ana Lima criado.');
@@ -280,7 +282,7 @@ class ContactControllerTest extends TestCase
     public function test_gestor_recebe_403_fora_dos_clientes_dele_e_nas_acoes_do_administrador(): void
     {
         $manager = User::factory()->projectManager()->create();
-        $this->project($this->client, $manager);
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
         $mine = Contact::factory()->create(['client_id' => $this->client->id]);
         $other = Client::factory()->create();
         $foreign = Contact::factory()->create(['client_id' => $other->id]);
@@ -311,8 +313,8 @@ class ContactControllerTest extends TestCase
     public function test_dev_recebe_403_em_toda_rota_de_contatos_e_nada_muda(): void
     {
         $dev = User::factory()->developer()->create();
-        // Alocado num projeto do cliente: ainda assim não acessa os contatos.
-        $this->project($this->client, User::factory()->projectManager()->create(), members: [$dev]);
+        // Mesmo que o contrato o listasse para o cliente: ainda assim não acessa os contatos.
+        ClientManagementFalso::ligar()->gere($dev, $this->client);
         $contact = Contact::factory()->create(['client_id' => $this->client->id]);
         $inactive = Contact::factory()->inactive()->create(['client_id' => $this->client->id]);
         $before = $this->snapshot();
@@ -342,6 +344,7 @@ class ContactControllerTest extends TestCase
     {
         Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima']);
         $manager = User::factory()->projectManager()->create();
+        $management = ClientManagementFalso::ligar();
 
         $this->actingAs($this->admin)->get("/admin/clients/{$this->client->id}")
             ->assertInertia(fn ($page) => $page->has('contacts', 1)->where('can_create_contact', true));
@@ -349,7 +352,7 @@ class ContactControllerTest extends TestCase
         $this->actingAs($manager)->get("/admin/clients/{$this->client->id}")
             ->assertInertia(fn ($page) => $page->where('contacts', null)->where('can_create_contact', false));
 
-        $this->project($this->client, $manager);
+        $management->gere($manager, $this->client);
         $this->actingAs($manager)->get("/admin/clients/{$this->client->id}")
             ->assertInertia(fn ($page) => $page
                 ->where('contacts.0.can', ['update' => true, 'deactivate' => false, 'reactivate' => false, 'delete' => false, 'anonymize' => false])
@@ -359,5 +362,24 @@ class ContactControllerTest extends TestCase
         $this->client->setActive(false, $this->admin)->save();
         $this->actingAs($this->admin)->get("/admin/clients/{$this->client->id}")
             ->assertInertia(fn ($page) => $page->has('contacts', 1)->where('can_create_contact', false));
+    }
+
+    // AC 5 e 13 com a implementação vazia do B1: lista e filtro vazios; criar e editar dão 403 e nada muda.
+    public function test_com_a_implementacao_vazia_o_gestor_nao_ve_cria_nem_edita_contato(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        $contact = Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima']);
+        $before = $this->snapshot();
+        $this->actingAs($manager);
+
+        $this->get('/admin/contacts')->assertOk()->assertInertia(fn ($page) => $page->has('contacts.data', 0)->where('clients', []));
+        $this->get("/admin/clients/{$this->client->id}")->assertInertia(fn ($page) => $page->where('contacts', null)->where('can_create_contact', false));
+        $this->post("/admin/clients/{$this->client->id}/contacts", ['name' => 'Bia Reis'])->assertForbidden();
+        $this->put("/admin/contacts/{$contact->id}", ['name' => 'Ana Souza'])->assertForbidden();
+
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $manager->id, 'action' => 'created', 'outcome' => 'denied', 'auditable_type' => 'contact', 'auditable_id' => null]);
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $manager->id, 'action' => 'updated', 'outcome' => 'denied', 'auditable_type' => 'contact', 'auditable_id' => $contact->id]);
+        $this->assertEquals($before, $this->snapshot());
+        $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->count());
     }
 }
