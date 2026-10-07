@@ -34,7 +34,7 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 - **Phase / Task**: Execute concluído (T1–T36, fases 1–11). Spec revisada pelo Lucas em 07/10 aplicada na fase 10 (contrato `ClientManagement` com a `NoClientManagement`). Verifier PASS na rodada 6 (focada, autorizada por Cauã) em 07/10/2026 (`validation.md`).
 - **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T35.
 - **In-progress** (file:line): none
-- **Next step**: Verifier focado na fase 10 (T32–T35: contrato, implementação vazia, Policies e Services pelo contrato, dublê nos testes, e2e com a variante sem contagem); depois, revisão final (prints, quatro perguntas por entidade, revisão de segurança dirigida) e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: `openProjectsCount` no contrato `ClientManagement` (acrescentado no B1 para o Clientes AC 9), 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+".
+- **Next step**: prints das telas do gestor com a implementação vazia e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: `openProjectsCount` no contrato e as variantes N = 0 e N = 1, 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+", aviso de e-mail repetido cruzando clientes. Para o B2: os seis casos do `ClientProjectsTest` removido voltam no teste da `ProjectClientManagement`.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo
