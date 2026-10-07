@@ -974,11 +974,11 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] `app(ClientManagement::class)` é a `NoClientManagement`; ela devolve `false`, `[]` e `0`
-- [ ] Nada de `App\Domains\` no Platform; A7 e A9 verdes
-- [ ] ADR-003 e AD-003 removidos, com a ADR-001 citada no lugar
-- [ ] Testes em `tests/Feature/Nucleo/ClientManagementTest.php`
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] `app(ClientManagement::class)` é a `NoClientManagement`; ela devolve `false`, `[]` e `0`
+- [x] Nada de `App\Domains\` no Platform; A7 e A9 verdes
+- [x] ADR-003 e AD-003 removidos, com a ADR-001 citada no lugar
+- [x] Testes em `tests/Feature/Nucleo/ClientManagementTest.php`
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

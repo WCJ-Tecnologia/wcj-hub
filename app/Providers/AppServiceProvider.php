@@ -23,6 +23,7 @@ use App\Domains\Projetos\Models\TimeEntry;
 use App\Domains\Projetos\Models\ValidationType;
 use App\Domains\Projetos\Services\ProjectClientProjects;
 use App\Http\Responses\ThrottledAuthResponse;
+use App\Platform\Contracts\ClientManagement;
 use App\Platform\Contracts\ClientProjects;
 use App\Platform\Models\AiAssistant;
 use App\Platform\Models\AiAuthorization;
@@ -36,6 +37,7 @@ use App\Platform\Policies\AuditLogPolicy;
 use App\Platform\Policies\ClientPolicy;
 use App\Platform\Policies\ContactPolicy;
 use App\Platform\Policies\UserPolicy;
+use App\Platform\Services\NoClientManagement;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -55,7 +57,9 @@ class AppServiceProvider extends ServiceProvider
         // do /oauth/token (B9) e a tela de autorização.
         Passport::ignoreRoutes();
 
-        // O Núcleo não conhece módulo (A9): pergunta pelo contrato, e Projetos responde (ADR-003).
+        // O Núcleo não conhece módulo (A9, ADR-001): pergunta pelo contrato. O B2 troca a
+        // implementação vazia pela de Projetos.
+        $this->app->bind(ClientManagement::class, NoClientManagement::class);
         $this->app->bind(ClientProjects::class, ProjectClientProjects::class);
     }
 

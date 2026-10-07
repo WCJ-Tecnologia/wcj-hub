@@ -7,7 +7,7 @@ use App\Platform\Contracts\ClientProjects;
 use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
-/** Resposta de Projetos ao Núcleo (ADR-003): os clientes de cada gestor e os projetos abertos. */
+/** Resposta de Projetos ao Núcleo (ADR-001): os clientes de cada gestor e os projetos abertos. */
 class ProjectClientProjects implements ClientProjects
 {
     public function managedBy(User $manager): array

@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * B1 T5: o Núcleo pergunta a Projetos quais clientes cada gestor gere (D1, ADR-003; NUC-06)
+ * B1 T5: o Núcleo pergunta a Projetos quais clientes cada gestor gere (D1, ADR-001; NUC-06)
  * e quantos projetos abertos o cliente tem (confirmação de desativar, Clientes AC 9).
  */
 class ClientProjectsTest extends TestCase

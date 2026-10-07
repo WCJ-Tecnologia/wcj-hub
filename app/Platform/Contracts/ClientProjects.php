@@ -6,7 +6,7 @@ use App\Platform\Models\User;
 
 /**
  * O que o Núcleo precisa saber dos projetos de um cliente sem ler tabela de módulo (A9,
- * ADR-003). Quem responde é Projetos; a ligação fica no AppServiceProvider.
+ * ADR-001). Quem responde é Projetos; a ligação fica no AppServiceProvider.
  */
 interface ClientProjects
 {

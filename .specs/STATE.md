@@ -20,14 +20,6 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 - **Date**: 2026-10-06
 - **Status**: active
 
-### AD-003
-- **Decision**: O Núcleo pergunta a Projetos quais clientes cada gestor gere e quantos projetos abertos o cliente tem pela interface `App\Platform\Contracts\ClientProjects`, implementada em `App\Domains\Projetos\Services\ProjectClientProjects` e ligada no `AppServiceProvider`. Ver `docs/adr/003-nucleo-consulta-projetos-por-contrato.md`.
-- **Reason**: as Policies de clientes e contatos do B1 precisam dessa resposta, e o A9 proíbe o Platform de ler `projects` e `project_members` (D1 do design do B1).
-- **Trade-off**: interface com uma implementação só, exceção consciente à regra das duas implementações.
-- **Scope**: `ClientPolicy`, `ContactPolicy` e a desativação do cliente no B1; toda pergunta nova do Núcleo sobre projetos.
-- **Date**: 2026-10-06
-- **Status**: active (aceita por Cauã; a confirmar pelo Lucas Scholz no PR do B1)
-
 ### AD-004
 - **Decision**: A ficha do cliente é uma página própria (`pages/admin/clients/show.tsx`, `GET /admin/clients/{client}`) com as seções Dados e Contatos; criar e editar o cliente seguem no modal da lista. Ver `docs/adr/004-ficha-do-cliente.md`.
 - **Reason**: o cliente tem mais de um bloco (dados e contatos) e o F1 cria o contato a partir do cliente; o gabarito de UI pede página com ADR nesse caso (D7 do design do B1).

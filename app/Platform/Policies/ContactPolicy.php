@@ -10,7 +10,7 @@ use Illuminate\Auth\Access\Response;
 
 /**
  * Contatos (F1 §09; N8, N11, N12). O gestor vê, cria e edita só os contatos dos clientes de
- * projeto que gere (ClientProjects, ADR-003); desativar, reativar, excluir e anonimizar são do
+ * projeto que gere (ClientProjects, ADR-001); desativar, reativar, excluir e anonimizar são do
  * Administrador. O dev não usa a tela: lê "quem pediu" pelo card (B3). Anonimizado é estado
  * final (D5): não se edita, não se reativa, não se anonimiza de novo.
  */

@@ -9,7 +9,7 @@ use Illuminate\Auth\Access\Response;
 
 /**
  * Clientes (F1 §09; N5 a N7, N11). O gestor vê, cria e escolhe cliente para montar projeto;
- * edita só o cliente de projeto que gere (ClientProjects, ADR-003). Desativar, reativar e
+ * edita só o cliente de projeto que gere (ClientProjects, ADR-001). Desativar, reativar e
  * excluir são do Administrador.
  */
 class ClientPolicy
