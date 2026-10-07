@@ -92,7 +92,7 @@ Aparecem em atas, em pautas ou no histórico do git, mas **não valem mais**:
 2. ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira em 06/10.
 3. ~~Escopo~~ validado por Lucas Scholz em 06/10 (etapa 5).
 4. ~~B0~~ MERGEADO em 06/10 (PR #1). Decisões do PR aceitas pelo Lucas Scholz (primária clara `#0F4FC4`, usuários só admin, `composer audit` em PR próprio). Prompt usado abaixo, para referência.
-5. **Onda 1:** B1 Núcleo (Cauã, trilho completo) ∥ B2 Projeto e configuração (Vitinho, leve), a partir desta `main`. Reunião de partida e `docs/brand/README.md` para o Lucas Varanda. Prova de conceito do MCP em paralelo (Lucas Scholz).
+5. **Onda 1:** B1 Núcleo (Cauã, trilho completo) ∥ B2 Projeto e configuração (Vitinho, leve), a partir desta `main`. **Revisão do Vitinho em 07/10, aplicada:** as Policies do B1 não leem `projects` (A9): contrato `Platform\Contracts\ClientManagement`, implementação vazia no B1 e real no B2; `ListService` mora em `Projetos\Services`; `rework_reasons.slug` (`other`) por migração própria; `ExemploSeeder` com o Paused em 4º (P10) até o B2 entregar o Service do quadro. Reunião de partida e `docs/brand/README.md` para o Lucas Varanda. Prova de conceito do MCP em paralelo (Lucas Scholz).
 5. Prova de conceito do MCP (D-GER-17), em paralelo ao B0.
 6. Reunião de partida com Cauã e Vitinho; onda 1 (B1 ∥ B2).
 

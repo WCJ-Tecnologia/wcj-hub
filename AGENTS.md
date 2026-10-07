@@ -106,7 +106,7 @@ Completo na `docs/necessidade.md`, seção "Vocabulário". O que mais aparece no
 
 Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (`.ai/stacks/laravel-inertia.md`). O que difere do template:
 
-- **Por domínio** (ADR-001): `app/Platform/` (o Núcleo: usuários, papéis, clientes, contatos, auditoria, conexões de IA) e `app/Domains/Projetos/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e `Mcp`. Infraestrutura fica onde o template põe (`app/Http/Middleware`, `app/Console`, `app/Mail`, `app/Providers`, `app/Rules`, `app/Support`).
+- **Por domínio** (ADR-001): `app/Platform/` (o Núcleo: usuários, papéis, clientes, contatos, auditoria, conexões de IA) e `app/Domains/Projetos/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e `Mcp`. Infraestrutura fica onde o template põe (`app/Http/Middleware`, `app/Console`, `app/Mail`, `app/Providers`, `app/Rules`, `app/Support`). O Platform não usa nada de `App\Domains\` (teste A9): dado de módulo que o Núcleo precisa entra por interface em `app/Platform/Contracts/`, com a implementação real no módulo e a ligação no `AppServiceProvider` (ex.: `ClientManagement`). Lista geral de um módulo (tipos de tarefa, motivos de retrabalho) é Model e Service do módulo.
 - **MySQL 8 em tudo, inclusive nos testes** (ADR-002). Nunca SQLite.
 - **Auditoria** em `audit_logs` com `ai_authorization_id` (o canal: nulo = tela), `outcome` (`success`/`denied`) e `changes` (`{"campo": [antes, depois]}`); gravada pelo `Platform\Services\AuditService`.
 - **Morph map** (`AppServiceProvider::registerMorphMap`, `enforceMorphMap`): `audit_logs.auditable_type` guarda o alias (`user`, `task`…), não o nome da classe.
