@@ -1030,9 +1030,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Suíte e2e inteira verde (porta 8001, worktree)
-- [ ] Nenhum spec e2e cria projeto para provar gestão de cliente
-- [ ] Gate check passes: Build
+- [x] Suíte e2e inteira verde (porta 8001, worktree)
+- [x] Nenhum spec e2e cria projeto para provar gestão de cliente
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

@@ -6,7 +6,8 @@ import { UsersPage } from './pages/users.page';
 
 /**
  * Os textos e estados de tela que a spec do B1 define e que o front monta (B1 T28): rótulo do
- * documento (Clientes AC 4), confirmação de desativar com projetos abertos (AC 9), estado vazio
+ * documento (Clientes AC 4), confirmação de desativar (AC 9: com a implementação vazia do
+ * ClientManagement, a variante sem projetos; a contagem N fica no ClientControllerTest), estado vazio
  * (AC 13), situação Anonimizado (Contatos AC 12), desativado em cinza (Usuários AC 13) e, na
  * auditoria, a linha negada em destaque e a lista sem resultado (Auditoria AC 3, 10). Cada teste
  * apaga o que criou.
@@ -30,9 +31,9 @@ test('o documento do cliente se chama CNPJ no Brasil e Identificador fiscal fora
     await clients.cancelForm();
 });
 
-test('desativar cliente com projetos abertos pede a confirmação com o número de projetos', async ({ page }) => {
-    const name = `E2E Cliente com projetos ${Date.now()}`;
-    const id = createClient(name, 2);
+test('desativar cliente pede a confirmação; sem projetos abertos, a variante sem contagem', async ({ page }) => {
+    const name = `E2E Cliente a desativar ${Date.now()}`;
+    const id = createClient(name);
     const clients = new ClientsPage(page);
 
     try {
@@ -42,7 +43,7 @@ test('desativar cliente com projetos abertos pede a confirmação com o número 
 
         await expect(clients.admin.dialog).toBeVisible();
         await expect(
-            clients.admin.dialog.getByText(`O cliente ${name} tem 2 projetos abertos; eles continuam. Desativar?`, { exact: true }),
+            clients.admin.dialog.getByText(`O cliente ${name} sai das listas de escolha. Desativar?`, { exact: true }),
         ).toBeVisible();
         await clients.admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
         await expect(clients.admin.dialog).toBeHidden();
