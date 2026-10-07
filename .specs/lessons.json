@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 8,
+  "next_id": 10,
   "lessons": [
     {
       "id": "L-001",
@@ -54,10 +54,11 @@
       "recurrence": 1,
       "harmful": 0,
       "evidence": [
-        "validation.md C9, C13, A3, A10, C4, K12, U13, P3 AC1 (telas)"
+        "validation.md C9, C13, A3, A10, C4, K12, U13, P3 AC1 (telas)",
+        "Clientes AC 9 texto, rodada 5 (T11 sobrevive; nenhum teste afirma index.tsx:37)"
       ],
       "created": "2026-10-06T21:16:54Z",
-      "last_seen": "2026-10-06T21:16:54Z"
+      "last_seen": "2026-10-07T16:06:02Z"
     },
     {
       "id": "L-004",
@@ -135,6 +136,43 @@
       ],
       "created": "2026-10-06T22:09:34Z",
       "last_seen": "2026-10-06T22:23:44Z"
+    },
+    {
+      "id": "L-008",
+      "key": "surviving_mutant::when a stub makes a ui variant unreachable in e2e keep asserting the spec text by rewriting the server response instead of switching to the reachable variant",
+      "text": "When a stub makes a UI variant unreachable in e2e, keep asserting the spec text by rewriting the server response instead of switching to the reachable variant",
+      "signal": "surviving_mutant",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "T11 resources/js/pages/admin/clients/index.tsx:37 (rodada 5; e2e/textos-nucleo.spec.ts:34-53 trocou a asserção do texto com N pela variante zero) (e2e)",
+        "rodada 6: T11/T11b/T11c mortos por e2e/textos-nucleo.spec.ts:82-86 (resposta da busca reescrita com open_projects = 2), T36 6beb785 (e2e)"
+      ],
+      "created": "2026-10-07T16:06:02Z",
+      "last_seen": "2026-10-07T16:36:43Z"
+    },
+    {
+      "id": "L-009",
+      "key": "spec_deviation::when a spec adds a contract for another domain s data list every datum the screens need through it so the contract does not grow outside the spec",
+      "text": "When a spec adds a contract for another domain's data, list every datum the screens need through it, so the contract does not grow outside the spec",
+      "signal": "spec_deviation",
+      "scope": "contracts",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "app/Platform/Contracts/ClientManagement.php:22-27 openProjectsCount (rodada 5, declarado pelo dono) (contracts)"
+      ],
+      "created": "2026-10-07T16:06:02Z",
+      "last_seen": "2026-10-07T16:06:02Z"
     }
   ]
 }

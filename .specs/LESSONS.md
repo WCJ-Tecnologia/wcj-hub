@@ -29,8 +29,8 @@ Seen once or not yet corroborated. Tracked, not trusted.
 ### L-003 - When an AC quotes a UI text or state, cover it with an e2e or component assertion, since backend tests only prove the data behind it
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `telas` · harmful: 0
 - features: b1-nucleo
-- evidence: validation.md C9, C13, A3, A10, C4, K12, U13, P3 AC1 (telas)
-- last seen: 2026-10-06T21:16:54Z
+- evidence: validation.md C9, C13, A3, A10, C4, K12, U13, P3 AC1 (telas) (+1 more)
+- last seen: 2026-10-07T16:06:02Z
 
 ### L-004 - Do not write an HTTP status AC for a capability the design exposes without a route; phrase it at the Policy or Service level
 - signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
@@ -55,6 +55,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - features: b1-nucleo
 - evidence: validation.md rodada 3 S10 (app/Rules/AlphanumericCnpj.php:45) (rules) (+1 more)
 - last seen: 2026-10-06T22:23:44Z
+
+### L-008 - When a stub makes a UI variant unreachable in e2e, keep asserting the spec text by rewriting the server response instead of switching to the reachable variant
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: b1-nucleo
+- evidence: T11 resources/js/pages/admin/clients/index.tsx:37 (rodada 5; e2e/textos-nucleo.spec.ts:34-53 trocou a asserção do texto com N pela variante zero) (e2e) (+1 more)
+- last seen: 2026-10-07T16:36:43Z
+
+### L-009 - When a spec adds a contract for another domain's data, list every datum the screens need through it, so the contract does not grow outside the spec
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `contracts` · harmful: 0
+- features: b1-nucleo
+- evidence: app/Platform/Contracts/ClientManagement.php:22-27 openProjectsCount (rodada 5, declarado pelo dono) (contracts)
+- last seen: 2026-10-07T16:06:02Z
 
 ## Quarantined (failed when applied - ignore)
 

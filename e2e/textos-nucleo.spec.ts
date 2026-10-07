@@ -6,8 +6,8 @@ import { UsersPage } from './pages/users.page';
 
 /**
  * Os textos e estados de tela que a spec do B1 define e que o front monta (B1 T28): rótulo do
- * documento (Clientes AC 4), confirmação de desativar (AC 9: com a implementação vazia do
- * ClientManagement, a variante sem projetos; a contagem N fica no ClientControllerTest), estado vazio
+ * documento (Clientes AC 4), confirmação de desativar (AC 9: a variante sem projetos, que a
+ * implementação vazia do ClientManagement sempre dá, e o texto com N, por resposta reescrita), estado vazio
  * (AC 13), situação Anonimizado (Contatos AC 12), desativado em cinza (Usuários AC 13) e, na
  * auditoria, a linha negada em destaque e a lista sem resultado (Auditoria AC 3, 10). Cada teste
  * apaga o que criou.
