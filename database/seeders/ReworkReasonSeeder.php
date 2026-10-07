@@ -22,7 +22,7 @@ class ReworkReasonSeeder extends Seeder
             ['label' => 'Regra de negócio', 'requires_text' => false],
             ['label' => 'Erro / bug', 'requires_text' => false],
             ['label' => 'Requisito incompleto ou mal documentado', 'requires_text' => false],
-            ['label' => 'Outro', 'requires_text' => true],
+            ['slug' => ReworkReason::OTHER, 'label' => 'Outro', 'requires_text' => true],
         ] as $motivo) {
             ReworkReason::query()->create($motivo);
         }

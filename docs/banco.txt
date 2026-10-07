@@ -528,12 +528,15 @@ Mesmo projeto (R15): as duas etapas são do projeto da tarefa; asserção no Ser
 rework_reasons                         (cadastrável)
 =====================================================================
 P40: lista geral, editada pelo Administrador (G7, R11), sempre com "outro" com texto. Sem cópia por
-projeto e sem FK composta.
+projeto e sem FK composta. O código depende só do slug 'other' (o "Outro" não se desativa, não se
+exclui e sempre pede texto; o nome não serve porque o Administrador renomeia); os outros itens nascem
+sem slug, como em task_types (07/10).
+slug                  varchar(20)   null      unique          (só o "outro")
 label                 varchar(80)   not null  unique
 requires_text         boolean       not null  default false   (o "outro")
 deactivated_at / deactivated_by
 Semente (P40): Ajuste visual · Regra de negócio · Erro / bug · Requisito incompleto ou mal documentado
-· Outro (requires_text).
+· Outro (slug other, requires_text).
 
 =====================================================================
 task_acceptance_criteria
@@ -960,6 +963,11 @@ Decisão do Lucas Scholz na aprovação do F8 (06/10, noite), uma coluna aditiva
   pode escrever; false = tokens só :read (IA4). Mudar revoga as conexões ativas (IA6).
 - Sem coluna: volta por engano = movimento sem rework_origin_id (P39); coluna de pronto mostra só a
   sprint aberta e a última encerrada (P13); comentário editado ou excluído pelo autor (P24).
+Revisão do Vitinho (07/10), uma coluna aditiva em rework_reasons, migração própria
+(2026_10_07_000010):
+- rework_reasons.slug (varchar(20), null, unique): só o "Outro" recebe 'other'. Motivo: o código
+  precisa achar o Outro (P40: não se desativa, não se exclui, sempre pede texto) e o nome não serve
+  porque o Administrador renomeia; id fixo da semente é frágil. É o mesmo padrão de task_types.
 Ficou como aprovado: todo o resto, inclusive as colunas geradas testadas no MySQL 8.4 (T1, T9), o
 contador atômico (T4), MySQL nos testes (T6), audit_logs.ip_address (T8) e a semente dos domínios.
 Contagem: 41 − 9 (CRM) − 1 (service_types) − 1 (task_validations) − 1 (sprint_members) − 1
