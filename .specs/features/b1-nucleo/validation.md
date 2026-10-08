@@ -1,13 +1,33 @@
-# B1 Núcleo Validation (rodada 6, focada, autorizada pelo dono)
+# B1 Núcleo Validation (rodada 8, focada nos dois gaps da rodada 7)
 
 ## Validation: PASS
 
-**Result**: PASS na rodada 6. O único gap da rodada 5 (o texto do Clientes AC 9 com N projetos sem teste, mutante T11 sobrevivente) foi fechado pela T36 (`6beb785`, só e2e). `git diff d014767..HEAD --stat` toca só `e2e/textos-nucleo.spec.ts` (+38) e `.specs/features/b1-nucleo/tasks.md` (+39/−1): nenhum arquivo de produção mudou, então as citações e os mutantes T01–T10 da rodada 5 continuam valendo. O teste novo `e2e/textos-nucleo.spec.ts:55` reescreve a resposta da busca com `open_projects = 2` e afirma em `:82-86` `getByText(\`O cliente ${name} tem 2 projetos abertos; eles continuam. Desativar?\`, { exact: true })` → `toBeVisible()`. Sensor: T11 (texto trocado), T11b (N > 1 cai na variante de N = 1) e T11c (contagem errada, `${open + 1}`) **mortos** pelo teste novo, em `textos-nucleo.spec.ts:86`. Gate: `composer lint` ok, `php artisan test` **287 passed (2447 assertions)**, Playwright **49 passed** na 8001. Continuam pendentes do Lucas Scholz, sem reprovar, os desvios declarados (inclusive o `openProjectsCount` e as variantes N = 0 e N = 1, que a spec não define). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 6".
+**Result**: PASS na rodada 8. Os dois gaps Minor da rodada 7, só de teste, estão fechados pela T51 (`445f5d2`, só e2e e um comentário). (1) O estado vazio sem filtro agora garante uma linha na tela antes do clique (`e2e/textos-nucleo.spec.ts:267`; em Contatos, a linha vem do contato criado em `:259`), espera a resposta reescrita (`:276-278`) e limpa a interceptação (`:284`): **20 de 20** com `--repeat-each=10`, e as duas sondas no teste provam que ele depende da linha e da reescrita. (2) O texto N = 1 do Clientes AC 9 é afirmado com `exact: true` (`e2e/textos-nucleo.spec.ts:121-123`); as duas mutações (texto no plural; `open === 1` caindo no ramo de N > 1) morreram. Gate: `composer lint` ok, `php artisan test` **322 passed (2761 assertions)**, Playwright **56 passed** nas duas rodadas, com `e2e:prepare` antes de cada. Os achados e as decisões da rodada 7 continuam valendo (o código de produção não mudou desde `96569b9`). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 8 (focada)".
+
+**Date (rodada 8)**: 2026-10-08
+**Diff range (rodada 8)**: `96569b9..445f5d2`, um commit só (T51)
+**Verifier (rodada 8)**: subagente independente (autor ≠ verifier), escopo focado no Fix 4 e no Fix 5 da rodada 7
+
+## Rodada 7 (histórico): FAIL
+
+**Result (rodada 7)**: FAIL na rodada 7, por **dois gaps Minor, os dois só de teste**. As correções da review do Lucas Scholz de 07/10 estão no código e têm teste que discrimina: os 9 achados (A1–A9) estão corrigidos com evidência `arquivo:linha`, as decisões com efeito no código (D2, D3, D7 com o método em lote `openProjectsCountByClient`, D9) também, e 14 das 15 mutações nas correções morreram (a 15ª, M1c, é equivalente: ver "Sensor (rodada 7)"). Gate PHP e front verdes na árvore real (`composer lint` ok, `php artisan test` **322 passed (2761 assertions)**, typecheck, eslint, build, guard 1053/1024 pass/29 skipped, `conferir-specs` 0 problemas). O `@critical` (A5) passou nas duas rodadas de e2e. O que reprova:
+
+1. **e2e instável (gate)**: a rodada 2 do Playwright, com o banco recriado, deu **54 passed, 1 failed**: `e2e/textos-nucleo.spec.ts:221` ("lista vazia sem filtro mostra 'Nenhum contato ainda'", teste novo da T49), com `apiResponse.json: Response has been disposed` em `:232`. Isolado, falhou 1 em 10 (`--repeat-each=10`). Causa confirmada: o banco e2e tem **0 contatos** (`Contact::count()` = 0 depois da suíte), então "Nenhum contato ainda" já está na tela antes do clique em *Mostrar desativados*; o `expect` de `:239-241` passa na hora, o teste termina com o `route.fetch()` de `:231` ainda em voo e o Playwright descarta a resposta. O snapshot da falha mostra "Carregando contatos…" e o estado vazio ao mesmo tempo. Além de instável, para Contatos o teste não prova a resposta reescrita.
+2. **Clientes AC 9, variante N = 1 sem asserção**: a T50 pôs na spec o texto "O cliente X tem 1 projeto aberto; ele continua. Desativar?" (D7). O código o tem (`resources/js/pages/admin/clients/index.tsx:35`), mas nenhum teste o afirma (`grep -rn "1 projeto aberto" e2e tests` vazio). Evidence-or-zero: não coberto. N = 0 e N ≥ 2 têm asserção e mutante morto.
+
+Detalhe na seção "Rodada 7". Os dois gaps foram fechados pela T51 e conferidos na rodada 8.
+
+**Date (rodada 7)**: 2026-10-08
+**Spec (rodada 7)**: `.specs/features/b1-nucleo/spec.md`, revisada em 08/10 (T50, `96569b9`) com as decisões D1–D11 do Lucas Scholz
+**Diff range (rodada 7)**: `bf82585..96569b9` (`e0a45fa..96569b9`, T37–T50; 56 arquivos, +1618/−260)
+**Verifier (rodada 7)**: subagente independente (autor ≠ verifier), escopo focado nos achados A1–A9 e nas decisões D1–D11 da review do Lucas Scholz
+
+## Rodada 6 (histórico): PASS
+
+**Result (rodada 6)**: PASS na rodada 6. O único gap da rodada 5 (o texto do Clientes AC 9 com N projetos sem teste, mutante T11 sobrevivente) foi fechado pela T36 (`6beb785`, só e2e). Gate: `composer lint` ok, `php artisan test` 287 passed (2447 assertions), Playwright 49 passed na 8001. Detalhe na seção "Rodada 6".
 
 **Date (rodada 6)**: 2026-10-07
-**Spec (rodada 6)**: a mesma da rodada 5 (`.specs/features/b1-nucleo/spec.md`, revisada em 07/10)
 **Diff range (rodada 6)**: `d014767..6beb785`, um commit só (`6beb785`, T36)
-**Verifier (rodada 6)**: subagente independente (autor ≠ verifier), escopo focado no Clientes AC 9 e no T11, por autorização do dono
 
 ## Rodada 5 (histórico): FAIL
 
@@ -42,6 +62,8 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | 4 (focada, autorizada pelo dono) | `2a32842` | **PASS** | S10 e S10b mortos por caso fixo; mais 2 mutações na mesma regra mortas | - |
 | 5 (focada na spec revisada de 07/10) | `d014767` | **FAIL** | 1 mutante sobrevivente: T11, o texto do Clientes AC 9 com N projetos (`resources/js/pages/admin/clients/index.tsx:37`). A T34 tirou do e2e a única asserção do texto que a spec define. As 10 mutações no código da fase 10 morreram | Fix 3, só teste: T36 (`6beb785`) |
 | 6 (focada, autorizada pelo dono) | `6beb785` | **PASS** | T11, T11b (N > 1 na variante de N = 1) e T11c (contagem errada) mortos por `e2e/textos-nucleo.spec.ts:86`; e2e 49 passed; PHP 287 passed | - |
+| 7 (review do Lucas Scholz, 07/10) | `96569b9` | **FAIL** | 2 gaps Minor, só teste: `e2e/textos-nucleo.spec.ts:221` (Contatos) instável, 1 falha em 10 e a rodada 2 do e2e vermelha (54/55); texto N = 1 do Clientes AC 9 sem asserção. A1–A9 e D2, D3, D7, D9 corrigidos com evidência; 16 mutantes mortos, 1 equivalente | Fix 4 e Fix 5 (só teste): T51 (`445f5d2`) |
+| 8 (focada nos gaps da rodada 7) | `445f5d2` | **PASS** | Estado vazio 20/20 com `--repeat-each=10`; texto N = 1 afirmado em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos; e2e 56/56 duas vezes; PHP 322 passed | - |
 
 ---
 
@@ -56,9 +78,202 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | T33 | ✅ Done | Conferido na rodada 5 (tabela "Rodada 5"); mutantes T01–T09 mortos |
 | T34 | ✅ Done (regressão de cobertura fechada pela T36) | Os "Done when" marcados são verdade (e2e 48/48, nenhum spec cria projeto), mas a troca em `e2e/textos-nucleo.spec.ts:34-53` tirou a asserção do texto do Clientes AC 9 com N projetos. Na rodada 5, mutante T11 sobreviveu (Fix 3); a T36 repôs a asserção |
 | T36 | ✅ Done | Conferido na rodada 6: os 3 "Done when" marcados são verdade. Texto exato com `exact: true` em `e2e/textos-nucleo.spec.ts:82-86`; T11 morto numa worktree descartável com build próprio; e2e inteiro 49 passed |
+| T37–T49 | ✅ Done | Conferidas na rodada 7 (tabelas "Achados A1–A9" e "Decisões com efeito no código"). Ressalvas: a T48 diz "`@critical` passa 5 vezes seguidas"; aqui passou nas 2 rodadas pedidas. A T49 trouxe o teste instável de `textos-nucleo.spec.ts:221` (Fix 4) |
+| T50 | ✅ Done (com gap) | Documentos batem com D1, D4, D5, D11; nenhum `SPEC_DEVIATION`; `conferir-specs` 0 problemas. A spec ganhou o texto N = 1 do Clientes AC 9 sem teste que o afirme (Fix 5) |
+| T51 | ✅ Done | Conferida na rodada 8: os 3 "Done when" marcados são verdade (estado vazio 20/20 com `--repeat-each=10`; texto N = 1 com `exact`, plural no lugar do singular pego; 56/56 duas vezes com banco recriado). O comentário de `AuthorizesBeforeValidation.php:12` agora diz o que acontece (a observação "Comentário impreciso" da rodada 7) |
 | T35 | ✅ Done | `ClientProjects` só aparece no texto histórico da T5 em `tasks.md`; `AGENTS.md:110,158`, `docs/escopo.md:79,91` e `design.md:192` falam do `ClientManagement` |
 
+`tasks.md` (rodada 8): 51 tarefas `### T`, 175 caixas marcadas, 0 abertas.
 `tasks.md` (rodada 6): 36 tarefas `### T`, 134 caixas marcadas, 0 abertas. Na rodada 5: 35 tarefas, 131 caixas; na rodada 4: 31 tarefas, 115 caixas.
+
+---
+
+## Rodada 8 (focada)
+
+Escopo: os dois gaps Minor da rodada 7 (Fix 4 e Fix 5), fechados pela T51. Os achados A1–A9, as decisões D1–D11 do Lucas Scholz e o sensor da rodada 7 continuam como registrados abaixo: nenhum arquivo de produção mudou desde `96569b9`.
+
+### O diff só toca teste, um comentário e tarefas
+
+`git diff 96569b9..HEAD --stat` (HEAD `445f5d2`): `.specs/features/b1-nucleo/tasks.md` (+38/−1), `app/Platform/Requests/Concerns/AuthorizesBeforeValidation.php` (+1/−1, só o docblock), `e2e/helpers/dados.ts` (+10, helper `createContact`), `e2e/textos-nucleo.spec.ts` (+60/−15). 4 arquivos, +109/−17. O comentário novo do `AuthorizesBeforeValidation.php:12` ("depois de uma negação aqui ele nem roda, então a checagem seria só repetida") resolve a observação "Comentário impreciso" da rodada 7 e bate com o M1c (equivalente).
+
+### Gate (rodada 8)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` (árvore real) | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (árvore real, MySQL 8) | **322 passed (2761 assertions)**, 0 failed, 37 s. Igual à rodada 7: a T51 não mexe em PHP testável |
+| Estado vazio (`-g "lista vazia sem filtro" --repeat-each=10`, banco recém-preparado) | **21 passed** (setup + 20), 0 failed: 10 de Usuários, 10 de Contatos |
+| e2e rodada 1 (`npm run e2e:prepare` antes) | **56 passed** (1.2 min), 0 failed |
+| e2e rodada 2 (`npm run e2e:prepare` de novo) | **56 passed** (1.2 min), 0 failed |
+
+55 da rodada 7 + 1 teste novo (o do singular) = 56. Nenhum teste removido.
+
+Montagem, sem tocar no servidor do usuário: worktree descartável do HEAD em `/tmp/tlc-b1-nucleo-s8`, `vendor` e `node_modules` por `ln -s`, cópias de `.env.e2e` e `public/build`, sem `public/hot`, `npx vite build` lá; `APP_ENV=e2e php artisan serve --host=127.0.0.1 --port=8001` desse worktree; `E2E_BASE_URL=http://127.0.0.1:8001 npx playwright test` da árvore real. No fim, o PID da 8001 (1656077) achado por `ss -ltnp` e morto sozinho (o pai `artisan serve` saiu junto; 8001 livre); worktree removido (`git worktree list` só com a árvore real). A 8000 (PID 88857) seguiu respondendo (302) e o `public/hot` da árvore real ficou intacto.
+
+### Fix 4: o estado vazio prova a reescrita
+
+- `e2e/textos-nucleo.spec.ts:257-259`: em Contatos, o teste cria um cliente e um contato ativo (`createContact`, `e2e/helpers/dados.ts:32`).
+- `:267` `await expect(page.getByRole('row').nth(1)).toBeVisible()`: uma linha de dado na tela antes do clique. A `DataTable` troca a tabela inteira pelo estado vazio quando não há linha (`resources/js/components/data-table.tsx:44`), então a linha 1 (depois do cabeçalho) só existe com dado: o estado vazio não pode estar na tela nesse ponto.
+- `:276-278`: `waitForResponse` da visita com `show_inactive=1` guardado antes do clique e esperado antes do `expect` do estado vazio (`:280-282`). `:284`: `unrouteAll({ behavior: 'wait' })` no `finally`, e o cliente criado é apagado.
+- **Sondas** (na worktree descartável, desfeitas com `git checkout` logo depois): sem o `createContact`, Contatos falha em `:267` (`getByRole('row').nth(1)`, element(s) not found), o que mostra que o banco e2e não tem contato e que a guarda funciona; sem a reescrita da resposta (`body.props[prop] = …` comentado), **os dois** testes falham no `expect` do estado vazio. O teste depende da resposta reescrita, não de um estado que já estava vazio.
+
+### Fix 5: o texto de 1 projeto aberto
+
+- `e2e/textos-nucleo.spec.ts:96-128`: reescreve a resposta da busca com `open_projects: 1` (mesmo padrão do teste de N = 2) e afirma `O cliente ${name} tem 1 projeto aberto; ele continua. Desativar?` com `exact: true` (`:121-123`). É o texto da spec (`spec.md:115`, Clientes AC 9, N = 1) e do F1 §04 (`docs/funcional/f1-nucleo.md:94`).
+
+### Sensor (rodada 8)
+
+Na mesma worktree do e2e. Antes de mutar, os dois testes de texto do desativar (`-g "desativar cliente com"`) passaram sem mutação (3 passed com o setup). Cada mutante: `npx vite build`, o mesmo `-g`, depois `git checkout` do arquivo.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| S8a | `resources/js/pages/admin/clients/index.tsx:35` | texto do singular trocado pelo plural: `tem 1 projetos abertos; eles continuam. Desativar?` | ✅ morto | `e2e/textos-nucleo.spec.ts:121-123` (`getByText(…, { exact: true })` não acha) |
+| S8b | `resources/js/pages/admin/clients/index.tsx:35` | `if (open === 1)` → `if (open === -1)`: N = 1 cai no ramo de N > 1 ("1 projetos abertos; eles continuam") | ✅ morto | `e2e/textos-nucleo.spec.ts:121-123` |
+
+O teste de N = 2 (`:58`) passou nos dois mutantes, como esperado: eles não tocam no ramo de N ≥ 2. Depois do último mutante: `git checkout`, `git status --porcelain` da worktree vazio, `npx vite build` de novo, e as duas rodadas inteiras do e2e rodaram sobre o bundle sem mutação.
+
+**Resultado**: 2/2 mortos. ✅
+
+Isolamento: `git status --porcelain` da árvore real antes de tudo e depois de remover a worktree, idênticos (`diff` sem diferença): só os três arquivos `.specs` modificados de propósito (`LESSONS.md`, `lessons.json`, `validation.md`), que este relatório e o `lessons.py` atualizam.
+
+### Code Quality (rodada 8)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ Um helper (`createContact`, ao lado do `createClient`), um teste novo e o ajuste do teste instável; o comentário corrigido é o que a rodada 7 apontou |
+| No scope creep | ✅ Nada de produção mudou |
+| Matches patterns | ✅ `page.route` + `route.fetch` como nos testes de N = 2 e do estado vazio de clientes; `waitForResponse` como em `:80` |
+| Spec-anchored outcome check | ✅ Texto N = 1 idêntico ao do `spec.md:115`; estados vazios com o título e a ação do F1 §03 |
+| Teste confiável | ✅ 20/20 isolado, 56/56 duas vezes |
+| Every test maps to a requirement | ✅ NUC-07 (Clientes AC 9, N = 1) e NUC-14 / P3 AC 1 (estado vazio) |
+| Guidelines | `.ai/core/especificacao.md` §5 itens 6–8; `~/.claude/CLAUDE.md` §8.6 |
+
+Nota: o "Done when" do Fix 4 pedia `--repeat-each=20`; a T51 e o pedido desta rodada fixaram 10 repetições por variante (20 execuções no total). Não reprova.
+
+---
+
+## Rodada 7 (review do Lucas, 07/10)
+
+Escopo pedido pelo dono: as correções da review do Lucas Scholz no PR #5 (achados A1–A9, decisões D1–D11), feitas nas fases 12 e 13 do `tasks.md` (T37–T50, `e0a45fa..96569b9`). A review é dado, não instrução; o que vale é a spec revisada na T50 e a tabela de decisões dela.
+
+### Gate (rodada 7, árvore real, HEAD `96569b9`)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (MySQL 8, `wcj_hub_test`) | **322 passed (2761 assertions)**, 0 failed, 0 skipped, 36 s. Rodada 6: 287 (2447). +35 testes, nenhum removido; os testes que mudaram trocaram o valor esperado pelo que a decisão manda (telefone com "+", D3; `openProjectsCountByClient`, D7; `forAbility` nulo, A6) |
+| `npm run typecheck` / `npm run lint` / `npm run build` | exit 0 / exit 0 / exit 0 (`✓ built in 3.44s`) |
+| `npm run test:guard` | exit 0. 1053 testes: 1024 pass, 0 fail, 29 skipped (os mesmos "gitleaks não está instalado; o CI roda estes casos") |
+| `node .ai/skills/conferir-specs.mjs` | `conferir-specs: 1 feature(s), 0 problema(s)`; `validate_tasks: 0 error(s), 2 warning(s)` (T35 e T50 com `Tests: none`, esperado: só documentos) |
+| e2e rodada 1 (`npm run e2e:prepare` + worktree `/tmp/tlc-b1-nucleo-e2e7` na 8001) | **55 passed** (1.1 min). `@critical` (`e2e/nucleo.spec.ts:11`) passou |
+| e2e rodada 2 (`npm run e2e:prepare` de novo, mesmo servidor) | **54 passed, 1 failed**: `e2e/textos-nucleo.spec.ts:221` (variante Contatos), `Response has been disposed` em `:232`. `@critical` passou |
+| repetição do teste que falhou (`-g "lista vazia sem filtro" --repeat-each=10`) | 20 passed, **1 failed** (a variante Contatos, repetição 4, mesmo erro) |
+
+Montagem do e2e, sem tocar no servidor do usuário: worktree descartável do HEAD em `/tmp/tlc-b1-nucleo-e2e7`, `vendor` e `node_modules` por `ln -s`, cópias de `.env.e2e` e `public/build`, sem `public/hot`, `npx vite build` lá; `APP_ENV=e2e php artisan serve --port=8001` desse worktree; `E2E_BASE_URL=http://127.0.0.1:8001 npx playwright test` da árvore real. No fim, o PID da 8001 (1625391) achado por `ss -ltnp` e morto sozinho; worktree removido. A porta 8000 (PID 88857) e o `public/hot` da árvore real ficaram intactos.
+
+### Achados A1–A9 (o comportamento que a review pede)
+
+| Achado | O que a review pede | Código | Teste (valor afirmado) | Mutante | Resultado |
+|---|---|---|---|---|---|
+| A1 | Não-admin com payload inválido recebe 403 (não 422), sem revelar e-mail, e a tentativa vira `denied` | `app/Platform/Requests/Concerns/AuthorizesBeforeValidation.php:18-22` `authorize(): Response` → `inspectAndAuditDenial($ability, $arguments)`, usado nos 4 FormRequests (`StoreUserRequest`, `StoreClientRequest`, `StoreContactRequest`, `AnonymizeContactRequest`); os `store`/`update`/`anonymize` dos controllers não chamam mais `authorize()` | `tests/Feature/Nucleo/AutorizaAntesDeValidarTest.php:45-53` `assertForbidden()`, `assertSessionHasNoErrors()`, `AuditLog::query()->sole()` com `action`, `outcome = denied`, `auditable_type`, `auditable_id`; chamado em `:65,79,94,107,119,131,143` (usuário criar/editar, cliente criar/editar, contato criar/editar, anonimizar; gestor e dev); `:66,80` `assertDontSee(UserService::EMAIL_TAKEN)` | M1a, M1b mortos | ✅ |
+| A1 (negação uma vez só) | A negação não é gravada duas vezes numa requisição | Quando o FormRequest nega, o controller não roda; não há segundo `authorize()` nas ações com FormRequest (`grep -n "authorize(" app/Platform/Controllers/Admin/*.php`: só `viewAny`, `view`, `deactivate`, `reactivate`, `delete`, `resendInvite`) | `AutorizaAntesDeValidarTest.php:48` `AuditLog::query()->sole()` (exatamente uma linha) | M1c equivalente (ver Sensor) | ✅ |
+| A2 | A WCJ não troca CNPJ nem país; o nome continua editável | `app/Platform/Services/ClientService.php:85` `if ($client->isWcj() && ($clean['country'] !== $client->country \|\| $clean['document'] !== $client->document)) throw new DomainException(self::WCJ_IDENTITY_LOCKED)` | `tests/Feature/Nucleo/ClientServiceTest.php` (`test_wcj_nao_troca_de_cnpj_nem_de_pais…`, 3 casos, admin e gestor que gere) mensagem `'O CNPJ e o país da WCJ não podem ser alterados'`, `isWcj()` true, 0 linhas de auditoria; `test_wcj_continua_trocando_de_nome` (`updated` com o nome); `ClientControllerTest.php:211` `assertSessionHas('error', 'O CNPJ e o país da WCJ não podem ser alterados')` | M2 morto | ✅ |
+| A3 | Checagem do último admin dentro da transação, com `lockForUpdate`, e teste de concorrência | `app/Platform/Services/UserService.php:89,121,148` (`ensureNotLastActiveAdmin` dentro dos `DB::transaction` de `update`, `deactivate`, `delete`); `:219` `->lockForUpdate()->pluck('id')` | `tests/Feature/Nucleo/UltimoAdminConcorrenciaTest.php:55-59` (com `tests/Support/Concorrencia.php`) admins ativos `=== [$ana->id]` e `$corrida->bloqueada` true | M3a (sem lock), M3b (checagem fora da transação) mortos | ✅ |
+| A4 | Checagem de anonimizado dentro da transação, sobre a linha travada | `app/Platform/Services/ContactService.php:87,114,147` `lockedNotAnonymized()` dentro da transação de `update`, `reactivate`, `anonymize`; `:265` `lockForUpdate()->findOrFail` | `tests/Feature/Nucleo/ContactAnonimizadoConcorrenciaTest.php:83-84` (edição) e `:104-105` (reativação): `bloqueada` true; se anonimizado, nada de "Ana Lima"/`padaria.test` em `changes` | M4 (update), M4b (reactivate) mortos | ✅ |
+| A5 | O `@critical` não falha por corrida com a busca | `e2e/pages/admin.page.ts:26-36` `search()` espera a resposta com `search=` e a URL; `e2e/pages/clients.page.ts:24-27` `find()` usa; `edit()`/`openSheet()` passam por `find()` | `@critical` (`e2e/nucleo.spec.ts:11`) passou nas duas rodadas, com o banco recriado antes de cada | - | ✅ (o `@critical`). A suíte da rodada 2 caiu por outro teste: gap 1 |
+| A6 | Ability sem mapeamento: 403 e `denied` com o nome, não 500 | `app/Platform/Enums/AuditActionEnum.php:55` `default => null`; `:34` `labelOf()` → `'Outra ação'`; `app/Platform/Services/AuditService.php:60` `mb_substr(forAbility($ability)?->value ?? $ability, 0, 40)` | `tests/Feature/Nucleo/AbilitySemMapeamentoTest.php:37` `assertForbidden()`, `:41` `assertSame('archive', $log->action)`; `:59` `action_label = 'Outra ação'`; `tests/Unit/AuditActionEnumTest.php` `assertNull(forAbility('archive'))` | M5 morto | ✅ |
+| A7 | Sem N+1: quem gere o quê uma vez por requisição; projetos abertos em lote | `app/Platform/Services/MemoizedClientManagement.php:29` `??=`; `app/Providers/AppServiceProvider.php:63` `scoped(…)`, `:72` `forgetInstance` no `RequestHandled`; `app/Platform/Controllers/Admin/ClientController.php:114` uma chamada `openProjectsCountByClient($ids)`, `:136` lê do mapa | `tests/Feature/Nucleo/ClientManagementPorRequisicaoTest.php:56` admin, 20 clientes: `openProjectsCountByClient` = 1; `:67` gestor: `managedClientIds` = 1, `manages` = 0; `:84` contatos idem; `:98` a requisição seguinte pergunta de novo (2) | M6a (contrato por linha), M6b (sem memória) mortos | ✅ |
+| A8 | `from` inválido mantém os 7 dias; só o vazio é "sem período" | `app/Platform/Services/AuditLogQuery.php:66` `$noPeriod = $id !== null \|\| (array_key_exists('from', $input) && in_array($input['from'], [null, ''], true))` | `tests/Feature/Nucleo/AuditLogQueryTest.php:91-92` `filters(['from' => '07/10/2026'])['from'] === '2026-09-30'` e só o log de dentro; `AuditLogControllerTest.php:109-119` idem pela rota, e `from=` → `null` com os 2 logs | M7 morto | ✅ |
+| A9 | `attempt()` num lugar só | `app/Http/Controllers/Controller.php:36` `protected function attempt(…)`; `grep -rn "function attempt" app/` só acha esse | suíte inteira verde com as mesmas mensagens (`UserControllerTest.php:190`, `ClientControllerTest.php:224`, `ContactControllerTest.php:246`) | - (refactor) | ✅ |
+
+### Decisões com efeito no código
+
+| Decisão | O que a decisão manda | Código | Teste | Mutante | Resultado |
+|---|---|---|---|---|---|
+| D2 | Não-admin: "Já existe um contato com este e-mail"; admin: "Já existe Fulano (Cliente X) com este e-mail" | `app/Platform/Services/ContactService.php:29` `DUPLICATE_EMAIL_HIDDEN`; `:254` `$viewer->isAdmin() =>` texto com nome e cliente; `default` o oculto | `ContactServiceTest.php:204,210` (gestor, criar e editar) `'Já existe um contato com este e-mail'`; `ContactControllerTest.php:194` `flash.warning` idem + `assertDontSee('Bia Reis')`, `assertDontSee('Mercado Central')`; admin: `ContactControllerTest.php:166,179`, `ContactServiceTest.php:157,186` | M8 morto | ✅ |
+| D3 | Telefone é texto até 20, gravado como digitado (`trim`), com o "+"; busca por dígitos | `StoreContactRequest` sem `normalizeDigits`; `ContactService.php` `validated()` só `trim`; `:186` `orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ["%{$digits}%"])` (**parametrizado**: a entrada vai como binding, nada concatenado no SQL; nome e e-mail também via `where(…, 'like', $valor)`); tela sem `displayPhone`/`maskPhone` (`contact-table.tsx`, `contact-actions.tsx`), `maxLength={20}` | `ContactControllerTest.php:122` `phone = '+31 6 1234 5678'` (enviado com espaços nas pontas), `:123-126` busca `3161234` acha e mostra `'+31 6 1234 5678'`; `:224` edição grava com o "+"; `ContactServiceTest.php` `test_telefone_e_gravado_como_texto…` | M9 (só dígitos), M10 (busca sem tirar a máscara do banco) mortos | ✅ |
+| D7 | 3º método aprovado, em lote, uma chamada por página; textos N = 0 e N = 1 como estão | `app/Platform/Contracts/ClientManagement.php` `openProjectsCountByClient(array $clientIds): array`; `NoClientManagement` `array_fill_keys($clientIds, 0)`; `index.tsx:34-36` os três textos | método em lote: `ClientManagementPorRequisicaoTest.php:56`; `ClientManagementTest.php` vazia devolve `[id => 0, …]`; N = 0: `e2e/textos-nucleo.spec.ts:49` `exact`; N = 2: `:86-88` `exact`; **N = 1: sem asserção** | mutação front no texto N = 0 morta (`textos-nucleo.spec.ts`, "sem projetos abertos") | ⚠️ método ✅; texto N = 1 ❌ (gap 2) |
+| D9 | Carga diária aceita 7,3 (sem `step 0.25`), `min` fica | `resources/js/components/users/user-form-dialog.tsx:90` `step="any"`, `min="0.25"` | `e2e/ajustes-de-tela.spec.ts:39-47` convida com `7.3` e afirma `'7,3 h'` com `exact` | mutação front `step="0.25"` morta (o diálogo não fecha) | ✅ |
+
+### ACs reescritos pela T50
+
+| AC | Valor da spec | `arquivo:linha` + asserção | Resultado |
+|---|---|---|---|
+| Usuários AC 12 | toast de erro "Usuário já usado: desative em vez de excluir", nada muda | `UserControllerTest.php:190` `assertSessionHas('error', 'Usuário já usado: desative em vez de excluir')` | ✅ |
+| Clientes AC 9 | três textos (N ≥ 2, N = 1, N = 0) e N pelo método em lote, uma chamada por página | N ≥ 2: `textos-nucleo.spec.ts:86-88`; N = 0: `:49`; lote: `ClientManagementPorRequisicaoTest.php:56`; N = 1: nenhuma | ❌ GAP (N = 1) |
+| Clientes AC 10 | 403 "A WCJ não pode ser desativada"; trocar país/documento da WCJ recusa com "O CNPJ e o país da WCJ não podem ser alterados" e nada muda | `ClientControllerTest.php:198` `assertSee('A WCJ não pode ser desativada')`; `:211` `assertSessionHas('error', 'O CNPJ e o país da WCJ não podem ser alterados')` + documento igual e 0 auditoria; `ClientServiceTest.php` (3 casos, admin e gestor) | ✅ |
+| Clientes AC 12 | toast "Cliente já usado: desative em vez de excluir", nada muda | `ClientControllerTest.php:224` | ✅ |
+| Contatos AC 3 | admin: "Já existe Fulano (Cliente X) com este e-mail"; não-admin: "Já existe um contato com este e-mail"; salva nos dois | `ContactControllerTest.php:166,179` (admin), `:194` (gestor) + `count() === 2`; `ContactServiceTest.php:204,210` | ✅ |
+| Contatos AC 9 | toast "Contato já usado: desative em vez de excluir" | `ContactControllerTest.php:246` | ✅ |
+| Auditoria AC 2 | `denied` mesmo com payload inválido, 403 e nunca o erro de validação; ability sem rótulo grava o nome e aparece "Outra ação" | `AutorizaAntesDeValidarTest.php:45-53` (7 rotas × papéis); `AbilitySemMapeamentoTest.php:41,59` | ✅ |
+
+Os textos que a review disse sem teste agora têm: "Fulano perde o acesso imediatamente. Continuar?" (`textos-nucleo.spec.ts:197`), "As conexões de IA de Fulano serão desconectadas. Continuar?" (`:206`), "Excluir de verdade. Não dá para desfazer." (`e2e/pages/users.page.ts:47`, `clients.page.ts:95`); limites 120/160 do usuário em `UserControllerTest.php:143,145`.
+
+### Outras conferências
+
+- **`SPEC_DEVIATION`**: `grep -rn SPEC_DEVIATION app resources routes database tests e2e` vazio. Os três `destroy` citam a D6 no comentário.
+- **Documentos x decisões**: D1 em `docs/funcional/f1-nucleo.md` §04 ("gestor, pelo botão *Novo cliente* do formulário do projeto (F2) e em Administração → Clientes") e §09 ("cria pelo formulário do projeto e em Administração → Clientes"), e em `docs/necessidade.md` N6; D4 em `docs/escopo.md` B1 (`/admin/users`, `/admin/clients`, `/admin/contacts`, `/admin/audit-logs`); D5 em `docs/escopo.md` §4 (`view_clients`, `view_contacts`, `view_audit_logs`; `delete_records` e `reset_passwords` só admin); D11 em `docs/necessidade.md` N12 ("Limitação registrada (Lucas Scholz, 07/10): contato **excluído** … não há caminho para anonimizá-lo depois"). F1 virou versão 1.1 (08/10). ✅
+- **Comentário impreciso (não é gap)**: `AuthorizesBeforeValidation.php` diz que, se o controller autorizasse de novo, "a negação seria gravada duas vezes". Não seria: quando o FormRequest nega, o controller não roda (M1c prova). O que o segundo `authorize()` faria é só redundância.
+- **Nota de produto da review (A5)**: o usuário que digita na busca e clica numa ação em menos de 300 ms ainda pode perder a gravação; a T48 corrigiu o teste, não o `SearchInput`. A review só registrou; fica como observação.
+
+### Sensor (rodada 7)
+
+Worktree `/tmp/tlc-b1-nucleo-s7` do HEAD, com **`vendor` copiado** (`cp -a`, não `ln -s`) e `.env`/`.env.testing` copiados. `ReflectionClass::getFileName()` confirmou que `UserService`, `ContactService`, `ClientService`, `AuthorizesBeforeValidation`, `AuditActionEnum`, `AuditLogQuery` e `ClientController` carregam de `/tmp/tlc-b1-nucleo-s7/app/...`. Suíte sem mutação ali: **322 passed (2761 assertions)**. Cada mutante rodou a suíte PHP inteira e foi desfeito com `git checkout -- app` antes do próximo. Os dois mutantes de tela rodaram no worktree do e2e, com `vite build` e o spec da tela, e foram desfeitos antes de encerrar o servidor.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| M1a | A1 | `AuthorizesBeforeValidation::authorize()` → `Response::allow()` (o `return true` de antes) | ✅ morto (24 falhas) | `AutorizaAntesDeValidarTest`, testes de 403 dos controllers |
+| M1b | A1 | valida antes de autorizar: `authorize()` libera e a checagem vai para `passedValidation()` | ✅ morto (13 falhas) | `AutorizaAntesDeValidarTest` (422 em vez de 403, e-mail revelado) |
+| M1c | A1 (duas vezes) | `ContactController::update` volta a chamar `$this->authorize('update', $contact)` | ⚪ **equivalente**: 322 passed. Com o FormRequest negando, o controller não roda; com ele permitindo, o segundo `authorize()` também permite e não grava nada. Não há como gravar a negação duas vezes por esse caminho | - |
+| M2 | A2 | `if ($client->isWcj() && …)` → `if (false && …)` | ✅ morto (4) | `ClientServiceTest` (3 casos), `ClientControllerTest:211` |
+| M3a | A3 | tira o `lockForUpdate()` da checagem do último admin | ✅ morto | `UltimoAdminConcorrenciaTest` |
+| M3b | A3 | `deactivate`: checagem antes do `DB::transaction` | ✅ morto | `UltimoAdminConcorrenciaTest` |
+| M4 | A4 | `update`: `lockedNotAnonymized` antes da transação, escrita no modelo sem trava | ✅ morto | `ContactAnonimizadoConcorrenciaTest` (edição) |
+| M4b | A4 | `reactivate`: idem | ✅ morto | `ContactAnonimizadoConcorrenciaTest` (reativação) |
+| M5 | A6 | `forAbility` volta a `throw InvalidArgumentException` | ✅ morto (3) | `AbilitySemMapeamentoTest` (2), `AuditActionEnumTest` |
+| M6a | A7 | `ClientController::row` consulta o contrato por linha | ✅ morto | `ClientManagementPorRequisicaoTest` (admin, 20 linhas) |
+| M6b | A7 | `MemoizedClientManagement` sem `??=` | ✅ morto (3) | `ClientManagementPorRequisicaoTest` |
+| M7 | A8 | `$noPeriod` volta a `array_key_exists('from', $input)` | ✅ morto (2) | `AuditLogQueryTest`, `AuditLogControllerTest` |
+| M8 | D2 | `$viewer->isAdmin()` → `true` (gestor vê nome e cliente) | ✅ morto (2) | `ContactControllerTest` (gestor), `ContactServiceTest` (gestor) |
+| M9 | D3 | `validated()` grava só os dígitos do telefone | ✅ morto (4) | `ContactControllerTest` (3), `ContactServiceTest` |
+| M10 | D3 | busca por telefone volta a `orWhere('phone', 'like', …)` sem tirar a máscara do banco | ✅ morto | `ContactControllerTest` (`search=3161234`) |
+| F1 | D9 | `step="any"` → `step="0.25"` (front, e2e) | ✅ morto | `e2e/ajustes-de-tela.spec.ts:39` (diálogo não fecha) |
+| F2 | D7 | texto N = 0 trocado (front, e2e) | ✅ morto | `e2e/textos-nucleo.spec.ts:37` |
+
+Não rodado, por não haver asserção nenhuma que pudesse matá-lo: o texto N = 1 (`index.tsx:35`). Ele sobreviveria; é o gap 2.
+
+**Sensor depth**: P0 (permissão e auditoria: A1, A3, A4, A6) com mutação à mão, 15 no PHP + 2 na tela. **Resultado**: 16 mortos, 0 sobrevivente real, 1 equivalente (M1c). ✅
+
+Isolamento: `git status --porcelain` da árvore real vazio antes do sensor e depois de remover os dois worktrees (`diff` dos dois registros sem diferença); `git worktree list` só com a árvore real.
+
+### Code Quality (rodada 7)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ Cada tarefa toca o arquivo do achado; o trait `AuditsDeniedAbilities` tira a duplicação entre o Controller base e os FormRequests em vez de copiar |
+| No scope creep | ✅ O `MemoizedClientManagement` é o "uma vez por requisição" que a A7 pediu; o `labelOf` é o rótulo genérico que a T41 pede |
+| Matches patterns | ✅ Concorrência com `tests/Support/Concorrencia.php` (pedido da review e do `AGENTS.md`); dublê `ClientManagementFalso` atrás da mesma memória da real |
+| Spec-anchored outcome check | ⚠️ Os valores batem com a spec, menos o texto N = 1 do Clientes AC 9 (sem asserção) |
+| Per-layer coverage | ✅ Service + rota + concorrência no banco de verdade; tela no e2e |
+| Every test maps to a requirement | ✅ Os testes novos citam o achado ou a decisão no comentário (T37–T49) |
+| Teste confiável | ❌ `textos-nucleo.spec.ts:221` (variante Contatos) falha 1 em 10 (gap 1) |
+| Guidelines | `.ai/core/especificacao.md` §5 itens 6–8, `AGENTS.md` (concorrência onde há "um só"), `~/.claude/CLAUDE.md` §8.6 (teste instável é pior que nenhum) |
+
+### Fix 4 (rodada 7): estado vazio de Contatos no e2e, Minor, só teste. ✅ Feito na T51 (`445f5d2`), conferido na rodada 8
+
+- **Root cause**: `e2e/textos-nucleo.spec.ts:221-242` afirma o estado vazio logo depois do clique em *Mostrar desativados*, sem esperar a resposta reescrita. No banco e2e sem contatos, a tela já está vazia antes; a asserção passa, o teste acaba e o `route.fetch()` em voo é descartado (`Response has been disposed`, `:232`).
+- **Fix task**: guardar `page.waitForResponse` da visita com `show_inactive=1` antes do clique e esperar por ela (e/ou esperar "Carregando contatos…" sumir) antes do `expect`; para Contatos, provar que a lista tinha linha antes do clique ou criar um contato no começo, para o teste discriminar.
+- **Done when**: `--repeat-each=20` do teste sem falha; suíte inteira verde duas vezes com `e2e:prepare` antes de cada.
+
+### Fix 5 (rodada 7): texto N = 1 do Clientes AC 9, Minor, só teste. ✅ Feito na T51 (`445f5d2`), conferido na rodada 8
+
+- **Root cause**: a T50 trouxe para a spec o texto "O cliente X tem 1 projeto aberto; ele continua. Desativar?", mas o e2e só reescreve a resposta com `open_projects = 2` (`textos-nucleo.spec.ts:58`).
+- **Fix task**: no mesmo padrão do teste de `:58`, reescrever com `open_projects: 1` e afirmar o texto com `exact: true`.
+- **Done when**: a troca do texto de `index.tsx:35` (ou `open === 1` → `open === 0`) faz o teste falhar numa worktree descartável.
+
+### Saída dos validadores (rodada 7)
+
+Ver a seção "Saída dos validadores (rodada 7)" no fim do arquivo.
 
 ---
 
@@ -519,18 +734,33 @@ Observação para o Lucas (não é gap, a spec não pede): a WCJ é reconhecida 
 
 ---
 
-## Declared Deviations (pendentes de decisão do Lucas Scholz)
+## Declared Deviations
+
+Na rodada 7, o que era desvio e o Lucas Scholz decidiu (review de 07/10) saiu desta tabela e virou regra na spec (T50): os três `destroy` com toast em vez de 403 (**D6**: Usuários AC 12, Clientes AC 12, Contatos AC 9 reescritos; `grep SPEC_DEVIATION` vazio); o 3º método do contrato, agora em lote, `openProjectsCountByClient` (**D7**); as variantes N = 0 e N = 1 do texto de desativar cliente (**D7**, textos como estão); a WCJ com CNPJ e país editáveis (virou recusa, achado **A2**).
+
+### Decisões do Lucas Scholz (07/10) registradas
+
+| # | Decisão | Onde está |
+|---|---|---|
+| D1 | Gestor cria cliente também em Administração → Clientes | F1 §04 e §09, `necessidade.md` N6, `escopo.md` §4 e B1, spec Clientes AC 5 |
+| D2 | Aviso de e-mail repetido por papel | `ContactService.php:254`; spec Contatos AC 3; F1 §02 e §07 |
+| D3 | Telefone é texto até 20, como digitado; busca por dígitos | `ContactService.php:186`; spec premissa "Telefone do contato"; F1 §02; `AGENTS.md` |
+| D4 | Rotas em inglês | `escopo.md` B1 |
+| D5 | Abilities `view_clients`, `view_contacts`, `view_audit_logs`; `delete_records` e `reset_passwords` só admin | `escopo.md` §4 |
+| D6 | Excluir o já usado: toast de erro, não 403 | spec Usuários AC 12, Clientes AC 12, Contatos AC 9; comentários dos três `destroy` |
+| D7 | 3º método do contrato aprovado, N+1 resolvido; textos N = 0 e N = 1 | `ClientManagement::openProjectsCountByClient`; spec Clientes AC 9 |
+| D8 | Aviso de e-mail só entre contatos ativos | sem mudança |
+| D9 | Carga diária sem `step 0.25` | `user-form-dialog.tsx:90` |
+| D10 | Lista geral de contatos vazia com "Ir para Clientes" até o B2 | sem mudança |
+| D11 | Contato excluído deixa dado pessoal no `changes` do `deleted`: limitação | `necessidade.md` N12 |
+
+### Desvios que continuam (não decididos na review, não reprovam)
 
 | Ref | Spec | Implementado | "Nada muda" testado |
 |---|---|---|---|
-| `app/Platform/Controllers/Admin/UserController.php:74` | Usuários AC 12: 403 | 302 + toast `error` com a mesma mensagem | `UserControllerTest.php:172`; `UserServiceTest.php:451,453` |
-| `app/Platform/Controllers/Admin/ClientController.php:96` | Clientes AC 12: 403 | idem | `ClientControllerTest.php:211,213` (rodada 5; era `:204`); `ClientServiceTest.php:305` |
-| `app/Platform/Controllers/Admin/ContactController.php:77` | Contatos AC 9: 403 | idem | `ContactControllerTest.php:208`; `ContactServiceTest.php:277` (rodada 5; era `:250-251`) |
 | P2 AC 3 (sem marcador no código) | 403 para o dev na lista de escolha | o design D6 não cria rota; a Policy nega (`UserPolicyTest.php:48`, `ClientPolicyTest.php:26,55,69-71` na rodada 5) | não se aplica (não há escrita) |
 | Edge case do último admin | "a mensagem do template" | "Este é o último administrador ativo. Promova outra pessoa antes de desativar." (`UserServiceTest.php:462`) | `UserServiceTest.php:475-478` |
 | Textos que a spec não define | U5, C2, K2, K11 | textos em português, afirmados por valor | - |
-| `app/Platform/Contracts/ClientManagement.php:22-27` (declarado pelo dono na rodada 5) | Premissa do gestor: o contrato tem `manages` e `managedClientIds` | 3º método `openProjectsCount(Client): int`, para o N da confirmação do Clientes AC 9 (o dado mora em `projects`); a vazia devolve `0` (`NoClientManagement.php:26-28`) | não se aplica (leitura). Testado: `ClientManagementTest.php:38`, `ClientControllerTest.php:110,121`; T07 e T10 mortos |
-| Variantes do texto de desativar (rodada 5) | Clientes AC 9 só define "O cliente X tem N projetos abertos; eles continuam. Desativar?" | `index.tsx:35` N = 0: "O cliente X sai das listas de escolha. Desativar?"; `:36` N = 1: "…tem 1 projeto aberto; ele continua. Desativar?" | a variante N = 0 é afirmada no e2e (`textos-nucleo.spec.ts:46`; na rodada 6, `:46-47`); o texto da spec com N, desde a T36, em `:82-86`; a variante N = 1 não tem asserção |
 
 ---
 
@@ -542,15 +772,9 @@ Observação para o Lucas (não é gap, a spec não pede): a WCJ é reconhecida 
 - **Fix task**: em `AlphanumericCnpjTest::validos()`, acrescentar um CNPJ verdadeiro com resto 2 em um dos dígitos (ex.: `00000000000191`) e um com resto 0 ou 1 (dígito `0`). Em `invalidos()`, acrescentar o número com os dígitos que o mutante calcularia (`00000000000108`, que o `<= 2` gera a partir de `000000000001`). Só teste, sem código de produção.
 - **Done when**: S10 (`AlphanumericCnpj.php:45`, `$remainder < 2` → `$remainder <= 2`) e S10b (`< 1`), reaplicados numa cópia descartável com `vendor` copiado, fazem um caso fixo falhar.
 
-### Fix 2: decisões da spec (Lucas Scholz), pendente
+### Fix 2: decisões da spec (Lucas Scholz). Decididas em 07/10, exceto três
 
-- Os três `destroy` com toast em vez de 403.
-- O P2 AC 3 (403 sem rota, por causa do D6).
-- O texto do último admin ao se desativar.
-- Os textos que a spec não define.
-- Se a WCJ pode ter o CNPJ ou o país editado (observação acima).
-- (rodada 5) O 3º método `openProjectsCount(Client)` do contrato `ClientManagement`, que a revisão de 07/10 não previa.
-- (rodada 5) As variantes N = 0 e N = 1 do texto de desativar cliente.
+Decididos na review de 07/10 (D6, D7, A2; ver "Declared Deviations"): os três `destroy` com toast, a WCJ com CNPJ e país editáveis, o 3º método do contrato e as variantes N = 0 e N = 1. Continuam abertos, sem reprovar: o P2 AC 3 (403 sem rota, por causa do D6 do design), o texto do último admin ao se desativar e os textos que a spec não define (U5, C2, K2, K11).
 
 ### Fix 3: texto do Clientes AC 9 com N projetos (T11), Minor. ✅ Feito na T36 (`6beb785`), conferido na rodada 6
 
@@ -562,16 +786,32 @@ Descrito na seção "Rodada 5" ("Fix 3"). Só teste, em `e2e/textos-nucleo.spec.
 
 | Requirement | New Status |
 | --- | --- |
-| NUC-01, NUC-02, NUC-03 (exceto AC 12, desvio), NUC-04, NUC-09 (exceto AC 9, desvio), NUC-10, NUC-11, NUC-12, NUC-14 | ✅ Verified (rodadas 1–4; nada mudou na rodada 5) |
-| NUC-06 | ✅ Verified na rodada 5, contra a spec revisada (contrato + vazia + dublê; T01, T05, T06, T08 mortos) |
-| NUC-08 | ✅ Verified na rodada 5, contra a spec revisada (Contatos AC 4–6 e 13; T02–T04, T06, T09 mortos) |
-| NUC-07 | ✅ Verified na rodada 6: AC 9, texto da confirmação afirmado em `textos-nucleo.spec.ts:82-86` (T36; T11, T11b, T11c mortos). Na rodada 5 era ❌ (Fix 3). AC 12 segue como desvio; o N vem do `openProjectsCount` (desvio declarado) |
+| NUC-01, NUC-02, NUC-03, NUC-04, NUC-09, NUC-10, NUC-11, NUC-12, NUC-14 | ✅ Verified (rodadas 1–4; na rodada 7, U12 e K9 viram toast pela D6, afirmado em `UserControllerTest.php:190` e `ContactControllerTest.php:246`; A1, A3, A4, A6, A8, D2, D3, D9 conferidos, mutantes mortos) |
+| NUC-06 | ✅ Verified na rodada 7 (A7: memória por requisição e lote; M6a, M6b mortos) |
+| NUC-08 | ✅ Verified na rodada 7 (Contatos AC 3 por papel, telefone como texto; M8, M9, M10 mortos) |
+| NUC-07 | ✅ Verified na rodada 8: AC 9 com as três variantes afirmadas (N = 1 em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos); AC 10 e AC 12 ✅ desde a rodada 7 (`ClientControllerTest.php:211,224`; M2 morto) |
 | NUC-05 | ✅ Verified (rodada 4: AC 1 e 2 fechados pela T31) |
 | NUC-13 (AC 3) | ⚠️ Decisão (Fix 2) |
 
 ---
 
 ## Summary
+
+**Overall (rodada 8)**: ✅ Ready para as etapas seguintes (`.ai/core/especificacao.md` §5 item 9: revisão em camadas, print do Playwright no PR, quatro perguntas por entidade, revisão de segurança dirigida). Os dois gaps da rodada 7 fechados pela T51: estado vazio estável e discriminante (20/20; as sondas mostram que ele depende da linha prévia e da reescrita) e texto N = 1 do Clientes AC 9 afirmado (S8a, S8b mortos).
+
+**Spec-anchored check (rodada 8)**: Clientes AC 9 com as três variantes (N = 0, 1, ≥ 2) afirmadas com o texto exato da spec; P3 AC 1 (estado vazio de Usuários e Contatos) com a resposta reescrita provada.
+**Sensor (rodada 8)**: 2 mutações, 2 mortas. Somando a rodada 7: 19 mutações, 18 mortas, 1 equivalente (M1c), 0 sobrevivente.
+**Gate (rodada 8)**: `composer lint` ok; `php artisan test` 322 passed (2761 assertions); estado vazio `--repeat-each=10` 20/20; Playwright 56 passed nas duas rodadas com `e2e:prepare` antes de cada.
+
+**Next steps (rodada 8)**: as etapas do §5 item 9 e o PR #5 com o Lucas Scholz. Seguem abertos, sem reprovar, os pontos de "Fix 2" (P2 AC 3, texto do último admin, textos U5, C2, K2, K11) e a nota de produto do `SearchInput` (A5).
+
+**Overall (rodada 7)**: ❌ Not Ready, por dois gaps Minor, só de teste. As correções da review do Lucas Scholz estão certas: A1–A9 corrigidos com evidência; D2, D3, D7 (lote) e D9 no código; documentos com D1, D4, D5, D11; nenhum `SPEC_DEVIATION`. Falta: (1) consertar o teste instável `e2e/textos-nucleo.spec.ts:221` (Contatos; Fix 4), que deixou a rodada 2 do e2e vermelha (54/55) e falha 1 em 10 isolado; (2) afirmar o texto N = 1 do Clientes AC 9 (Fix 5).
+
+**Spec-anchored check (rodada 7)**: 7 ACs reescritos pela T50 conferidos, 6 ✅ e 1 ❌ (Clientes AC 9, N = 1); 9 achados e 4 decisões com efeito no código, todos com `arquivo:linha` e valor da spec.
+**Sensor (rodada 7)**: 17 mutações (15 PHP, 2 tela), 16 mortas, 0 sobrevivente real, 1 equivalente (M1c).
+**Gate (rodada 7)**: `composer lint` ok; `php artisan test` 322 passed (2761 assertions); typecheck, eslint, build, guard ok; Playwright rodada 1: 55 passed; rodada 2: 54 passed, 1 failed (`textos-nucleo.spec.ts:221`). `@critical` verde nas duas.
+
+**Next steps (rodada 7)**: Fix 4 e Fix 5 (só teste), depois uma reverificação focada neles (rodada 8, se o dono autorizar, como nas rodadas 4 e 6). Depois, as etapas de `.ai/core/especificacao.md` §5 item 9.
 
 **Overall (rodada 6)**: ✅ Ready para as etapas seguintes (§5 item 9), com os desvios declarados abaixo pendentes do Lucas Scholz. O único gap da rodada 5 foi fechado pela T36 (só e2e): o texto do Clientes AC 9 com N projetos é afirmado com `exact: true` (`textos-nucleo.spec.ts:82-86`), e T11, T11b e T11c morrem. Gate: `composer lint` ok, `php artisan test` 287 passed (2447 assertions), Playwright 49 passed na 8001. Sensor somado no escopo da spec revisada: 13 mutações, 13 mortas.
 
@@ -595,6 +835,52 @@ Descrito na seção "Rodada 5" ("Fix 3"). Só teste, em `e2e/textos-nucleo.spec.
 **Next steps (rodada 6)**: decisões acima com o Lucas (inclusive o `openProjectsCount` e as variantes N = 0 e N = 1); acertar, se quiser, o docblock de `e2e/textos-nucleo.spec.ts:9-10` (cosmético); depois as etapas do `.ai/core/especificacao.md` §5 item 9 (revisão em camadas, print do Playwright no PR, quatro perguntas por entidade, revisão de segurança dirigida) e o PR. Para o B2: os casos do `ClientProjectsTest` apagado (responsável, gestor alocado, dev alocado não gere, outro cliente, sem repetição, abertos sem `finished_at`) voltam no teste da `ProjectClientManagement`.
 
 ---
+
+## Saída dos validadores (rodada 8)
+
+Rodados depois de escrever este relatório:
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+validate_state: 0 error(s) across [b1-nucleo]          (exit 0)
+
+$ node .ai/skills/conferir-specs.mjs
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none, esperado: só documentos)
+validate_tasks: 0 error(s), 2 warning(s)
+[b1-nucleo] validate_state.py: ok
+conferir-specs: 1 feature(s), 0 problema(s)             (exit 0)
+```
+
+## Lições (`.specs/lessons.json`), rodada 8
+
+Sem sinal novo (PASS limpo, nenhum mutante sobrevivente, nenhum gap): nenhuma lição nova. As duas da rodada 7 receberam, pelo `lessons.py add` (mesmo texto, mesma feature), a evidência de que a T51 as resolveu; continuam `candidate` com recorrência 1, porque a promoção pede uma segunda feature:
+
+- `L-010` (gate_fail): evidência nova "resolvida pela T51 (445f5d2): e2e/textos-nucleo.spec.ts:267 (linha antes do clique), :276-278 (waitForResponse da reescrita); rodada 8: --repeat-each=10 20/20".
+- `L-011` (ac_gap): evidência nova "resolvida pela T51 (445f5d2): e2e/textos-nucleo.spec.ts:121-123 (texto N = 1, exact); rodada 8: mutantes S8a e S8b mortos".
+- `lessons.py status`: 11 total, 0 confirmed, 11 candidate, 0 quarantined.
+
+## Saída dos validadores (rodada 7)
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+  ERROR b1-nucleo: validation.md verdict is FAIL - route the ranked gaps to fix tasks, then re-verify (feature is not done)
+validate_state: 1 error(s) across [b1-nucleo]          (exit 1, esperado com o FAIL)
+
+$ node .ai/skills/conferir-specs.mjs
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none)
+[b1-nucleo] validate_state.py reprovou                  (o mesmo FAIL acima)
+conferir-specs: 1 feature(s), 1 problema(s)             (exit 1)
+```
+
+Antes de reescrever este arquivo (com o PASS da rodada 6), o `conferir-specs` dava 0 problemas. O único problema agora é o veredito FAIL, que some quando Fix 4 e Fix 5 passarem numa reverificação.
+
+## Lições (`.specs/lessons.json`), rodada 7
+
+- `L-010` (gate_fail, `e2e/textos-nucleo.spec.ts:221`): e2e que reescreve uma resposta para forçar um estado espera essa resposta antes de afirmar e prova que o estado não estava lá antes.
+- `L-011` (ac_gap, Clientes AC 9 N = 1): quando a revisão da spec promove variantes de texto a AC, a mesma tarefa acrescenta uma asserção por variante.
+- `lessons.py status`: 11 total, 11 candidate.
 
 ## Saída dos validadores (rodada 6)
 

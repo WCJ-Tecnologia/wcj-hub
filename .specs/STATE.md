@@ -31,10 +31,10 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
-- **Phase / Task**: Execute concluído (T1–T50, fases 1–13). Fase 12 (T37–T44): achados de código A1–A4 e A6–A9 da review do Lucas Scholz no PR #5 (07/10). Fase 13 (T45–T50): decisões D1–D11 (D2 aviso de e-mail por papel, D3 telefone texto, D9 carga sem passo; D1, D4–D8, D10, D11 na spec e nos documentos) e o A5 (Page Objects esperam a busca; @critical 5 vezes seguidas na suíte inteira com banco recriado). Último Verifier: PASS da rodada 6 (07/10), anterior à review; o `validation.md` é dessa rodada.
+- **Phase / Task**: Execute concluído (T1–T51, fases 1–14). Review do Lucas Scholz no PR #5 (07/10) aplicada nas fases 12–14: achados A1–A9 corrigidos e decisões D1–D11 na spec, no F1, no escopo e na necessidade. Verifier PASS na rodada 8 (focada) em 08/10/2026 (`validation.md`).
 - **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T50.
 - **In-progress** (file:line): none
-- **Next step**: Verifier independente focado na review (achados A1–A9 e decisões D1–D11, com a tabela "Decisões da review de 07/10" do `design.md`), que gera o `validation.md` novo; depois push da `feat/b1-nucleo` e resposta à review no PR #5, quando o Cauã decidir. Para o B2: os seis casos do `ClientProjectsTest` removido voltam no teste da `ProjectClientManagement`.
+- **Next step**: Lucas Scholz roda a escada de novo e revisa o PR #5; teste cruzado do Vitinho; merge. Para o B2: `ProjectClientManagement` com `manages`, `managedClientIds` e `openProjectsCountByClient`, trocando o `give()` do `MemoizedClientManagement`, e os seis casos do `ClientProjectsTest` removido (commit `d434e4e`).
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo

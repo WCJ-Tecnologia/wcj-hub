@@ -68,6 +68,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: app/Platform/Contracts/ClientManagement.php:22-27 openProjectsCount (rodada 5, declarado pelo dono) (contracts)
 - last seen: 2026-10-07T16:06:02Z
 
+### L-010 - When an e2e intercepts a response to force a screen state, await that response before asserting and prove the state was absent first, or the test passes on the old state and dies mid-route
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: b1-nucleo
+- evidence: e2e/textos-nucleo.spec.ts:221 (e2e) (+1 more)
+- last seen: 2026-10-08T15:23:26Z
+
+### L-011 - When a spec revision promotes UI text variants into an AC, add an assertion for each variant in the same task that edits the spec
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: b1-nucleo
+- evidence: Clientes AC 9 (N = 1), resources/js/pages/admin/clients/index.tsx:35 (e2e) (+1 more)
+- last seen: 2026-10-08T15:23:26Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

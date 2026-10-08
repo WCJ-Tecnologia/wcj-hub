@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 10,
+  "next_id": 12,
   "lessons": [
     {
       "id": "L-001",
@@ -173,6 +173,44 @@
       ],
       "created": "2026-10-07T16:06:02Z",
       "last_seen": "2026-10-07T16:06:02Z"
+    },
+    {
+      "id": "L-010",
+      "key": "gate_fail::when an e2e intercepts a response to force a screen state await that response before asserting and prove the state was absent first or the test passes on the old state and dies mid route",
+      "text": "When an e2e intercepts a response to force a screen state, await that response before asserting and prove the state was absent first, or the test passes on the old state and dies mid-route",
+      "signal": "gate_fail",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "e2e/textos-nucleo.spec.ts:221 (e2e)",
+        "resolvida pela T51 (445f5d2): e2e/textos-nucleo.spec.ts:267 (linha antes do clique), :276-278 (waitForResponse da reescrita); rodada 8: --repeat-each=10 20/20 (e2e)"
+      ],
+      "created": "2026-10-08T15:10:35Z",
+      "last_seen": "2026-10-08T15:23:26Z"
+    },
+    {
+      "id": "L-011",
+      "key": "ac_gap::when a spec revision promotes ui text variants into an ac add an assertion for each variant in the same task that edits the spec",
+      "text": "When a spec revision promotes UI text variants into an AC, add an assertion for each variant in the same task that edits the spec",
+      "signal": "ac_gap",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Clientes AC 9 (N = 1), resources/js/pages/admin/clients/index.tsx:35 (e2e)",
+        "resolvida pela T51 (445f5d2): e2e/textos-nucleo.spec.ts:121-123 (texto N = 1, exact); rodada 8: mutantes S8a e S8b mortos (e2e)"
+      ],
+      "created": "2026-10-08T15:10:35Z",
+      "last_seen": "2026-10-08T15:23:26Z"
     }
   ]
 }
