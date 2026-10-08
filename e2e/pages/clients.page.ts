@@ -17,9 +17,12 @@ export class ClientsPage {
         await expect(this.admin.heading).toHaveText('Clientes');
     }
 
-    /** Filtra a lista pelo nome e espera a linha aparecer. */
+    /**
+     * Filtra a lista pelo nome e espera a busca terminar e a linha aparecer: editar, abrir a ficha
+     * e excluir vêm depois daqui, sem a visita da busca para cancelá-los.
+     */
     async find(name: string) {
-        await this.search.fill(name);
+        await this.admin.search(this.search, name);
         await expect(this.page.getByRole('link', { name, exact: true })).toBeVisible();
     }
 

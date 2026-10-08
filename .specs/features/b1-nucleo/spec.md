@@ -243,7 +243,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-09 | P1: Contatos — desativar, excluir (AC 7–9) | Design | Done |
 | NUC-10 | P1: Contatos — anonimizar (AC 10–12) | Design | Done |
 | NUC-11 | P1: Auditoria — gravação com canal e resultado, negações (AC 1, 2, 8, 9) | Design | Done |
-| NUC-12 | P1: Auditoria — tela, filtros, Histórico por ficha (AC 3–7, 10) | Design | In Progress |
+| NUC-12 | P1: Auditoria — tela, filtros, Histórico por ficha (AC 3–7, 10) | Design | Done |
 | NUC-13 | P2: Listas de escolha para gestor (AC 1–3) | - | Done |
 | NUC-14 | P3: Estados de tela e textos (AC 1–2) | - | Done |
 

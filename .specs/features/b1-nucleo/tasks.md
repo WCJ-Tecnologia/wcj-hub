@@ -1417,8 +1417,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] `@critical` passa 5 vezes seguidas na suíte inteira com banco recriado
-- [ ] Gate check passes: Build
+- [x] `@critical` passa 5 vezes seguidas na suíte inteira com banco recriado
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build
