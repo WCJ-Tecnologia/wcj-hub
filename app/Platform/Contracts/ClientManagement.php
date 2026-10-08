@@ -20,9 +20,12 @@ interface ClientManagement
     public function managedClientIds(User $user): array;
 
     /**
-     * Projetos ainda não encerrados do cliente, para a confirmação de desativar (Clientes AC 9,
-     * N11). Acrescentado no B1 fora do contrato da revisão de 07/10, porque a confirmação também
-     * precisa de dado de `projects`; pendente de aprovação do Lucas Scholz no PR do B1.
+     * Projetos ainda não encerrados de cada cliente, para a confirmação de desativar (Clientes
+     * AC 9, N11). Em lote, numa consulta só para a página inteira da lista (A7 da review de
+     * 07/10; método aprovado por Lucas Scholz na D7).
+     *
+     * @param  list<int>  $clientIds
+     * @return array<int, int> id do cliente → projetos abertos, com todos os ids pedidos
      */
-    public function openProjectsCount(Client $client): int;
+    public function openProjectsCountByClient(array $clientIds): array;
 }

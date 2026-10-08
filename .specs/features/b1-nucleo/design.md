@@ -95,10 +95,11 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 ### `ClientManagement` (contrato) e `NoClientManagement`
 
 - **Purpose**: responder "o gestor X gere o cliente Y?" sem o Núcleo ler tabela de Projetos (A9). Desenho da revisão de 07/10 (ponto do Vitinho, aceito por Lucas Scholz), no padrão da ADR-001: contrato no Platform, implementação vazia no Platform, a real no módulo.
-- **Location**: `app/Platform/Contracts/ClientManagement.php`; `app/Platform/Services/NoClientManagement.php`
-- **Interfaces**: `manages(User $user, Client $client): bool`; `managedClientIds(User $user): list<int>`; `openProjectsCount(Client $client): int` (para a confirmação de desativar, F1 §04; acrescentado no B1, pendente de aprovação do Lucas Scholz no PR)
+- **Location**: `app/Platform/Contracts/ClientManagement.php`; `app/Platform/Services/NoClientManagement.php`; `app/Platform/Services/MemoizedClientManagement.php`
+- **Interfaces**: `manages(User $user, Client $client): bool`; `managedClientIds(User $user): list<int>`; `openProjectsCountByClient(list<int> $clientIds): array<int, int>` (para a confirmação de desativar, F1 §04; aprovado pelo Lucas Scholz na D7, em lote pelo A7 da review de 07/10)
+- **Memória por requisição (T42, A7)**: o container entrega o `MemoizedClientManagement` (scoped, esquecido no fim de cada requisição), que fica na frente da implementação (`give()` no `AppServiceProvider`): `managedClientIds` sai uma vez por pessoa e responde também o `manages` das Policies; a lista de clientes pede os projetos abertos da página numa chamada só.
 - **No B1**: a `NoClientManagement` responde `false`, `[]` e `0`. O gestor vê, cria e escolhe cliente, mas não edita cliente nem cria ou edita contato; a lista de contatos dele vem vazia; a confirmação de desativar sai sem a contagem. Os testes de gestor usam o dublê `tests/Support/ClientManagementFalso.php`.
-- **No B2**: `Projetos\Services\ProjectClientManagement` (projeto com `manager_id` = gestor, ou gestor alocado em `project_members`, P1/P5; projetos sem `finished_at`) substitui a ligação.
+- **No B2**: `Projetos\Services\ProjectClientManagement` (projeto com `manager_id` = gestor, ou gestor alocado em `project_members`, P1/P5; projetos sem `finished_at`) substitui a `NoClientManagement` no `give()` do `MemoizedClientManagement`.
 
 ### Policies
 

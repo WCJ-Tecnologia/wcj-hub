@@ -23,8 +23,8 @@ class NoClientManagement implements ClientManagement
         return [];
     }
 
-    public function openProjectsCount(Client $client): int
+    public function openProjectsCountByClient(array $clientIds): array
     {
-        return 0;
+        return array_fill_keys($clientIds, 0);
     }
 }

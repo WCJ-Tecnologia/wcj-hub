@@ -39,9 +39,11 @@ class ClientController extends Controller
             'show_inactive' => $request->boolean('show_inactive'),
         ];
         $user = $request->user();
+        $page = $this->clients->paginate($filters)->withQueryString();
+        $openProjects = $this->openProjects($page->items(), $user);
 
         return Inertia::render('admin/clients/index', [
-            'clients' => $this->clients->paginate($filters)->withQueryString()->through(fn (Client $client) => $this->row($client, $user)),
+            'clients' => $page->through(fn (Client $client) => $this->row($client, $user, $openProjects)),
             'filters' => $filters,
             'countries' => Paises::opcoes(),
             'can' => ['create' => $user->can('create', Client::class)],
@@ -56,7 +58,7 @@ class ClientController extends Controller
         $client->load('deactivatedBy:id,name');
 
         return Inertia::render('admin/clients/show', [
-            'client' => $this->row($client, $user),
+            'client' => $this->row($client, $user, $this->openProjects([$client], $user)),
             'contacts' => $user->can('viewAny', [Contact::class, $client]) ? $this->contacts($client, $user) : null,
             // Cliente desativado não ganha contato (N11): o botão some em vez de dar erro.
             'can_create_contact' => $client->isActive() && $user->can('create', [Contact::class, $client]),
@@ -110,10 +112,35 @@ class ClientController extends Controller
         return back()->with('success', $success);
     }
 
-    /** @return array<string, mixed> */
-    private function row(Client $client, User $user): array
+    /**
+     * Para a confirmação de desativar (F1 §04): só quem pode desativar precisa do número, e a
+     * página inteira vai numa chamada ao contrato (A7 da review de 07/10).
+     *
+     * @param  array<int, Client>  $clients
+     * @return array<int, int> id do cliente → projetos abertos
+     */
+    private function openProjects(array $clients, User $user): array
     {
-        $canDeactivate = $client->isActive() && $user->can('deactivate', $client);
+        $ids = array_values(array_map(
+            fn (Client $client) => $client->id,
+            array_filter($clients, fn (Client $client) => $this->canDeactivate($client, $user)),
+        ));
+
+        return $ids === [] ? [] : $this->management->openProjectsCountByClient($ids);
+    }
+
+    private function canDeactivate(Client $client, User $user): bool
+    {
+        return $client->isActive() && $user->can('deactivate', $client);
+    }
+
+    /**
+     * @param  array<int, int>  $openProjects
+     * @return array<string, mixed>
+     */
+    private function row(Client $client, User $user, array $openProjects): array
+    {
+        $canDeactivate = $this->canDeactivate($client, $user);
 
         return [
             ...$client->only(['id', 'name', 'country', 'document']),
@@ -121,8 +148,7 @@ class ClientController extends Controller
             'active' => $client->isActive(),
             'deactivated_at' => LocalTime::format($client->deactivated_at),
             'deactivated_by' => $client->deactivatedBy?->name,
-            // Para a confirmação de desativar (F1 §04): só quem pode desativar precisa do número.
-            'open_projects' => $canDeactivate ? $this->management->openProjectsCount($client) : null,
+            'open_projects' => $canDeactivate ? ($openProjects[$client->id] ?? 0) : null,
             'can' => [
                 'update' => $user->can('update', $client),
                 'deactivate' => $canDeactivate,

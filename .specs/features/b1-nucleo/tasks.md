@@ -1263,9 +1263,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Teste de contagem de consultas: a lista de clientes com 20 linhas não multiplica consultas ao contrato por linha (dublê conta as chamadas)
-- [ ] Clientes AC 9 continua provado (texto com N)
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Teste de contagem de consultas: a lista de clientes com 20 linhas não multiplica consultas ao contrato por linha (dublê conta as chamadas)
+- [x] Clientes AC 9 continua provado (texto com N)
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

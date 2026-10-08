@@ -5,8 +5,10 @@ namespace Tests\Feature\Nucleo;
 use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
+use App\Platform\Services\MemoizedClientManagement;
 use App\Platform\Services\NoClientManagement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ReflectionProperty;
 use Tests\TestCase;
 
 /**
@@ -17,9 +19,14 @@ class ClientManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    // T42: a vazia fica atrás da memória por requisição; os dois testes abaixo provam que quem
+    // responde é ela.
     public function test_o_container_entrega_a_implementacao_vazia(): void
     {
-        $this->assertInstanceOf(NoClientManagement::class, app(ClientManagement::class));
+        $management = app(ClientManagement::class);
+
+        $this->assertInstanceOf(MemoizedClientManagement::class, $management);
+        $this->assertInstanceOf(NoClientManagement::class, (new ReflectionProperty($management, 'source'))->getValue($management));
     }
 
     public function test_ninguem_gere_cliente_algum(): void
@@ -35,6 +42,8 @@ class ClientManagementTest extends TestCase
 
     public function test_nenhum_cliente_tem_projeto_aberto(): void
     {
-        $this->assertSame(0, app(ClientManagement::class)->openProjectsCount(Client::factory()->create()));
+        $ids = Client::factory()->count(2)->create()->modelKeys();
+
+        $this->assertSame([$ids[0] => 0, $ids[1] => 0], app(ClientManagement::class)->openProjectsCountByClient($ids));
     }
 }
