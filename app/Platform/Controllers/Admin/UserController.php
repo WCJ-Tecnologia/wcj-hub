@@ -8,8 +8,6 @@ use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
 use App\Platform\Services\UserService;
 use App\Support\LocalTime;
-use Closure;
-use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -95,18 +93,6 @@ class UserController extends Controller
         }
 
         return back()->with('success', "Convite reenviado para {$user->email}. {$user->firstName()} troca a senha no próximo acesso.");
-    }
-
-    /** Recusa de regra (último administrador, já usado) vira toast de erro. */
-    private function attempt(Closure $action, string $success): RedirectResponse
-    {
-        try {
-            $action();
-        } catch (DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', $success);
     }
 
     /** @return array<string, mixed> */

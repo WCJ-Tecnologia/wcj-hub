@@ -8,8 +8,6 @@ use App\Platform\Models\Contact;
 use App\Platform\Requests\Admin\AnonymizeContactRequest;
 use App\Platform\Requests\Admin\StoreContactRequest;
 use App\Platform\Services\ContactService;
-use Closure;
-use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,17 +87,5 @@ class ContactController extends Controller
     private function withWarning(RedirectResponse $response, ?string $warning): RedirectResponse
     {
         return $warning === null ? $response : $response->with('warning', $warning);
-    }
-
-    /** Recusa de regra (já usado, anonimizado) vira toast de erro. */
-    private function attempt(Closure $action, string $success): RedirectResponse
-    {
-        try {
-            $action();
-        } catch (DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', $success);
     }
 }

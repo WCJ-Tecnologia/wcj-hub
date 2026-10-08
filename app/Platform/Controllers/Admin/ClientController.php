@@ -12,8 +12,6 @@ use App\Platform\Services\ClientService;
 use App\Platform\Services\ContactService;
 use App\Support\LocalTime;
 use App\Support\Paises;
-use Closure;
-use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -98,18 +96,6 @@ class ClientController extends Controller
         $this->authorize('delete', $client);
 
         return $this->attempt(fn () => $this->clients->delete($client, $request->user()), 'Cliente excluído.');
-    }
-
-    /** Recusa de regra (já usado, WCJ) vira toast de erro. */
-    private function attempt(Closure $action, string $success): RedirectResponse
-    {
-        try {
-            $action();
-        } catch (DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return back()->with('success', $success);
     }
 
     /**

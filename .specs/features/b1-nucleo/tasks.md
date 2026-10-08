@@ -1314,8 +1314,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Os três controllers usam o do base; nenhuma mensagem muda
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Os três controllers usam o do base; nenhuma mensagem muda
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
