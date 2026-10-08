@@ -84,11 +84,11 @@ class UserService
     {
         $this->ensureDailyHours($data);
 
-        if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
-            $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
-        }
-
         DB::transaction(function () use ($user, $data, $actor) {
+            if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
+                $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
+            }
+
             $before = $this->snapshot($user);
 
             $user->fill([
@@ -117,9 +117,8 @@ class UserService
             return;
         }
 
-        $this->ensureNotLastActiveAdmin($user, 'desativar');
-
         DB::transaction(function () use ($user, $actor) {
+            $this->ensureNotLastActiveAdmin($user, 'desativar');
             $user->setActive(false, $actor)->save();
             $this->audit->log(AuditActionEnum::DEACTIVATED, $user, ['active' => true], ['active' => false], $actor->id);
             $this->revokeAiAuthorizations($user, $actor);
@@ -143,13 +142,15 @@ class UserService
     /** G2: só quem nunca entrou e não é referenciado; o resto se desativa. */
     public function delete(User $user, User $actor): void
     {
-        $this->ensureNotLastActiveAdmin($user, 'excluir');
-
         $before = $this->snapshot($user);
 
-        $deleted = $user->deleteIfUnused(function (User $deleted) use ($before, $actor) {
-            Password::broker()->deleteToken($deleted);
-            $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null, $actor->id);
+        $deleted = DB::transaction(function () use ($user, $before, $actor) {
+            $this->ensureNotLastActiveAdmin($user, 'excluir');
+
+            return $user->deleteIfUnused(function (User $deleted) use ($before, $actor) {
+                Password::broker()->deleteToken($deleted);
+                $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null, $actor->id);
+            });
         });
 
         if (! $deleted) {
@@ -204,15 +205,20 @@ class UserService
         }
     }
 
+    /**
+     * Chamar dentro da transação da escrita. A trava nas linhas dos administradores ativos dura
+     * até o commit: dois admins que se desativam, rebaixam ou excluem ao mesmo tempo esperam um
+     * pelo outro, e o segundo já vê que sobrou só ele (A3 da review de 07/10).
+     */
     private function ensureNotLastActiveAdmin(User $user, string $action): void
     {
         if (! $user->isAdmin() || ! $user->isActive()) {
             return;
         }
 
-        $others = User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->whereKeyNot($user->getKey())->exists();
+        $activeAdmins = User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->lockForUpdate()->pluck('id');
 
-        if (! $others) {
+        if ($activeAdmins->doesntContain(fn (int $id) => $id !== $user->getKey())) {
             throw new DomainException("Este é o último administrador ativo. Promova outra pessoa antes de {$action}.");
         }
     }

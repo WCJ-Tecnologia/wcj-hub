@@ -1186,9 +1186,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Teste de concorrência com `tests/Support/Concorrencia.php`: dois admins se desativando ao mesmo tempo deixam pelo menos um ativo
-- [ ] Teste visto falhando antes (ou a corrida reproduzida) e passando depois
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Teste de concorrência com `tests/Support/Concorrencia.php`: dois admins se desativando ao mesmo tempo deixam pelo menos um ativo
+- [x] Teste visto falhando antes (ou a corrida reproduzida) e passando depois
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
