@@ -39,7 +39,7 @@ class ContactService
         return [
             'name' => ['required', 'string', 'max:120'],
             'email' => ['nullable', 'string', 'email', 'max:160'],
-            // Sem máscara (o FormRequest tira); cabe número de fora do Brasil.
+            // Texto como a pessoa digitou (F1 §02, D3): cabe o número de fora do Brasil, com o "+".
             'phone' => ['nullable', 'string', 'max:20'],
         ];
     }
@@ -163,7 +163,7 @@ class ContactService
 
     /**
      * Lista geral (F1 §03, §05). O gestor só vê os clientes que o ClientManagement lista para ele
-     * (F1 §09; nenhum até o B2). A busca no telefone aceita o número com máscara.
+     * (F1 §09; nenhum até o B2). A busca no telefone compara só os dígitos dos dois lados.
      *
      * @param  array{search: string, client_id: int|null, show_inactive: bool}  $filters
      * @return LengthAwarePaginator<int, Contact>
@@ -183,7 +183,7 @@ class ContactService
             ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
                 ->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
-                ->when($digits !== '', fn ($phone) => $phone->orWhere('phone', 'like', "%{$digits}%"))))
+                ->when($digits !== '', fn ($phone) => $phone->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ["%{$digits}%"]))))
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(20);
@@ -279,6 +279,8 @@ class ContactService
      */
     private function validated(array $data): array
     {
+        // Quem chama o Service direto também não grava as pontas em branco (o HTTP já as tira).
+        $data['phone'] = is_string($data['phone'] ?? null) ? trim($data['phone']) : ($data['phone'] ?? null);
         $valid = Validator::make($data, self::rules(), [], self::attributes())->validate();
 
         return [

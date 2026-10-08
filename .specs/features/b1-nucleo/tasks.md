@@ -1366,9 +1366,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] `+31 6 1234 5678` é gravado e mostrado como digitado
-- [ ] Busca por `3161234` acha o contato
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] `+31 6 1234 5678` é gravado e mostrado como digitado
+- [x] Busca por `3161234` acha o contato
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: full

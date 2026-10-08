@@ -3,14 +3,13 @@ import type { ReactNode } from 'react';
 
 import { DataTable, type Column } from '@/components/data-table';
 import { StatusPill } from '@/components/status-pill';
-import { maskPhone } from '@/lib/masks';
 import { cn } from '@/lib/utils';
 
 export interface ContactRow {
     id: number;
     name: string;
     email: string | null;
-    /** Só os dígitos, como o banco guarda. */
+    /** Texto, como a pessoa digitou (F1 §02, D3): o "+" e os espaços ficam. */
     phone: string | null;
     client_id: number;
     client_name: string | null;
@@ -23,10 +22,6 @@ export interface ContactRow {
     /** Decidido pela ContactPolicy no servidor; a tela só esconde o botão. */
     can: { update: boolean; deactivate: boolean; reactivate: boolean; delete: boolean; anonymize: boolean };
 }
-
-/** Número do Brasil com máscara; de fora, como foi gravado (cabe até 20 dígitos). */
-export const displayPhone = (phone: string | null) =>
-    phone === null ? '' : phone.length === 10 || phone.length === 11 ? maskPhone(phone) : phone;
 
 export const contactStatus = (row: ContactRow) => (row.anonymized ? 'anonymized' : row.active);
 
@@ -78,7 +73,7 @@ export function ContactTable({
             key: 'phone',
             header: 'Telefone',
             className: 'whitespace-nowrap text-muted-foreground tabular-nums',
-            cell: (row) => displayPhone(row.phone) || '—',
+            cell: (row) => row.phone || '—',
         },
         ...(showClient ? [{ key: 'client', header: 'Cliente', cell: (row: ContactRow) => <ClientLink row={row} /> }] : []),
         { key: 'active', header: 'Situação', cell: (row) => <Situation row={row} /> },
@@ -98,7 +93,7 @@ export function ContactTable({
                         <div className="min-w-0">
                             <p className={cn('truncate font-semibold', muted(row))}>{row.name}</p>
                             <p className="truncate text-xs text-muted-foreground">
-                                {[row.email, displayPhone(row.phone)].filter(Boolean).join(' · ') || 'Sem e-mail nem telefone'}
+                                {[row.email, row.phone].filter(Boolean).join(' · ') || 'Sem e-mail nem telefone'}
                             </p>
                             {showClient && (
                                 <p className="truncate text-xs">

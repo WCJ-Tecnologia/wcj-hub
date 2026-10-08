@@ -81,7 +81,7 @@ class ExemploSeeder extends Seeder
                 'client_id' => $client->id,
                 'name' => Exemplo::nome('Joaquim Souza'),
                 'email' => Exemplo::email('joaquim'),
-                'phone' => '11999990000',
+                'phone' => '(11) 99999-0000',
             ]);
 
             $gestora = $this->pessoa('Ana Gestora', 'ana', RoleEnum::PROJECT_MANAGER, 8);

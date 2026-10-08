@@ -114,6 +114,20 @@ class ContactServiceTest extends TestCase
         $this->assertSame(0, AuditLog::query()->count());
     }
 
+    // F1 §02 (D3 de 07/10): telefone é texto; quem chama o Service direto também grava sem as
+    // pontas em branco, e o "+" e os espaços do meio ficam.
+    public function test_telefone_e_gravado_como_texto_sem_as_pontas_em_branco(): void
+    {
+        ['contact' => $contact] = $this->service->create($this->client, ['name' => 'Joost de Vries', 'phone' => '  +31 6 1234 5678 '], $this->admin);
+
+        $this->assertSame('+31 6 1234 5678', $contact->fresh()->phone);
+        $this->assertAudited($contact, 'created', [
+            'client_id' => [null, $this->client->id],
+            'name' => [null, 'Joost de Vries'],
+            'phone' => [null, '+31 6 1234 5678'],
+        ]);
+    }
+
     // AC 2: cliente desativado não ganha contato (N11).
     public function test_recusa_contato_em_cliente_desativado(): void
     {

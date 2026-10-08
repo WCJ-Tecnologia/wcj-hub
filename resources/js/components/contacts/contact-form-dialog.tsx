@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 export interface ContactFormData {
     name: string;
     email: string;
-    /** Como a pessoa digitou; o servidor grava só os dígitos. */
+    /** Texto livre, gravado como a pessoa digitou (F1 §02, D3). */
     phone: string;
 }
 
@@ -70,13 +70,13 @@ export function ContactFormDialog({
                                 />
                             </FormField>
 
-                            {/* Sem a máscara do Brasil: o cliente pode ser de fora (N5). */}
+                            {/* Texto livre, sem máscara do Brasil: o cliente pode ser de fora (N5) e o "+" fica. */}
                             <FormField label="Telefone" htmlFor="contact-phone" error={form.errors.phone}>
                                 <Input
                                     type="tel"
                                     inputMode="tel"
                                     value={form.data.phone}
-                                    maxLength={25}
+                                    maxLength={20}
                                     onChange={(e) => form.setData('phone', e.target.value)}
                                 />
                             </FormField>

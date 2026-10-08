@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { AnonymizeContactDialog } from '@/components/contacts/anonymize-contact-dialog';
 import { ContactFormDialog, type ContactFormData } from '@/components/contacts/contact-form-dialog';
-import { contactSituation, displayPhone, type ContactRow } from '@/components/contacts/contact-table';
+import { contactSituation, type ContactRow } from '@/components/contacts/contact-table';
 import { RowActions } from '@/components/row-actions';
 import type { SharedProps } from '@/types';
 
@@ -36,7 +36,7 @@ export function useContactActions() {
     };
 
     const openEdit = (row: ContactRow) => {
-        form.setData({ name: row.name, email: row.email ?? '', phone: displayPhone(row.phone) });
+        form.setData({ name: row.name, email: row.email ?? '', phone: row.phone ?? '' });
         form.clearErrors();
         setEditing(row);
         setOpen(true);

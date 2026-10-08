@@ -108,6 +108,26 @@ class ContactControllerTest extends TestCase
         $this->assertSame(['Ana Lima', 'Bia Reis'], $this->names('client_id=999999'));
     }
 
+    // F1 §02 (D3 de 07/10): telefone é texto, gravado e mostrado como digitado, com o "+"; a
+    // busca por dígitos acha o número escrito com espaço, parêntese ou hífen.
+    public function test_telefone_de_fora_e_gravado_como_digitado_e_achado_pelos_digitos(): void
+    {
+        $holanda = Client::factory()->create(['name' => 'Bouw BV', 'country' => 'NL', 'document' => null]);
+        Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Ana Lima', 'phone' => '(11) 3333-4444']);
+        $this->actingAs($this->admin);
+
+        $this->post("/admin/clients/{$holanda->id}/contacts", ['name' => 'Joost de Vries', 'phone' => '  +31 6 1234 5678 '])
+            ->assertSessionHas('success', 'Contato Joost de Vries criado.');
+
+        $this->assertDatabaseHas('contacts', ['client_id' => $holanda->id, 'name' => 'Joost de Vries', 'phone' => '+31 6 1234 5678']);
+        $this->get('/admin/contacts?search=3161234')->assertInertia(fn ($page) => $page
+            ->has('contacts.data', 1)
+            ->where('contacts.data.0.name', 'Joost de Vries')
+            ->where('contacts.data.0.phone', '+31 6 1234 5678'));
+        $this->assertSame(['Joost de Vries'], $this->names('search='.urlencode('+31 6 1234')));
+        $this->assertSame(['Ana Lima'], $this->names('search=11333344'));
+    }
+
     // AC 13, F1 §09: o gestor só vê os contatos e o filtro dos clientes que o contrato lista.
     public function test_gestor_ve_so_os_contatos_dos_clientes_dele(): void
     {
@@ -131,14 +151,14 @@ class ContactControllerTest extends TestCase
         $this->get('/admin/contacts')->assertOk()->assertInertia(fn ($page) => $page->has('contacts.data', 0)->where('clients', []));
     }
 
-    // AC 1, 3: cria no cliente, telefone sem máscara; e-mail repetido salva e avisa por flash.
+    // AC 1, 3: cria no cliente, telefone como digitado (D3); e-mail repetido salva e avisa por flash.
     public function test_criar_no_cliente_e_avisar_do_email_repetido(): void
     {
         $this->actingAs($this->admin)->post("/admin/clients/{$this->client->id}/contacts", ['name' => 'Ana Lima', 'email' => 'compras@exemplo.test', 'phone' => '(11) 98888-0000'])
             ->assertRedirect()
             ->assertSessionHas('success', 'Contato Ana Lima criado.')
             ->assertSessionMissing('warning');
-        $this->assertDatabaseHas('contacts', ['client_id' => $this->client->id, 'name' => 'Ana Lima', 'email' => 'compras@exemplo.test', 'phone' => '11988880000']);
+        $this->assertDatabaseHas('contacts', ['client_id' => $this->client->id, 'name' => 'Ana Lima', 'email' => 'compras@exemplo.test', 'phone' => '(11) 98888-0000']);
 
         $mercado = Client::factory()->create(['name' => 'Mercado Central']);
         $this->actingAs($this->admin)->post("/admin/clients/{$mercado->id}/contacts", ['name' => 'Bia Reis', 'email' => 'compras@exemplo.test'])
@@ -201,7 +221,7 @@ class ContactControllerTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('success', 'Contato atualizado.')
             ->assertSessionHas('warning', 'Já existe Bia Reis (Padaria Pão Quente) com este e-mail');
-        $this->assertSame(['Ana Lima', 'bia@padaria.test', '31612345678'], [$contact->fresh()->name, $contact->fresh()->email, $contact->fresh()->phone]);
+        $this->assertSame(['Ana Lima', 'bia@padaria.test', '+31 6 1234 5678'], [$contact->fresh()->name, $contact->fresh()->email, $contact->fresh()->phone]);
 
         $this->actingAs($this->admin)->post("/admin/contacts/{$contact->id}/deactivate")
             ->assertRedirect()->assertSessionHas('success', 'Contato Ana Lima desativado.');
