@@ -86,7 +86,8 @@ export function UserFormDialog({
                                     inputMode="decimal"
                                     min="0.25"
                                     max="24"
-                                    step="0.25"
+                                    // Horas com decimais (F1 §02): 7,3 vale; sem passo fixo (D9 do Lucas).
+                                    step="any"
                                     value={form.data.daily_hours}
                                     onChange={(e) => form.setData('daily_hours', e.target.value)}
                                 />

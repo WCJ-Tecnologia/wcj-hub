@@ -1392,8 +1392,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] e2e: carga 7,3 é aceita e aparece na lista
-- [ ] Gate check passes: Build
+- [x] e2e: carga 7,3 é aceita e aparece na lista
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

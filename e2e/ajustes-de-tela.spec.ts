@@ -4,7 +4,8 @@ import { UsersPage } from './pages/users.page';
 
 /**
  * Ajustes de tela pedidos pelo Cauã no teste manual do B1 (07/10): só a caixa liga "Mostrar
- * desativados" (o texto não), e o aviso do servidor aparece no topo da tela, não embaixo.
+ * desativados" (o texto não), e o aviso do servidor aparece no topo da tela, não embaixo. E os da
+ * review do Lucas (07/10): a carga diária aceita qualquer decimal (D9).
  */
 
 test('"Mostrar desativados" só liga pela caixa; o texto não troca a lista', async ({ page }) => {
@@ -32,4 +33,18 @@ test('o aviso do servidor aparece no topo da tela', async ({ page }) => {
     const altura = page.viewportSize()?.height ?? 720;
     expect(caixa).not.toBeNull();
     expect(caixa!.y).toBeLessThan(altura / 4);
+});
+
+// D9 (07/10): a carga diária é "horas, com decimais" (F1 §02); o campo não tem passo de 0,25.
+test('carga diária de 7,3 horas é aceita e aparece na lista', async ({ page }) => {
+    const stamp = Date.now();
+    const name = `E2E Dev Carga ${stamp}`;
+    const email = `e2e-carga-${stamp}@example.com`;
+    const users = new UsersPage(page);
+
+    await users.goto();
+    await users.invite(name, email, '7.3');
+    await expect(users.row(email).getByText('7,3 h', { exact: true })).toBeVisible();
+
+    await users.deleteRow(name);
 });
