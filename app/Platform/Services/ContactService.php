@@ -79,16 +79,18 @@ class ContactService
      */
     public function update(Contact $contact, array $data, User $actor): ?string
     {
-        $this->ensureNotAnonymized($contact);
         $clean = $this->validated($data);
 
-        DB::transaction(function () use ($contact, $clean, $actor) {
-            $before = $this->snapshot($contact);
-            $contact->fill($clean)->save();
-            $this->audit->log(AuditActionEnum::UPDATED, $contact, $before, $this->snapshot($contact), $actor->id);
+        $updated = DB::transaction(function () use ($contact, $clean, $actor) {
+            $locked = $this->lockedNotAnonymized($contact);
+            $before = $this->snapshot($locked);
+            $locked->fill($clean)->save();
+            $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked), $actor->id);
+
+            return $locked;
         });
 
-        return $this->duplicateWarning($contact);
+        return $this->duplicateWarning($updated);
     }
 
     /** N11: sai das listas de escolha; o card que já o cita continua citando. */
@@ -106,15 +108,15 @@ class ContactService
 
     public function reactivate(Contact $contact, User $actor): void
     {
-        $this->ensureNotAnonymized($contact);
-
-        if ($contact->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($contact, $actor) {
-            $contact->setActive(true, $actor)->save();
-            $this->audit->log(AuditActionEnum::REACTIVATED, $contact, ['active' => false], ['active' => true], $actor->id);
+            $locked = $this->lockedNotAnonymized($contact);
+
+            if ($locked->isActive()) {
+                return;
+            }
+
+            $locked->setActive(true, $actor)->save();
+            $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
         });
     }
 
@@ -140,8 +142,7 @@ class ContactService
     public function anonymize(Contact $contact, User $actor): void
     {
         DB::transaction(function () use ($contact, $actor) {
-            $locked = Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
-            $this->ensureNotAnonymized($locked);
+            $locked = $this->lockedNotAnonymized($contact);
             $wasActive = $locked->isActive();
 
             $locked->forceFill(['name' => Contact::ANONYMIZED_NAME, 'email' => null, 'phone' => null])
@@ -255,12 +256,21 @@ class ContactService
         return $other === null ? null : "Já existe {$other->name} ({$other->client?->name}) com este e-mail";
     }
 
-    /** D5: anonimizado é estado final. A Policy já responde 403; isto vale para quem chama direto. */
-    private function ensureNotAnonymized(Contact $contact): void
+    /**
+     * D5: anonimizado é estado final. A Policy já responde 403; isto vale para quem chama direto e
+     * para quem passou pela Policy antes de uma anonimização terminar: com a linha travada até o
+     * commit, a checagem e a escrita veem o mesmo contato (A4 da review de 07/10). Chamar dentro
+     * da transação da escrita.
+     */
+    private function lockedNotAnonymized(Contact $contact): Contact
     {
-        if ($contact->isAnonymized()) {
+        $locked = Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
+
+        if ($locked->isAnonymized()) {
             throw new DomainException(ContactPolicy::ANONYMIZED);
         }
+
+        return $locked;
     }
 
     /**

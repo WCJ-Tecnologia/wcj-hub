@@ -1212,8 +1212,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Edição que esperou a anonimização terminar não regrava dado pessoal no contato nem em `audit_logs.changes` (teste de concorrência ou de ordem)
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Edição que esperou a anonimização terminar não regrava dado pessoal no contato nem em `audit_logs.changes` (teste de concorrência ou de ordem)
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick
