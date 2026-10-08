@@ -12,6 +12,7 @@ use Database\Seeders\WcjClientSeeder;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ClientManagementFalso;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
@@ -260,6 +261,53 @@ class ClientServiceTest extends TestCase
 
         $this->assertTrue($wcj->fresh()->isActive());
         $this->assertSame(0, AuditLog::query()->count());
+    }
+
+    /** @return array<string, array{array<string, string|null>}> */
+    public static function trocaDeIdentidadeDaWcj(): array
+    {
+        return [
+            'CNPJ' => [['document' => '12ABC34501DE35']],
+            'país' => [['country' => 'NL']],
+            'país e documento' => [['country' => 'NL', 'document' => null]],
+        ];
+    }
+
+    // T38 (A2 da review de 07/10), N7: com outro CNPJ ou país, a WCJ deixaria de ser reconhecida
+    // e perderia a trava de desativar e excluir. Vale para quem chamar o Service.
+    #[DataProvider('trocaDeIdentidadeDaWcj')]
+    public function test_wcj_nao_troca_de_cnpj_nem_de_pais_nem_pelo_admin_nem_pelo_gestor_que_a_gere(array $troca): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+        $manager = User::factory()->projectManager()->create();
+        ClientManagementFalso::ligar()->gere($manager, $wcj);
+
+        foreach ([$this->admin, $manager] as $actor) {
+            try {
+                $this->service->update($wcj, ['name' => 'WCJ Tecnologia', 'country' => 'BR', 'document' => WcjClientSeeder::CNPJ, ...$troca], $actor);
+                $this->fail('Trocou a identidade da WCJ.');
+            } catch (DomainException $e) {
+                $this->assertSame('O CNPJ e o país da WCJ não podem ser alterados', $e->getMessage());
+            }
+        }
+
+        $wcj->refresh();
+        $this->assertSame(['WCJ Tecnologia', 'BR', WcjClientSeeder::CNPJ], [$wcj->name, $wcj->country, $wcj->document]);
+        $this->assertTrue($wcj->isWcj());
+        $this->assertSame(0, AuditLog::query()->count());
+    }
+
+    public function test_wcj_continua_trocando_de_nome(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+
+        // Com a máscara: o mesmo CNPJ, então não é troca.
+        $this->service->update($wcj, ['name' => 'WCJ Tecnologia Ltda', 'country' => 'BR', 'document' => '38.614.817/0001-22'], $this->admin);
+
+        $this->assertSame('WCJ Tecnologia Ltda', $wcj->fresh()->name);
+        $this->assertAudited($wcj, 'updated', ['name' => ['WCJ Tecnologia', 'WCJ Tecnologia Ltda']]);
     }
 
     public function test_reativar_limpa_quem_e_quando_e_volta_para_a_escolha(): void

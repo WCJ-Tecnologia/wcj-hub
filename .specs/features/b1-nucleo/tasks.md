@@ -1159,10 +1159,10 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Admin e gestor que gere a WCJ (dublê) recebem a recusa ao trocar CNPJ ou país; nada muda
-- [ ] Trocar só o nome da WCJ continua valendo
-- [ ] Teste visto falhando antes
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Admin e gestor que gere a WCJ (dublê) recebem a recusa ao trocar CNPJ ou país; nada muda
+- [x] Trocar só o nome da WCJ continua valendo
+- [x] Teste visto falhando antes
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

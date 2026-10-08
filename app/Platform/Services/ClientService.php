@@ -27,6 +27,8 @@ class ClientService
 
     public const CNPJ_REQUIRED = 'Informe o CNPJ.';
 
+    public const WCJ_IDENTITY_LOCKED = 'O CNPJ e o país da WCJ não podem ser alterados';
+
     public function __construct(private readonly AuditService $audit) {}
 
     /** @return array<string, mixed> */
@@ -77,6 +79,12 @@ class ClientService
     public function update(Client $client, array $data, User $actor): void
     {
         $clean = $this->validated($data, $client);
+
+        // N7: a WCJ é reconhecida pelo país e pelo CNPJ (Client::isWcj); trocá-los tiraria dela a
+        // trava de desativar e excluir. O nome continua editável.
+        if ($client->isWcj() && ($clean['country'] !== $client->country || $clean['document'] !== $client->document)) {
+            throw new DomainException(self::WCJ_IDENTITY_LOCKED);
+        }
 
         DB::transaction(function () use ($client, $clean, $actor) {
             $before = $this->snapshot($client);

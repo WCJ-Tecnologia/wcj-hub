@@ -201,6 +201,19 @@ class ClientControllerTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['user_id' => $this->admin->id, 'action' => 'deactivated', 'outcome' => 'denied', 'auditable_type' => 'client', 'auditable_id' => $wcj->id]);
     }
 
+    // T38 (A2 da review de 07/10): a recusa do Service chega como toast de erro e nada muda.
+    public function test_editar_o_cnpj_da_wcj_mostra_a_recusa_e_nada_muda(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+
+        $this->actingAs($this->admin)->put("/admin/clients/{$wcj->id}", $this->data(['name' => 'WCJ Tecnologia']))
+            ->assertRedirect()->assertSessionHas('error', 'O CNPJ e o país da WCJ não podem ser alterados');
+
+        $this->assertSame(WcjClientSeeder::CNPJ, $wcj->fresh()->document);
+        $this->assertSame(0, AuditLog::query()->count());
+    }
+
     // AC 12 (SPEC_DEVIATION: toast de erro em vez de 403; ver ClientController::destroy)
     public function test_excluir_cliente_ja_usado_mostra_a_mensagem_e_mantem_a_linha(): void
     {
