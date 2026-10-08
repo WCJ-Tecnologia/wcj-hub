@@ -28,6 +28,16 @@ export function createClient(name: string): number {
     );
 }
 
+/** Contato ativo no cliente, sem e-mail nem telefone (N8: os dois são opcionais). Devolve o id. */
+export function createContact(clientId: number, name: string): number {
+    return Number(
+        tinker(`
+            $contact = App\\Platform\\Models\\Contact::query()->create(['client_id' => ${clientId}, 'name' => ${JSON.stringify(name)}]);
+            echo $contact->id;
+        `),
+    );
+}
+
 /** Apaga o que o spec criou: os contatos do cliente e o próprio cliente. */
 export function deleteClient(id: number): void {
     tinker(`

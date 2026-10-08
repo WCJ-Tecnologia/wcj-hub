@@ -123,6 +123,12 @@ T37 → T38 → T39 → T40 → T41 → T42 → T43 → T44
 T45 → T46 → T47 → T48 → T49 → T50
 ```
 
+### Phase 14: Correções do Verifier (rodada 7)
+
+```
+T51
+```
+
 ---
 
 ## Task Breakdown
@@ -1479,10 +1485,38 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 14: Correções do Verifier (rodada 7)
+
+### T51: e2e do estado vazio estável e o texto de 1 projeto aberto com teste
+
+**What**: o teste do estado vazio sem filtro (Usuários e Contatos) garante uma linha na tela, espera a resposta reescrita chegar antes de conferir e limpa a interceptação; Contatos ganha um contato pelo helper `createContact`. E um teste novo afirma "O cliente X tem 1 projeto aberto; ele continua. Desativar?" (D7). O comentário do `AuthorizesBeforeValidation` passa a dizer o que acontece de fato.
+**Where**: `e2e/textos-nucleo.spec.ts`
+**Depends on**: T50
+**Reuses**: o `page.route` dos testes de N = 2 e do estado vazio de clientes, `e2e/helpers/dados.ts`
+**Requirement**: NUC-07, NUC-14
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] Estado vazio: 10 repetições seguidas sem falha
+- [x] Texto com N = 1 afirmado com `exact`; a falha injetada no texto (plural no lugar do singular) é pega
+- [x] Suíte e2e inteira duas vezes com banco recriado: 56 de 56 nas duas
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): estado vazio estável e texto de um projeto aberto`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11 → Phase 12 → Phase 13
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11 → Phase 12 → Phase 13 → Phase 14
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -1499,6 +1533,7 @@ Phase 10: T32 → T33 → T34 → T35
 Phase 11: T36
 Phase 12: T37 → T38 → T39 → T40 → T41 → T42 → T43 → T44
 Phase 13: T45 → T46 → T47 → T48 → T49 → T50
+Phase 14: T51
 ```
 
 ## Task Granularity Check
@@ -1572,6 +1607,7 @@ Phase 13: T45 → T46 → T47 → T48 → T49 → T50
 | T48 | T47 | T47 → T48 | ✅ Match |
 | T49 | T48 | T48 → T49 | ✅ Match |
 | T50 | T49 | T49 → T50 | ✅ Match |
+| T51 | T50 | fase anterior | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1601,3 +1637,4 @@ Phase 13: T45 → T46 → T47 → T48 → T49 → T50
 | T37–T46 | Service, Policy, Request, Controller, Enum | integration | integration | ✅ OK |
 | T47–T49 | Página React, e2e | e2e | e2e | ✅ OK |
 | T50 | Docs, `.specs` | none | none | ✅ OK |
+| T51 | e2e | e2e | e2e | ✅ OK |

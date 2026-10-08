@@ -1,4 +1,4 @@
-import { createClient, deleteClient } from './helpers/dados';
+import { createClient, createContact, deleteClient } from './helpers/dados';
 import { expect, test } from './fixtures';
 import { AuditLogsPage } from './pages/audit-logs.page';
 import { ClientsPage } from './pages/clients.page';
@@ -86,6 +86,40 @@ test('desativar cliente com projetos abertos mostra o texto da spec com a contag
             clients.admin.dialog.getByText(`O cliente ${name} tem 2 projetos abertos; eles continuam. Desativar?`, {
                 exact: true,
             }),
+        ).toBeVisible();
+        await clients.admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
+    } finally {
+        deleteClient(id);
+    }
+});
+
+test('desativar cliente com um projeto aberto mostra o texto no singular', async ({ page }) => {
+    const name = `E2E Cliente com um projeto ${Date.now()}`;
+    const id = createClient(name);
+    const clients = new ClientsPage(page);
+
+    // Como no teste do N = 2: a resposta da busca é reescrita com 1 projeto aberto (D7, 07/10).
+    await page.route(
+        (url) => url.pathname === '/admin/clients' && url.searchParams.get('search') === name,
+        async (route) => {
+            const response = await route.fetch();
+            const body = await response.json();
+            body.props.clients.data = body.props.clients.data.map((row: { name: string }) =>
+                row.name === name ? { ...row, open_projects: 1 } : row,
+            );
+            await route.fulfill({ response, json: body });
+        },
+    );
+
+    try {
+        await clients.goto();
+        const busca = page.waitForResponse((r) => new URL(r.url()).searchParams.get('search') === name);
+        await clients.find(name);
+        await busca;
+        await page.getByRole('button', { name: `Desativar ${name}` }).click();
+
+        await expect(
+            clients.admin.dialog.getByText(`O cliente ${name} tem 1 projeto aberto; ele continua. Desativar?`, { exact: true }),
         ).toBeVisible();
         await clients.admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
     } finally {
@@ -211,33 +245,44 @@ test('usuário: desativar e trocar o papel pedem as confirmações do F1 com o n
     await users.deleteRow(name);
 });
 
-// F1 §03 (P3 AC 1): sem filtro, a lista vazia mostra "Nenhum ... ainda" com a ação. O
-// administrador do e2e (e o que outros specs criam) nunca deixa Usuários vazia, e Contatos depende
-// da ordem dos specs: a resposta da visita é esvaziada, como no teste do estado vazio de clientes.
+// F1 §03 (P3 AC 1): sem filtro, a lista vazia mostra "Nenhum ... ainda" com a ação. Usuários
+// nunca fica vazia (o administrador do e2e) e Contatos depende da ordem dos specs: o teste garante
+// uma linha na tela, esvazia a resposta da visita e só confere o estado vazio depois que a resposta
+// reescrita chegou, como no teste do estado vazio de clientes.
 for (const { path, prop, title, action } of [
     { path: '/admin/users', prop: 'users', title: 'Nenhum usuário ainda', action: { role: 'button', name: 'Convidar usuário' } },
     { path: '/admin/contacts', prop: 'contacts', title: 'Nenhum contato ainda', action: { role: 'link', name: 'Ir para Clientes' } },
 ] as const) {
     test(`lista vazia sem filtro mostra "${title}" com ${action.name}`, async ({ page }) => {
+        const stamp = Date.now();
+        const clientId = path === '/admin/contacts' ? createClient(`E2E Cliente lista vazia ${stamp}`) : null;
+        if (clientId !== null) createContact(clientId, `E2E Contato lista vazia ${stamp}`);
         const list = new ListPage(
             page,
             LIST_SCREENS.find((screen) => screen.path === path)!,
         );
-        await list.goto();
 
-        await page.route(
-            (url) => url.pathname === path && url.searchParams.get('show_inactive') === '1',
-            async (route) => {
+        try {
+            await list.goto();
+            await expect(page.getByRole('row').nth(1)).toBeVisible();
+
+            const reescrita = (url: URL) => url.pathname === path && url.searchParams.get('show_inactive') === '1';
+            await page.route(reescrita, async (route) => {
                 const response = await route.fetch();
                 const body = await response.json();
                 body.props[prop] = { ...body.props[prop], data: [], total: 0, from: null, to: null };
                 await route.fulfill({ response, json: body });
-            },
-        );
-        await page.getByLabel('Mostrar desativados').click();
+            });
+            const chegou = page.waitForResponse((r) => reescrita(new URL(r.url())));
+            await page.getByLabel('Mostrar desativados').click();
+            await chegou;
 
-        const empty = list.state(title);
-        await expect(empty).toBeVisible();
-        await expect(empty.getByRole(action.role, { name: action.name })).toBeVisible();
+            const empty = list.state(title);
+            await expect(empty).toBeVisible();
+            await expect(empty.getByRole(action.role, { name: action.name })).toBeVisible();
+        } finally {
+            await page.unrouteAll({ behavior: 'wait' });
+            if (clientId !== null) deleteClient(clientId);
+        }
     });
 }

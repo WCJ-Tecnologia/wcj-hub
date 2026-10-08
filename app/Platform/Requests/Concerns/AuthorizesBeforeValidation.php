@@ -9,7 +9,7 @@ use Illuminate\Auth\Access\Response;
  * O Laravel valida o FormRequest antes de o controller rodar. Autorizando aqui, quem não pode
  * recebe 403 em vez do erro de validação (que revelaria, por exemplo, "e-mail já em uso") e a
  * tentativa vira denied mesmo com payload inválido (A1 da review de 07/10; G3). O controller não
- * autoriza de novo: a negação seria gravada duas vezes.
+ * autoriza de novo: depois de uma negação aqui ele nem roda, então a checagem seria só repetida.
  */
 trait AuthorizesBeforeValidation
 {
