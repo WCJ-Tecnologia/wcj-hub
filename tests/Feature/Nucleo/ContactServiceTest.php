@@ -173,6 +173,30 @@ class ContactServiceTest extends TestCase
         $this->assertSame('bia@padaria.test', $contact->fresh()->email);
     }
 
+    // AC 3 (D2 de 07/10): para quem não é Administrador o aviso não diz quem nem de qual cliente,
+    // ao criar e ao editar; o contato salva do mesmo jeito.
+    public function test_gestor_recebe_o_aviso_sem_nome_nem_cliente_do_outro_contato(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
+        $other = Client::factory()->create(['name' => 'Mercado Central']);
+        Contact::factory()->create(['client_id' => $other->id, 'name' => 'Bia Reis', 'email' => 'compras@exemplo.test']);
+        $service = app(ContactService::class);
+
+        ['contact' => $contact, 'warning' => $warning] = $service->create(
+            $this->client, ['name' => 'Caio Dias', 'email' => 'compras@exemplo.test'], $manager,
+        );
+
+        $this->assertSame('Já existe um contato com este e-mail', $warning);
+        $this->assertDatabaseHas('contacts', ['id' => $contact->id, 'email' => 'compras@exemplo.test']);
+
+        $mine = Contact::factory()->create(['client_id' => $this->client->id, 'name' => 'Dora', 'email' => null]);
+        $warning = $service->update($mine, ['name' => 'Dora', 'email' => 'compras@exemplo.test'], $manager);
+
+        $this->assertSame('Já existe um contato com este e-mail', $warning);
+        $this->assertSame('compras@exemplo.test', $mine->fresh()->email);
+    }
+
     // AC 4: o gestor cria e edita com as mesmas regras; a auditoria leva o gestor.
     public function test_gestor_cria_e_edita_com_as_mesmas_regras(): void
     {

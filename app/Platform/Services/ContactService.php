@@ -26,6 +26,8 @@ class ContactService
 
     public const CLIENT_INACTIVE = 'Cliente desativado: reative o cliente para cadastrar contato.';
 
+    public const DUPLICATE_EMAIL_HIDDEN = 'Já existe um contato com este e-mail';
+
     public function __construct(
         private readonly AuditService $audit,
         private readonly ClientManagement $management,
@@ -70,7 +72,7 @@ class ContactService
             return $contact;
         });
 
-        return ['contact' => $contact, 'warning' => $this->duplicateWarning($contact)];
+        return ['contact' => $contact, 'warning' => $this->duplicateWarning($contact, $actor)];
     }
 
     /**
@@ -90,7 +92,7 @@ class ContactService
             return $locked;
         });
 
-        return $this->duplicateWarning($updated);
+        return $this->duplicateWarning($updated, $actor);
     }
 
     /** N11: sai das listas de escolha; o card que já o cita continua citando. */
@@ -187,12 +189,7 @@ class ContactService
             ->paginate(20);
     }
 
-    /**
-     * Os clientes do filtro Cliente: todos para o Administrador; para o gestor, os que o
-     * ClientManagement lista.
-     *
-     * @return list<array{id: int, name: string}>
-     */
+    /** @return list<array{id: int, name: string}> o filtro Cliente: os mesmos clientes que a lista mostra */
     public function clientOptions(User $viewer): array
     {
         $clientIds = $this->visibleClientIds($viewer);
@@ -238,14 +235,13 @@ class ContactService
         ];
     }
 
-    /** "Já existe Fulano (Cliente X) com este e-mail" (N8, F1 §07), entre os contatos ativos. */
-    private function duplicateWarning(Contact $contact): ?string
+    /**
+     * N8, F1 §07, entre os contatos ativos. Nome e cliente só para o Administrador: o outro contato
+     * pode ser de cliente que o gestor não gere (F1 §09; D2 do Lucas em 07/10).
+     */
+    private function duplicateWarning(Contact $contact, User $viewer): ?string
     {
-        if ($contact->email === null) {
-            return null;
-        }
-
-        $other = Contact::query()
+        $other = $contact->email === null ? null : Contact::query()
             ->active()
             ->with('client:id,name')
             ->where('email', $contact->email)
@@ -253,7 +249,11 @@ class ContactService
             ->orderBy('id')
             ->first();
 
-        return $other === null ? null : "Já existe {$other->name} ({$other->client?->name}) com este e-mail";
+        return match (true) {
+            $other === null => null,
+            $viewer->isAdmin() => "Já existe {$other->name} ({$other->client?->name}) com este e-mail",
+            default => self::DUPLICATE_EMAIL_HIDDEN,
+        };
     }
 
     /**

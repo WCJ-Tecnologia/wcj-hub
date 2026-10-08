@@ -1341,8 +1341,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Teste para admin e para gestor (dublê) com o texto exato de cada um
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Teste para admin e para gestor (dublê) com o texto exato de cada um
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

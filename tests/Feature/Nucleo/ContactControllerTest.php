@@ -159,6 +159,24 @@ class ContactControllerTest extends TestCase
                 ->where('flash.warning', 'Já existe Ana Lima (Padaria Pão Quente) com este e-mail'));
     }
 
+    // AC 3 (D2 de 07/10): o gestor recebe o aviso sem o nome nem o cliente do outro contato.
+    public function test_aviso_de_email_repetido_para_o_gestor_nao_revela_o_outro_contato(): void
+    {
+        $manager = User::factory()->projectManager()->create();
+        ClientManagementFalso::ligar()->gere($manager, $this->client);
+        $mercado = Client::factory()->create(['name' => 'Mercado Central']);
+        Contact::factory()->create(['client_id' => $mercado->id, 'name' => 'Bia Reis', 'email' => 'compras@exemplo.test']);
+
+        $this->actingAs($manager)->from('/admin/contacts')->followingRedirects()
+            ->post("/admin/clients/{$this->client->id}/contacts", ['name' => 'Caio Dias', 'email' => 'compras@exemplo.test'])
+            ->assertInertia(fn ($page) => $page
+                ->where('flash.success', 'Contato Caio Dias criado.')
+                ->where('flash.warning', 'Já existe um contato com este e-mail'))
+            ->assertDontSee('Bia Reis')
+            ->assertDontSee('Mercado Central');
+        $this->assertSame(2, Contact::query()->where('email', 'compras@exemplo.test')->count());
+    }
+
     // AC 2 e limites do F1 §02
     public function test_validacao_do_formulario(): void
     {
