@@ -180,7 +180,7 @@ class UserControllerTest extends TestCase
         $this->assertTrue($dev->fresh()->isActive());
     }
 
-    // AC 12 (SPEC_DEVIATION: toast de erro em vez de 403; ver UserController::destroy)
+    // AC 12: já usado vira toast de erro com a mensagem e a linha fica (D6).
     public function test_excluir_quem_ja_entrou_mostra_a_mensagem_e_mantem_a_linha(): void
     {
         $dev = User::factory()->developer()->create();

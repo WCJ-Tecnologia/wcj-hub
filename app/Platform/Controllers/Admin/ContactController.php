@@ -68,9 +68,7 @@ class ContactController extends Controller
         return $this->attempt(fn () => $this->contacts->reactivate($contact, $request->user()), "Contato {$contact->name} reativado.");
     }
 
-    // SPEC_DEVIATION: Contatos AC 9 pede 403; segue o padrão de UserController::destroy e
-    // ClientController::destroy (toast de erro com a mesma mensagem). Reason: um jeito só nos
-    // três cadastros; decisão para o Lucas.
+    // Já usado (G2): toast de erro com a mensagem e nada muda, não 403 (D6 do Lucas, 07/10).
     public function destroy(Request $request, Contact $contact): RedirectResponse
     {
         $this->authorize('delete', $contact);

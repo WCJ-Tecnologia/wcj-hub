@@ -70,12 +70,12 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 ## Estado atual
 
-Atualizado em 2026-10-06.
+Atualizado em 2026-10-08.
 
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | branch `feat/b1-nucleo` (Cauã), Verifier PASS em 06/10; PR a abrir |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; falta o Verifier focado na review |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
@@ -207,6 +207,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem). Negação: `AuditService::denied()`, chamado só pelo trait `App\Http\Concerns\AuditsDeniedAbilities` (o `authorize()` do Controller base e o dos FormRequests). Limpar dado pessoal (anonimização): `AuditService::scrubPersonalData()`.
 - Desativar e reativar: ação própria na linha (`POST …/deactivate`, `…/reactivate`), nunca uma caixa "ativo" no formulário (D3 do B1).
 - CNPJ: `App\Rules\AlphanumericCnpj` (alfanumérico, gravado sem máscara e em maiúscula). País: `App\Support\Paises`.
+- Telefone de contato: texto como foi digitado (com o "+"), sem máscara do Brasil; a busca compara só os dígitos (D3 da review do B1).
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
 

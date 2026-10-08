@@ -236,7 +236,7 @@ class ContactControllerTest extends TestCase
         $this->assertModelMissing($contact);
     }
 
-    // AC 9 (SPEC_DEVIATION: toast de erro em vez de 403; ver ContactController::destroy)
+    // AC 9: já usado vira toast de erro com a mensagem e a linha fica (D6).
     public function test_excluir_contato_ja_usado_mostra_a_mensagem_e_mantem_a_linha(): void
     {
         $contact = Contact::factory()->create(['client_id' => $this->client->id]);

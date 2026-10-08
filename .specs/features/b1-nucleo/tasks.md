@@ -1468,9 +1468,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Nenhum `SPEC_DEVIATION` no código
-- [ ] `conferir-specs.mjs` sem problema
-- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+- [x] Nenhum `SPEC_DEVIATION` no código
+- [x] `conferir-specs.mjs` sem problema
+- [x] Gate check passes: `node .ai/skills/conferir-specs.mjs`
 
 **Tests**: none
 **Gate**: build

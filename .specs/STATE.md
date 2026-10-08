@@ -31,10 +31,10 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.
-- **Phase / Task**: Execute concluído (T1–T36, fases 1–11). Spec revisada pelo Lucas em 07/10 aplicada na fase 10 (contrato `ClientManagement` com a `NoClientManagement`). Verifier PASS na rodada 6 (focada, autorizada por Cauã) em 07/10/2026 (`validation.md`).
-- **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T35.
+- **Phase / Task**: Execute concluído (T1–T50, fases 1–13). Fase 12 (T37–T44): achados de código A1–A4 e A6–A9 da review do Lucas Scholz no PR #5 (07/10). Fase 13 (T45–T50): decisões D1–D11 (D2 aviso de e-mail por papel, D3 telefone texto, D9 carga sem passo; D1, D4–D8, D10, D11 na spec e nos documentos) e o A5 (Page Objects esperam a busca; @critical 5 vezes seguidas na suíte inteira com banco recriado). Último Verifier: PASS da rodada 6 (07/10), anterior à review; o `validation.md` é dessa rodada.
+- **Completed**: B0 (PR #1, mergeado em 06/10); B1 T1–T50.
 - **In-progress** (file:line): none
-- **Next step**: prints das telas do gestor com a implementação vazia e PR em rascunho, que o Cauã envia quando decidir. Pendências para o Lucas Scholz no PR: `openProjectsCount` no contrato e as variantes N = 0 e N = 1, 403 × toast nos três `destroy`, P2 AC3, mensagem do último admin, WCJ com CNPJ/país editável, telefone estrangeiro sem o "+", aviso de e-mail repetido cruzando clientes. Para o B2: os seis casos do `ClientProjectsTest` removido voltam no teste da `ProjectClientManagement`.
+- **Next step**: Verifier independente focado na review (achados A1–A9 e decisões D1–D11, com a tabela "Decisões da review de 07/10" do `design.md`), que gera o `validation.md` novo; depois push da `feat/b1-nucleo` e resposta à review no PR #5, quando o Cauã decidir. Para o B2: os seis casos do `ClientProjectsTest` removido voltam no teste da `ProjectClientManagement`.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: feat/b1-nucleo

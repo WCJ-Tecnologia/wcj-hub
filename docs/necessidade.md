@@ -191,13 +191,14 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **N3** Carga diária (ex.: 8 h ou 4 h): obrigatória para o Desenvolvedor, opcional para os outros papéis, definida pelo Administrador. Sem carga, a tarefa do dev fica sem data prevista e sem capacidade. Mudar a carga vale dali para a frente.
 - **N4** Usuário desativado perde o acesso na hora, inclusive as conexões de IA.
 - **N5** Cliente brasileiro é identificado pelo CNPJ, numérico ou alfanumérico (o CNPJ com letras vale desde julho de 2026), e CNPJ repetido é recusado. Empresa estrangeira: país + identificador fiscal do país, opcional. Pessoa física não é cliente.
-- **N6** O cliente nasce por cadastro direto do Administrador, pelo **gestor ao criar um projeto** (botão *Novo cliente* no formulário do projeto, decisão de 06/10) ou, na v2, por lead ganho; sempre sem contrato. O gestor edita os clientes dos projetos dele; desativar e excluir é do Administrador.
+- **N6** O cliente nasce por cadastro direto do Administrador, pelo **gestor ao criar um projeto** (botão *Novo cliente* no formulário do projeto, decisão de 06/10) ou em *Administração → Clientes* (decisão de 07/10), ou, na v2, por lead ganho; sempre sem contrato. O gestor edita os clientes dos projetos dele; desativar e excluir é do Administrador.
 - **N7** A própria WCJ é um cliente: é a dona dos projetos internos e dos produtos (ex.: Wpay). Já vem semeada na instalação, com o CNPJ 38.614.817/0001-22, e não se desativa.
 - **N8** O contato é um cadastro só, seja pessoa de cliente ou de lead: nome, e-mail e telefone. Quando o lead vira cliente, o contato não é redigitado. O sistema avisa quando já existe contato com o mesmo e-mail, sem recusar. O gestor também cadastra contato dos clientes dos projetos dele. O contato é **opcional**: nenhum cadastro o exige; ele existe para a equipe lembrar com quem fala na empresa (decisão de 06/10). Veem contatos o Administrador e o gestor, nos clientes dos projetos dele; o dev vê só o nome em "quem pediu" no card de suporte (P52).
 - **N9** O contato não tem login na v1.
 - **N10** O contrato fica fora da v1. A lista de **tipos de serviço** (projeto, sustentação, auditoria, alocação de dev, infraestrutura), que o lead usa para dizer o que está sendo vendido, entra com o CRM, na v2: nada da fatia 1 a lê (R7).
 - **N11** O Administrador desativa e reativa usuário, cliente e contato. Ter algo aberto não impede.
 - **N12** LGPD: a pedido do titular, o Administrador anonimiza o contato. Nome, e-mail e telefone viram "removido a pedido do titular", e o histórico continua, sem os dados pessoais.
+  Limitação registrada (Lucas Scholz, 07/10): contato **excluído** (só o nunca usado, G2) deixa nome, e-mail e telefone no `changes` da linha `deleted` da auditoria, e não há caminho para anonimizá-lo depois, porque a ficha some. Se o titular pedir antes, anonimize em vez de excluir.
 
 ### 2. Projetos
 

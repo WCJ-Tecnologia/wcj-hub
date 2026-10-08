@@ -4,7 +4,7 @@ Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-
 
 **Approved by**: Lucas Scholz, 2026-10-06
 
-**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. **Revisada em 07/10/2026** (ponto do Vitinho, aceito por Lucas Scholz): as Policies não leem `projects`; perguntam ao contrato `Platform\Contracts\ClientManagement` (ver premissas e NUC-06/NUC-08). Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
+**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. **Revisada em 07/10/2026** (ponto do Vitinho, aceito por Lucas Scholz): as Policies não leem `projects`; perguntam ao contrato `Platform\Contracts\ClientManagement` (ver premissas e NUC-06/NUC-08). **Revisada em 08/10/2026** com as decisões de Lucas Scholz na review do PR #5 (07/10): excluir o já usado mostra toast de erro, não 403 (D6); textos da confirmação de desativar cliente e o contrato em lote (D7); aviso de e-mail repetido por papel (D2); telefone como texto (D3); gestor cria cliente também em Administração → Clientes (D1); a WCJ não troca de CNPJ nem de país e a autorização vem antes da validação (achados A1 e A2). Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
 
 ## Problem Statement
 
@@ -51,13 +51,15 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | Trocar papel ou "IA pode escrever" derruba conexões | Mesmo mecanismo da desativação | IA6, IA4 (06/10) | y |
 | Canal na auditoria do B1 | Sempre "Tela" (`ai_authorization_id` nulo); o label "IA: Claude/Codex/ChatGPT" aparece quando a coluna estiver preenchida (B8) | IA11; a tela já nasce pronta para o canal | y |
 | "Último acesso" na lista de usuários | Última linha de `audit_logs` com `action = login` da pessoa | `banco.txt` seção 9: o login mora na auditoria | y |
-| Aviso de e-mail repetido no contato | Mensagem na tela ao sair do campo e no envio, sem recusar; a resposta do servidor inclui `warning` quando existe outro contato ativo com o mesmo e-mail | N8 "avisa, sem recusar" | y |
+| Aviso de e-mail repetido no contato | Mensagem na tela depois do envio, sem recusar; a resposta do servidor inclui `warning` quando existe outro contato ativo com o mesmo e-mail. Nome e cliente do outro contato só para o Administrador; quem não é Administrador recebe "Já existe um contato com este e-mail" (D2, 07/10) | N8 "avisa, sem recusar"; F1 §09 (o gestor não vê contato de cliente que não é dele) | y |
 | CNPJ alfanumérico | 14 caracteres, letras maiúsculas e números, com os dois últimos dígitos verificadores calculados pela regra do CNPJ alfanumérico (Receita, jul/2026); gravado sem máscara; comparado sem caixa pela colation do banco | N5; evita aceitar lixo e evita recusar o CNPJ novo | y |
 | País | Lista ISO 3166-1 alfa-2, rótulo em português; padrão `BR` | `clients.country char(2)` | y |
-| Cliente WCJ não desativável | `ClientPolicy::deactivate` recusa o cliente semeado (documento `38614817000122`) com 403 | F1 §10.3 (06/10) | y |
+| Cliente WCJ não desativável | `ClientPolicy::deactivate` recusa o cliente semeado (documento `38614817000122`) com 403; `ClientService::update` recusa trocar o país ou o documento dela com "O CNPJ e o país da WCJ não podem ser alterados" (o nome continua editável) | F1 §10.3 (06/10); A2 da review de 07/10: sem isso, editar o CNPJ tirava a proteção | y |
 | Anonimizar limpa `audit_logs.changes` | Numa transação: `name`, `email`, `phone` da linha e os mesmos campos dentro de `changes` de toda linha de `audit_logs` cujo `auditable` é o contato; grava `anonymized` sem dados | N12 e `banco.txt` (contacts) | y |
 | Página de 50 na auditoria, período padrão 7 dias | Como o F1 §03 e §05 | Decisão do funcional | y |
 | Mensagens de recusa em português, na linguagem do usuário | Textos do F1 §04 e §07 | `especificacao.md` §6 | y |
+| Autorização antes da validação | Nos formulários (criar e editar usuário, cliente e contato; anonimizar), a Policy é consultada antes da validação do payload: quem não pode recebe 403 e a negação é auditada, mesmo com payload inválido | A1 da review de 07/10: validar antes revelava e-mail existente e a tentativa não virava `denied` | y |
+| Telefone do contato | Texto, até 20, gravado como digitado (só sem as pontas em branco), com o "+"; a busca compara só os dígitos dos dois lados | F1 §02; D3 da review de 07/10 (há cliente fora do Brasil) | y |
 
 **Open questions:** none - all resolved or logged above.
 
@@ -84,7 +86,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 9. WHILE um usuário está desativado the sistema SHALL recusar o login dele com a mesma mensagem genérica de credencial inválida e rejeitar qualquer sessão existente (N4, template).
 10. WHEN o Administrador reativa um usuário THEN o sistema SHALL limpar `deactivated_at` e `deactivated_by` sem recriar autorizações de IA (N11, IA6).
 11. WHEN o Administrador exclui um usuário que nunca entrou e não é referenciado por nenhuma tabela THEN o sistema SHALL apagar a linha e gravar `deleted` na auditoria (G2).
-12. IF o Administrador tenta excluir um usuário com histórico THEN o sistema SHALL responder 403 com "Usuário já usado: desative em vez de excluir" e manter a linha (G2).
+12. IF o Administrador tenta excluir um usuário com histórico THEN o sistema SHALL mostrar o toast de erro "Usuário já usado: desative em vez de excluir" e não mudar nada (a linha fica) (G2; D6 de 07/10).
 13. The sistema SHALL mostrar na lista de usuários as colunas Nome, E-mail, Papel, Carga diária, Último acesso e Situação, com os desativados escondidos por padrão e visíveis em cinza pelo filtro *Mostrar desativados* (F1 §03).
 14. WHEN o Administrador define carga diária, papel ou "IA pode escrever" em um usuário que se define a si mesmo THEN o sistema SHALL aplicar as mesmas regras, exceto que o último Administrador ativo não pode ser rebaixado, desativado nem excluído (template).
 15. IF um Gestor de projetos ou Desenvolvedor envia qualquer requisição de criar, editar, desativar, reativar, excluir ou reenviar convite de usuário THEN o sistema SHALL responder 403 e manter a quantidade e os dados dos usuários sem mudança (F1 §09).
@@ -106,14 +108,14 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 2. IF o país é `BR` e o documento está vazio ou não passa na validação do CNPJ alfanumérico THEN o sistema SHALL recusar com erro de validação no campo "CNPJ" e não criar o cliente (N5).
 3. IF já existe cliente com o mesmo país e documento, ignorando caixa THEN o sistema SHALL recusar com "Já existe o cliente X com este CNPJ", citando o nome do cliente existente, e não criar nem alterar (N5).
 4. WHEN o país não é `BR` THEN o sistema SHALL aceitar o documento vazio e rotular o campo como "Identificador fiscal" (N5).
-5. WHEN um Gestor de projetos chama o Service de criar cliente THEN o sistema SHALL criar o cliente com as mesmas validações e auditar com o `user_id` do gestor (N6; consumido pelo B2).
+5. WHEN um Gestor de projetos cria um cliente, em Administração → Clientes ou pelo formulário do projeto (B2) THEN o sistema SHALL criar o cliente com as mesmas validações e auditar com o `user_id` do gestor (N6; D1 de 07/10).
 6. WHEN um Gestor de projetos edita um cliente que o contrato `ClientManagement` diz que ele gere THEN o sistema SHALL aplicar a alteração com as mesmas validações (N6, P1).
 7. IF um Gestor de projetos edita um cliente que o contrato `ClientManagement` não lista para ele (com a implementação vazia do B1, nenhum), ou tenta desativar, reativar ou excluir qualquer cliente THEN o sistema SHALL responder 403 e manter o cliente sem mudança (F1 §09).
 8. IF um Desenvolvedor acessa qualquer rota de clientes THEN o sistema SHALL responder 403 (F1 §09).
-9. WHEN o Administrador desativa um cliente com projetos abertos THEN o sistema SHALL desativar mesmo assim, após a confirmação "O cliente X tem N projetos abertos; eles continuam. Desativar?", e tirar o cliente das listas de escolha (N11).
-10. IF o Administrador tenta desativar o cliente WCJ (documento `38614817000122`) THEN o sistema SHALL responder 403 com "A WCJ não pode ser desativada" (N7).
+9. WHEN o Administrador desativa um cliente THEN o sistema SHALL desativar mesmo com projetos abertos, após a confirmação "O cliente X tem N projetos abertos; eles continuam. Desativar?" (N ≥ 2), "O cliente X tem 1 projeto aberto; ele continua. Desativar?" (N = 1) ou "O cliente X sai das listas de escolha. Desativar?" (N = 0), e tirar o cliente das listas de escolha (N11). N vem do contrato `ClientManagement` pelo método em lote `openProjectsCountByClient`, uma chamada por página da lista (D7 de 07/10).
+10. IF o Administrador tenta desativar o cliente WCJ (documento `38614817000122`) THEN o sistema SHALL responder 403 com "A WCJ não pode ser desativada" (N7); IF alguém edita a WCJ trocando o país ou o documento THEN o sistema SHALL recusar com "O CNPJ e o país da WCJ não podem ser alterados" e não mudar nada (N7; A2 de 07/10).
 11. WHEN o Administrador exclui um cliente sem contato e sem projeto THEN o sistema SHALL apagar a linha e gravar `deleted` na auditoria (G2).
-12. IF o Administrador tenta excluir um cliente com contato ou projeto THEN o sistema SHALL responder 403 com "Cliente já usado: desative em vez de excluir" e manter a linha (G2).
+12. IF o Administrador tenta excluir um cliente com contato ou projeto THEN o sistema SHALL mostrar o toast de erro "Cliente já usado: desative em vez de excluir" e não mudar nada (a linha fica) (G2; D6 de 07/10).
 13. The sistema SHALL listar clientes com Nome, País, CNPJ / identificador e Situação, busca por nome e documento, filtros País e Situação (ativos por padrão), e o estado vazio "Nenhum cliente ainda" com o botão *Novo cliente* (F1 §03, §05).
 14. The sistema SHALL ter o cliente WCJ semeado (nome "WCJ Tecnologia", país `BR`, documento `38614817000122`) em toda instalação (N7).
 
@@ -129,19 +131,19 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 
 **Acceptance Criteria**:
 
-1. WHEN o Administrador cria um contato na aba *Contatos* de um cliente com nome válido THEN o sistema SHALL criar o contato ligado àquele cliente, com e-mail e telefone opcionais, e gravar `created` na auditoria (N8).
+1. WHEN o Administrador cria um contato na aba *Contatos* de um cliente com nome válido THEN o sistema SHALL criar o contato ligado àquele cliente, com e-mail e telefone opcionais (telefone é texto, gravado como digitado, com o "+"; D3 de 07/10), e gravar `created` na auditoria (N8).
 2. IF o nome está vazio ou o cliente não está ativo THEN o sistema SHALL recusar com erro de validação e não criar (N8, N11).
-3. WHEN o e-mail informado já existe em outro contato ativo THEN o sistema SHALL salvar mesmo assim e devolver o aviso "Já existe Fulano (Cliente X) com este e-mail" na resposta (N8).
+3. WHEN o e-mail informado já existe em outro contato ativo THEN o sistema SHALL salvar mesmo assim e devolver o aviso na resposta: "Já existe Fulano (Cliente X) com este e-mail" para o Administrador e "Já existe um contato com este e-mail" para quem não é Administrador (N8, F1 §09; D2 de 07/10).
 4. WHEN um Gestor de projetos cria ou edita um contato de um cliente que o contrato `ClientManagement` diz que ele gere THEN o sistema SHALL aplicar com as mesmas regras do Administrador (N8).
 5. IF um Gestor de projetos cria ou edita contato de cliente que o contrato `ClientManagement` não lista para ele, ou tenta desativar, excluir ou anonimizar qualquer contato THEN o sistema SHALL responder 403 e manter o contato sem mudança (F1 §09).
 6. IF um Desenvolvedor acessa as rotas de contatos THEN o sistema SHALL responder 403 (F1 §09; o nome em "quem pediu" chega pelo card, no B3).
 7. WHEN o Administrador desativa um contato THEN o sistema SHALL gravar `deactivated_at` e `deactivated_by` e tirá-lo das listas de escolha, mantendo-o onde já é citado (N11).
 8. WHEN o Administrador exclui um contato nunca citado em card de suporte THEN o sistema SHALL apagar a linha e gravar `deleted` (G2).
-9. IF o Administrador tenta excluir um contato citado em `tasks.requester_contact_id` THEN o sistema SHALL responder 403 com "Contato já usado: desative em vez de excluir" (G2).
+9. IF o Administrador tenta excluir um contato citado em `tasks.requester_contact_id` THEN o sistema SHALL mostrar o toast de erro "Contato já usado: desative em vez de excluir" e não mudar nada (G2; D6 de 07/10).
 10. WHEN o Administrador confirma a anonimização digitando `ANONIMIZAR` THEN o sistema SHALL, numa só transação, trocar o nome por "removido a pedido do titular", apagar e-mail e telefone, apagar os mesmos campos dentro de `changes` de toda linha de `audit_logs` daquele contato e gravar `anonymized` sem dados pessoais (N12).
 11. IF a confirmação da anonimização não é exatamente `ANONIMIZAR` THEN o sistema SHALL recusar e não alterar nada (F1 §04).
 12. WHILE um contato está anonimizado the sistema SHALL mostrá-lo com situação "Anonimizado", sem botões de editar, reativar ou anonimizar de novo (N12).
-13. The sistema SHALL ter a lista geral *Administração → Contatos* com Nome, E-mail, Telefone, Cliente e Situação, busca por nome, e-mail e telefone, filtros Cliente e Situação, para o Administrador e, nos clientes que `managedClientIds` devolve, para o gestor (F1 §03).
+13. The sistema SHALL ter a lista geral *Administração → Contatos* com Nome, E-mail, Telefone, Cliente e Situação, busca por nome, e-mail e telefone (pelos dígitos), filtros Cliente e Situação, para o Administrador e, nos clientes que `managedClientIds` devolve, para o gestor (F1 §03).
 
 **Independent Test**: Criar dois contatos com o mesmo e-mail em clientes diferentes e ver o aviso sem recusa; anonimizar um e conferir que a auditoria dele não tem mais o nome.
 
@@ -156,7 +158,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 **Acceptance Criteria**:
 
 1. The sistema SHALL gravar em `audit_logs` toda escrita do Núcleo com `user_id`, `ai_authorization_id` (nulo = Tela), `action`, `outcome`, `auditable_type` (alias do morph map), `auditable_id`, `changes` `{campo: [antes, depois]}` e `ip_address` (G3).
-2. WHEN uma requisição é negada por Policy em qualquer rota do Núcleo THEN o sistema SHALL gravar uma linha com `outcome = denied`, o `user_id` de quem tentou, a ação pretendida e o `auditable_id` quando conhecido (G3).
+2. WHEN uma requisição é negada por Policy em qualquer rota do Núcleo THEN o sistema SHALL gravar uma linha com `outcome = denied`, o `user_id` de quem tentou, a ação pretendida e o `auditable_id` quando conhecido (G3), inclusive quando o payload também é inválido: a Policy vem antes da validação e quem não pode recebe 403, nunca o erro de validação (A1 de 07/10). Ação sem rótulo conhecido grava o nome da ability e aparece na tela como "Outra ação".
 3. The sistema SHALL listar a auditoria com Data e hora (fuso local), Quem, Canal (Tela ou IA: nome do assistente), Ação, Registro (tipo e identificação legível, ex.: "Usuário Maria", "Cliente WCJ Tecnologia"), Resultado (ok / negado), do mais recente para o mais antigo, em páginas de 50, com as linhas negadas em destaque (F1 §03).
 4. WHEN o Administrador clica numa linha THEN o sistema SHALL mostrar o detalhe com cada campo alterado, o valor anterior e o novo (G3).
 5. The sistema SHALL oferecer os filtros Período (padrão últimos 7 dias), Quem, Canal, Ação, Tipo de registro, Resultado e a busca pela identificação do registro (F1 §05).
@@ -216,7 +218,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 
 | Dimension | Resolution |
 |---|---|
-| Input validation & bounds | CNPJ alfanumérico 14 com dígito; país ISO; carga 0 < h ≤ 24; nomes até 120/160; telefone até 20; e-mail formato e 160 (FormRequests) |
+| Input validation & bounds | CNPJ alfanumérico 14 com dígito; país ISO; carga 0 < h ≤ 24; nomes até 120/160; telefone texto até 20, gravado como digitado; e-mail formato e 160 (FormRequests) |
 | Failure / partial-failure | E-mail de convite falha sem desfazer o usuário (edge case); anonimização e desativação em transação |
 | Idempotency / retry / duplicate | Unique de e-mail de usuário e de (país, documento); reenviar convite sempre gera senha nova; aviso de e-mail de contato repetido sem recusar |
 | Auth boundaries & rate limits | Policies por papel (F1 §09); limitador de login do template; N/A rate limit nas telas do admin because são 14 usuários internos autenticados |
@@ -235,10 +237,10 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-01 | P1: Usuários — convite por e-mail (AC 1–3) | Design | Done |
 | NUC-02 | P1: Usuários — carga, papel, IA pode escrever e revogação (AC 4–7, 14) | Design | Done |
 | NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Done |
-| NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | In Progress |
+| NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | Done |
 | NUC-05 | P1: Clientes — criar e validar CNPJ (AC 1–4, 14) | Design | Done |
-| NUC-06 | P1: Clientes — gestor cria e edita pelo Service; contrato `ClientManagement` + implementação vazia (AC 5–8) | Design | In Progress |
-| NUC-07 | P1: Clientes — desativar, WCJ, excluir, lista (AC 9–13) | Design | In Progress |
+| NUC-06 | P1: Clientes — gestor cria e edita pelo Service; contrato `ClientManagement` + implementação vazia (AC 5–8) | Design | Done |
+| NUC-07 | P1: Clientes — desativar, WCJ, excluir, lista (AC 9–13) | Design | Done |
 | NUC-08 | P1: Contatos — criar, aviso de e-mail, gestor (AC 1–6, 13) | Design | Done |
 | NUC-09 | P1: Contatos — desativar, excluir (AC 7–9) | Design | Done |
 | NUC-10 | P1: Contatos — anonimizar (AC 10–12) | Design | Done |
@@ -247,7 +249,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-13 | P2: Listas de escolha para gestor (AC 1–3) | - | Done |
 | NUC-14 | P3: Estados de tela e textos (AC 1–2) | - | Done |
 
-**Coverage:** 14 total, 0 mapped to tasks, 14 unmapped ⚠️ (mapeados na fase Tasks)
+**Coverage:** 14 total, 14 mapped to tasks (T1–T50), 0 unmapped
 
 ---
 

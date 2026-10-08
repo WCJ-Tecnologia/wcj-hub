@@ -89,8 +89,7 @@ class ClientController extends Controller
         return $this->attempt(fn () => $this->clients->reactivate($client, $request->user()), "Cliente {$client->name} reativado.");
     }
 
-    // SPEC_DEVIATION: Clientes AC 12 pede 403; segue o padrão de UserController::destroy (toast
-    // de erro com a mesma mensagem). Reason: um jeito só nos três cadastros; decisão para o Lucas.
+    // Já usado (G2): toast de erro com a mensagem e nada muda, não 403 (D6 do Lucas, 07/10).
     public function destroy(Request $request, Client $client): RedirectResponse
     {
         $this->authorize('delete', $client);

@@ -1,7 +1,7 @@
 # B1 Núcleo Design
 
 **Spec**: `.specs/features/b1-nucleo/spec.md`
-**Status**: Approved (Cauã, 06/10/2026; as decisões D1 e D3 vão destacadas no PR para o Lucas Scholz vetar)
+**Status**: Approved (Cauã, 06/10/2026). Decisões do Lucas Scholz na review do PR #5 (07/10) aplicadas nas fases 12 e 13: ver "Decisões da review de 07/10" no fim.
 
 ---
 
@@ -45,7 +45,6 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 | `UserController` (lista, último admin, exclusão) | `app/Platform/Controllers/Admin/UserController.php` | A regra sai para o `UserService`; o controller fica fino |
 | `UserFormDialog`, `DataTable`, `RowActions`, `ConfirmDialog`, `SearchInput`, `Pagination`, `EmptyState`, `StatusPill`, `FormField` | `resources/js/components` | Gabarito de CRUD (`stacks/ui.md` §4) nas quatro telas |
 | `audit-logs/index.tsx` | `resources/js/pages/admin/audit-logs` | Base da tela de auditoria; ganha colunas, filtros e o detalhe com rótulos |
-| `NormalizesMaskedInput` | `app/Platform/Requests/Concerns` | Telefone sem máscara |
 | `ClientFactory`, `UserFactory`, `WcjClientSeeder::CNPJ` | `database/` | Testes; a semente da WCJ já existe |
 | `RotasAutorizadasTest` (A5), `ArquiteturaTest` (A4, A6, A7, A9) | `tests/Arch` | Portões que toda rota e Service novo precisam passar |
 
@@ -116,7 +115,7 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 | --- | --- | --- |
 | `UserService` | `invite`, `resendInvite`, `update`, `deactivate`, `reactivate`, `delete`, `choiceList` | N1–N4, N11, G2, IA4, IA6; último admin ativo; revoga `ai_authorizations` ativas ao trocar papel, a marca "IA pode escrever" ou desativar; e-mail enviado depois do commit, com falha registrada sem desfazer |
 | `ClientService` | `create`, `update`, `deactivate`, `reactivate`, `delete`, `choiceList` | N5–N7, N11, G2; CNPJ sem máscara e maiúsculo; unique (país, documento) com mensagem que cita o cliente existente |
-| `ContactService` | `create`, `update` (devolvem o aviso de e-mail repetido), `deactivate`, `reactivate`, `delete`, `anonymize` | N8, N9, N11, N12, G2; cliente precisa estar ativo; anonimizar numa transação |
+| `ContactService` | `create`, `update` (devolvem o aviso de e-mail repetido), `deactivate`, `reactivate`, `delete`, `anonymize` | N8, N9, N11, N12, G2; cliente precisa estar ativo; anonimizar numa transação; aviso de e-mail repetido com nome e cliente só para o Administrador (o resto recebe "Já existe um contato com este e-mail"); telefone gravado como texto, busca pelos dígitos (`REGEXP_REPLACE` com o termo como parâmetro) |
 | `AuditLogQuery` | `paginate(array $filters)`, `describe(AuditLog)` | Filtros do F1 §05; "Registro" legível; canal pelo assistente |
 
 ### Controllers e rotas
@@ -162,10 +161,11 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 
 | Error Scenario | Handling | User Impact |
 | --- | --- | --- |
-| Policy nega | `authorize()` grava `denied` e lança 403 | Página 403 do template; a tentativa aparece na auditoria |
+| Policy nega | `authorize()` grava `denied` e lança 403; nos FormRequests, antes da validação (`AuthorizesBeforeValidation`, A1 da review) | Página 403 do template, sem erro de validação que revele dado; a tentativa aparece na auditoria |
 | CNPJ repetido no país | `ValidationException` no Service, com o nome do cliente existente | "Já existe o cliente X com este CNPJ" no campo |
 | E-mail de convite falha | Usuário fica; `Log::error`; flash de erro | "Usuário criado; o e-mail não pôde ser enviado. Use Reenviar convite." |
-| Excluir registro já usado | `deleteIfUnused` devolve false; flash de erro | "<X> já usado: desative em vez de excluir" |
+| Excluir registro já usado | `deleteIfUnused` devolve false; `DomainException` vira flash de erro pelo `attempt()` do Controller base, nada muda (D6 da review: toast, não 403) | "<X> já usado: desative em vez de excluir" |
+| Trocar CNPJ ou país da WCJ | `ClientService::update` lança `DomainException` (N7; A2 da review) | "O CNPJ e o país da WCJ não podem ser alterados" |
 | Último admin ativo | Service recusa antes de gravar | Mensagem do template |
 | Anonimização falha no meio | Transação desfaz | Toast de erro; contato como estava |
 | Confirmação diferente de ANONIMIZAR | Erro de validação no FormRequest | Mensagem no campo |
@@ -191,9 +191,25 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 | Decision | Choice | Rationale |
 | --- | --- | --- |
 | D1 Clientes do gestor | Contrato `ClientManagement` no Platform; implementação vazia `NoClientManagement` no B1, ligada no `AppServiceProvider`; a real (`ProjectClientManagement`) é do B2 | Revisão de 07/10 (Vitinho, aceita por Lucas Scholz): o Platform não lê `projects` (A9) e o B1 não entrega código de Projetos. Padrão registrado na ADR-001; a ADR-003 e o AD-003 do desenho anterior saíram |
-| D2 Caminhos das rotas | Inglês (`/admin/clients`), como o template | `stacks/laravel-inertia.md` §6; o `escopo.md` cita `/admin/clientes` de forma descritiva (o `/perfil` dele é `/admin/profile` no template) |
+| D2 Caminhos das rotas | Inglês (`/admin/clients`), como o template | `stacks/laravel-inertia.md` §6; aprovado por Lucas Scholz em 07/10 (D4 da review), e o `escopo.md` B1 passou a citar os caminhos em inglês |
 | D3 Desativar | Ação própria na linha, com a confirmação do F1 §04, em vez da caixa "ativo" no formulário | O funcional manda na tela e pede confirmação com texto próprio ("Fulano perde o acesso imediatamente"); a auditoria registra `deactivated`/`reactivated`, como a spec pede |
 | D4 Reenviar convite | A rota `reset-password` do template, renomeada na tela | Premissa confirmada na spec |
 | D5 Situação "Anonimizado" | Derivada da linha `anonymized` na auditoria; o contato anonimizado também é desativado | Sem coluna nova (`banco.txt`); desativar tira o contato das listas de escolha |
 | D6 Listas de escolha (P2) | Métodos de Service + `viewChoiceList` nas Policies, sem rota JSON | "Sem fetch direto: tudo via Inertia"; o B2 entrega as listas como props da página dele |
 | D7 Ficha do cliente | Página `clients/show.tsx` | O escopo B1 lista `/admin/clientes/{id}` com a aba de contatos; `stacks/ui.md` pede ADR para página de ficha: ADR-004 |
+
+### Decisões da review de 07/10 (Lucas Scholz, PR #5)
+
+| # | Decisão | Onde ficou |
+| --- | --- | --- |
+| D1 | Gestor cria cliente também em Administração → Clientes | Código sem mudança; F1 §04 e §09, `escopo.md` B1 |
+| D2 | Aviso de e-mail repetido: nome e cliente só para o Administrador | `ContactService::duplicateWarning`; spec Contatos AC 3; F1 §02 e §07 |
+| D3 | Telefone é texto, até 20, gravado como digitado; busca pelos dígitos | `StoreContactRequest` sem `normalizeDigits`; `ContactService`; tela sem máscara; spec e F1 §02 |
+| D4 | Caminhos em inglês | D2 acima; `escopo.md` B1 |
+| D5 | Abilities `view_clients`, `view_contacts`, `view_audit_logs`; `delete_records` e `reset_passwords` seguem `isAdmin()` | Código sem mudança; `escopo.md` §4 |
+| D6 | Excluir o já usado: toast de erro, não 403 | Spec Usuários AC 12, Clientes AC 12, Contatos AC 9; sem `SPEC_DEVIATION` no código |
+| D7 | `openProjectsCount` aprovado (em lote: `openProjectsCountByClient`, A7); textos N = 0 e N = 1 | Contrato `ClientManagement`; spec Clientes AC 9; F1 §04 |
+| D8 | Aviso de e-mail só entre contatos ativos | Sem mudança |
+| D9 | Carga diária sem passo de 0,25 | `user-form-dialog.tsx` com `step="any"` |
+| D10 | Lista geral de contatos vazia com "Ir para Clientes" até o B2 | Sem mudança |
+| D11 | Contato excluído deixa dado pessoal na linha `deleted` da auditoria | Limitação registrada na `necessidade.md` (N12) |

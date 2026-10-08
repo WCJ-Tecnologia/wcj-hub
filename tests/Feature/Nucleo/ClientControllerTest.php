@@ -214,7 +214,7 @@ class ClientControllerTest extends TestCase
         $this->assertSame(0, AuditLog::query()->count());
     }
 
-    // AC 12 (SPEC_DEVIATION: toast de erro em vez de 403; ver ClientController::destroy)
+    // AC 12: já usado vira toast de erro com a mensagem e a linha fica (D6).
     public function test_excluir_cliente_ja_usado_mostra_a_mensagem_e_mantem_a_linha(): void
     {
         $client = Client::factory()->create();

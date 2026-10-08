@@ -65,8 +65,7 @@ class UserController extends Controller
         return $this->attempt(fn () => $this->users->reactivate($user, $request->user()), "{$user->name} voltou a ter acesso.");
     }
 
-    // SPEC_DEVIATION: Usuários AC 12 pede 403; o design (Error Handling) e o UserControllerTest
-    // existente pedem o flash de erro. Reason: mesma mensagem, em toast; decisão para o Lucas.
+    // Já usado (G2): toast de erro com a mensagem e nada muda, não 403 (D6 do Lucas, 07/10).
     public function destroy(Request $request, User $user): RedirectResponse
     {
         $this->authorize('delete', $user);
