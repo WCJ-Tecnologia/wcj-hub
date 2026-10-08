@@ -1237,9 +1237,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Ability nova sem mapeamento negada responde 403 e grava `denied` com o nome dela
-- [ ] Tela da auditoria mostra a linha sem quebrar
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Ability nova sem mapeamento negada responde 403 e grava `denied` com o nome dela
+- [x] Tela da auditoria mostra a linha sem quebrar
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Platform\Enums\AuditActionEnum;
-use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -54,10 +53,12 @@ class AuditActionEnumTest extends TestCase
         $this->assertSame($esperada, AuditActionEnum::forAbility($ability));
     }
 
-    public function test_ability_sem_acao_mapeada_falha_em_vez_de_gravar_acao_errada(): void
+    // T41 (A6 da review de 07/10): sem ação mapeada não há ação a inventar; o AuditService grava
+    // o nome da ability, e o rótulo fica genérico.
+    public function test_ability_sem_acao_mapeada_nao_vira_acao_do_enum(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-
-        AuditActionEnum::forAbility('archive');
+        $this->assertNull(AuditActionEnum::forAbility('archive'));
+        $this->assertSame('Outra ação', AuditActionEnum::labelOf('archive'));
+        $this->assertSame('Desativado', AuditActionEnum::labelOf('deactivated'));
     }
 }

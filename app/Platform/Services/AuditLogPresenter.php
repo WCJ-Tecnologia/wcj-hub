@@ -66,7 +66,7 @@ class AuditLogPresenter
             'user_email' => $log->user?->email,
             'channel' => $assistant === null ? 'Tela' : "IA: {$assistant->label}",
             'action' => $log->action,
-            'action_label' => AuditActionEnum::tryFrom($log->action)?->label() ?? $log->action,
+            'action_label' => AuditActionEnum::labelOf($log->action),
             'type' => $log->auditable_type,
             'type_label' => self::TYPES[$log->auditable_type] ?? $log->auditable_type,
             'auditable_id' => $log->auditable_id,

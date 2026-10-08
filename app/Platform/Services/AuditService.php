@@ -56,7 +56,8 @@ class AuditService
         return AuditLog::query()->create([
             'user_id' => Auth::id(),
             'ai_authorization_id' => null,
-            'action' => AuditActionEnum::forAbility($ability)->value,
+            // audit_logs.action tem 40 caracteres.
+            'action' => mb_substr(AuditActionEnum::forAbility($ability)?->value ?? $ability, 0, 40),
             'outcome' => AuditLog::OUTCOME_DENIED,
             'auditable_type' => $type,
             'auditable_id' => $target instanceof Model ? $target->getKey() : null,

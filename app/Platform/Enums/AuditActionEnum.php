@@ -2,8 +2,6 @@
 
 namespace App\Platform\Enums;
 
-use InvalidArgumentException;
-
 enum AuditActionEnum: string
 {
     case CREATED = 'created';
@@ -32,11 +30,18 @@ enum AuditActionEnum: string
         };
     }
 
+    /** O rótulo de uma ação gravada; a que não é do enum (ability sem mapeamento) fica genérica. */
+    public static function labelOf(string $action): string
+    {
+        return self::tryFrom($action)?->label() ?? 'Outra ação';
+    }
+
     /**
-     * A ação que a pessoa tentou, para a linha negada (G3). Ability sem ação falha em vez de
-     * gravar uma ação que ninguém tentou: toda ability nova entra aqui.
+     * A ação que a pessoa tentou, para a linha negada (G3). Nula para ability sem mapeamento: a
+     * linha grava o nome dela em vez de dar 500 e perder a negação (A6 da review de 07/10). Toda
+     * ability nova continua entrando aqui, para a linha ter a ação certa.
      */
-    public static function forAbility(string $ability): self
+    public static function forAbility(string $ability): ?self
     {
         return match (true) {
             $ability === 'create' => self::CREATED,
@@ -47,7 +52,7 @@ enum AuditActionEnum: string
             $ability === 'anonymize' => self::ANONYMIZED,
             in_array($ability, ['resendInvite', 'resetPassword'], true) => self::PASSWORD_RESET,
             str_starts_with($ability, 'view') => self::VIEWED,
-            default => throw new InvalidArgumentException("Ability sem ação de auditoria: {$ability}."),
+            default => null,
         };
     }
 }

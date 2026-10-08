@@ -153,7 +153,7 @@ class ContactPolicyTest extends TestCase
         $this->assertFalse($plain->isAnonymized());
     }
 
-    // A negação grava a ação pretendida (G3): ability sem ação de auditoria viraria 500.
+    // A negação grava a ação pretendida (G3): ability sem ação de auditoria gravaria só o nome cru.
     public function test_toda_ability_da_policy_tem_acao_de_auditoria(): void
     {
         $abilities = array_map(
