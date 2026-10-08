@@ -2,6 +2,8 @@
 
 namespace App\Platform\Requests\Admin;
 
+use App\Platform\Models\Client;
+use App\Platform\Requests\Concerns\AuthorizesBeforeValidation;
 use App\Platform\Services\ClientService;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,9 +13,14 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class StoreClientRequest extends FormRequest
 {
-    public function authorize(): bool
+    use AuthorizesBeforeValidation;
+
+    /** Criar (sem cliente na rota) ou editar. */
+    protected function abilityAndArguments(): array
     {
-        return true;
+        $client = $this->route('client');
+
+        return $client === null ? ['create', Client::class] : ['update', $client];
     }
 
     /**

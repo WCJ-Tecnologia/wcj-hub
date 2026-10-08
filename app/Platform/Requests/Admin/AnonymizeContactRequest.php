@@ -2,6 +2,7 @@
 
 namespace App\Platform\Requests\Admin;
 
+use App\Platform\Requests\Concerns\AuthorizesBeforeValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,13 +11,15 @@ use Illuminate\Validation\Rule;
  */
 class AnonymizeContactRequest extends FormRequest
 {
+    use AuthorizesBeforeValidation;
+
     public const WORD = 'ANONIMIZAR';
 
     public const MISMATCH = 'Digite ANONIMIZAR para confirmar.';
 
-    public function authorize(): bool
+    protected function abilityAndArguments(): array
     {
-        return true;
+        return ['anonymize', $this->route('contact')];
     }
 
     /**

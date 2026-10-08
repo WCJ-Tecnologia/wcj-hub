@@ -40,8 +40,6 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $this->authorize('create', User::class);
-
         ['user' => $user, 'mailed' => $mailed] = $this->users->invite($request->validated(), $request->user());
 
         // A senha provisória vai só por e-mail (N1): nunca na tela.
@@ -52,8 +50,6 @@ class UserController extends Controller
 
     public function update(StoreUserRequest $request, User $user): RedirectResponse
     {
-        $this->authorize('update', $user);
-
         return $this->attempt(fn () => $this->users->update($user, $request->validated(), $request->user()), 'Usuário atualizado.');
     }
 

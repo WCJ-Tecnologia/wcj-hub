@@ -44,8 +44,6 @@ class ContactController extends Controller
 
     public function store(StoreContactRequest $request, Client $client): RedirectResponse
     {
-        $this->authorize('create', [Contact::class, $client]);
-
         ['contact' => $contact, 'warning' => $warning] = $this->contacts->create($client, $request->validated(), $request->user());
 
         return $this->withWarning(back()->with('success', "Contato {$contact->name} criado."), $warning);
@@ -53,8 +51,6 @@ class ContactController extends Controller
 
     public function update(StoreContactRequest $request, Contact $contact): RedirectResponse
     {
-        $this->authorize('update', $contact);
-
         $warning = $this->contacts->update($contact, $request->validated(), $request->user());
 
         return $this->withWarning(back()->with('success', 'Contato atualizado.'), $warning);
@@ -86,8 +82,6 @@ class ContactController extends Controller
 
     public function anonymize(AnonymizeContactRequest $request, Contact $contact): RedirectResponse
     {
-        $this->authorize('anonymize', $contact);
-
         return $this->attempt(fn () => $this->contacts->anonymize($contact, $request->user()), 'Contato anonimizado.');
     }
 

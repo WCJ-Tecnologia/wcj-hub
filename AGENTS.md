@@ -154,7 +154,7 @@ Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escop
 - Policy fora de `app/Policies`: registrar com `Gate::policy()` no `AppServiceProvider`.
 - A IA conectada age como o usuário dono do token: mesmas Policies; escopo do token nunca passa do papel (IA5).
 - Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. As de Projetos nascem a partir do B2.
-- Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. Ability nova precisa estar em `AuditActionEnum::forAbility()`, senão a negação dá 500.
+- Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. FormRequest que valida payload autoriza antes de validar, pelo trait `AuthorizesBeforeValidation` (mesmo caminho auditado), e a ação não chama `authorize()` de novo: sem isso, quem não pode recebe o erro de validação (que revela dado) e a tentativa não vira `denied`. Ability nova precisa estar em `AuditActionEnum::forAbility()`, senão a negação dá 500.
 - "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientManagement` (ADR-001): o Núcleo não lê `projects`. No B1 a ligação é a implementação vazia `App\Platform\Services\NoClientManagement` (ninguém gere cliente algum); o B2 entrega a real em `Projetos\Services\ProjectClientManagement` e troca a ligação no `AppServiceProvider`. Teste de gestor usa o dublê `tests/Support/ClientManagementFalso.php`.
 
 ## Regras de domínio
@@ -204,7 +204,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 
 - Papel: `RoleEnum` / `roles.slug`. Nunca o rótulo, nunca `user_type`.
 - Ativo: `->active()` / `isActive()` do `Deactivatable`. Nunca `whereNull('deactivated_at')` à mão.
-- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem). Negação: `AuditService::denied()`, chamado só pelo `authorize()` do Controller base. Limpar dado pessoal (anonimização): `AuditService::scrubPersonalData()`.
+- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem). Negação: `AuditService::denied()`, chamado só pelo trait `App\Http\Concerns\AuditsDeniedAbilities` (o `authorize()` do Controller base e o dos FormRequests). Limpar dado pessoal (anonimização): `AuditService::scrubPersonalData()`.
 - Desativar e reativar: ação própria na linha (`POST …/deactivate`, `…/reactivate`), nunca uma caixa "ativo" no formulário (D3 do B1).
 - CNPJ: `App\Rules\AlphanumericCnpj` (alfanumérico, gravado sem máscara e em maiúscula). País: `App\Support\Paises`.
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.

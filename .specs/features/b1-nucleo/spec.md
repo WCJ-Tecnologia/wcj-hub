@@ -235,14 +235,14 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | NUC-01 | P1: Usuários — convite por e-mail (AC 1–3) | Design | Done |
 | NUC-02 | P1: Usuários — carga, papel, IA pode escrever e revogação (AC 4–7, 14) | Design | Done |
 | NUC-03 | P1: Usuários — desativar, reativar, excluir (AC 8–12) | Design | Done |
-| NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | Done |
+| NUC-04 | P1: Usuários — lista, Policy e auditoria (AC 13, 15, 16) | Design | In Progress |
 | NUC-05 | P1: Clientes — criar e validar CNPJ (AC 1–4, 14) | Design | Done |
 | NUC-06 | P1: Clientes — gestor cria e edita pelo Service; contrato `ClientManagement` + implementação vazia (AC 5–8) | Design | Done |
 | NUC-07 | P1: Clientes — desativar, WCJ, excluir, lista (AC 9–13) | Design | Done |
 | NUC-08 | P1: Contatos — criar, aviso de e-mail, gestor (AC 1–6, 13) | Design | Done |
 | NUC-09 | P1: Contatos — desativar, excluir (AC 7–9) | Design | Done |
 | NUC-10 | P1: Contatos — anonimizar (AC 10–12) | Design | Done |
-| NUC-11 | P1: Auditoria — gravação com canal e resultado, negações (AC 1, 2, 8, 9) | Design | Done |
+| NUC-11 | P1: Auditoria — gravação com canal e resultado, negações (AC 1, 2, 8, 9) | Design | In Progress |
 | NUC-12 | P1: Auditoria — tela, filtros, Histórico por ficha (AC 3–7, 10) | Design | Done |
 | NUC-13 | P2: Listas de escolha para gestor (AC 1–3) | - | Done |
 | NUC-14 | P3: Estados de tela e textos (AC 1–2) | - | Done |

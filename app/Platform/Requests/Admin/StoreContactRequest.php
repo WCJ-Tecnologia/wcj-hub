@@ -2,6 +2,8 @@
 
 namespace App\Platform\Requests\Admin;
 
+use App\Platform\Models\Contact;
+use App\Platform\Requests\Concerns\AuthorizesBeforeValidation;
 use App\Platform\Requests\Concerns\NormalizesMaskedInput;
 use App\Platform\Services\ContactService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,11 +14,14 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class StoreContactRequest extends FormRequest
 {
-    use NormalizesMaskedInput;
+    use AuthorizesBeforeValidation, NormalizesMaskedInput;
 
-    public function authorize(): bool
+    /** Criar no cliente da rota (clients/{client}/contacts) ou editar (contacts/{contact}). */
+    protected function abilityAndArguments(): array
     {
-        return true;
+        $contact = $this->route('contact');
+
+        return $contact === null ? ['create', [Contact::class, $this->route('client')]] : ['update', $contact];
     }
 
     protected function prepareForValidation(): void

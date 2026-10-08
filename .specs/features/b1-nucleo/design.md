@@ -65,7 +65,7 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 ### Controller base: `authorize()` auditado
 
 - **Purpose**: toda negação por Policy em controller vira linha `outcome = denied` (G3).
-- **Location**: `app/Http/Controllers/Controller.php`
+- **Location**: `app/Http/Controllers/Controller.php`; a checagem auditada mora no trait `app/Http/Concerns/AuditsDeniedAbilities.php`, que os FormRequests também usam por `AuthorizesBeforeValidation` para autorizar antes de validar (T37, A1 da review de 07/10)
 - **Interfaces**: `authorize(string $ability, mixed $arguments = []): Response` (assinatura do `AuthorizesRequests`)
 - **Dependencies**: `Gate::inspect`, `AuditService::denied`
 - **Reuses**: o trait `AuthorizesRequests` do Laravel

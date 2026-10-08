@@ -1132,10 +1132,10 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Dev e gestor mandando POST/PUT de usuário com payload inválido e e-mail existente recebem 403, sem a mensagem "já está em uso", e grava linha `denied`
-- [ ] O mesmo para clientes, contatos e anonimizar
-- [ ] Teste visto falhando antes da correção
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] Dev e gestor mandando POST/PUT de usuário com payload inválido e e-mail existente recebem 403, sem a mensagem "já está em uso", e grava linha `denied`
+- [x] O mesmo para clientes, contatos e anonimizar
+- [x] Teste visto falhando antes da correção
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

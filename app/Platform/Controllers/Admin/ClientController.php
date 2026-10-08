@@ -65,8 +65,6 @@ class ClientController extends Controller
 
     public function store(StoreClientRequest $request): RedirectResponse
     {
-        $this->authorize('create', Client::class);
-
         $client = $this->clients->create($request->validated(), $request->user());
 
         return back()->with('success', "Cliente {$client->name} criado.");
@@ -74,8 +72,6 @@ class ClientController extends Controller
 
     public function update(StoreClientRequest $request, Client $client): RedirectResponse
     {
-        $this->authorize('update', $client);
-
         return $this->attempt(fn () => $this->clients->update($client, $request->validated(), $request->user()), 'Cliente atualizado.');
     }
 

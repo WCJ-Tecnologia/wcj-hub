@@ -3,6 +3,8 @@
 namespace App\Platform\Requests\Admin;
 
 use App\Platform\Enums\RoleEnum;
+use App\Platform\Models\User;
+use App\Platform\Requests\Concerns\AuthorizesBeforeValidation;
 use App\Platform\Services\UserService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,9 +15,14 @@ use Illuminate\Validation\Rule;
  */
 class StoreUserRequest extends FormRequest
 {
-    public function authorize(): bool
+    use AuthorizesBeforeValidation;
+
+    /** Convidar (sem usuário na rota) ou editar. */
+    protected function abilityAndArguments(): array
     {
-        return true;
+        $user = $this->route('user');
+
+        return $user === null ? ['create', User::class] : ['update', $user];
     }
 
     protected function prepareForValidation(): void
