@@ -81,6 +81,19 @@ class AuditLogQueryTest extends TestCase
         $this->assertNotContains($fora->id, $this->ids([]));
     }
 
+    // T43 (A8 da review de 07/10): data inválida (formato BR) cai no período padrão; só o "De"
+    // vazio é "sem período".
+    public function test_data_invalida_mantem_o_periodo_padrao_e_so_o_vazio_lista_tudo(): void
+    {
+        $dentro = $this->log(at: '2026-09-30 00:30:00');
+        $fora = $this->log(at: '2026-09-29 23:30:00');
+
+        $this->assertSame('2026-09-30', $this->query->filters(['from' => '07/10/2026'])['from']);
+        $this->assertSame([$dentro->id], $this->ids(['from' => '07/10/2026']));
+        $this->assertNull($this->query->filters(['from' => ''])['from']);
+        $this->assertSame([$dentro->id, $fora->id], $this->ids(['from' => '']));
+    }
+
     // AC 6: o Histórico filtra pelo tipo e id do registro, sem limite de período.
     public function test_historico_filtra_tipo_e_id_sem_limite_de_periodo(): void
     {

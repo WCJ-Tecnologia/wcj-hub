@@ -1289,8 +1289,8 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] `from=07/10/2026` lista só os últimos 7 dias; `from=` vazio lista tudo
-- [ ] Gate check passes: `composer lint && php artisan test`
+- [x] `from=07/10/2026` lista só os últimos 7 dias; `from=` vazio lista tudo
+- [x] Gate check passes: `composer lint && php artisan test`
 
 **Tests**: integration
 **Gate**: quick

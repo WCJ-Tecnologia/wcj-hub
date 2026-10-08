@@ -99,6 +99,28 @@ class AuditLogControllerTest extends TestCase
                 ->where('record', 'Usuário Maria Souza'));
     }
 
+    // T43 (A8 da review de 07/10): "De" em formato inválido não derruba o período padrão; o
+    // "De" vazio (que chega nulo) lista tudo.
+    public function test_de_invalido_mantem_os_7_dias_e_de_vazio_lista_tudo(): void
+    {
+        $antigo = $this->log($this->admin->id, '2025-02-01 09:00:00');
+        $recente = $this->log($this->admin->id);
+
+        $this->actingAs($this->admin)->get('/admin/audit-logs?from=07/10/2026')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('filters.from', '2026-09-30')
+                ->has('logs.data', 1)
+                ->where('logs.data.0.id', $recente->id));
+
+        $this->actingAs($this->admin)->get('/admin/audit-logs?from=')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('filters.from', null)
+                ->has('logs.data', 2)
+                ->where('logs.data.1.id', $antigo->id));
+    }
+
     /** @return array<string, array{RoleEnum}> */
     public static function semAcesso(): array
     {

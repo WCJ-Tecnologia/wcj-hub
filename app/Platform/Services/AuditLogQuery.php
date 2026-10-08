@@ -37,8 +37,9 @@ class AuditLogQuery
 
     /**
      * Os filtros da query string, com o padrão de 7 dias. Valor inválido cai fora em vez de
-     * recusar a página. *Histórico* (tipo + id) não tem limite de período (F1 §01); "from"
-     * presente e vazio também não.
+     * recusar a página; o "from" inválido volta ao padrão (A8 da review de 07/10). *Histórico*
+     * (tipo + id) não tem limite de período (F1 §01); "from" presente e vazio também não (a
+     * requisição o entrega nulo).
      *
      * @param  array<string, mixed>  $input
      * @return array{search: string, from: string|null, to: string|null, user_id: int|null, channel: string|null, action: string|null, type: string|null, id: int|null, outcome: string|null}
@@ -60,10 +61,13 @@ class AuditLogQuery
         $type = $valid['type'] ?? null;
         $id = $type !== null && isset($valid['id']) ? (int) $valid['id'] : null;
         $defaultFrom = CarbonImmutable::now(LocalTime::zone())->subDays(self::DEFAULT_DAYS - 1)->toDateString();
+        // O Validator deixa passar o vazio; aqui ele é "sem período", não uma data.
+        $from = ($valid['from'] ?? '') === '' ? null : $valid['from'];
+        $noPeriod = $id !== null || (array_key_exists('from', $input) && in_array($input['from'], [null, ''], true));
 
         return [
             'search' => trim((string) ($valid['search'] ?? '')),
-            'from' => $valid['from'] ?? (array_key_exists('from', $input) || $id !== null ? null : $defaultFrom),
+            'from' => $from ?? ($noPeriod ? null : $defaultFrom),
             'to' => $valid['to'] ?? null,
             'user_id' => isset($valid['user_id']) ? (int) $valid['user_id'] : null,
             'channel' => $valid['channel'] ?? null,
