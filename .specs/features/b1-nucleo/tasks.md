@@ -1442,9 +1442,9 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 **Done when**:
 
-- [ ] Cada texto do F1 §04 citado na review afirmado com `exact`
-- [ ] Limites 120/160 com teste de feature (121 e 161 recusados)
-- [ ] Gate check passes: Build
+- [x] Cada texto do F1 §04 citado na review afirmado com `exact`
+- [x] Limites 120/160 com teste de feature (121 e 161 recusados)
+- [x] Gate check passes: Build
 
 **Tests**: e2e
 **Gate**: build

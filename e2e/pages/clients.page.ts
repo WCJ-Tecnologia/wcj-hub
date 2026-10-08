@@ -88,9 +88,11 @@ export class ClientsPage {
         await expect(this.admin.heading).toHaveText('Auditoria');
     }
 
-    /** Excluir pela linha (lista de clientes ou contatos da ficha), confirmando no diálogo. */
+    /** Excluir pela linha (lista de clientes ou contatos da ficha), conferindo o texto (F1 §04) e confirmando. */
     async deleteRow(name: string) {
         await this.page.getByRole('button', { name: `Excluir ${name}` }).click();
+        // F1 §04: a mesma frase nos três cadastros.
+        await expect(this.admin.dialog.getByText('Excluir de verdade. Não dá para desfazer.', { exact: true })).toBeVisible();
         await this.admin.dialog.getByRole('button', { name: 'Excluir' }).click();
         await expect(this.page.getByRole('button', { name: `Excluir ${name}` })).toHaveCount(0);
     }

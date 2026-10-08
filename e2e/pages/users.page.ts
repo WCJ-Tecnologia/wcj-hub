@@ -40,9 +40,11 @@ export class UsersPage {
         await expect(this.admin.dialog).toBeHidden();
     }
 
-    /** Excluir pela linha, confirmando no diálogo. */
+    /** Excluir pela linha, conferindo o texto da confirmação (F1 §04) e confirmando. */
     async deleteRow(name: string) {
         await this.page.getByRole('button', { name: `Excluir ${name}` }).click();
+        // F1 §04: a mesma frase nos três cadastros.
+        await expect(this.admin.dialog.getByText('Excluir de verdade. Não dá para desfazer.', { exact: true })).toBeVisible();
         await this.admin.dialog.getByRole('button', { name: 'Excluir' }).click();
         await expect(this.page.getByRole('button', { name: `Excluir ${name}` })).toHaveCount(0);
     }

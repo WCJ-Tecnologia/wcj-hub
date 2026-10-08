@@ -2,6 +2,7 @@ import { createClient, deleteClient } from './helpers/dados';
 import { expect, test } from './fixtures';
 import { AuditLogsPage } from './pages/audit-logs.page';
 import { ClientsPage } from './pages/clients.page';
+import { LIST_SCREENS, ListPage } from './pages/list.page';
 import { UsersPage } from './pages/users.page';
 
 /**
@@ -9,8 +10,10 @@ import { UsersPage } from './pages/users.page';
  * documento (Clientes AC 4), confirmação de desativar (AC 9: a variante sem projetos, que a
  * implementação vazia do ClientManagement sempre dá, e o texto com N, por resposta reescrita), estado vazio
  * (AC 13), situação Anonimizado (Contatos AC 12), desativado em cinza (Usuários AC 13) e, na
- * auditoria, a linha negada em destaque e a lista sem resultado (Auditoria AC 3, 10). Cada teste
- * apaga o que criou.
+ * auditoria, a linha negada em destaque e a lista sem resultado (Auditoria AC 3, 10). Da review de
+ * 07/10 (PR #5): as confirmações de desativar usuário e de desconectar a IA com o texto exato do
+ * F1 §04 (o "Excluir de verdade" é conferido em todo deleteRow dos Page Objects) e o estado vazio
+ * sem filtro de Usuários e Contatos. Cada teste apaga o que criou.
  */
 
 test('o documento do cliente se chama CNPJ no Brasil e Identificador fiscal fora dele', async ({ page }) => {
@@ -178,3 +181,63 @@ test('auditoria: a linha negada fica em destaque, com ícone e Negado; filtro se
     await expect(page.getByRole('heading', { name: 'Nenhum registro com esses filtros', exact: true })).toBeVisible();
     await expect(page.getByRole('table')).toHaveCount(0);
 });
+
+// F1 §04 (textos conferidos na review de 07/10, sem teste até aqui): desativar e trocar o papel
+// pedem a confirmação com o nome da pessoa; excluir, a frase fixa (UsersPage.deleteRow).
+test('usuário: desativar e trocar o papel pedem as confirmações do F1 com o nome da pessoa', async ({ page }) => {
+    const stamp = Date.now();
+    const name = `E2E Dev Textos ${stamp}`;
+    const email = `e2e-textos-${stamp}@example.com`;
+    const users = new UsersPage(page);
+
+    await users.goto();
+    await users.invite(name, email, '8');
+
+    await page.getByRole('button', { name: `Desativar ${name}` }).click();
+    await expect(users.admin.dialog.getByText(`${name} perde o acesso imediatamente. Continuar?`, { exact: true })).toBeVisible();
+    await users.admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(users.admin.dialog).toBeHidden();
+
+    await page.getByRole('button', { name: `Editar ${name}` }).click();
+    const form = page.getByRole('dialog', { name: 'Editar usuário' });
+    await form.getByLabel('Papel').selectOption({ label: 'Gestor de projetos' });
+    await form.getByRole('button', { name: 'Salvar alterações' }).click();
+    const confirm = page.getByRole('dialog', { name: 'Desconectar a IA' });
+    await expect(confirm.getByText(`As conexões de IA de ${name} serão desconectadas. Continuar?`, { exact: true })).toBeVisible();
+    await confirm.getByRole('button', { name: 'Cancelar' }).click();
+    await form.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(users.admin.dialog).toHaveCount(0);
+
+    await users.deleteRow(name);
+});
+
+// F1 §03 (P3 AC 1): sem filtro, a lista vazia mostra "Nenhum ... ainda" com a ação. O
+// administrador do e2e (e o que outros specs criam) nunca deixa Usuários vazia, e Contatos depende
+// da ordem dos specs: a resposta da visita é esvaziada, como no teste do estado vazio de clientes.
+for (const { path, prop, title, action } of [
+    { path: '/admin/users', prop: 'users', title: 'Nenhum usuário ainda', action: { role: 'button', name: 'Convidar usuário' } },
+    { path: '/admin/contacts', prop: 'contacts', title: 'Nenhum contato ainda', action: { role: 'link', name: 'Ir para Clientes' } },
+] as const) {
+    test(`lista vazia sem filtro mostra "${title}" com ${action.name}`, async ({ page }) => {
+        const list = new ListPage(
+            page,
+            LIST_SCREENS.find((screen) => screen.path === path)!,
+        );
+        await list.goto();
+
+        await page.route(
+            (url) => url.pathname === path && url.searchParams.get('show_inactive') === '1',
+            async (route) => {
+                const response = await route.fetch();
+                const body = await response.json();
+                body.props[prop] = { ...body.props[prop], data: [], total: 0, from: null, to: null };
+                await route.fulfill({ response, json: body });
+            },
+        );
+        await page.getByLabel('Mostrar desativados').click();
+
+        const empty = list.state(title);
+        await expect(empty).toBeVisible();
+        await expect(empty.getByRole(action.role, { name: action.name })).toBeVisible();
+    });
+}

@@ -132,6 +132,26 @@ class UserControllerTest extends TestCase
             ->assertSessionHasErrors(['email' => 'Este e-mail já está em uso.']);
     }
 
+    // F1 §02: nome até 120 e e-mail até 160; um a mais é recusado no campo e nada é criado.
+    public function test_nome_ate_120_e_email_ate_160_caracteres(): void
+    {
+        // E-mail válido pela RFC: parte local de 64 e rótulos de domínio de até 63.
+        $email = fn (int $length) => str_repeat('m', 64).'@'.str_repeat('d', 63).'.'.str_repeat('e', $length - 64 - 1 - 63 - 1 - 5).'.test';
+        $this->actingAs($this->admin);
+
+        $this->from('/admin/users')->post('/admin/users', $this->invitation(['name' => str_repeat('n', 121)]))
+            ->assertSessionHasErrors(['name' => 'O campo nome pode ter no máximo 120 caracteres.']);
+        $this->from('/admin/users')->post('/admin/users', $this->invitation(['email' => $email(161)]))
+            ->assertSessionHasErrors(['email' => 'O campo e-mail pode ter no máximo 160 caracteres.']);
+        $this->assertSame(1, User::query()->count());
+
+        $this->post('/admin/users', $this->invitation(['name' => str_repeat('n', 120), 'email' => $email(160)]))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+        $created = User::query()->where('email', $email(160))->sole();
+        $this->assertSame([120, 160], [mb_strlen($created->name), mb_strlen($created->email)]);
+    }
+
     public function test_editar_troca_papel_carga_e_marca_da_ia(): void
     {
         $dev = User::factory()->developer()->create();
