@@ -113,6 +113,14 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 - **Passport 13** instalado (tabelas e chaves), com as rotas `/oauth/*` desligadas até o B8 (`Passport::ignoreRoutes`). `laravel/mcp` entra no B8.
 - **Parâmetros** em `config/hub.php` + `.env` (T5); não há tabela de configurações.
 - **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token.
+- **Front em Atomic Design** (ADR-003, diverge do `.ai/stacks/ui.md` e do `laravel-inertia.md`, que ainda citam `components/ui/`, `layouts/` e o Select nativo):
+  - primitivos do shadcn planos em `resources/js/components/shadcn/`; o `components.json` aponta para lá e o primitivo novo entra por `npm run shadcn -- add <nome>`;
+  - componentes do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-<nome>-<nível>/`, cada um com `.tsx`, `.md` (manual) e `.stories.tsx` quando há o que ver;
+  - `resources/js/pages/*.tsx` só reexporta a tela de `components/pages/`;
+  - os layouts são os templates (`w-app-layout-template`, `w-auth-layout-template`);
+  - Select, Sidebar, Table, Pagination, toast (Sonner) e campo de data (`w-date-picker-molecule`, sobre Calendar + Popover) são os do shadcn; nada de `<input type="date">`;
+  - convenção completa em `resources/js/components/README.md`.
+- **Storybook 10** (`npm run storybook`, porta 6006): catálogo dos componentes, com o `@inertiajs/react` trocado por `.storybook/inertia-mock.tsx` e dados de exemplo em `.storybook/fixtures.ts`. O CI roda `npm run build-storybook`.
 
 ## Como rodar
 
@@ -124,6 +132,7 @@ composer dev                         # servidor, fila, logs e Vite
 
 composer lint && php artisan test    # MySQL 8 (wcj_hub_test); precisa do docker compose up -d mysql
 npm run typecheck && npm run lint && npm run build
+npm run storybook                    # catálogo dos componentes em http://localhost:6006
 npm run e2e:prepare && npm run e2e:serve   # em outro terminal: npx playwright test
 npm run test:guard
 php artisan app:limpar-exemplo       # apaga o dado de exemplo ("[Exemplo] …", @exemplo.wcj.test)
@@ -204,6 +213,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem).
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
+- Componente: procure em `resources/js/components/` (leia o `.md` da pasta) antes de criar; primitivo só pelo `npm run shadcn -- add`; um `cn` só, o de `@/lib/utils`.
 
 ## Armadilhas que já custaram tempo
 

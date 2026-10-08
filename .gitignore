@@ -29,5 +29,6 @@ Thumbs.db
 # Harness and test artefacts
 /.harness
 /playwright-report
+/storybook-static
 /test-results
 /e2e/.auth
