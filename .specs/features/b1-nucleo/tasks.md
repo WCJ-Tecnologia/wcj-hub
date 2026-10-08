@@ -111,6 +111,18 @@ T32 → T33 → T34 → T35
 T36
 ```
 
+### Phase 12: Review do Lucas (07/10): achados de código
+
+```
+T37 → T38 → T39 → T40 → T41 → T42 → T43 → T44
+```
+
+### Phase 13: Review do Lucas (07/10): decisões, telas e e2e
+
+```
+T45 → T46 → T47 → T48 → T49 → T50
+```
+
 ---
 
 ## Task Breakdown
@@ -1103,10 +1115,374 @@ Gaps do `validation.md` de 06/10/2026 (FAIL): mutantes M10, M33 e M34 sobreviven
 
 ---
 
+### Phase 12: Review do Lucas (07/10): achados de código
+
+### T37: A1: autorizar antes de validar
+
+**What**: os FormRequests do Núcleo (`StoreUserRequest`, `StoreClientRequest`, `StoreContactRequest`, `AnonymizeContactRequest`) autorizam no `authorize()` pelo mesmo caminho auditado do Controller base (Gate::inspect + `AuditService::denied`), para que não-admin com payload inválido receba 403, não 422, e a tentativa vire `denied`. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Requests/Admin/StoreUserRequest.php`
+**Depends on**: T36
+**Reuses**: o código atual do B1
+**Requirement**: NUC-04, NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Dev e gestor mandando POST/PUT de usuário com payload inválido e e-mail existente recebem 403, sem a mensagem "já está em uso", e grava linha `denied`
+- [ ] O mesmo para clientes, contatos e anonimizar
+- [ ] Teste visto falhando antes da correção
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(nucleo): autorizar antes de validar nos formulários do Núcleo`
+
+---
+
+### T38: A2: CNPJ e país da WCJ não mudam
+
+**What**: `ClientService::update` recusa a troca de `country` ou `document` quando o cliente é a WCJ (N7), com mensagem na linguagem do usuário; o nome continua editável. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Services/ClientService.php`
+**Depends on**: T37
+**Reuses**: o código atual do B1
+**Requirement**: NUC-07
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Admin e gestor que gere a WCJ (dublê) recebem a recusa ao trocar CNPJ ou país; nada muda
+- [ ] Trocar só o nome da WCJ continua valendo
+- [ ] Teste visto falhando antes
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(clientes): a WCJ não troca de CNPJ nem de país`
+
+---
+
+### T39: A3: trava do último admin dentro da transação
+
+**What**: `UserService` faz a checagem do último administrador ativo dentro da transação, com `lockForUpdate()` nas linhas de admin ativo, em desativar, rebaixar e excluir. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Services/UserService.php`
+**Depends on**: T38
+**Reuses**: o código atual do B1
+**Requirement**: NUC-02, NUC-03
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Teste de concorrência com `tests/Support/Concorrencia.php`: dois admins se desativando ao mesmo tempo deixam pelo menos um ativo
+- [ ] Teste visto falhando antes (ou a corrida reproduzida) e passando depois
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(usuarios): trava do último administrador dentro da transação`
+
+---
+
+### T40: A4: checagem de anonimizado sobre a linha travada
+
+**What**: `ContactService::update` e `reactivate` checam o anonimizado dentro da transação, sobre a linha travada, como o `anonymize()`. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Services/ContactService.php`
+**Depends on**: T39
+**Reuses**: o código atual do B1
+**Requirement**: NUC-10
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Edição que esperou a anonimização terminar não regrava dado pessoal no contato nem em `audit_logs.changes` (teste de concorrência ou de ordem)
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(contatos): checar anonimizado dentro da transação`
+
+---
+
+### T41: A6: ability sem mapeamento não dá 500
+
+**What**: `AuditActionEnum::forAbility()` deixa de lançar exceção: ability desconhecida grava o nome cru como ação da linha `denied`; o rótulo cai num texto genérico. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Enums/AuditActionEnum.php`
+**Depends on**: T40
+**Reuses**: o código atual do B1
+**Requirement**: NUC-11
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Ability nova sem mapeamento negada responde 403 e grava `denied` com o nome dela
+- [ ] Tela da auditoria mostra a linha sem quebrar
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(auditoria): ability sem mapeamento grava o nome em vez de dar 500`
+
+---
+
+### T42: A7: sem N+1 na lista de clientes e contatos
+
+**What**: `managedClientIds` calculado uma vez por requisição (o `manages` das Policies usa o mesmo resultado) e a contagem de projetos abertos da lista em lote, por um método em lote no contrato `ClientManagement` (a vazia responde zeros). Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Contracts/ClientManagement.php`
+**Depends on**: T41
+**Reuses**: o código atual do B1
+**Requirement**: NUC-06, NUC-07
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Teste de contagem de consultas: a lista de clientes com 20 linhas não multiplica consultas ao contrato por linha (dublê conta as chamadas)
+- [ ] Clientes AC 9 continua provado (texto com N)
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `perf(clientes): contrato consultado uma vez por lista, não por linha`
+
+---
+
+### T43: A8: data inválida não derruba o período padrão
+
+**What**: `AuditLogQuery::filters()` trata como "sem período" só o `from` vazio; `from` inválido volta para o padrão de 7 dias. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Platform/Services/AuditLogQuery.php`
+**Depends on**: T42
+**Reuses**: o código atual do B1
+**Requirement**: NUC-12
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] `from=07/10/2026` lista só os últimos 7 dias; `from=` vazio lista tudo
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(auditoria): data inválida no filtro mantém o período padrão`
+
+---
+
+### T44: A9: attempt() no Controller base
+
+**What**: o `attempt()` repetido em `UserController`, `ClientController` e `ContactController` sobe para `App\Http\Controllers\Controller`, ao lado do `authorize()`. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `app/Http/Controllers/Controller.php`
+**Depends on**: T43
+**Reuses**: o código atual do B1
+**Requirement**: NUC-04
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Os três controllers usam o do base; nenhuma mensagem muda
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `refactor(nucleo): attempt() num lugar só, no Controller base`
+
+---
+
+### Phase 13: Review do Lucas (07/10): decisões, telas e e2e
+
+### T45: D2: aviso de e-mail repetido por papel
+
+**What**: `ContactService::duplicateWarning` recebe quem está vendo: Administrador segue com "Já existe Fulano (Cliente X) com este e-mail"; quem não é admin recebe "Já existe um contato com este e-mail". Decisão D2 do Lucas (07/10).
+**Where**: `app/Platform/Services/ContactService.php`
+**Depends on**: T44
+**Reuses**: o código atual do B1
+**Requirement**: NUC-08
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Teste para admin e para gestor (dublê) com o texto exato de cada um
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(contatos): aviso de e-mail repetido sem dado de outro cliente para não-admin`
+
+---
+
+### T46: D3: telefone é texto
+
+**What**: sai o `normalizeDigits(['phone'])` do `StoreContactRequest`; grava o que foi digitado (`trim`), até 20; a tela não força máscara de Brasil e mantém o "+"; a busca por telefone continua achando por dígitos. Decisão D3 do Lucas (07/10).
+**Where**: `app/Platform/Requests/Admin/StoreContactRequest.php`
+**Depends on**: T45
+**Reuses**: o código atual do B1
+**Requirement**: NUC-08
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] `+31 6 1234 5678` é gravado e mostrado como digitado
+- [ ] Busca por `3161234` acha o contato
+- [ ] Gate check passes: `composer lint && php artisan test`
+
+**Tests**: integration
+**Gate**: full
+
+**Commit**: `fix(contatos): telefone gravado como texto, com o +`
+
+---
+
+### T47: D9: carga diária aceita 7,3
+
+**What**: sai o `step 0.25` do campo de carga diária no formulário de usuário (`step` qualquer), mantendo `min`. Decisão D9 do Lucas (07/10).
+**Where**: `resources/js/components/users/user-form-dialog.tsx`
+**Depends on**: T46
+**Reuses**: o código atual do B1
+**Requirement**: NUC-02
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] e2e: carga 7,3 é aceita e aparece na lista
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `fix(usuarios): carga diária sem passo de 0,25`
+
+---
+
+### T48: A5: e2e espera a busca antes de agir
+
+**What**: `find()`, `edit()`, `openSheet()` e `deleteRow()` dos Page Objects esperam a URL com `search=` (e a resposta da busca) antes de clicar, para o debounce do `SearchInput` não cancelar o PUT. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `e2e/pages/clients.page.ts`
+**Depends on**: T47
+**Reuses**: o código atual do B1
+**Requirement**: NUC-05, NUC-08, NUC-12
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] `@critical` passa 5 vezes seguidas na suíte inteira com banco recriado
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(e2e): page objects esperam a busca antes de agir`
+
+---
+
+### T49: Cobertura que a review apontou
+
+**What**: testes para os textos das confirmações (desativar usuário, desconectar IA, excluir), os limites de 120 e 160 caracteres do usuário e o estado vazio sem filtro de Usuários e Contatos. Review do Lucas Scholz em 07/10 (PR #5).
+**Where**: `e2e/textos-nucleo.spec.ts`
+**Depends on**: T48
+**Reuses**: o código atual do B1
+**Requirement**: NUC-04, NUC-14
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Cada texto do F1 §04 citado na review afirmado com `exact`
+- [ ] Limites 120/160 com teste de feature (121 e 161 recusados)
+- [ ] Gate check passes: Build
+
+**Tests**: e2e
+**Gate**: build
+
+**Commit**: `test(nucleo): textos das confirmações, limites e estados vazios`
+
+---
+
+### T50: Documentos com as decisões do Lucas
+
+**What**: `spec.md` (D6: Usuários AC 12, Clientes AC 12, Contatos AC 9 com o toast; tirar os `SPEC_DEVIATION` do código; D7 com os textos N = 0 e N = 1; D2 e D3), F1 §04 e §09 (D1), `escopo.md` B1 com os caminhos em inglês e §4 com as abilities (D4, D5), `necessidade.md` N12 com a limitação do contato excluído (D11), `design.md`, `AGENTS.md`, `STATE.md`.
+**Where**: `docs/funcional/f1-nucleo.md`
+**Depends on**: T49
+**Reuses**: o código atual do B1
+**Requirement**: NUC-04, NUC-06, NUC-07, NUC-09
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Nenhum `SPEC_DEVIATION` no código
+- [ ] `conferir-specs.mjs` sem problema
+- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+
+**Tests**: none
+**Gate**: build
+
+**Commit**: `docs(spec): decisões do Lucas na spec, no F1, no escopo e na necessidade`
+
+---
+
 ## Phase Execution Map
 
 ```
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11
+Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10 → Phase 11 → Phase 12 → Phase 13
 
 Phase 1:  T1 → T2 → T3
 Phase 1:  T4
@@ -1121,6 +1497,8 @@ Phase 8:  T30
 Phase 9:  T31
 Phase 10: T32 → T33 → T34 → T35
 Phase 11: T36
+Phase 12: T37 → T38 → T39 → T40 → T41 → T42 → T43 → T44
+Phase 13: T45 → T46 → T47 → T48 → T49 → T50
 ```
 
 ## Task Granularity Check
@@ -1180,6 +1558,20 @@ Phase 11: T36
 | T34 | T33 | T33 → T34 | ✅ Match |
 | T35 | T34 | T34 → T35 | ✅ Match |
 | T36 | T35 | fase anterior | ✅ Match |
+| T37 | T36 | fase anterior | ✅ Match |
+| T38 | T37 | T37 → T38 | ✅ Match |
+| T39 | T38 | T38 → T39 | ✅ Match |
+| T40 | T39 | T39 → T40 | ✅ Match |
+| T41 | T40 | T40 → T41 | ✅ Match |
+| T42 | T41 | T41 → T42 | ✅ Match |
+| T43 | T42 | T42 → T43 | ✅ Match |
+| T44 | T43 | T43 → T44 | ✅ Match |
+| T45 | T44 | fase anterior | ✅ Match |
+| T46 | T45 | T45 → T46 | ✅ Match |
+| T47 | T46 | T46 → T47 | ✅ Match |
+| T48 | T47 | T47 → T48 | ✅ Match |
+| T49 | T48 | T48 → T49 | ✅ Match |
+| T50 | T49 | T49 → T50 | ✅ Match |
 
 ## Test Co-location Validation
 
@@ -1206,3 +1598,6 @@ Phase 11: T36
 | T34 | e2e | e2e | e2e | ✅ OK |
 | T35 | Docs, `.specs` | none | none | ✅ OK |
 | T36 | e2e | e2e | e2e | ✅ OK |
+| T37–T46 | Service, Policy, Request, Controller, Enum | integration | integration | ✅ OK |
+| T47–T49 | Página React, e2e | e2e | e2e | ✅ OK |
+| T50 | Docs, `.specs` | none | none | ✅ OK |
