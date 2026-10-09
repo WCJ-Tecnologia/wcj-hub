@@ -144,13 +144,15 @@ class UserService
     /** As conexões de IA não voltam: a pessoa reconecta (IA6). */
     public function reactivate(User $user, User $actor): void
     {
-        if ($user->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($user, $actor) {
-            $user->setActive(true, $actor)->save();
-            $this->audit->log(AuditActionEnum::REACTIVATED, $user, ['active' => false], ['active' => true], $actor->id);
+            // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
+            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
+            if ($locked->isActive()) {
+                return;
+            }
+
+            $locked->setActive(true, $actor)->save();
+            $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
         });
     }
 

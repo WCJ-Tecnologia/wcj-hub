@@ -124,13 +124,15 @@ class ClientService
 
     public function reactivate(Client $client, User $actor): void
     {
-        if ($client->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($client, $actor) {
-            $client->setActive(true, $actor)->save();
-            $this->audit->log(AuditActionEnum::REACTIVATED, $client, ['active' => false], ['active' => true], $actor->id);
+            // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
+            $locked = Client::query()->lockForUpdate()->findOrFail($client->getKey());
+            if ($locked->isActive()) {
+                return;
+            }
+
+            $locked->setActive(true, $actor)->save();
+            $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
         });
     }
 

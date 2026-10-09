@@ -265,6 +265,36 @@ class ClientServiceTest extends TestCase
         $this->assertSame($other->id, $a->fresh()->deactivated_by);
     }
 
+    // CR-2-06: o segundo "Reativar", por uma instância carregada antes do primeiro (ainda
+    // "desativada" em memória), decide pela linha travada e não grava outra reativação.
+    public function test_reativar_pela_instancia_velha_nao_grava_outra_reativacao(): void
+    {
+        $id = Client::factory()->create()->id;
+        $this->service->deactivate(Client::query()->findOrFail($id), $this->admin);
+        $a = Client::query()->findOrFail($id);
+        $b = Client::query()->findOrFail($id);
+
+        $this->service->reactivate($a, $this->admin);
+        $this->service->reactivate($b, $this->admin);
+
+        $this->assertSame(1, AuditLog::query()->where('action', 'reactivated')->count());
+        $this->assertTrue($a->fresh()->isActive());
+    }
+
+    // CR-2-06: a instância carregada antes de uma desativação ainda parece ativa em memória;
+    // reativar decide pela linha do banco e reativa de fato.
+    public function test_reativar_pela_instancia_carregada_antes_da_desativacao_reativa(): void
+    {
+        $id = Client::factory()->create()->id;
+        $velha = Client::query()->findOrFail($id);
+        $this->service->deactivate(Client::query()->findOrFail($id), $this->admin);
+
+        $this->service->reactivate($velha, $this->admin);
+
+        $this->assertTrue(Client::query()->findOrFail($id)->isActive());
+        $this->assertSame(1, AuditLog::query()->where('action', 'reactivated')->count());
+    }
+
     // AC 10: a Policy responde 403; o Service também recusa, para quem o chamar direto.
     public function test_wcj_nao_se_desativa_pelo_service(): void
     {

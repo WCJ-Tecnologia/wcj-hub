@@ -408,6 +408,36 @@ class UserServiceTest extends TestCase
         $this->assertSame($other->id, $a->fresh()->deactivated_by);
     }
 
+    // CR-2-06: o segundo "Reativar", por uma instância carregada antes do primeiro (ainda
+    // "desativada" em memória), decide pela linha travada e não grava outra reativação.
+    public function test_reativar_pela_instancia_velha_nao_grava_outra_reativacao(): void
+    {
+        $id = User::factory()->developer()->create()->id;
+        $this->service->deactivate(User::query()->findOrFail($id), $this->admin);
+        $a = User::query()->findOrFail($id);
+        $b = User::query()->findOrFail($id);
+
+        $this->service->reactivate($a, $this->admin);
+        $this->service->reactivate($b, $this->admin);
+
+        $this->assertSame(1, AuditLog::query()->where('action', 'reactivated')->count());
+        $this->assertTrue($a->fresh()->isActive());
+    }
+
+    // CR-2-06: a instância carregada antes de uma desativação ainda parece ativa em memória;
+    // reativar decide pela linha do banco e reativa de fato.
+    public function test_reativar_pela_instancia_carregada_antes_da_desativacao_reativa(): void
+    {
+        $id = User::factory()->developer()->create()->id;
+        $velha = User::query()->findOrFail($id);
+        $this->service->deactivate(User::query()->findOrFail($id), $this->admin);
+
+        $this->service->reactivate($velha, $this->admin);
+
+        $this->assertTrue(User::query()->findOrFail($id)->isActive());
+        $this->assertSame(1, AuditLog::query()->where('action', 'reactivated')->count());
+    }
+
     // CR-2-01: desativar um administrador trava primeiro os administradores ativos e só depois a
     // linha do alvo, na mesma ordem de update e delete. Com a ordem invertida, a Ana desativando
     // a Bia e a Bia desativando a Ana ao mesmo tempo entram em deadlock (1213) e uma recebe 500.
