@@ -263,6 +263,23 @@ class ClientServiceTest extends TestCase
         $this->assertSame(0, AuditLog::query()->count());
     }
 
+    // CR-1-04 do ciclo 1: a trava de excluir a WCJ não fica só na Policy.
+    public function test_wcj_nao_se_exclui_pelo_service(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+
+        try {
+            $this->service->delete($wcj, $this->admin);
+            $this->fail('Excluiu a WCJ.');
+        } catch (DomainException $e) {
+            $this->assertSame('A WCJ não pode ser excluída', $e->getMessage());
+        }
+
+        $this->assertModelExists($wcj);
+        $this->assertSame(0, AuditLog::query()->where('action', 'deleted')->count());
+    }
+
     /** @return array<string, array{array<string, string|null>}> */
     public static function trocaDeIdentidadeDaWcj(): array
     {

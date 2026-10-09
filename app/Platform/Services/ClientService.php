@@ -126,6 +126,11 @@ class ClientService
     /** G2: só cliente sem contato e sem projeto; o resto se desativa. */
     public function delete(Client $client, User $actor): void
     {
+        // Como em deactivate: a Policy já responde 403; isto vale para quem chamar o Service (N7).
+        if ($client->isWcj()) {
+            throw new DomainException(ClientPolicy::WCJ_NOT_DELETABLE);
+        }
+
         $before = $this->snapshot($client);
 
         $deleted = $client->deleteIfUnused(function (Client $deleted) use ($before, $actor) {
