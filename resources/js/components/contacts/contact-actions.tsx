@@ -7,6 +7,7 @@ import { AnonymizeContactDialog } from '@/components/contacts/anonymize-contact-
 import { ContactFormDialog, type ContactFormData } from '@/components/contacts/contact-form-dialog';
 import { contactSituation, type ContactRow } from '@/components/contacts/contact-table';
 import { RowActions } from '@/components/row-actions';
+import { useRowAction } from '@/hooks/use-row-action';
 import type { SharedProps } from '@/types';
 
 const EMPTY: ContactFormData = { name: '', email: '', phone: '' };
@@ -23,9 +24,7 @@ export function useContactActions() {
     const [newFor, setNewFor] = useState<{ id: number; name: string } | null>(null);
     const [deleting, setDeleting] = useState<ContactRow | null>(null);
     const [anonymizing, setAnonymizing] = useState<ContactRow | null>(null);
-    const [busy, setBusy] = useState(false);
-    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
-    const [busyRow, setBusyRow] = useState<number | null>(null);
+    const rowAction = useRowAction();
     const form = useForm<ContactFormData>(EMPTY);
     const anonymizeForm = useForm({ confirmation: '' });
 
@@ -63,26 +62,13 @@ export function useContactActions() {
         anonymizeForm.post(`/admin/contacts/${anonymizing.id}/anonymize`, { preserveScroll: true, onSuccess: () => setAnonymizing(null) });
     };
 
-    const rowRequest = (row: ContactRow) => ({
-        preserveScroll: true,
-        onStart: () => {
-            setBusy(true);
-            setBusyRow(row.id);
-        },
-        onFinish: () => {
-            setBusy(false);
-            setBusyRow(null);
-            setDeleting(null);
-        },
-    });
-
-    // Desativar e reativar não pedem confirmação (F1 §04); o segundo clique é ignorado enquanto a visita roda.
-    const rowPost = (url: string, row: ContactRow) => !busy && router.post(url, {}, rowRequest(row));
+    // Desativar e reativar não pedem confirmação (F1 §04): a trava de clique duplo é a do useRowAction.
 
     const rowActions = (row: ContactRow, labeled = false) => (
         <RowActions
             labeled={labeled}
-            busy={busyRow === row.id}
+            busy={rowAction.isBusy(row)}
+            disabled={rowAction.isLocked(row)}
             // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
             className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
             actions={[
@@ -91,14 +77,14 @@ export function useContactActions() {
                     label: 'Desativar',
                     ariaLabel: `Desativar ${row.name}`,
                     icon: Power,
-                    onClick: () => rowPost(`/admin/contacts/${row.id}/deactivate`, row),
+                    onClick: () => rowAction.post(`/admin/contacts/${row.id}/deactivate`, row),
                     hidden: !row.can.deactivate,
                 },
                 {
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: RotateCcw,
-                    onClick: () => rowPost(`/admin/contacts/${row.id}/reactivate`, row),
+                    onClick: () => rowAction.post(`/admin/contacts/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {
@@ -147,8 +133,10 @@ export function useContactActions() {
                 description="Excluir de verdade. Não dá para desfazer."
                 confirmLabel="Excluir"
                 destructive
-                loading={busy}
-                onConfirm={() => deleting && router.delete(`/admin/contacts/${deleting.id}`, rowRequest(deleting))}
+                loading={rowAction.busy}
+                onConfirm={() =>
+                    deleting && rowAction.del(`/admin/contacts/${deleting.id}`, deleting, { onFinish: () => setDeleting(null) })
+                }
             />
 
             <AnonymizeContactDialog

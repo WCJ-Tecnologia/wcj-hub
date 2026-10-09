@@ -38,6 +38,11 @@ export function createContact(clientId: number, name: string): number {
     );
 }
 
+/** Desativa o contato fora da tela, para o spec começar pelo Reativar. */
+export function deactivateContact(id: number): void {
+    tinker(`App\\Platform\\Models\\Contact::query()->whereKey(${id})->update(['deactivated_at' => now()]);`);
+}
+
 /** Apaga o que o spec criou: os contatos do cliente e o próprio cliente. */
 export function deleteClient(id: number): void {
     tinker(`

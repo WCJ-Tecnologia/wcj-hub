@@ -14,6 +14,7 @@ import { Select } from '@/components/ui/select';
 import { ROLE, UserFormDialog, type UserFormData } from '@/components/users/user-form-dialog';
 import { situation, UserTable, type UserRow } from '@/components/users/user-table';
 import { useListVisit } from '@/hooks/use-list-visit';
+import { useRowAction } from '@/hooks/use-row-action';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated, SharedProps } from '@/types';
 
@@ -33,9 +34,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<UserRow | null>(null);
     const [confirm, setConfirm] = useState<{ kind: ConfirmKind; row: UserRow } | null>(null);
-    const [busy, setBusy] = useState(false);
-    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
-    const [busyRow, setBusyRow] = useState<number | null>(null);
+    const rowAction = useRowAction();
     const form = useForm<UserFormData>(EMPTY);
 
     const openCreate = () => {
@@ -67,20 +66,8 @@ export default function UsersIndex({ users, filters, roles }: Props) {
         else save();
     };
 
-    const rowRequest = (row: UserRow) => ({
-        preserveScroll: true,
-        onStart: () => {
-            setBusy(true);
-            setBusyRow(row.id);
-        },
-        onFinish: () => {
-            setBusy(false);
-            setBusyRow(null);
-            setConfirm(null);
-        },
-    });
-    // O segundo clique é ignorado enquanto a visita roda (Reativar não pede confirmação).
-    const rowPost = (url: string, row: UserRow) => !busy && router.post(url, {}, rowRequest(row));
+    // Ao terminar, a ação da linha fecha a confirmação que a disparou.
+    const closeConfirm = { onFinish: () => setConfirm(null) };
 
     const filterParams = {
         search: filters.search || undefined,
@@ -104,21 +91,21 @@ export default function UsersIndex({ users, filters, roles }: Props) {
             title: () => 'Reenviar convite',
             text: (row) => `Vamos mandar uma senha provisória nova para ${row.email}. A anterior deixa de valer na hora.`,
             label: 'Reenviar',
-            run: (row) => rowPost(`/admin/users/${row.id}/reset-password`, row),
+            run: (row) => rowAction.post(`/admin/users/${row.id}/reset-password`, row, closeConfirm),
         },
         deactivate: {
             title: () => 'Desativar usuário',
             text: (row) => `${row.name} perde o acesso imediatamente. Continuar?`,
             label: 'Desativar',
             destructive: true,
-            run: (row) => rowPost(`/admin/users/${row.id}/deactivate`, row),
+            run: (row) => rowAction.post(`/admin/users/${row.id}/deactivate`, row, closeConfirm),
         },
         delete: {
             title: (row) => `Excluir ${row.name}?`,
             text: () => 'Excluir de verdade. Não dá para desfazer.',
             label: 'Excluir',
             destructive: true,
-            run: (row) => router.delete(`/admin/users/${row.id}`, rowRequest(row)),
+            run: (row) => rowAction.del(`/admin/users/${row.id}`, row, closeConfirm),
         },
         disconnect: {
             title: () => 'Desconectar a IA',
@@ -139,7 +126,8 @@ export default function UsersIndex({ users, filters, roles }: Props) {
     const rowActions = (row: UserRow, labeled = false) => (
         <RowActions
             labeled={labeled}
-            busy={busyRow === row.id}
+            busy={rowAction.isBusy(row)}
+            disabled={rowAction.isLocked(row)}
             // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
             className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
             actions={[
@@ -162,7 +150,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: UserCheck,
-                    onClick: () => rowPost(`/admin/users/${row.id}/reactivate`, row),
+                    onClick: () => rowAction.post(`/admin/users/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {
@@ -251,7 +239,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                 description={confirm && current ? current.text(confirm.row) : undefined}
                 confirmLabel={current?.label}
                 destructive={current?.destructive}
-                loading={busy || form.processing}
+                loading={rowAction.busy || form.processing}
                 onConfirm={() => confirm && current?.run(confirm.row)}
             />
         </AppLayout>

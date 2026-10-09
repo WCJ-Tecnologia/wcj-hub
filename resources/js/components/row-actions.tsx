@@ -19,16 +19,20 @@ export interface RowAction {
  * Ações de uma linha de listagem. `labeled=false` (desktop): botões de ícone
  * com aria-label. `labeled=true` (card mobile): botões outline com texto.
  * `busy`: uma ação desta linha está rodando; os botões travam e a linha sinaliza.
+ * `disabled`: a ação de outra linha está rodando; os botões só travam, sem esmaecer (CR-2-07).
+ * Os dois vêm do `useRowAction` (`isBusy`, `isLocked`).
  */
 export function RowActions({
     actions,
     labeled = false,
     busy = false,
+    disabled = false,
     className,
 }: {
     actions: RowAction[];
     labeled?: boolean;
     busy?: boolean;
+    disabled?: boolean;
     className?: string;
 }) {
     const visible = actions.filter((action) => !action.hidden);
@@ -47,7 +51,7 @@ export function RowActions({
                         variant={labeled ? 'outline' : 'ghost'}
                         size={labeled ? 'sm' : 'icon'}
                         onClick={action.onClick}
-                        disabled={busy}
+                        disabled={busy || disabled}
                         aria-label={action.ariaLabel ?? action.label}
                     >
                         <Icon className={cn('size-4', action.destructive && 'text-destructive')} aria-hidden />

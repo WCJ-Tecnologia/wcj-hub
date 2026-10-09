@@ -14,6 +14,7 @@ import { ShowInactiveToggle } from '@/components/show-inactive-toggle';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useListVisit } from '@/hooks/use-list-visit';
+import { useRowAction } from '@/hooks/use-row-action';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated, SharedProps } from '@/types';
 
@@ -42,9 +43,7 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<ClientRow | null>(null);
     const [confirm, setConfirm] = useState<{ kind: ConfirmKind; row: ClientRow } | null>(null);
-    const [busy, setBusy] = useState(false);
-    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
-    const [busyRow, setBusyRow] = useState<number | null>(null);
+    const rowAction = useRowAction();
     const form = useForm<ClientFormData>(EMPTY);
 
     const openCreate = () => {
@@ -68,20 +67,8 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
         else form.post('/admin/clients', options);
     };
 
-    const rowRequest = (row: ClientRow) => ({
-        preserveScroll: true,
-        onStart: () => {
-            setBusy(true);
-            setBusyRow(row.id);
-        },
-        onFinish: () => {
-            setBusy(false);
-            setBusyRow(null);
-            setConfirm(null);
-        },
-    });
-    // O segundo clique é ignorado enquanto a visita roda (Reativar não pede confirmação).
-    const rowPost = (url: string, row: ClientRow) => !busy && router.post(url, {}, rowRequest(row));
+    // Ao terminar, a ação da linha fecha a confirmação que a disparou.
+    const closeConfirm = { onFinish: () => setConfirm(null) };
 
     const filterParams = {
         search: filters.search || undefined,
@@ -96,13 +83,13 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
             title: () => 'Desativar cliente',
             text: deactivateText,
             label: 'Desativar',
-            run: (row: ClientRow) => rowPost(`/admin/clients/${row.id}/deactivate`, row),
+            run: (row: ClientRow) => rowAction.post(`/admin/clients/${row.id}/deactivate`, row, closeConfirm),
         },
         delete: {
             title: (row: ClientRow) => `Excluir ${row.name}?`,
             text: () => 'Excluir de verdade. Não dá para desfazer.',
             label: 'Excluir',
-            run: (row: ClientRow) => router.delete(`/admin/clients/${row.id}`, rowRequest(row)),
+            run: (row: ClientRow) => rowAction.del(`/admin/clients/${row.id}`, row, closeConfirm),
         },
     } satisfies Record<ConfirmKind, unknown>;
 
@@ -115,7 +102,8 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
     const rowActions = (row: ClientRow, labeled = false) => (
         <RowActions
             labeled={labeled}
-            busy={busyRow === row.id}
+            busy={rowAction.isBusy(row)}
+            disabled={rowAction.isLocked(row)}
             actions={[
                 { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.update },
                 {
@@ -129,7 +117,7 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: RotateCcw,
-                    onClick: () => rowPost(`/admin/clients/${row.id}/reactivate`, row),
+                    onClick: () => rowAction.post(`/admin/clients/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {
@@ -223,7 +211,7 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
                 description={confirm && current ? current.text(confirm.row) : undefined}
                 confirmLabel={current?.label}
                 destructive
-                loading={busy}
+                loading={rowAction.busy}
                 onConfirm={() => confirm && current?.run(confirm.row)}
             />
         </AppLayout>
