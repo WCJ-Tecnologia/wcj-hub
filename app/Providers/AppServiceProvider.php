@@ -21,6 +21,8 @@ use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\TimeEntry;
 use App\Domains\Projetos\Models\ValidationType;
+use App\Domains\Projetos\Policies\ProjectPolicy;
+use App\Domains\Projetos\Services\ProjectClientManagement;
 use App\Http\Responses\ThrottledAuthResponse;
 use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\AiAssistant;
@@ -36,7 +38,6 @@ use App\Platform\Policies\ClientPolicy;
 use App\Platform\Policies\ContactPolicy;
 use App\Platform\Policies\UserPolicy;
 use App\Platform\Services\MemoizedClientManagement;
-use App\Platform\Services\NoClientManagement;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Events\RequestHandled;
@@ -59,9 +60,9 @@ class AppServiceProvider extends ServiceProvider
         Passport::ignoreRoutes();
 
         // O Núcleo não conhece módulo (A9, ADR-001): pergunta pelo contrato. O B2 troca a
-        // implementação vazia pela de Projetos no give(); a memória por requisição fica na frente.
+        // implementação vazia (B1) pela de Projetos no give(): feito no B2; a memória por requisição fica na frente.
         $this->app->scoped(ClientManagement::class, MemoizedClientManagement::class);
-        $this->app->when(MemoizedClientManagement::class)->needs(ClientManagement::class)->give(NoClientManagement::class);
+        $this->app->when(MemoizedClientManagement::class)->needs(ClientManagement::class)->give(ProjectClientManagement::class);
     }
 
     public function boot(): void
@@ -149,5 +150,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Client::class, ClientPolicy::class);
         Gate::policy(Contact::class, ContactPolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
     }
 }

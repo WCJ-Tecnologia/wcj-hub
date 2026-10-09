@@ -3,9 +3,9 @@
 > Mantido pela skill `wcj-code-review`. Editável à mão.
 > Atualizado ao final de cada ciclo de review.
 >
-> O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
+> Esta cópia, na `feat/b2-projeto-e-configuracao`, é a da `main` mais o que os ciclos 1 (do lado do Vitinho) e 2 do PR-6 anotaram (CV-13, AP-05 ocorrência, DA-11, DA-12, FP-07 e o bloco do PR-6); a versão própria que a branch trazia (30 linhas) foi absorvida aqui. O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
 
-**Última atualização:** 2026-10-09 · **Reviews acumulados:** 7 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-09 · **Reviews acumulados:** 9 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -75,6 +75,11 @@
 
 ---
 
+### CV-13 — Quadro padrão (P10) mora só em `BoardStageService::DEFAULT_BOARD`; "gere" de projeto é papel global + vínculo; "nunca usado" de projeto = sem tarefa, sprint e pacote
+- **Escopo:** `app/Domains/Projetos/Services/BoardStageService.php`, `ProjectPolicy::manages`, `Project::scopeVisibleTo`, `ProjectService::delete`
+- **Evidência:** PR-6 `BoardStageService.php:17-26` (`ProjectService`, `ExemploSeeder` e `ProjectFactory::withBoard()` o chamam); `ProjectPolicy.php:51-58`; `Project.php:116-128`; `ProjectService.php:88-103`
+- **Visto em:** pr-6 ciclos 1 e 2. `project_members` **não tem coluna de papel**: "alocado com papel gestor" = papel global do usuário (`isProjectManager()`) + vínculo, como o `banco.txt` diz; a lista (`scopeVisibleTo`) espelha a Policy `view`. "Nunca usado" de projeto não é o `isReferenced()` genérico (`board_stages`, `project_areas` e `project_members` sempre referenciam e saem por cascade). Lista de 8 etapas copiada em outro lugar é desvio
+
 ## Anti-padrões recorrentes
 
 ### AP-01 — Check-then-act fora da transação, e a correção que inverte a ordem das travas
@@ -99,8 +104,9 @@
 
 ### AP-05 — Fundação de front aberta em paralelo a blocos funcionais, renomeando o que eles editam
 - **Ocorrências:** pr-8 ciclo 1 (CR-1-02): o #8 parte do B0 e move/renomeia `components/ui/*`, `layouts/`, `data-table`, `row-actions`, `search-input`, `status-pill`, `user-form-dialog`, `app-sidebar`, que o #5 (B1) e o #6 (B2) editam; `git merge-tree` dá 9 conflitos com o #5 e 1 com o #6; 30 arquivos do B1 e 21 do B2 importam `@/components/ui/` ou `@/layouts/`; os componentes e hooks do B1 (CV-07, CV-09, `StatusPill` contact/audit, `DataTable rowClassName`, `SearchInput` do CR-1-10) não existem no #8
-- **Regressões:** 0 (ainda não integrado)
-- **Sinal:** PR que renomeia ou move pasta de `resources/js/components/` enquanto há PR aberto de bloco funcional; corpo do PR sem citar os PRs abertos; `git merge-tree --write-tree <branch> <cada PR aberto>` com conflito
+- **Ocorrência do PR-6 (ciclo 2, CR-2-01):** o B2 também nasceu da `main` antiga (antes do B1 e do #8): 9 conflitos com a `main` atual, o front inteiro em `components/ui/`/`layouts/`/Select nativo/`<input type="date">`, e dois add/add que substituiriam arquivos da `main` (`tests/Support/CriaProjeto.php`, criado pelo B1 com o mesmo nome e outros métodos; `PROJECT-PATTERNS.md`, versão própria de 30 linhas no lugar do acumulado). O #8 (resolvido 09/10) é o molde do porte
+- **Regressões:** 0 (PR-8 integrado 09/10; PR-6 ainda não)
+- **Sinal:** PR que renomeia ou move pasta de `resources/js/components/`; **branch de bloco aberta antes de um PR de fundação mergear**; add/add de arquivo que a `main` também criou (`tests/Support/*`, `.specs/code-reviews/PROJECT-PATTERNS.md`) enquanto há PR aberto de bloco funcional; corpo do PR sem citar os PRs abertos; `git merge-tree --write-tree <branch> <cada PR aberto>` com conflito
 - **Ação sugerida:** rodar o `merge-tree` contra cada PR aberto antes de abrir o PR de fundação e colocar o resultado e a ordem proposta no corpo; quem é dono da estrutura porta os componentes dos outros (lista nominal no PR); rodar os e2e dos blocos portados depois da integração
 
 ### AP-06 — Corpo do PR afirma "verde" com CI vermelho ou sem rodar
@@ -170,6 +176,16 @@
 - **Origem:** pr-8 ciclo 1; **decidido pelo Lucas Scholz em 09/10/2026:** #5 primeiro (mergeado, main `a1a052e`), #7 em seguida (`1a98616`), #8 faz o rebase e porta o B1 para a estrutura atômica, depois #6
 - **Implica:** no ciclo 2 do PR-8, conferir se o rebase portou a lista nominal (ListBody, useListVisit, ShowInactiveToggle, useRowAction, RowActions busy/disabled, StatusPill contact/audit, DataTable rowClassName, SearchInput do CR-1-10, telas de clientes/contatos/auditoria, tabela do AGENTS.md)
 
+### DA-11 — Criar e editar projeto por modal na lista, não as telas `/projetos/novo` e `/projetos/{id}/editar` do escopo B2
+- **Motivo:** decisão do Lucas Scholz em 09/10/2026 ("segue o que o Vitinho fez"): o modal é o gabarito do `.ai/stacks/ui.md` §4 e o que o B1 fez em Usuários e Clientes
+- **Origem:** pr-6 ciclo 1 (CR-1-05), decidido no ciclo 2
+- **Implica:** não apontar "faltam as telas /projetos/novo e /editar"; o `docs/escopo.md` (B2, "Telas") precisa ser alinhado no rebase (AP-04 se ficar para trás); a configuração (`/projetos/{id}/configuracao`, abas) continua página própria
+
+### DA-12 — `ProjectClientManagement` é do B2 e precisa entrar no passo 2 (ou antes)
+- **Motivo:** com o B1 na `main`, `ClientPolicy`/`ContactPolicy` perguntam ao contrato `ClientManagement`, ligado a `NoClientManagement`: o gestor não gere cliente nem vê contato (F1 §09) até o B2 entregar a real (escopo B2)
+- **Origem:** pr-6 ciclo 2 (CR-2-05)
+- **Implica:** no ciclo seguinte do PR-6, conferir se o PR declara o passo em que entra ou já entrega; o `ClientManagementFalso` dos testes do Núcleo continua valendo
+
 ## Falsos positivos
 
 ### FP-01 — Gestor cria cliente em Administração → Clientes (não só pelo formulário do projeto)
@@ -201,6 +217,11 @@
 - **Apontado em:** pr-8 ciclo 1 (o próprio PR levantou como ponto que pedia aval)
 - **Por que não é problema:** aprovado pelo Lucas Scholz em 09/10/2026 (DA-09); o ui.md é do template
 - **Reabrir apenas se:** o template `ai-systems` incorporar a decisão de outro jeito, ou um uso real no celular pedir o seletor do sistema
+
+### FP-07 — "Label sem `for` / input sem `id`" nos formulários com `WFormFieldMolecule`
+- **Apontado em:** pr-6 ciclo 1 (registrado pelo revisor do lado do Vitinho)
+- **Por que não é problema:** o `WFormFieldMolecule` injeta `id`, `aria-invalid` e `aria-describedby` no filho por `cloneElement` quando recebe `htmlFor` (`w-form-field-molecule.tsx:28-35`)
+- **Reabrir apenas se:** o filho for um componente que não repassa `id`/`aria-*` ao controle (o `WDatePickerMolecule` passou a repassar no #8)
 
 ### Registrado sem achado no ciclo 3 (não é FP: o Lucas não foi consultado)
 - Evidência de rodada antiga do `validation.md` (ex.: U3 da rodada 3 citando `isReset`) não se reescreve: o relatório é por rodadas e a mais nova é a vigente. Não apontar.
@@ -236,3 +257,9 @@
 - `.storybook/main.ts` com `import.meta.resolve` e `staticDirs: ['../public']`: Node 22 no CI; servir `public/build` no Storybook é inofensivo.
 - Ícones lucide sem `aria-hidden` explícito em `WStatCardMolecule`/`WEmptyStateMolecule`: o `lucide-react` emite `aria-hidden="true"` por padrão.
 - "E2E 13/13 (axe)" do corpo do PR: não verificado neste ciclo (CI pulou, precisa de Laravel + MySQL). Registrar como "sem evidência", não como achado separado (está no CR-1-01).
+
+### Registrado sem achado no ciclo 2 do PR-6 (não é FP: o Lucas não foi consultado)
+- Rotas em português (`/projetos`, `/encerrar`, `/reabrir`) com nomes `projects.*`: é o que o escopo B2 define (o `/admin/*` do B1 é em inglês pela D4). Não apontar.
+- `guardPrefix` envolve a transação inteira (CR-1-03 do PR-6): o único unique de `projects` é o do prefixo; convenção, não bug ativo. Não subir a criticidade sem um segundo unique na transação.
+- Encerrar o já encerrado responde "encerrado" sem gravar: fluxo aberto. Delete audita com `auditable_id` do apagado: mesmo caminho do `deleteIfUnused`.
+- O `ExemploSeeder` da `main` ainda tem a constante `ETAPAS`; o PR-6 a troca pelo `BoardStageService`, como o comentário do seeder pedia. Sem conflito.

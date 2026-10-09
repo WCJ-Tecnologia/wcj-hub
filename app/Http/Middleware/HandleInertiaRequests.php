@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Projetos\Models\Project;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -68,6 +69,9 @@ class HandleInertiaRequests extends Middleware
                 // Menu Administração (F1 §09): o gestor vê clientes e os contatos dos clientes dele.
                 'view_clients' => $user->can('viewAny', Client::class),
                 'view_contacts' => $user->can('viewAny', Contact::class),
+                // Da ProjectPolicy (F2 §09): o Comercial não entra em Projetos (C14).
+                'view_projects' => $user->can('viewAny', Project::class),
+                'manage_projects' => $user->can('create', Project::class),
             ],
         ];
     }

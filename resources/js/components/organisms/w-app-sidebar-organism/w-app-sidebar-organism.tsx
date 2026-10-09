@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Building2, ContactRound, History, LayoutDashboard, PanelLeftClose, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { Building2, ContactRound, FolderKanban, History, LayoutDashboard, PanelLeftClose, UserRound, Users, type LucideIcon } from 'lucide-react';
 
 import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-logo-atom';
 import { WProductWordmarkAtom } from '@/components/atoms/w-product-wordmark-atom/w-product-wordmark-atom';
@@ -42,6 +42,11 @@ export const NAV: WNavGroup[] = [
     {
         title: 'Visão geral',
         items: [{ label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard }],
+    },
+    {
+        // F2 §09: todos menos o Comercial (C14); cada um vê só os projetos que pode ver (P5).
+        title: 'Projetos',
+        items: [{ label: 'Projetos', href: '/projetos', icon: FolderKanban, visible: (a) => a.view_projects }],
     },
     {
         // F1 §09: o Administrador vê os quatro; o gestor, Clientes e Contatos; o dev, nenhum.

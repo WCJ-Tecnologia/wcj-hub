@@ -2,23 +2,32 @@
 
 namespace Tests\Support;
 
+use App\Domains\Projetos\Models\BoardStage;
 use App\Domains\Projetos\Models\Project;
 use App\Domains\Projetos\Models\StageRole;
+use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskPriority;
 use App\Domains\Projetos\Models\TaskType;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use Database\Seeders\ReworkReasonSeeder;
 use Database\Seeders\StageRoleSeeder;
 use Database\Seeders\TaskPrioritySeeder;
 use Database\Seeders\TaskTypeSeeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Projeto mínimo para os testes do Núcleo em que o projeto precisa existir no banco: cliente
- * com projeto é "já usado" (G2) e desativa mesmo com projeto aberto (N11). "Gestor do cliente"
- * não sai daqui: vem do contrato ClientManagement (dublê ClientManagementFalso). O B2 ainda não
- * tem Service de projeto: grava direto na tabela.
+ * Montagem de projeto nos testes, do Núcleo (B1) e de Projetos (B2).
+ *
+ * Núcleo: `project()` e `supportCard()` gravam direto na tabela, para o cliente com projeto ser
+ * "já usado" (G2) e desativar mesmo com projeto aberto (N11), e para o contato citado num card de
+ * suporte (P52). "Gestor do cliente" não sai daqui: vem do contrato ClientManagement (dublê
+ * ClientManagementFalso ou a implementação real de Projetos).
+ *
+ * Projetos: domínios semeados (`semearProjetos()`), projeto com o quadro padrão pela factory
+ * (`projeto()`), alocação, etapa e tarefa (gravada direto, com o número pelo contador: o card é
+ * do B3).
  */
 trait CriaProjeto
 {
@@ -58,6 +67,49 @@ trait CriaProjeto
             'task_type_id' => TaskType::query()->where('slug', TaskType::SUPPORT)->value('id'),
             'task_priority_id' => TaskPriority::NORMAL, 'title' => 'Pedido do cliente',
             'requester_contact_id' => $requester->id, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    protected function semearProjetos(): void
+    {
+        $this->seed([StageRoleSeeder::class, TaskPrioritySeeder::class, TaskTypeSeeder::class, ReworkReasonSeeder::class]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    protected function projeto(array $attributes = []): Project
+    {
+        return Project::factory()->withBoard()->create($attributes);
+    }
+
+    protected function alocar(Project $project, User ...$users): void
+    {
+        foreach ($users as $user) {
+            $project->members()->create(['user_id' => $user->id]);
+        }
+    }
+
+    protected function etapa(Project $project, int $role): BoardStage
+    {
+        return $project->boardStages()->where('stage_role_id', $role)->whereNull('archived_at')->firstOrFail();
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    protected function tarefa(Project $project, ?BoardStage $stage = null, array $attributes = []): Task
+    {
+        $project->increment('last_task_number');
+
+        return Task::query()->create([
+            'project_id' => $project->id,
+            'number' => $project->last_task_number,
+            'board_stage_id' => ($stage ?? $this->etapa($project, StageRole::QUEUE))->id,
+            'task_type_id' => TaskType::query()->where('slug', TaskType::IMPROVEMENT)->value('id'),
+            'task_priority_id' => TaskPriority::NORMAL,
+            'title' => 'Tarefa '.$project->last_task_number,
+            ...$attributes,
         ]);
     }
 }

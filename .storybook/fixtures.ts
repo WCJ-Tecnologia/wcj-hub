@@ -7,7 +7,9 @@ import type { AuditLogRow } from '@/components/organisms/w-audit-log-table-organ
 import type { Country } from '@/components/organisms/w-client-form-dialog-organism/w-client-form-dialog-organism';
 import type { ClientRow } from '@/components/organisms/w-client-table-organism/w-client-table-organism';
 import type { ContactRow } from '@/components/organisms/w-contact-table-organism/w-contact-table-organism';
+import type { ProjectFilters } from '@/components/organisms/w-project-filters-organism/w-project-filters-organism';
 import type { UserRow } from '@/components/organisms/w-user-table-organism/w-user-table-organism';
+import type { ProjectRow } from '@/components/pages/w-projects-page/w-projects-page';
 import type { AuthUser, Paginated, SharedProps } from '@/types';
 
 import { SHARED_PROPS } from './inertia-mock';
@@ -26,7 +28,7 @@ export const DEVELOPER: AuthUser = {
     role: 'developer',
     role_label: 'Desenvolvedor',
     must_change_password: false,
-    abilities: { manage_users: false, delete_records: false, view_audit_logs: false, reset_passwords: false, view_clients: false, view_contacts: false },
+    abilities: { manage_users: false, delete_records: false, view_audit_logs: false, reset_passwords: false, view_clients: false, view_contacts: false, view_projects: true, manage_projects: false },
 };
 
 /** Props compartilhadas com outro usuário logado (ex.: ver o menu de quem não é admin). */
@@ -294,5 +296,49 @@ export const AUDIT_OPTIONS: AuditOptions = {
         { value: 'denied', label: 'Negado' },
     ],
 };
+
+export const PROJECTS: ProjectRow[] = [
+    {
+        id: 1,
+        key_prefix: 'SGM',
+        name: 'Gestão de multas',
+        client: { id: 2, name: '[Exemplo] Rezende Bouw' },
+        manager: { id: 3, name: 'Carla Dias' },
+        starts_on: '2026-10-06',
+        due_on: '2026-12-18',
+        finished_at: null,
+        prefix_locked: true,
+        open_cards: 4,
+        can: { manage: true, delete: false },
+    },
+    {
+        id: 2,
+        key_prefix: 'WPAY',
+        name: 'Wpay',
+        client: { id: 1, name: 'WCJ Tecnologia' },
+        manager: { id: 1, name: 'Ana Souza' },
+        starts_on: '2026-09-01',
+        due_on: null,
+        finished_at: null,
+        prefix_locked: false,
+        open_cards: 0,
+        can: { manage: true, delete: true },
+    },
+    {
+        id: 3,
+        key_prefix: 'PAD',
+        name: 'Pedidos da padaria',
+        client: { id: 3, name: '[Exemplo] Padaria do Bairro' },
+        manager: { id: 3, name: 'Carla Dias' },
+        starts_on: '2026-05-04',
+        due_on: '2026-08-29',
+        finished_at: '30/09/2026',
+        prefix_locked: true,
+        open_cards: 1,
+        can: { manage: true, delete: false },
+    },
+];
+
+export const PROJECT_FILTERS: ProjectFilters = { search: '', client_id: null, manager_id: null, type: null, finished: false };
 
 export { SHARED_PROPS };

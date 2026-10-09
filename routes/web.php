@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Projetos\Controllers\ProjectController;
 use App\Platform\Controllers\Admin\AuditLogController;
 use App\Platform\Controllers\Admin\ClientController;
 use App\Platform\Controllers\Admin\ContactController;
@@ -82,4 +83,22 @@ Route::prefix('admin')
         Route::post('contacts/{contact}/anonymize', [ContactController::class, 'anonymize'])->name('contacts.anonymize');
 
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Projetos (escopo B2). Caminhos em português, como o escopo define.
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('projetos')
+    ->name('projects.')
+    ->middleware(['auth', 'backoffice', 'password.current'])
+    ->group(function () {
+        Route::get('/', [ProjectController::class, 'index'])->name('index');
+        Route::post('/', [ProjectController::class, 'store'])->name('store');
+        Route::put('{project}', [ProjectController::class, 'update'])->name('update');
+        Route::delete('{project}', [ProjectController::class, 'destroy'])->name('destroy');
+        Route::post('{project}/encerrar', [ProjectController::class, 'finish'])->name('finish');
+        Route::post('{project}/reabrir', [ProjectController::class, 'reopen'])->name('reopen');
     });

@@ -21,7 +21,7 @@ export const SHARED_PROPS: SharedProps = {
             role: 'admin',
             role_label: 'Administrador',
             must_change_password: false,
-            abilities: { manage_users: true, delete_records: true, view_audit_logs: true, reset_passwords: true, view_clients: true, view_contacts: true },
+            abilities: { manage_users: true, delete_records: true, view_audit_logs: true, reset_passwords: true, view_clients: true, view_contacts: true, view_projects: true, manage_projects: true },
         },
     },
     flash: {},

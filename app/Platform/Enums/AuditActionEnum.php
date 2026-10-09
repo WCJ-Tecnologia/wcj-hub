@@ -14,6 +14,8 @@ enum AuditActionEnum: string
     case ANONYMIZED = 'anonymized';
     // Só aparece em linha negada: a leitura permitida não se audita.
     case VIEWED = 'viewed';
+    case FINISHED = 'finished';
+    case REOPENED = 'reopened';
 
     public function label(): string
     {
@@ -27,6 +29,8 @@ enum AuditActionEnum: string
             self::REACTIVATED => 'Reativado',
             self::ANONYMIZED => 'Anonimizado',
             self::VIEWED => 'Consultado',
+            self::FINISHED => 'Encerrado',
+            self::REOPENED => 'Reaberto',
         };
     }
 
@@ -46,6 +50,8 @@ enum AuditActionEnum: string
         return match (true) {
             $ability === 'create' => self::CREATED,
             $ability === 'update' => self::UPDATED,
+            // Projetos (B2): editar, encerrar e reabrir passam pela mesma ability.
+            $ability === 'manage' => self::UPDATED,
             $ability === 'delete' => self::DELETED,
             $ability === 'deactivate' => self::DEACTIVATED,
             $ability === 'reactivate' => self::REACTIVATED,

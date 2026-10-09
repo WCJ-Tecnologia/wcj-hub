@@ -2,8 +2,12 @@
 
 namespace App\Domains\Projetos\Models;
 
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
+use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,6 +19,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Project extends Model
 {
+    /** @use HasFactory<ProjectFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'client_id',
         'manager_id',
@@ -26,6 +33,12 @@ class Project extends Model
         'require_pause_reason',
         'sprint_days',
     ];
+
+    // Fora de App\Models, o Laravel não acha a factory pelo nome (ADR-001).
+    protected static function newFactory(): ProjectFactory
+    {
+        return ProjectFactory::new();
+    }
 
     protected function casts(): array
     {
@@ -82,5 +95,44 @@ class Project extends Model
     public function packages(): HasMany
     {
         return $this->hasMany(Package::class);
+    }
+
+    public function isFinished(): bool
+    {
+        return $this->finished_at !== null;
+    }
+
+    /**
+     * Quando a lista carregou `members` filtrado pela pessoa (ProjectQuery), responde sem
+     * consulta; fora dela, pergunta ao banco. A relação carregada só traz o vínculo de quem vê.
+     */
+    public function hasMember(User $user): bool
+    {
+        if ($this->relationLoaded('members')) {
+            return $this->members->contains('user_id', $user->id);
+        }
+
+        return $this->members()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Os projetos que a pessoa vê (P5): o Administrador, todos; o gestor, os que gere (é o
+     * responsável ou está alocado); o dev, os em que está alocado; o Comercial, nenhum (C14).
+     * Espelha ProjectPolicy::view: a lista e o acesso por ID não podem divergir.
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        $allocated = fn (Builder $members) => $members->where('user_id', $user->id);
+
+        match ($user->type()) {
+            RoleEnum::ADMIN => null,
+            RoleEnum::PROJECT_MANAGER => $query->where(fn (Builder $inner) => $inner
+                ->where('manager_id', $user->id)
+                ->orWhereHas('members', $allocated)),
+            RoleEnum::DEVELOPER => $query->whereHas('members', $allocated),
+            RoleEnum::SALES => $query->whereKey([]),
+        };
     }
 }

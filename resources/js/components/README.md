@@ -60,7 +60,7 @@ Crie story quando o componente tem visual ou estados que alguém precisa ver ou 
 Não crie para peça só estrutural ou simples demais. Hoje ficam sem story:
 
 - do shadcn: `label`, `separator`, `skeleton`, `textarea`, `avatar`, `sheet`, `sidebar`, `sonner`, `calendar` e `popover` (os quatro últimos aparecem dentro do menu lateral, do layout e do `w-date-picker-molecule`);
-- do Hub: `w-page-container-atom`, `w-auth-back-link-atom`, `w-list-body-molecule`, `w-show-inactive-toggle-molecule` e as tabelas, filtros e modais do Núcleo (`w-{user,client,contact,audit-log}-table-organism`, `w-audit-log-filters-organism`, `w-audit-log-detail-dialog-organism`, `w-{client,contact}-form-dialog-organism`, `w-anonymize-contact-dialog-organism`), que aparecem dentro das stories das telas (`Pages/…`).
+- do Hub: `w-page-container-atom`, `w-auth-back-link-atom`, `w-list-body-molecule`, `w-show-inactive-toggle-molecule` e as tabelas, filtros e modais do Núcleo (`w-{user,client,contact,audit-log}-table-organism`, `w-audit-log-filters-organism`, `w-audit-log-detail-dialog-organism`, `w-{client,contact}-form-dialog-organism`, `w-anonymize-contact-dialog-organism`, `w-project-filters-organism`, `w-project-form-dialog-organism`), que aparecem dentro das stories das telas (`Pages/…`).
 
 Regras da story:
 

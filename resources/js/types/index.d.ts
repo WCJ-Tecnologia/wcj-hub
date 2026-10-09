@@ -16,6 +16,10 @@ export interface Abilities {
     view_clients: boolean;
     /** ContactPolicy::viewAny: Administrador e Gestor de projetos (só os clientes dele). */
     view_contacts: boolean;
+    /** ProjectPolicy::viewAny: todos menos o Comercial (C14). */
+    view_projects: boolean;
+    /** ProjectPolicy::create: Administrador e Gestor de projetos. */
+    manage_projects: boolean;
 }
 
 export interface AuthUser {

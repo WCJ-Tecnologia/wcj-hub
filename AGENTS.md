@@ -77,7 +77,8 @@ Atualizado em 2026-10-09.
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
 | B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5, 09/10): review de 07/10 aplicada, `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13; CR-1-01 (reenviar convite derruba as sessões) integrado no `UserService::resendInvite` pelo PR #7 |
 | Front: shadcn + Atomic Design + Storybook + marca WCJ (ADR-003, ADR-005) | PR #8 (`chore/marca-wcj`, Lucas Varanda); ADRs aprovados pelo Lucas Scholz em 09/10; `wcj-code-review` ciclo 1 (`.specs/code-reviews/`); rebase sobre o B1 com o porte dos componentes do Núcleo para a estrutura atômica; falta CI verde e o merge |
-| B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
+| B2 Projeto e configuração, passo 1: lista, cadastro, encerrar, reabrir e excluir projeto; `ProjectClientManagement` | PR #6 (`feat/b2-projeto-e-configuracao`, Vitinho); `wcj-code-review` ciclos 1 e 2 (`.specs/code-reviews/`) corrigidos em 09/10 (rebase sobre o B1 e o front atômico, autorização auditada, `ProjectPresenter`, vínculo em lote); criar/editar por modal na lista (decisão do Lucas Scholz, 09/10); falta CI verde e o merge |
+| B2 passo 2 (Pessoas, Etapas, Áreas, Padrões, listas gerais, "Novo cliente" inline) e B3 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
 
@@ -145,6 +146,9 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 | `WSearchInputMolecule` | `components/molecules/w-search-input-molecule/` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
 | `useContactActions` | `hooks/use-contact-actions.tsx` | criar, editar e as ações de linha do contato, as mesmas na lista geral e na ficha do cliente; devolve `openCreate`, `rowActions` e `dialogs` |
 | `WDatePickerMolecule` | `components/molecules/w-date-picker-molecule/` | campo de data em `AAAA-MM-DD`, no lugar do `<input type="date">`; aceita `id`, `aria-invalid` e `aria-describedby` do `WFormFieldMolecule` |
+| `dateBr()` | `lib/utils.ts` | data de negócio `AAAA-MM-DD` (coluna `date`) para a tela, `DD/MM/AAAA`, sem passar por `Date` (que leria meia-noite UTC e mostraria o dia anterior) |
+| `WStatusPillAtom` `kind="project"` | `components/atoms/w-status-pill-atom/` | Aberto / Encerrado do projeto (P7) |
+| `w-project-filters-organism`, `w-project-form-dialog-organism` | `components/organisms/` | busca e filtros da lista de projetos (F2 §05) e o modal de criar/editar (F2 §02); a tela é `components/pages/w-projects-page/` |
 | Tabelas e formulários do Núcleo | `components/organisms/w-{user,client,contact,audit-log}-table-organism/`, `w-{user,client,contact}-form-dialog-organism/`, `w-anonymize-contact-dialog-organism/`, `w-audit-log-filters-organism/`, `w-audit-log-detail-dialog-organism/` | as colunas do F1 §03 e os modais do F1 §02/§04, um por entidade; a tela (`components/pages/w-*-page/`) só junta |
 
 ## Como rodar
@@ -186,9 +190,9 @@ Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escop
 - Regra na Policy, `authorize()` em todo método; `abilities` no front só esconde botão. Ability nova: `User`, `HandleInertiaRequests`, `types/index.d.ts` e Policy no mesmo commit.
 - Policy fora de `app/Policies`: registrar com `Gate::policy()` no `AppServiceProvider`.
 - A IA conectada age como o usuário dono do token: mesmas Policies; escopo do token nunca passa do papel (IA5).
-- Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. As de Projetos nascem a partir do B2.
+- Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. De Projetos (B2): `ProjectPolicy` em `app/Domains/Projetos/Policies` (`viewAny`, `view`, `create`, `manage`, `delete`; "gere" = responsável ou alocado, com papel Gestor de projetos; `Project::scopeVisibleTo` espelha `view`), registrada no `AppServiceProvider`.
 - Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. FormRequest que valida payload autoriza antes de validar, pelo trait `AuthorizesBeforeValidation` (mesmo caminho auditado), e a ação não chama `authorize()` de novo: sem isso, quem não pode recebe o erro de validação (que revela dado) e a tentativa não vira `denied`. Ability nova entra em `AuditActionEnum::forAbility()`; sem mapeamento, a negação grava o nome cru da ability e a tela mostra "Outra ação". `UserService::choiceList()` e `ClientService::choiceList()` conferem `viewChoiceList` dentro do Service (decisão do Lucas Scholz, 09/10): quem chamar sem permissão recebe `AuthorizationException` e a negação é auditada.
-- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientManagement` (ADR-001): o Núcleo não lê `projects`. No B1 a ligação é a implementação vazia `App\Platform\Services\NoClientManagement` (ninguém gere cliente algum); o B2 entrega a real em `Projetos\Services\ProjectClientManagement` e troca a ligação no `AppServiceProvider` (o `give()` do `MemoizedClientManagement`, que memoriza "quem gere o quê" por requisição: as Policies perguntam linha a linha). Lista pede o que é do contrato em lote (`openProjectsCountByClient`), nunca por linha. Teste de gestor usa o dublê `tests/Support/ClientManagementFalso.php`, que fica atrás da mesma memória.
+- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientManagement` (ADR-001): o Núcleo não lê `projects`. A implementação é `Projetos\Services\ProjectClientManagement` (B2: responsável ou alocado com papel gestor em algum projeto do cliente), ligada no `AppServiceProvider` pelo `give()` do `MemoizedClientManagement`, que memoriza "quem gere o quê" por requisição (as Policies perguntam linha a linha). A vazia `NoClientManagement` do B1 saiu. Lista pede o que é do contrato em lote (`openProjectsCountByClient`), nunca por linha. Teste de gestor usa o dublê `tests/Support/ClientManagementFalso.php`, que fica atrás da mesma memória.
 
 ## Regras de domínio
 
@@ -244,7 +248,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
 - Componente: procure em `resources/js/components/` (leia o `.md` da pasta) antes de criar; primitivo só pelo `npm run shadcn -- add`; um `cn` só, o de `@/lib/utils`.
-- Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
+- Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`) ou no módulo (`Projetos\Services\ProjectPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
 - Unique do banco em gravação simultânea: o trait `App\Platform\Services\Concerns\RefusesDuplicates` (`writeOrRefuseDuplicate`), que vira `ValidationException` só quando o índice violado é o esperado e relança o resto. Nunca `catch (UniqueConstraintViolationException)` solto.
 - Busca por texto: `App\Support\Like::contains()`; nunca `"%{$termo}%"` à mão.
 - Ativar e desativar: `setActiveLocked()` do `Deactivatable`, que abre a própria transação como o `deleteIfUnused` (savepoint quando quem chama já abriu uma), relê com `lockForUpdate`, decide pela linha travada, grava e chama o `$then($locked)` com a auditoria e o efeito próprio. Nunca `isActive()` da instância em memória antes da transação.

@@ -13,6 +13,7 @@ test.use({ viewport: { width: 375, height: 812 } });
 const SCREENS = [
     { path: '/admin/dashboard', title: 'Dashboard' },
     { path: '/admin/users', title: 'Usuários' },
+    { path: '/projetos', title: 'Projetos' },
     { path: '/admin/clients', title: 'Clientes' },
     { path: '/admin/contacts', title: 'Contatos' },
     { path: '/admin/audit-logs', title: 'Auditoria' },

@@ -44,7 +44,13 @@ const AUDIT: Record<string, Entry> = {
     denied: { tone: 'rejected', icon: ShieldX, label: 'Negado' },
 };
 
-const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT };
+// F2 §02: a situação do projeto é Aberto ou Encerrado (P7).
+const PROJECT: Record<string, Entry> = {
+    active: { tone: 'approved', icon: CheckCircle2, label: 'Aberto' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Encerrado' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT, project: PROJECT };
 
 export type WStatusPillKind = keyof typeof SETS;
 
