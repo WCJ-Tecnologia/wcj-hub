@@ -16,18 +16,12 @@ class TemporaryPasswordMail extends Mailable
     public function __construct(
         public readonly User $user,
         public readonly string $temporaryPassword,
-        public readonly bool $isReset,
     ) {}
 
     public function envelope(): Envelope
     {
-        $first = $this->user->firstName();
-
-        return new Envelope(
-            subject: $this->isReset
-                ? 'Nova senha temporária, '.$first
-                : 'Seu acesso ao '.config('app.name').', '.$first,
-        );
+        // Convite e "Reenviar convite" mandam o mesmo e-mail (CR-1-13).
+        return new Envelope(subject: 'Seu acesso ao '.config('app.name').', '.$this->user->firstName());
     }
 
     public function content(): Content
@@ -41,7 +35,6 @@ class TemporaryPasswordMail extends Mailable
                 'login' => $this->user->email,
                 'temporaryPassword' => $this->temporaryPassword,
                 'loginUrl' => route('login'),
-                'isReset' => $this->isReset,
                 'appName' => config('app.name'),
                 'brandName' => config('app.brand.name'),
             ],

@@ -39,10 +39,10 @@ class TemporaryPasswordService
     }
 
     /** Devolve false se o e-mail não saiu; a falha fica no log, sem a senha. */
-    public function send(User $user, #[\SensitiveParameter] string $plain, bool $isReset): bool
+    public function send(User $user, #[\SensitiveParameter] string $plain): bool
     {
         try {
-            Mail::to($user->email)->send(new TemporaryPasswordMail($user, $plain, $isReset));
+            Mail::to($user->email)->send(new TemporaryPasswordMail($user, $plain));
 
             return true;
         } catch (Throwable $e) {

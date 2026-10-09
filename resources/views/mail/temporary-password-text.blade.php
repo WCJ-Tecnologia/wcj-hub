@@ -2,11 +2,7 @@
 
 Oi, {{ $firstName }}.
 
-@if ($isReset)
-Geramos uma senha temporária para você. Entra com ela e, na hora, escolhe uma que seja só sua.
-@else
 Seu acesso ao {{ $appName }} está pronto. A senha abaixo é só para o primeiro login — depois você troca.
-@endif
 
 Login: {{ $login }}
 Senha temporária: {{ $temporaryPassword }}

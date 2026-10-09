@@ -64,7 +64,7 @@ class UserService
             return [$user, $plain];
         }), $this->emailTaken(...));
 
-        return ['user' => $user, 'mailed' => $this->passwords->send($user, $plain, isReset: false)];
+        return ['user' => $user, 'mailed' => $this->passwords->send($user, $plain)];
     }
 
     /**
@@ -81,7 +81,7 @@ class UserService
             return $plain;
         });
 
-        return $this->passwords->send($user, $plain, isReset: false);
+        return $this->passwords->send($user, $plain);
     }
 
     /**

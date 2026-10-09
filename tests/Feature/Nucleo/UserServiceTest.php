@@ -65,11 +65,12 @@ class UserServiceTest extends TestCase
         ];
     }
 
-    private function sentPassword(string $email, bool $isReset): string
+    // Convite e "Reenviar convite" mandam o mesmo e-mail, com o assunto do convite (CR-1-13).
+    private function sentPassword(string $email): string
     {
         $plain = null;
-        Mail::assertSent(TemporaryPasswordMail::class, function (TemporaryPasswordMail $mail) use ($email, $isReset, &$plain) {
-            if ($mail->hasTo($email) && $mail->isReset === $isReset) {
+        Mail::assertSent(TemporaryPasswordMail::class, function (TemporaryPasswordMail $mail) use ($email, &$plain) {
+            if ($mail->hasTo($email) && str_starts_with($mail->envelope()->subject, 'Seu acesso ao ')) {
                 $plain = $mail->temporaryPassword;
 
                 return true;
@@ -123,10 +124,10 @@ class UserServiceTest extends TestCase
         $this->assertTrue($maria->ai_write_allowed);
         $this->assertTrue($maria->isActive());
 
-        $plain = $this->sentPassword('maria@example.com', isReset: false);
+        $plain = $this->sentPassword('maria@example.com');
         $this->assertTrue(Hash::check($plain, $maria->password));
 
-        $mail = new TemporaryPasswordMail($maria, $plain, false);
+        $mail = new TemporaryPasswordMail($maria, $plain);
         foreach (['assertSeeInHtml', 'assertSeeInText'] as $assert) {
             $mail->$assert(route('login'), false);
             $mail->$assert('maria@example.com', false);
@@ -162,7 +163,7 @@ class UserServiceTest extends TestCase
 
         $joao->refresh();
         // CR-1-13 do ciclo 1: o mesmo e-mail do convite, e o antes real na auditoria (AC 16).
-        $plain = $this->sentPassword('joao@example.com', isReset: false);
+        $plain = $this->sentPassword('joao@example.com');
         $this->assertTrue(Hash::check($plain, $joao->password));
         $this->assertFalse(Hash::check('antiga-senha', $joao->password));
         $this->assertTrue($joao->must_change_password);

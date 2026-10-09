@@ -239,7 +239,7 @@ class PasswordFlowTest extends TestCase
 
         Mail::assertSent(
             TemporaryPasswordMail::class,
-            fn (TemporaryPasswordMail $mail) => $mail->hasTo('maria@example.com') && $mail->isReset === false,
+            fn (TemporaryPasswordMail $mail) => $mail->hasTo('maria@example.com'),
         );
     }
 
@@ -267,7 +267,8 @@ class PasswordFlowTest extends TestCase
         Mail::assertSent(
             TemporaryPasswordMail::class,
             // Reenviar convite manda o mesmo e-mail do convite (CR-1-13 do ciclo 1).
-            fn (TemporaryPasswordMail $mail) => $mail->hasTo('joao@example.com') && $mail->isReset === false,
+            fn (TemporaryPasswordMail $mail) => $mail->hasTo('joao@example.com')
+                && str_starts_with($mail->envelope()->subject, 'Seu acesso ao '),
         );
 
         $this->post('/admin/logout');
