@@ -31,16 +31,19 @@ abstract class Controller
 
     /**
      * Recusa de regra do Service (DomainException: já usado, último administrador, WCJ,
-     * anonimizado) vira toast de erro; o resto, o toast de sucesso.
+     * anonimizado) vira toast de erro; o resto, o toast de sucesso. Quando o sucesso depende do
+     * que a ação devolve (o aviso do contato, N8), $success é a closure que monta a resposta.
+     *
+     * @param  string|Closure(mixed): RedirectResponse  $success
      */
-    protected function attempt(Closure $action, string $success): RedirectResponse
+    protected function attempt(Closure $action, string|Closure $success): RedirectResponse
     {
         try {
-            $action();
+            $result = $action();
         } catch (DomainException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', $success);
+        return $success instanceof Closure ? $success($result) : back()->with('success', $success);
     }
 }

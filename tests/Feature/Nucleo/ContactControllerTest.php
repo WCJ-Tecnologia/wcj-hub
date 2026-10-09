@@ -6,7 +6,9 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use App\Platform\Policies\ContactPolicy;
 use App\Platform\Services\ContactService;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\ClientManagementFalso;
 use Tests\Support\CriaProjeto;
@@ -419,5 +421,21 @@ class ContactControllerTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['user_id' => $manager->id, 'action' => 'updated', 'outcome' => 'denied', 'auditable_type' => 'contact', 'auditable_id' => $contact->id]);
         $this->assertEquals($before, $this->snapshot());
         $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->count());
+    }
+
+    // CR-1-03 do ciclo 1: a anonimização que termina depois da Policy faz o Service recusar a
+    // edição (lockedNotAnonymized); a recusa chega como toast de erro, não como 500. Pela rota
+    // não dá para anonimizar antes do PUT (a Policy responde 403), por isso o dublê.
+    public function test_recusa_de_regra_ao_editar_contato_vira_toast_de_erro(): void
+    {
+        $contact = Contact::factory()->create(['client_id' => $this->client->id]);
+        $this->mock(ContactService::class)->shouldReceive('update')->once()->andThrow(new DomainException(ContactPolicy::ANONYMIZED));
+
+        $this->actingAs($this->admin)
+            ->from('/admin/contacts')
+            ->put("/admin/contacts/{$contact->id}", ['name' => 'Ana Lima', 'email' => '', 'phone' => ''])
+            ->assertRedirect('/admin/contacts')
+            ->assertSessionHas('error', 'Contato anonimizado: não pode ser alterado')
+            ->assertSessionMissing('success');
     }
 }

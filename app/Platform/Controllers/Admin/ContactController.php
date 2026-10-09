@@ -49,9 +49,11 @@ class ContactController extends Controller
 
     public function update(StoreContactRequest $request, Contact $contact): RedirectResponse
     {
-        $warning = $this->contacts->update($contact, $request->validated(), $request->user());
-
-        return $this->withWarning(back()->with('success', 'Contato atualizado.'), $warning);
+        // Anonimizado no meio (a Policy já tinha passado): o Service recusa e vira toast, não 500.
+        return $this->attempt(
+            fn () => $this->contacts->update($contact, $request->validated(), $request->user()),
+            fn (?string $warning) => $this->withWarning(back()->with('success', 'Contato atualizado.'), $warning),
+        );
     }
 
     public function deactivate(Request $request, Contact $contact): RedirectResponse
