@@ -70,12 +70,12 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 ## Estado atual
 
-Atualizado em 2026-10-08.
+Atualizado em 2026-10-09.
 
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; falta o Verifier focado na review |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; ciclos 1 e 2 da `wcj-code-review` corrigidos (09/10, `.specs/features/b1-nucleo/code-reviews/`), Verifier rodada 9 PASS (20 mutantes mortos); CR-1-01 no PR #7; falta o merge do Lucas |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto

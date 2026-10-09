@@ -259,4 +259,4 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 - [ ] Zero rotas do bloco sem Policy (`RotasAutorizadasTest` verde) e um teste "403 e nada muda" por ação e papel.
 - [ ] Toda escrita do bloco tem linha em `audit_logs` com `changes` preenchido; nenhuma linha contém senha.
 - [ ] CNPJ repetido, inclusive em caixa diferente, nunca entra; CNPJ alfanumérico válido sempre entra.
-- [ ] Verifier da skill com PASS e sensor de mutação sem sobrevivente nas regras de permissão, exclusão e anonimização.
+- [x] Verifier da skill com PASS e sensor de mutação sem sobrevivente nas regras de permissão, exclusão e anonimização (rodadas 8 e 9 do `validation.md`; a 9 cobre as correções dos ciclos 1 e 2 da code review, 20 mutantes mortos).
