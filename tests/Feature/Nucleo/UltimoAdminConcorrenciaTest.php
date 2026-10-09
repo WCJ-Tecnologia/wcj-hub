@@ -57,11 +57,15 @@ class UltimoAdminConcorrenciaTest extends TestCase
             User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->pluck('id')->all(),
         );
         $this->assertTrue($corrida->bloqueada, 'A outra requisição passou pela checagem sem esperar a principal.');
+        $this->assertSame(1205, $corrida->codigo, 'A outra requisição não caiu por espera de trava.');
     }
 
     // CR-2-01: a Ana desativa a Bia enquanto a Bia desativa a Ana, com a outra requisição logo
-    // depois da PRIMEIRA trava da principal (hoje a dos administradores ativos). A outra espera
-    // a principal (trava, não deadlock), e sobra exatamente um administrador ativo.
+    // depois da PRIMEIRA trava da principal. Prova só que a outra espera a principal (1205) e que
+    // sobra exatamente um administrador ativo. Não prova a ordem das travas nem a ausência de
+    // deadlock: a principal fica parada no PHP, então o deadlock não se forma, e o teste passa
+    // também com a ordem antiga (CR-3-04). A ordem é provada por
+    // UserServiceTest::test_desativar_admin_trava_os_administradores_antes_do_alvo.
     public function test_ana_desativa_bia_enquanto_bia_desativa_ana_a_outra_espera_e_sobra_um_admin(): void
     {
         $ana = User::factory()->admin()->create(['name' => 'Ana Admin']);
@@ -78,6 +82,7 @@ class UltimoAdminConcorrenciaTest extends TestCase
         $this->assertTrue($corrida->rodou, 'Nenhuma consulta com trava rodou na principal.');
         $this->assertNull($corrida->outroErro);
         $this->assertTrue($corrida->bloqueada, 'A outra requisição não esperou a principal.');
+        $this->assertSame(1205, $corrida->codigo, 'A outra requisição não caiu por espera de trava.');
         $this->assertSame(
             [$ana->id],
             User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->pluck('id')->all(),
