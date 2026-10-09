@@ -389,6 +389,24 @@ class UserServiceTest extends TestCase
         $this->assertUntouched($dev, $claude, $codex);
     }
 
+    // CR-1-15 do ciclo 1: a segunda desativação, por uma instância carregada antes da primeira
+    // (ainda "ativa" em memória), decide pela linha do banco e não grava nada.
+    public function test_desativar_pela_instancia_velha_nao_grava_outra_desativacao(): void
+    {
+        $other = User::factory()->admin()->create();
+        $id = User::factory()->developer()->create()->id;
+        $a = User::query()->findOrFail($id);
+        $b = User::query()->findOrFail($id);
+
+        $this->service->deactivate($a, $other);
+        $stamp = $a->fresh()->deactivated_at;
+        $this->service->deactivate($b, $this->admin);
+
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+        $this->assertEquals($stamp, $a->fresh()->deactivated_at);
+        $this->assertSame($other->id, $a->fresh()->deactivated_by);
+    }
+
     public function test_desativar_quem_ja_esta_desativado_mantem_o_carimbo_original(): void
     {
         $dev = User::factory()->developer()->create();

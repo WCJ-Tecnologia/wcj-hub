@@ -59,12 +59,13 @@ class ContactService
     {
         $clean = $this->validated($data);
 
-        // N11: cliente desativado sai das listas de escolha, e não ganha contato novo.
-        if (! $client->isActive()) {
-            throw ValidationException::withMessages(['client' => self::CLIENT_INACTIVE]);
-        }
-
         $contact = DB::transaction(function () use ($client, $clean, $actor) {
+            // N11: cliente desativado não ganha contato novo. Pela linha travada: uma desativação
+            // ao mesmo tempo espera o contato nascer, ou o recusa (CR-1-15).
+            if (! Client::query()->lockForUpdate()->findOrFail($client->getKey())->isActive()) {
+                throw ValidationException::withMessages(['client' => self::CLIENT_INACTIVE]);
+            }
+
             $contact = $client->contacts()->create($clean);
             $this->audit->log(AuditActionEnum::CREATED, $contact, null, $this->snapshot($contact), $actor->id);
 
@@ -97,11 +98,12 @@ class ContactService
     /** N11: sai das listas de escolha; o card que já o cita continua citando. */
     public function deactivate(Contact $contact, User $actor): void
     {
-        if (! $contact->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($contact, $actor) {
+            // Pela linha travada (CR-1-15): o anonimizado já está desativado e não ganha outra linha.
+            if (! $this->lockedForWrite($contact)->isActive()) {
+                return;
+            }
+
             $contact->setActive(false, $actor)->save();
             $this->audit->log(AuditActionEnum::DEACTIVATED, $contact, ['active' => true], ['active' => false], $actor->id);
         });
@@ -236,13 +238,19 @@ class ContactService
      */
     private function lockedNotAnonymized(Contact $contact): Contact
     {
-        $locked = Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
+        $locked = $this->lockedForWrite($contact);
 
         if ($locked->isAnonymized()) {
             throw new DomainException(ContactPolicy::ANONYMIZED);
         }
 
         return $locked;
+    }
+
+    /** A linha travada até o commit: a checagem e a escrita veem o mesmo contato. */
+    private function lockedForWrite(Contact $contact): Contact
+    {
+        return Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
     }
 
     /**

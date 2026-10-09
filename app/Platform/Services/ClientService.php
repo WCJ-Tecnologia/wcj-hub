@@ -110,11 +110,12 @@ class ClientService
             throw new DomainException(ClientPolicy::WCJ_NOT_DEACTIVATABLE);
         }
 
-        if (! $client->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($client, $actor) {
+            // Decide pela linha travada, não pela instância em memória (CR-1-15).
+            if (! Client::query()->lockForUpdate()->findOrFail($client->getKey())->isActive()) {
+                return;
+            }
+
             $client->setActive(false, $actor)->save();
             $this->audit->log(AuditActionEnum::DEACTIVATED, $client, ['active' => true], ['active' => false], $actor->id);
         });

@@ -7,6 +7,7 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use App\Platform\Services\ClientService;
 use App\Platform\Services\ContactService;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -257,6 +258,41 @@ class ContactServiceTest extends TestCase
     }
 
     // AC 7: desativa com quem e quando, sai das listas de escolha, o card continua citando.
+    // CR-1-15 do ciclo 1: a segunda desativação, por uma instância carregada antes da primeira
+    // (ainda "ativa" em memória), decide pela linha do banco e não grava nada.
+    public function test_desativar_pela_instancia_velha_nao_grava_outra_desativacao(): void
+    {
+        $other = User::factory()->admin()->create();
+        $id = Contact::factory()->create(['client_id' => $this->client->id])->id;
+        $a = Contact::query()->findOrFail($id);
+        $b = Contact::query()->findOrFail($id);
+
+        $this->service->deactivate($a, $other);
+        $stamp = $a->fresh()->deactivated_at;
+        $this->service->deactivate($b, $this->admin);
+
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+        $this->assertEquals($stamp, $a->fresh()->deactivated_at);
+        $this->assertSame($other->id, $a->fresh()->deactivated_by);
+    }
+
+    // CR-1-15 do ciclo 1, N11: o cliente desativado depois de carregado (ainda "ativo" em
+    // memória) não ganha contato novo.
+    public function test_recusa_contato_em_cliente_desativado_por_outra_instancia(): void
+    {
+        $client = Client::query()->findOrFail($this->client->id);
+        app(ClientService::class)->deactivate(Client::query()->findOrFail($this->client->id), $this->admin);
+
+        try {
+            $this->service->create($client, ['name' => 'Ana Lima'], $this->admin);
+            $this->fail('Criou contato em cliente desativado.');
+        } catch (ValidationException $e) {
+            $this->assertSame(['client' => ['Cliente desativado: reative o cliente para cadastrar contato.']], $e->errors());
+        }
+
+        $this->assertSame(0, Contact::query()->count());
+    }
+
     public function test_desativar_grava_quem_e_quando_e_sai_das_listas_de_escolha(): void
     {
         $contact = Contact::factory()->create(['client_id' => $this->client->id]);

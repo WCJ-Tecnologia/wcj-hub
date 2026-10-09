@@ -247,6 +247,24 @@ class ClientServiceTest extends TestCase
         $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
     }
 
+    // CR-1-15 do ciclo 1: a segunda desativação, por uma instância carregada antes da primeira
+    // (ainda "ativa" em memória), decide pela linha do banco e não grava nada.
+    public function test_desativar_pela_instancia_velha_nao_grava_outra_desativacao(): void
+    {
+        $other = User::factory()->admin()->create();
+        $id = Client::factory()->create()->id;
+        $a = Client::query()->findOrFail($id);
+        $b = Client::query()->findOrFail($id);
+
+        $this->service->deactivate($a, $other);
+        $stamp = $a->fresh()->deactivated_at;
+        $this->service->deactivate($b, $this->admin);
+
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+        $this->assertEquals($stamp, $a->fresh()->deactivated_at);
+        $this->assertSame($other->id, $a->fresh()->deactivated_by);
+    }
+
     // AC 10: a Policy responde 403; o Service também recusa, para quem o chamar direto.
     public function test_wcj_nao_se_desativa_pelo_service(): void
     {

@@ -122,12 +122,15 @@ class UserService
     /** N4, N11, IA6: perde o acesso agora, sessões e conexões de IA incluídas. */
     public function deactivate(User $user, User $actor): void
     {
-        if (! $user->isActive()) {
-            return;
-        }
-
         DB::transaction(function () use ($user, $actor) {
-            $this->ensureNotLastActiveAdmin($user, 'desativar');
+            // Decide pela linha travada, não pela instância em memória: dois cliques ou dois
+            // admins não gravam duas desativações (CR-1-15).
+            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
+            if (! $locked->isActive()) {
+                return;
+            }
+
+            $this->ensureNotLastActiveAdmin($locked, 'desativar');
             $user->setActive(false, $actor)->save();
             $this->audit->log(AuditActionEnum::DEACTIVATED, $user, ['active' => true], ['active' => false], $actor->id);
             $this->revokeAiAuthorizations($user, $actor);
