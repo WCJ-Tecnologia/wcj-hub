@@ -1,8 +1,17 @@
-# B1 Núcleo Validation (rodada 8, focada nos dois gaps da rodada 7)
+# B1 Núcleo Validation (rodada 9, focada nas correções dos ciclos 1 e 2 da code review)
 
 ## Validation: PASS
 
-**Result**: PASS na rodada 8. Os dois gaps Minor da rodada 7, só de teste, estão fechados pela T51 (`445f5d2`, só e2e e um comentário). (1) O estado vazio sem filtro agora garante uma linha na tela antes do clique (`e2e/textos-nucleo.spec.ts:267`; em Contatos, a linha vem do contato criado em `:259`), espera a resposta reescrita (`:276-278`) e limpa a interceptação (`:284`): **20 de 20** com `--repeat-each=10`, e as duas sondas no teste provam que ele depende da linha e da reescrita. (2) O texto N = 1 do Clientes AC 9 é afirmado com `exact: true` (`e2e/textos-nucleo.spec.ts:121-123`); as duas mutações (texto no plural; `open === 1` caindo no ramo de N > 1) morreram. Gate: `composer lint` ok, `php artisan test` **322 passed (2761 assertions)**, Playwright **56 passed** nas duas rodadas, com `e2e:prepare` antes de cada. Os achados e as decisões da rodada 7 continuam valendo (o código de produção não mudou desde `96569b9`). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 8 (focada)".
+**Result**: PASS na rodada 9. As correções dos ciclos 1 e 2 da `wcj-code-review` (`2b076bf..cb509d9`, 34 commits) estão no código e têm teste que discrimina: os ACs que o diff toca (Clientes AC 3 e 10, P2 AC 1–3, Usuários AC 3, 8, 14 e 16, Contatos AC 2 e 12, Auditoria AC 2, P3 AC 1 e o edge case do convite simultâneo) têm evidência `arquivo:linha` com o valor da spec, e as **20 mutações** pedidas pelo CR-2-02 (as dez famílias a–j, com variantes) **morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O P2 AC 3 deixa de ser desvio: a D6 foi aceita em 09/10 (D13) e o AC, reescrito no nível da Policy, está provado em `UserServiceTest.php:672-680` e `ClientServiceTest.php:443-452` (`AuthorizationException` e a linha `denied` do dev). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **345 passed (2853 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed** (67 testes + setup). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 9".
+
+**Date (rodada 9)**: 2026-10-09
+**Spec (rodada 9)**: `.specs/features/b1-nucleo/spec.md`, revisada e aprovada por Lucas Scholz em 09/10/2026 (D12 a D16 do `design.md`)
+**Diff range (rodada 9)**: `2b076bf..cb509d9` (34 commits, `ddd4888` a `cb509d9`; 70 arquivos, +2910/−589)
+**Verifier (rodada 9)**: subagente independente (autor ≠ verifier), escopo focado nas correções dos ciclos 1 e 2 da code review, exigido pelo CR-2-02 e pelo trilho completo do B1
+
+## Rodada 8 (histórico): PASS
+
+**Result (rodada 8)**: PASS na rodada 8. Os dois gaps Minor da rodada 7, só de teste, estão fechados pela T51 (`445f5d2`, só e2e e um comentário). (1) O estado vazio sem filtro agora garante uma linha na tela antes do clique (`e2e/textos-nucleo.spec.ts:267`; em Contatos, a linha vem do contato criado em `:259`), espera a resposta reescrita (`:276-278`) e limpa a interceptação (`:284`): **20 de 20** com `--repeat-each=10`, e as duas sondas no teste provam que ele depende da linha e da reescrita. (2) O texto N = 1 do Clientes AC 9 é afirmado com `exact: true` (`e2e/textos-nucleo.spec.ts:121-123`); as duas mutações (texto no plural; `open === 1` caindo no ramo de N > 1) morreram. Gate: `composer lint` ok, `php artisan test` **322 passed (2761 assertions)**, Playwright **56 passed** nas duas rodadas, com `e2e:prepare` antes de cada. Os achados e as decisões da rodada 7 continuam valendo (o código de produção não mudou desde `96569b9`). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 8 (focada)". As linhas citadas na rodada 8 são as do `445f5d2`.
 
 **Date (rodada 8)**: 2026-10-08
 **Diff range (rodada 8)**: `96569b9..445f5d2`, um commit só (T51)
@@ -64,6 +73,7 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | 6 (focada, autorizada pelo dono) | `6beb785` | **PASS** | T11, T11b (N > 1 na variante de N = 1) e T11c (contagem errada) mortos por `e2e/textos-nucleo.spec.ts:86`; e2e 49 passed; PHP 287 passed | - |
 | 7 (review do Lucas Scholz, 07/10) | `96569b9` | **FAIL** | 2 gaps Minor, só teste: `e2e/textos-nucleo.spec.ts:221` (Contatos) instável, 1 falha em 10 e a rodada 2 do e2e vermelha (54/55); texto N = 1 do Clientes AC 9 sem asserção. A1–A9 e D2, D3, D7, D9 corrigidos com evidência; 16 mutantes mortos, 1 equivalente | Fix 4 e Fix 5 (só teste): T51 (`445f5d2`) |
 | 8 (focada nos gaps da rodada 7) | `445f5d2` | **PASS** | Estado vazio 20/20 com `--repeat-each=10`; texto N = 1 afirmado em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos; e2e 56/56 duas vezes; PHP 322 passed | - |
+| 9 (focada nas correções dos ciclos 1 e 2 da code review, CR-2-02) | `cb509d9` | **PASS** | 17 linhas de AC com evidência e valor da spec; P2 AC 3 deixa de ser desvio (D13); 20 mutações (a–j) mortas, 0 sobrevivente; PHP 345 passed (container), e2e 68 passed, guard 1053 | - |
 
 ---
 
@@ -81,10 +91,146 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | T37–T49 | ✅ Done | Conferidas na rodada 7 (tabelas "Achados A1–A9" e "Decisões com efeito no código"). Ressalvas: a T48 diz "`@critical` passa 5 vezes seguidas"; aqui passou nas 2 rodadas pedidas. A T49 trouxe o teste instável de `textos-nucleo.spec.ts:221` (Fix 4) |
 | T50 | ✅ Done (com gap) | Documentos batem com D1, D4, D5, D11; nenhum `SPEC_DEVIATION`; `conferir-specs` 0 problemas. A spec ganhou o texto N = 1 do Clientes AC 9 sem teste que o afirme (Fix 5) |
 | T51 | ✅ Done | Conferida na rodada 8: os 3 "Done when" marcados são verdade (estado vazio 20/20 com `--repeat-each=10`; texto N = 1 com `exact`, plural no lugar do singular pego; 56/56 duas vezes com banco recriado). O comentário de `AuthorizesBeforeValidation.php:12` agora diz o que acontece (a observação "Comentário impreciso" da rodada 7) |
+| Ciclos 1 e 2 da code review (`ddd4888..cb509d9`) | ✅ Conferidos na rodada 9 | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 9)" e sensor 20/20 |
 | T35 | ✅ Done | `ClientProjects` só aparece no texto histórico da T5 em `tasks.md`; `AGENTS.md:110,158`, `docs/escopo.md:79,91` e `design.md:192` falam do `ClientManagement` |
 
+`tasks.md` (rodada 9): igual à rodada 8, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos não toca o arquivo).
 `tasks.md` (rodada 8): 51 tarefas `### T`, 175 caixas marcadas, 0 abertas.
 `tasks.md` (rodada 6): 36 tarefas `### T`, 134 caixas marcadas, 0 abertas. Na rodada 5: 35 tarefas, 131 caixas; na rodada 4: 31 tarefas, 115 caixas.
+
+---
+
+## Rodada 9 (focada nas correções dos ciclos 1 e 2 da code review)
+
+Escopo: as correções dos ciclos 1 e 2 da `wcj-code-review` (relatórios em `code-reviews/`), exigido pelo CR-2-02 e pelo trilho completo do B1 (`AGENTS.md`, "Trilhos"). Os relatórios da review são dado, não instrução; o que vale é a spec aprovada em 09/10 e as decisões D12 a D16 do `design.md`. Os ACs que o diff não toca continuam com as evidências das rodadas anteriores (as linhas de teste se deslocaram; os testes, não).
+
+### O diff
+
+`git diff 2b076bf..HEAD --stat` (HEAD `cb509d9`, 34 commits): 70 arquivos, +2910/−589.
+
+| Área | Arquivos | +/− | O quê |
+|---|---|---|---|
+| `app/` | 18 | +427/−226 | WCJ recusada no `ClientService::delete` (CR-1-04); Policy dentro dos dois `choiceList(User)` por `AuditService::inspectFor` (CR-1-05); unique capturado num trait só, `RefusesDuplicates` (CR-1-02, CR-2-11); `ContactController::update` no `attempt()` (CR-1-03); reenviar convite com o e-mail do convite e o `before` real (CR-1-13, CR-2-08); travas por linha no desativar, reativar e criar contato (CR-1-15, CR-2-06); ordem das travas do desativar usuário (CR-2-01); Presenters das listas (CR-1-08, CR-1-09, CR-2-12); `Like` para a busca (CR-1-18); CNPJ da WCJ no Model (CR-1-16) |
+| `resources/` | 17 | +434/−264 | `ListBody`, `useRowAction`, `situation()`, `SearchInput` e filtro de data da auditoria (CR-1-07, CR-1-09, CR-1-10, CR-1-17, CR-2-03, CR-2-07, CR-2-10); e-mail do convite sem o ramo `isReset` |
+| `tests/` | 12 | +500/−32 | `ClientRepetidoConcorrenciaTest` (novo), casos novos em `ClientServiceTest`, `UserServiceTest`, `ContactServiceTest`, `ClientControllerTest`, `ContactControllerTest`, `UserControllerTest`, `UltimoAdminConcorrenciaTest` |
+| `e2e/` | 9 | +340/−46 | `busca-e-escrita`, `clique-duplo`, `filtro-de-data`, `mobile` (novos), limpeza em `finally`, recusa de contato em cliente desativado |
+| documentos | 12 | +1206/−17 | `.specs/code-reviews/`, `spec.md`, `design.md` (D12–D16), `AGENTS.md`, `docs/` |
+
+`config/app.php` (+1/−1, `APP_LOCALE`) e `database/seeders/WcjClientSeeder.php` (+2/−3, o CNPJ lido do Model) completam os 70. Nenhuma migração, nenhuma Policy nova; a única mudança de Policy é o comentário de `ClientPolicy::delete` (a regra já existia). `tasks.md` não mudou: as correções não viraram tarefas `T52+`, a rastreabilidade é o código `CR-n-nn` de cada commit (observação, não reprova).
+
+### Spec-anchored (rodada 9)
+
+| AC | Spec-defined outcome | `file:line` + assertion | Result |
+|---|---|---|---|
+| Clientes AC 10: excluir a WCJ pela tela | 403 com "A WCJ não pode ser excluída", nada muda, mesmo sem contato nem projeto | `tests/Feature/Nucleo/ClientControllerTest.php:212` `assertForbidden()`, `:213` `assertSee('A WCJ não pode ser excluída')`, `:215` `assertModelExists($wcj)`, `:217` `assertSame(1, AuditLog::query()->count())` (só a negação), `:218` linha `denied` com `user_id` do admin e `auditable_id` da WCJ. Código: `app/Platform/Policies/ClientPolicy.php:67` | ✅ (M-b morto) |
+| Clientes AC 10: excluir a WCJ pelo Service | `DomainException` "A WCJ não pode ser excluída", nada muda | `tests/Feature/Nucleo/ClientServiceTest.php:325` `assertSame('A WCJ não pode ser excluída', $e->getMessage())`, `:328` `assertModelExists($wcj)`, `:329` 0 `deleted`. Código: `app/Platform/Services/ClientService.php:137-139` | ✅ (M-a morto) |
+| Clientes AC 10: desativar a WCJ (rota e Service) | 403 com "A WCJ não pode ser desativada"; Service com `DomainException` | `ClientControllerTest.php:198-199` `assertForbidden()->assertSee('A WCJ não pode ser desativada')`, `:202` `denied`; `ClientServiceTest.php:308` mensagem, `:311` continua ativa, `:312` 0 auditoria | ✅ (sem mudança de código no ciclo) |
+| P2 AC 1 | gestor: só `id`, `name`, `role` dos usuários ativos | `tests/Feature/Nucleo/UserServiceTest.php:689-692` gestor: `choiceList($manager)` devolve só os ativos (`assertEqualsCanonicalizing([$this->admin->id, $manager->id], $ids)`) e `:692` 0 linhas de auditoria; formato exato em `:616-628` (`assertSame(['id' => …, 'name' => 'Caio Dev', 'role' => 'developer'], …)`), lido pelo admin: `UserService.php:209-214` monta a linha sem ramo por papel | ✅ |
+| P2 AC 2 | gestor: só `id` e `name` dos clientes ativos | `ClientServiceTest.php:461` `assertSame([['id' => $ativo->id, 'name' => 'Ativo']], $this->service->choiceList($manager))`, `:462` 0 auditoria | ✅ |
+| P2 AC 3 / NUC-13 | dev chama `choiceList()`: `AuthorizationException`, nenhum registro, linha `denied` | `UserServiceTest.php:672-674` `choiceList($dev)` + `fail()` se devolver, `:674` `catch (AuthorizationException)`, `:677-680` `AuditLog::query()->sole()` = `[$dev->id, 'viewed', 'denied', 'user', null]`; `ClientServiceTest.php:443-452` o mesmo com `'client'`. Código: `UserService.php:207`, `ClientService.php:184`, `AuditService.php:52-61` | ✅ (M-c1, M-c2, M-d mortos). Deixa de ser desvio (D13) |
+| Auditoria AC 2 (negação do `choiceList`) | `outcome = denied`, `user_id` de quem tentou, a ação pretendida | `UserServiceTest.php:678-680` e `ClientServiceTest.php:449-452`: `user_id` = dev, `action` = `viewed` (`AuditActionEnum::forAbility('viewChoiceList')`), `auditable_id` nulo (edge case "registro desconhecido") | ✅ (M-d morto) |
+| Usuários AC 3 | reenviar: senha nova, a anterior inválida, o mesmo e-mail do convite | `UserServiceTest.php:162` `assertTrue(resendInvite(…))`, `:166` `sentPassword()` só aceita assunto `'Seu acesso ao '` (`:73`), `:167` `Hash::check($plain, …)`, `:168` `assertFalse(Hash::check('antiga-senha', …))`, `:169` `must_change_password` | ✅ |
+| Usuários AC 16 (reenviar) | `password_reset`, `success`, `user_id` do admin, `changes` com antes e depois, sem senha | `UserServiceTest.php:170` `assertAudited($joao, 'password_reset', ['must_change_password' => [false, true]])` (helper `:100-109`: `user_id`, `success`, canal nulo, IP, `changes` exato), `:171` a senha fora de `changes`. Código: `UserService.php:77-79` | ✅ (M-e1, M-e2 mortos) |
+| Usuários AC 8 | `deactivated_at`/`by`, sessões encerradas, IA revogada, na mesma transação | `UserServiceTest.php:276-283` (inativo, carimbo, `deactivated_by`, sessão dele apagada e a de outro mantida, duas autorizações revogadas, `deactivated` auditado) | ✅ (sem regressão; caso de atomicidade em `:341-370`) |
+| Usuários AC 14 / edge case: ordem das travas | último admin ativo não sai; trava os administradores antes do alvo (CR-2-01) | `UserServiceTest.php:461-464` 1ª consulta `for update` é a dos admins ativos (`role_id`, `deactivated_at is null`), 2ª é a do alvo com `bindings = [$bia->id]`; corrida: `UltimoAdminConcorrenciaTest.php:78-84` a outra requisição espera (`bloqueada`), sem erro, sobra `[$ana->id]`; mensagens em `UserServiceTest.php:539-541` | ✅ (M-f morto) |
+| Desativar e reativar pela linha travada (N11, CR-1-15, CR-2-06) | instância velha não grava segunda linha e não deixa de reativar | `UserServiceTest.php:410`, `:427`, `:442`; `ClientServiceTest.php:263`, `:280`, `:294-295`; `ContactServiceTest.php` `test_desativar_pela_instancia_velha_nao_grava_outra_desativacao` (`:263`) | ✅ (M-g1 a M-g4 mortos) |
+| Contatos AC 2 | cliente desativado recusa contato com erro de validação, nada criado, pela linha travada | `ContactServiceTest.php:141` `['client' => ['Cliente desativado: reative o cliente para cadastrar contato.']]`, `:144` 0 contatos; instância carregada antes da desativação: `:290`, `:293`; rota `ContactControllerTest.php:211-213`; tela: `e2e/textos-nucleo.spec.ts:193` o alerta no formulário. Código: `ContactService.php:66` | ✅ (M-j1, M-j2 mortos) |
+| Clientes AC 3 em corrida | CNPJ gravado por outro no meio: "Já existe o cliente X com este CNPJ" no campo, não 500 | `ClientRepetidoConcorrenciaTest.php:52-55` (criar) e `:80-83` (editar) `assertSame(['document' => ['Já existe o cliente Mercado Central com este CNPJ']], $e->errors())`, `:58`/`:86` a corrida rodou, `:60`/`:88` só o outro gravou, `:89` o documento da padaria ficou | ✅ (M-h1, M-h2, M-h4 mortos) |
+| Edge case: convite simultâneo | um só usuário; o segundo recebe o erro de e-mail repetido (unique) | `UserServiceTest.php:588` `assertSame(['email' => ['Este e-mail já está em uso.']], $e->errors())`, `:591` o primeiro ficou, `:592` 1 `created`, `:593` `Mail::assertNothingSent()`; unique de outro índice relança o original: `:649-665` | ✅ (M-h3, M-h4 mortos) |
+| Contatos AC 12 em corrida | editar durante a anonimização: recusa vira toast, não 500 | `ContactControllerTest.php:433` o Service recusa com `ContactPolicy::ANONYMIZED`, `:437` `assertRedirect('/admin/contacts')`, `:438` `assertSessionHas('error', 'Contato anonimizado: não pode ser alterado')`, `:439` sem `success`. Service: `ContactServiceTest.php:369`. Código: `ContactController.php:57-60` | ✅ (M-i morto) |
+| P3 AC 1 (pelo `ListBody`) | cada lista com vazio (com ação), erro e carregando | `e2e/estados-das-listas.spec.ts:16-19` vazio e ação, `:34-39` `role=status` com "Carregando …" e `aria-busy`, `:55-58` erro com *Tentar de novo*, para as quatro listas de `e2e/pages/list.page.ts:18-55` (textos exatos: "Carregando usuários…", "Não foi possível carregar os usuários" etc.). Código: `resources/js/components/list-body.tsx:27-44`, usado em `pages/admin/users/index.tsx:209`, `clients/index.tsx:181`, `contacts/index.tsx:72`, `audit-logs/index.tsx:57` | ✅ (e2e verde; sem mutação de tela nesta rodada, ver o sensor) |
+
+**Status (rodada 9)**: 17 linhas conferidas, **17 ✅**, 0 gap, 0 spec-precision gap novo. O P2 AC 3 sai dos desvios.
+
+### Sensor (rodada 9)
+
+Worktree descartável do HEAD em `/tmp/tlc-b1-nucleo-r9` (`git worktree add --detach`), `vendor` copiado da árvore real, sem nenhum `.env*` copiado. Testes pertinentes por `php artisan test --filter='(ClientServiceTest|ClientControllerTest|ClientPolicyTest|ClientRepetidoConcorrenciaTest|UserServiceTest|UserControllerTest|UltimoAdminConcorrenciaTest|ContactServiceTest|ContactControllerTest|AutorizaAntesDeValidarTest|PasswordFlowTest|AuditServiceTest)'` com `DB_TESTE=container` (MySQL 8.4 descartável por execução). **Sem mutação: 185 passed (1473 assertions)**. Cada mutante: troca exata por script (uma ocorrência só), a mesma suíte, `git checkout` do arquivo e `git status --porcelain` da worktree vazio.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| a | `app/Platform/Services/ClientService.php:137-139` | `delete` sem a recusa da WCJ | ✅ morto | `ClientServiceTest.php:325` (`wcj_nao_se_exclui_pelo_service`) |
+| b | `app/Platform/Policies/ClientPolicy.php:67` | `delete` devolve `Response::allow()` para a WCJ | ✅ morto | `ClientControllerTest.php:212` (`excluir_a_wcj_responde_403…`), `ClientPolicyTest.php:119` e `:133`, `ClientControllerTest.php:126` (4 falhas) |
+| c1 | `app/Platform/Services/UserService.php:207` | `choiceList` sem `inspectFor(...)->authorize()` | ✅ morto | `UserServiceTest.php:673` (`desenvolvedor_e_recusado_na_lista_de_escolha…`) |
+| c2 | `app/Platform/Services/ClientService.php:184` | `choiceList` sem `inspectFor(...)->authorize()` | ✅ morto | `ClientServiceTest.php:444` (mesmo nome) |
+| d | `app/Platform/Services/AuditService.php:57` | `inspectFor` sem gravar `denied` | ✅ morto | 29 falhas: os dois `choiceList` do dev (`sole()`), `AutorizaAntesDeValidarTest` (13), as negações de `ClientControllerTest`, `ContactControllerTest`, `UserControllerTest` |
+| e1 | `app/Platform/Services/UserService.php:77` | `resendInvite` com `$before = null` | ✅ morto | `UserServiceTest.php:170` (`changes` ≠ `[false, true]`) |
+| e2 | `app/Platform/Services/UserService.php:77-78` | `before` lido depois do `issue()` (antes = depois) | ✅ morto | `UserServiceTest.php:170` |
+| f | `app/Platform/Services/UserService.php:127,131` | `deactivate` trava o alvo antes dos admins (ordem antiga) | ✅ morto | `UserServiceTest.php:461` (`desativar_admin_trava_os_administradores_antes_do_alvo`). Os dois testes de `UltimoAdminConcorrenciaTest` passam com o mutante: o helper `Concorrencia` intercala de forma síncrona e não reproduz o deadlock; a ordem é provada pela consulta |
+| g1 | `app/Platform/Services/UserService.php:148` | `reactivate` decide por `$user->isActive()` (memória) | ✅ morto | `UserServiceTest.php:427` e `:441-442` |
+| g2 | `app/Platform/Services/ClientService.php:110` | `deactivate` decide por `$client->isActive()` | ✅ morto | `ClientServiceTest.php:263` |
+| g3 | `app/Platform/Services/ContactService.php:104` | `deactivate` decide por `$contact->isActive()` | ✅ morto | `ContactServiceTest.php:263` (`desativar_pela_instancia_velha…`) |
+| g4 | `app/Platform/Services/ClientService.php:124` | `reactivate` decide por `$client->isActive()` | ✅ morto | `ClientServiceTest.php:280` e `:294-295` |
+| h1 | `app/Platform/Services/ClientService.php:79` | `create`: a recusa do unique devolve `null` (relança, 500) | ✅ morto | `ClientRepetidoConcorrenciaTest.php:37` (`UniqueConstraintViolationException`) |
+| h2 | `app/Platform/Services/ClientService.php:97` | `update`: idem | ✅ morto | `ClientRepetidoConcorrenciaTest.php:65` |
+| h3 | `app/Platform/Services/UserService.php:65` | `invite` sem `emailTaken` | ✅ morto | `UserServiceTest.php:578` (convite simultâneo) |
+| h4 | `app/Platform/Services/Concerns/RefusesDuplicates.php:30` | o trait relança sempre o original | ✅ morto | 4 falhas: os dois de `ClientRepetidoConcorrenciaTest`, `UserServiceTest.php:578` e `:631` |
+| i | `app/Platform/Controllers/Admin/ContactController.php:57-60` | `update` chamado fora do `attempt()` | ✅ morto | `ContactControllerTest.php:437` (`recusa_de_regra_ao_editar_contato_vira_toast_de_erro`: 500 no lugar do redirect) |
+| j1 | `app/Platform/Services/ContactService.php:66` | `create` decide por `$client->isActive()` (memória) | ✅ morto | `ContactServiceTest.php:290` (`recusa_contato_em_cliente_desativado_por_outra_instancia`) |
+| j2 | `app/Platform/Services/ContactService.php:66-68` | `create` sem checar o cliente ativo | ✅ morto | `ContactServiceTest.php:141`, `:290`, `ContactControllerTest.php:211` |
+
+**Sensor depth**: P0 (permissão, exclusão, auditoria da negação, integridade por trava e unique): 20 mutações à mão, cobrindo os ramos das famílias a–j. **Resultado**: 20/20 mortos, 0 sobrevivente, 0 equivalente. ✅
+
+Não mutado nesta rodada: o `ListBody` e os hooks de tela. Mutar a tela pede o servidor e2e na worktree, e a montagem da rodada 8 copiava o `.env.e2e`, o que esta rodada não faz. O P3 AC 1 fica provado pelo e2e verde (tabela acima), sem prova de discriminação nova.
+
+Isolamento: `git status --porcelain` da árvore real antes de tudo e depois de `git worktree remove --force /tmp/tlc-b1-nucleo-r9` + `git worktree prune`, os dois vazios e iguais (`diff` sem diferença). A worktree foi criada com `--detach`: não houve branch a apagar. `git worktree list` voltou às quatro de antes. Nenhum container de teste sobrou.
+
+Ambiente: a VM do Colima tem 1,9 GiB. Com o MySQL descartável no ar, o container `wcj-hub-mysql-1` (o banco local do projeto, compartilhado com as outras worktrees) caiu duas vezes por memória (exit 137): uma depois do `php artisan test` da árvore real e outra durante o sensor. Nas duas, `docker start` e espera do `healthy`; nenhuma suíte rodou com ele fora. Vale para a próxima rodada: rodar o sensor com o banco local parado, ou subir a memória da VM.
+
+### Gate (rodada 9, árvore real, HEAD `cb509d9`)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (`DB_TESTE=container`, MySQL 8.4 descartável; `config:clear` antes) | **345 passed (2853 assertions)**, 0 failed, 0 skipped, 49,8 s. Os testes de corrida (`UsaBancoDeVerdade`) rodaram |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` (eslint) | exit 0, sem aviso |
+| `npm run build` | `✓ built in 2.57s` |
+| `npm run specs:check` | `validate_spec.py: ok`; `validate_tasks.py: ok, com aviso` (T35 e T50 com `Tests: none`, só documentos, como antes); `validate_state.py: ok`; `conferir-specs: 1 feature(s), 0 problema(s)` |
+| `npm run test:guard` | **1053 pass**, 0 fail, 0 skipped |
+| e2e (`npm run e2e:prepare`, `npm run e2e:serve` na 8000, livre antes; `npx playwright test`) | **68 passed** (1.4 min): 67 testes + o setup, 0 failed. Servidor morto depois (PID da 8000), porta livre |
+
+Antes do diff (rodada 8): 322 PHP e 56 no Playwright. Agora: **+23 PHP** e **+12 e2e**. Nenhum teste removido (o diff de `tests/` tem −32 linhas, todas de reescrita de asserção ou de assinatura: `TemporaryPasswordMail` sem `isReset`, o `choiceList` com o `User`).
+
+### Code Quality (rodada 9)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ Cada commit corresponde a um achado `CR-n-nn`; o trait `RefusesDuplicates` e o `ListBody`/`useRowAction` tiram cópias que já existiam (CR-2-11, CR-2-03, CR-1-09) |
+| No scope creep | ✅ Nenhuma migração, nenhuma Policy nova, nenhuma ability nova; o CR-1-01 (autenticação) ficou em PR próprio (D15) |
+| Matches patterns | ✅ Trava por linha como o `lockedNotAnonymized` que já existia; negação pelo mesmo `inspectFor` do Controller e dos FormRequests |
+| Spec-anchored outcome check | ✅ Mensagens exatas da spec (WCJ, cliente desativado, anonimizado, CNPJ repetido, e-mail em uso) |
+| Every test maps to a requirement | ✅ Testes novos citam o AC e o `CR` no comentário |
+| Rastreabilidade de tarefas | ⚠️ observação: as correções não entraram no `tasks.md` (51 tarefas, 175 caixas, 0 abertas, igual à rodada 8); o rastro é o código `CR` nos commits e nos relatórios da review |
+| Guidelines | `.ai/core/especificacao.md` §5 itens 6–8; `.ai/core/testes.md` §10 e §11 |
+
+### Declared Deviations (rodada 9)
+
+- **P2 AC 3: fechado.** A D6 (listas de escolha sem rota) foi aceita por Lucas Scholz em 09/10 (D13) e o AC foi reescrito no nível da Policy, conferida dentro de `choiceList(User)`. Provado por `UserServiceTest.php:672-680` e `ClientServiceTest.php:443-452`; mutantes c1, c2 e d mortos.
+- **Continuam, sem reprovar** (nenhum mudou neste diff): o texto do último admin ao se desativar (a spec diz "a mensagem do template"; o código diz "Este é o último administrador ativo. Promova outra pessoa antes de desativar.", `UserServiceTest.php:540`) e os textos que a spec não define (U5, C2, K2, K11).
+- **Fora da spec, para o Lucas Scholz (D16 e ciclo 2)**: CR-1-11 (prazo da senha provisória), CR-1-12 (`min` da carga diária), CR-1-23 (índice da auditoria), CR-2-09 (reenviar convite a desativado), abilities sem leitor (CR-2-08) e o CR-1-01 em PR próprio. Não são desvio deste AC set.
+- `grep -rn SPEC_DEVIATION app resources tests`: vazio.
+
+### Saída dos validadores (rodada 9)
+
+Rodados depois de escrever este relatório:
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+validate_state: 0 error(s) across [b1-nucleo]          (exit 0)
+
+$ node .ai/skills/conferir-specs.mjs
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none, esperado: só documentos)
+validate_tasks: 0 error(s), 2 warning(s)
+[b1-nucleo] validate_state.py: ok
+conferir-specs: 1 feature(s), 0 problema(s)             (exit 0)
+```
+
+### Lições (`.specs/lessons.json`), rodada 9
+
+Sem sinal novo: PASS limpo, nenhum mutante sobrevivente, nenhum AC sem evidência, nenhum spec-precision gap novo e nenhum `SPEC_DEVIATION`. Pela skill (`references/lessons.md`), nada registrado. O P2 AC 3 fechado pela D13 é o que a `L-004` (candidate) já recomenda: escrever o AC no nível da Policy ou do Service quando o design não cria rota.
+
+- `lessons.py status`: 11 total, 0 confirmed, 11 candidate, 0 quarantined (igual à rodada 8; `.specs/lessons.json` e `.specs/LESSONS.md` sem mudança).
 
 ---
 
@@ -391,7 +537,7 @@ Como o e2e rodou: `npm run e2e:prepare` recriou `wcj_hub_e2e`; worktree descart�
 | Clientes AC 6 | gestor que o contrato lista edita, com as mesmas validações | `ClientPolicyTest.php:52` linha "gestor que gere o cliente" `[…, true, true, true, false]` → `:73` `assertSame($edita, $actor->can('update', $this->client))`; `:86` `assertTrue($manager->can('update', $this->client))`; `ClientControllerTest.php:228` `can.update = true`, `:237-239` PUT → `'Cliente atualizado.'` e `assertSame('Meu cliente editado', …)`; `ClientServiceTest.php:209-215` mesmas validações (`'Informe um CNPJ válido.'`, documento mantido) | ✅ (T01 morto) |
 | Clientes AC 7 | gestor não listado, ou em desativar/reativar/excluir: **403** e nada muda; com a vazia, nenhum cliente | `ClientControllerTest.php:252-257` (editar cliente não listado, desativar, reativar, excluir), `:261` `assertForbidden()`, `:262` `outcome = denied` com `auditable_id`, `:265` `assertEquals($before, $this->snapshot())`, `:266` 0 `success`; vazia: `:346` `can = [false,false,false,false]`, `:347` `assertForbidden()`, `:349` `denied`, `:350` snapshot igual, `:351` 0 `success`; `ClientPolicyTest.php:87` `assertFalse(…can('update', outro))`, `:95` `assertFalse($manager->can('update', $this->client))` com a vazia | ✅ (T01, T05 mortos) |
 | Clientes AC 8 | dev: **403** em qualquer rota de clientes | `ClientControllerTest.php:275` dev listado pelo dublê, `:278-284` as 7 rotas, `:291` `assertForbidden()`, `:292` `denied`, `:295` snapshot igual, `:296` 0 `success`; `ClientPolicyTest.php:55` "desenvolvedor listado pelo contrato" `[…, true, false, false, false]` | ✅ (T08 morto) |
-| Clientes AC 9: desativa mesmo com projetos abertos e sai das listas | desativado, carimbo, fora da lista de escolha | `ClientServiceTest.php:222` projeto aberto no banco, `:227` `assertFalse($client->isActive())`, `:229` `deactivated_by`, `:231` `assertNotContains($client->id, …choiceList())` | ✅ |
+| Clientes AC 9: desativa mesmo com projetos abertos e sai das listas | desativado, carimbo, fora da lista de escolha | `ClientServiceTest.php:222` projeto aberto no banco, `:227` `assertFalse($client->isActive())`, `:229` `deactivated_by`, `:231` `assertNotContains($client->id, …choiceList())` | ✅ (rodada 9: o método passou a receber o `User` pela D13; hoje `ClientServiceTest.php:233` `assertNotContains($client->id, array_column($this->service->choiceList($this->admin), 'id'))`) |
 | Clientes AC 9: o N da confirmação | N = projetos abertos do cliente | `ClientControllerTest.php:106` dublê `projetosAbertos($client, 2)` → `:110` `where('clients.data.0.open_projects', 2)`; vazia: `:121` `open_projects = 0` | ✅ (T07, T10 mortos). 🔶 desvio declarado: o N vem de `openProjectsCount`, 3º método do contrato |
 | Clientes AC 9: o texto | "O cliente X tem N projetos abertos; eles continuam. Desativar?" | **nenhuma**. `resources/js/pages/admin/clients/index.tsx:37` monta o texto, e nenhum teste o afirma. O e2e `textos-nucleo.spec.ts:46` afirma só a variante N = 0, "O cliente X sai das listas de escolha. Desativar?", que a spec não define | ❌ **GAP** (T11 sobrevive). Regressão da T34: o `2a32842` afirmava o texto exato |
 | Clientes AC 13 | Nome, País, CNPJ / identificador, Situação; busca por nome e documento; filtros País e Situação (ativos por padrão); "Nenhum cliente ainda" com *Novo cliente* | `ClientControllerTest.php:53-79` colunas, desativado escondido e `show_inactive`; `:92-99` busca e país; e2e `textos-nucleo.spec.ts:72` `emptyState('Nenhum cliente ainda')`, `:74` botão *Novo cliente* | ✅ (sem mudança de comportamento; linhas deslocadas desde a rodada 4) |
@@ -401,7 +547,7 @@ Como o e2e rodou: `npm run e2e:prepare` recriou `wcj_hub_e2e`; worktree descart�
 | Contatos AC 13 | lista geral com Nome, E-mail, Telefone, Cliente, Situação; busca; filtros Cliente e Situação; para o gestor, só os clientes que `managedClientIds` devolve | `ContactControllerTest.php:57-94` colunas e situação; `:103-107` busca e filtro; gestor: `:121-125` só `'Ana Lima'` e `clients` só o dele, `:126-127`; `:130-131` gestor que o contrato não lista: `has('contacts.data', 0)`, `clients = []`; vazia `:375`; `ContactServiceTest.php:203-206` (`paginate` e `clientOptions` do gestor só o cliente listado; admin todos), `:216-218` (vazia: 0 e `[]`) | ✅ (T04, T06 mortos) |
 | P2 AC 1 | gestor: só `id`, `name`, `role` dos ativos | `UserServiceTest.php:546-548` `assertSame(['id' => …, 'name' => 'Caio Dev', 'role' => 'developer'], …)`; `UserPolicyTest.php:48` `viewChoiceList` | ✅ (sem mudança desde a rodada 4) |
 | P2 AC 2 | gestor: só `id` e `name` dos clientes ativos | `ClientServiceTest.php:319` `assertSame([['id' => $alfa->id, 'name' => 'Alfa'], ['id' => $zeta->id, 'name' => 'Zeta']], …choiceList())`; `ClientPolicyTest.php:26` `viewChoiceList` em `SEM_REGISTRO`, `:69-71` na matriz, `:97-99` com a vazia o gestor ainda escolhe | ✅ |
-| P2 AC 3 | dev: **403** | `ClientPolicyTest.php:55,69-71` e `UserPolicyTest.php:48` (ability negada); não há rota (design D6) | ⚠️ desvio declarado, como na rodada 4 |
+| P2 AC 3 | dev: **403** | `ClientPolicyTest.php:55,69-71` e `UserPolicyTest.php:48` (ability negada); não há rota (design D6) | ⚠️ desvio declarado, como na rodada 4. **Fechado em 09/10 (D13)**: o AC foi reescrito no nível da Policy, conferida dentro de `choiceList(User)`; ✅ na rodada 9 (`UserServiceTest.php:672-680`, `ClientServiceTest.php:443-452`, mutantes c1, c2, d mortos) |
 
 **Status (rodada 5)**: 19 linhas conferidas. 17 ✅ (uma com o desvio declarado do `openProjectsCount`), 1 ⚠️ (P2 AC 3, desvio já pendente) e **1 ❌ GAP** (texto do Clientes AC 9). Precision gap leve, novo: a spec só define o texto com N; as variantes "sai das listas de escolha" (N = 0) e "tem 1 projeto aberto; ele continua" (N = 1) de `index.tsx:35-36` são escolha da implementação, para o Lucas confirmar.
 
@@ -588,7 +734,7 @@ Linhas conferidas no HEAD `a610d47` (rodada 3); C1 e C2 reconferidas no `2a32842
 |---|---|---|---|
 | E1 | gestor: só `id`, `name`, `role` dos ativos | `UserServiceTest.php:546-548`; `UserPolicyTest.php:48` | ✅ |
 | E2 | gestor: só `id` e `name` dos clientes ativos | `ClientServiceTest.php:318`; `ClientPolicyTest.php:25,68-70` (`viewChoiceList` na matriz) | ✅ |
-| E3 | dev: **403** | `UserPolicyTest.php:48`, `ClientPolicyTest.php:25,68-70` (ability negada) | ⚠️ Spec-precision gap / desvio declarado: o design D6 não cria rota, então não há 403 HTTP; a Policy está testada. Pendente do Lucas |
+| E3 | dev: **403** | `UserPolicyTest.php:48`, `ClientPolicyTest.php:25,68-70` (ability negada) | ⚠️ Spec-precision gap / desvio declarado: o design D6 não cria rota, então não há 403 HTTP; a Policy está testada. Pendente do Lucas. **Fechado em 09/10 (D13)**; ✅ na rodada 9: `AuthorizationException` e linha `denied` do dev (`UserServiceTest.php:672-680`, `ClientServiceTest.php:443-452`) |
 
 ### P3: Estados de tela e textos
 
@@ -601,7 +747,7 @@ Linhas conferidas no HEAD `a610d47` (rodada 3); C1 e C2 reconferidas no `2a32842
 
 - **54** com o valor exato da spec (C1 e C2 deixaram de ser parciais);
 - **3** desvios declarados, com "nada muda" testado (U12, C12, K9), pendentes do Lucas;
-- **1** spec-precision gap (E3), pendente do Lucas.
+- **1** spec-precision gap (E3), pendente do Lucas (fechado em 09/10 pela D13; ✅ na rodada 9).
 
 Na rodada 3 eram 52 exatos, 3 desvios, 2 parciais (C1 e C2, por S10) e 1 gap.
 
@@ -758,9 +904,10 @@ Na rodada 7, o que era desvio e o Lucas Scholz decidiu (review de 07/10) saiu de
 
 ### Desvios que continuam (não decididos na review, não reprovam)
 
+O P2 AC 3 saiu desta tabela em 09/10 (D13): a D6 foi aceita, o AC foi reescrito no nível da Policy e a rodada 9 o prova (`UserServiceTest.php:672-680`, `ClientServiceTest.php:443-452`). Até a rodada 8 a linha dizia: "P2 AC 3 (sem marcador no código) | 403 para o dev na lista de escolha | o design D6 não cria rota; a Policy nega | não se aplica".
+
 | Ref | Spec | Implementado | "Nada muda" testado |
 |---|---|---|---|
-| P2 AC 3 (sem marcador no código) | 403 para o dev na lista de escolha | o design D6 não cria rota; a Policy nega (`UserPolicyTest.php:48`, `ClientPolicyTest.php:26,55,69-71` na rodada 5) | não se aplica (não há escrita) |
 | Edge case do último admin | "a mensagem do template" | "Este é o último administrador ativo. Promova outra pessoa antes de desativar." (`UserServiceTest.php:462`) | `UserServiceTest.php:475-478` |
 | Textos que a spec não define | U5, C2, K2, K11 | textos em português, afirmados por valor | - |
 
@@ -776,7 +923,7 @@ Na rodada 7, o que era desvio e o Lucas Scholz decidiu (review de 07/10) saiu de
 
 ### Fix 2: decisões da spec (Lucas Scholz). Decididas em 07/10, exceto três
 
-Decididos na review de 07/10 (D6, D7, A2; ver "Declared Deviations"): os três `destroy` com toast, a WCJ com CNPJ e país editáveis, o 3º método do contrato e as variantes N = 0 e N = 1. Continuam abertos, sem reprovar: o P2 AC 3 (403 sem rota, por causa do D6 do design), o texto do último admin ao se desativar e os textos que a spec não define (U5, C2, K2, K11).
+Decididos na review de 07/10 (D6, D7, A2; ver "Declared Deviations"): os três `destroy` com toast, a WCJ com CNPJ e país editáveis, o 3º método do contrato e as variantes N = 0 e N = 1. Continuavam abertos, sem reprovar: o P2 AC 3 (403 sem rota, por causa do D6 do design), o texto do último admin ao se desativar e os textos que a spec não define (U5, C2, K2, K11). Em 09/10 o P2 AC 3 foi decidido (D13) e está provado na rodada 9; seguem abertos o texto do último admin e os textos U5, C2, K2, K11.
 
 ### Fix 3: texto do Clientes AC 9 com N projetos (T11), Minor. ✅ Feito na T36 (`6beb785`), conferido na rodada 6
 
@@ -791,13 +938,21 @@ Descrito na seção "Rodada 5" ("Fix 3"). Só teste, em `e2e/textos-nucleo.spec.
 | NUC-01, NUC-02, NUC-03, NUC-04, NUC-09, NUC-10, NUC-11, NUC-12, NUC-14 | ✅ Verified (rodadas 1–4; na rodada 7, U12 e K9 viram toast pela D6, afirmado em `UserControllerTest.php:190` e `ContactControllerTest.php:246`; A1, A3, A4, A6, A8, D2, D3, D9 conferidos, mutantes mortos) |
 | NUC-06 | ✅ Verified na rodada 7 (A7: memória por requisição e lote; M6a, M6b mortos) |
 | NUC-08 | ✅ Verified na rodada 7 (Contatos AC 3 por papel, telefone como texto; M8, M9, M10 mortos) |
-| NUC-07 | ✅ Verified na rodada 8: AC 9 com as três variantes afirmadas (N = 1 em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos); AC 10 e AC 12 ✅ desde a rodada 7 (`ClientControllerTest.php:211,224`; M2 morto) |
+| NUC-07 | ✅ Verified na rodada 8: AC 9 com as três variantes afirmadas (N = 1 em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos); AC 10 e AC 12 ✅ desde a rodada 7 (`ClientControllerTest.php:211,224`; M2 morto); rodada 9: AC 10 "a WCJ não pode ser excluída" pela rota (`ClientControllerTest.php:212-218`) e pelo Service (`ClientServiceTest.php:325-329`), mutantes a e b mortos |
 | NUC-05 | ✅ Verified (rodada 4: AC 1 e 2 fechados pela T31) |
-| NUC-13 (AC 3) | ⚠️ Decisão (Fix 2) |
+| NUC-13 | ✅ Verified na rodada 9: AC 1–3 com a Policy dentro de `choiceList(User)` e a negação auditada (`UserServiceTest.php:672-680,689-692`, `ClientServiceTest.php:443-452,461-462`; c1, c2, d mortos). Até a rodada 8: AC 3 ⚠️ decisão (Fix 2), decidida em 09/10 (D13) |
 
 ---
 
 ## Summary
+
+**Overall (rodada 9)**: ✅ Ready para as etapas seguintes (`.ai/core/especificacao.md` §5 item 9). As correções dos ciclos 1 e 2 da code review estão provadas: 17 linhas de AC com `arquivo:linha` e o valor da spec, e as 20 mutações nas regras que o ciclo mexeu (WCJ não excluível na Policy e no Service, Policy dentro do `choiceList`, a negação auditada, o `before` do `password_reset`, a ordem das travas do desativar, as decisões pela linha travada, a captura do unique, o `attempt()` do editar contato, o cliente ativo na criação do contato) morreram. O P2 AC 3 deixou de ser desvio (D13).
+
+**Spec-anchored check (rodada 9)**: 17/17 linhas com o valor da spec; 0 gap; 0 spec-precision gap novo.
+**Sensor (rodada 9)**: 20 mutações, 20 mortas, 0 sobrevivente, 0 equivalente (P0, à mão, `DB_TESTE=container`).
+**Gate (rodada 9)**: `composer lint` ok; `php artisan test` 345 passed (2853 assertions) no MySQL 8.4 descartável; typecheck, eslint, build ok; `specs:check` 0 problemas; guard 1053 pass; Playwright 68 passed (67 + setup).
+
+**Next steps (rodada 9)**: o push dos commits e o CI verde no PR #5; as etapas do §5 item 9; atualizar o `AGENTS.md` ("Estado atual" ainda diz que falta o Verifier focado na review) e o critério de sucesso do `spec.md:262`, que não são deste relatório. Seguem abertos, sem reprovar: o texto do último admin, os textos U5, C2, K2, K11 e as decisões fora da spec (CR-1-11, CR-1-12, CR-1-23, CR-2-09, CR-2-08, CR-1-01 em PR próprio).
 
 **Overall (rodada 8)**: ✅ Ready para as etapas seguintes (`.ai/core/especificacao.md` §5 item 9: revisão em camadas, print do Playwright no PR, quatro perguntas por entidade, revisão de segurança dirigida). Os dois gaps da rodada 7 fechados pela T51: estado vazio estável e discriminante (20/20; as sondas mostram que ele depende da linha prévia e da reescrita) e texto N = 1 do Clientes AC 9 afirmado (S8a, S8b mortos).
 
@@ -805,7 +960,7 @@ Descrito na seção "Rodada 5" ("Fix 3"). Só teste, em `e2e/textos-nucleo.spec.
 **Sensor (rodada 8)**: 2 mutações, 2 mortas. Somando a rodada 7: 19 mutações, 18 mortas, 1 equivalente (M1c), 0 sobrevivente.
 **Gate (rodada 8)**: `composer lint` ok; `php artisan test` 322 passed (2761 assertions); estado vazio `--repeat-each=10` 20/20; Playwright 56 passed nas duas rodadas com `e2e:prepare` antes de cada.
 
-**Next steps (rodada 8)**: as etapas do §5 item 9 e o PR #5 com o Lucas Scholz. Seguem abertos, sem reprovar, os pontos de "Fix 2" (P2 AC 3, texto do último admin, textos U5, C2, K2, K11) e a nota de produto do `SearchInput` (A5).
+**Next steps (rodada 8)**: as etapas do §5 item 9 e o PR #5 com o Lucas Scholz. Seguem abertos, sem reprovar, os pontos de "Fix 2" (P2 AC 3, texto do último admin, textos U5, C2, K2, K11) e a nota de produto do `SearchInput` (A5). Na rodada 9: o P2 AC 3 fechou (D13).
 
 **Overall (rodada 7)**: ❌ Not Ready, por dois gaps Minor, só de teste. As correções da review do Lucas Scholz estão certas: A1–A9 corrigidos com evidência; D2, D3, D7 (lote) e D9 no código; documentos com D1, D4, D5, D11; nenhum `SPEC_DEVIATION`. Falta: (1) consertar o teste instável `e2e/textos-nucleo.spec.ts:221` (Contatos; Fix 4), que deixou a rodada 2 do e2e vermelha (54/55) e falha 1 em 10 isolado; (2) afirmar o texto N = 1 do Clientes AC 9 (Fix 5).
 
@@ -828,7 +983,7 @@ Descrito na seção "Rodada 5" ("Fix 3"). Só teste, em `e2e/textos-nucleo.spec.
 **Pendente do Lucas Scholz (não reprova)**:
 
 - os três `destroy` (usuário, cliente, contato) com toast em vez de 403;
-- o P2 AC 3 (403 para o dev sem rota, por causa do D6);
+- o P2 AC 3 (403 para o dev sem rota, por causa do D6); fechado em 09/10 (D13), ✅ na rodada 9;
 - a mensagem do último admin ao se desativar;
 - os textos que a spec não define (U5, C2, K2, K11) e as variantes N = 0 e N = 1 do texto de desativar cliente;
 - se a WCJ pode ter o CNPJ ou o país editado e perder a proteção do N7 (observação em "Code Quality");
