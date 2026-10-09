@@ -32,6 +32,11 @@ class UserService
     // O nome do índice unique de users.email; a mensagem do MySQL o cita (key 'users.users_email_unique').
     private const EMAIL_UNIQUE = 'users_email_unique';
 
+    // Escrita que trava linha de usuário repete a transação em deadlock (CR-3-03): a trava dos
+    // admins ativos vai em ordem de índice e a FK da auditoria trava o ator depois do alvo.
+    // O Laravel também repete no "Lock wait timeout". Os callbacks precisam ser repetíveis.
+    private const ATTEMPTS = 3;
+
     public function __construct(
         private readonly AuditService $audit,
         private readonly TemporaryPasswordService $passwords,
@@ -73,13 +78,16 @@ class UserService
      */
     public function resendInvite(User $user, User $actor): bool
     {
-        $plain = DB::transaction(function () use ($user, $actor) {
-            $before = ['must_change_password' => (bool) $user->must_change_password];
+        // Fora do callback: na repetição, o issue() da tentativa desfeita já mudou a memória.
+        $before = ['must_change_password' => (bool) $user->must_change_password];
+
+        // A senha nasce dentro do callback: a tentativa que commita é a que vai no e-mail.
+        $plain = DB::transaction(function () use ($user, $before, $actor) {
             $plain = $this->passwords->issue($user);
             $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, $before, ['must_change_password' => true], $actor->id);
 
             return $plain;
-        });
+        }, self::ATTEMPTS);
 
         return $this->passwords->send($user, $plain);
     }
@@ -91,8 +99,14 @@ class UserService
     {
         $this->ensureDailyHours($data);
 
+        // Na repetição (CR-3-03), recomeça da instância como chegou: o save() da tentativa desfeita
+        // deixaria a memória "sem mudança", e a repetição não gravaria nada.
+        [$attributes, $original] = [$user->getAttributes(), $user->getRawOriginal()];
+
         // O FormRequest confere o e-mail antes; outra gravação do mesmo e-mail pode entrar no meio.
-        $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($user, $data, $actor) {
+        $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($user, $data, $actor, $attributes, $original) {
+            $user->setRawAttributes($original, true)->setRawAttributes($attributes);
+
             if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
                 $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
             }
@@ -115,7 +129,7 @@ class UserService
             if ($revoke) {
                 $this->revokeAiAuthorizations($user, $actor);
             }
-        }), $this->emailTaken(...));
+        }, self::ATTEMPTS), $this->emailTaken(...));
     }
 
     /** N4, N11, IA6: perde o acesso agora, sessões e conexões de IA incluídas. */
@@ -138,7 +152,7 @@ class UserService
             $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
             $this->revokeAiAuthorizations($locked, $actor);
             $this->sessions->terminateOthers($locked);
-        });
+        }, self::ATTEMPTS);
     }
 
     /** As conexões de IA não voltam: a pessoa reconecta (IA6). */
@@ -153,7 +167,7 @@ class UserService
 
             $locked->setActive(true, $actor)->save();
             $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
-        });
+        }, self::ATTEMPTS);
     }
 
     /** G2: só quem nunca entrou e não é referenciado; o resto se desativa. */
@@ -167,7 +181,7 @@ class UserService
                 Password::broker()->deleteToken($deleted);
                 $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
             });
-        });
+        }, self::ATTEMPTS);
 
         if (! $deleted) {
             throw new DomainException(self::ALREADY_USED);
