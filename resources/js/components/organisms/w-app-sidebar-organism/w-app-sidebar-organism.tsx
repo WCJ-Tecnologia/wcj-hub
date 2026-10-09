@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { History, LayoutDashboard, PanelLeftClose, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { Building2, ContactRound, History, LayoutDashboard, PanelLeftClose, UserRound, Users, type LucideIcon } from 'lucide-react';
 
 import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-logo-atom';
 import { WProductWordmarkAtom } from '@/components/atoms/w-product-wordmark-atom/w-product-wordmark-atom';
@@ -44,15 +44,18 @@ export const NAV: WNavGroup[] = [
         items: [{ label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard }],
     },
     {
-        title: 'Cadastros',
-        items: [{ label: 'Usuários', href: '/admin/users', icon: Users, visible: (a) => a.manage_users }],
+        // F1 §09: o Administrador vê os quatro; o gestor, Clientes e Contatos; o dev, nenhum.
+        title: 'Administração',
+        items: [
+            { label: 'Usuários', href: '/admin/users', icon: Users, visible: (a) => a.manage_users },
+            { label: 'Clientes', href: '/admin/clients', icon: Building2, visible: (a) => a.view_clients },
+            { label: 'Contatos', href: '/admin/contacts', icon: ContactRound, visible: (a) => a.view_contacts },
+            { label: 'Auditoria', href: '/admin/audit-logs', icon: History, visible: (a) => a.view_audit_logs },
+        ],
     },
     {
         title: 'Conta',
-        items: [
-            { label: 'Logs de auditoria', href: '/admin/audit-logs', icon: History, visible: (a) => a.view_audit_logs },
-            { label: 'Perfil', href: '/admin/profile', icon: UserRound },
-        ],
+        items: [{ label: 'Perfil', href: '/admin/profile', icon: UserRound }],
     },
 ];
 

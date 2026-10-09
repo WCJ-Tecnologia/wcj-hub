@@ -17,6 +17,9 @@ export interface WDatePickerMoleculeProps {
     /** aria-label do botão (use quando não houver <label> ligado por `id`). */
     label?: string;
     id?: string;
+    /** Injetados pelo `WFormFieldMolecule`; vão para o botão, que é o controle. */
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
     disabled?: boolean;
     /** Mostra o botão de limpar quando há data. */
     clearable?: boolean;
@@ -47,6 +50,8 @@ export function WDatePickerMolecule({
     placeholder = 'dd/mm/aaaa',
     label,
     id,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedby,
     disabled,
     clearable = true,
     className,
@@ -63,9 +68,12 @@ export function WDatePickerMolecule({
                         type="button"
                         variant="outline"
                         disabled={disabled}
+                        aria-invalid={ariaInvalid || undefined}
+                        aria-describedby={ariaDescribedby}
                         aria-label={label ? `${label}: ${selected ? DISPLAY.format(selected) : 'sem data'}` : undefined}
                         className={cn(
                             'h-10 w-full justify-start gap-2 bg-card px-3 text-base font-normal md:text-sm',
+                            ariaInvalid && 'border-destructive ring-[3px] ring-destructive/30',
                             clearable && selected && 'pr-10',
                             !selected && 'text-muted-foreground',
                         )}

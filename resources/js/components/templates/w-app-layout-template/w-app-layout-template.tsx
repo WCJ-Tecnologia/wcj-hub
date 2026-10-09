@@ -26,7 +26,13 @@ export interface WAppLayoutTemplateProps {
 
 /** Server flash → Sonner. The id dedupes the same flash seen on mount and on Inertia's success event. */
 function showFlash(flash: FlashMessages | undefined) {
-    if (flash?.success) toast.success(flash.success, { id: `flash-success-${flash.success}` });
+    // O aviso não desfaz o sucesso: um toast só diz o que foi feito e o que conferir (B1).
+    if (flash?.warning) {
+        const message = [flash.success, flash.warning].filter(Boolean).join(' ');
+        toast.warning(message, { id: `flash-warning-${message}` });
+    } else if (flash?.success) {
+        toast.success(flash.success, { id: `flash-success-${flash.success}` });
+    }
     if (flash?.error) toast.error(flash.error, { id: `flash-error-${flash.error}` });
 }
 

@@ -217,6 +217,32 @@ class PasswordFlowTest extends TestCase
         $this->assertDatabaseMissing('sessions', ['id' => 'stolen-cookie']);
     }
 
+    /** Sessão aberta do alvo cai ao reenviar convite (CR-1-01). */
+    public function test_reenviar_convite_derruba_as_sessoes_abertas_do_alvo(): void
+    {
+        config(['session.driver' => 'database']);
+        Mail::fake();
+
+        $admin = User::factory()->admin()->create();
+        $target = User::factory()->projectManager()->create();
+        $other = User::factory()->projectManager()->create();
+
+        DB::table('sessions')->insert([
+            ['id' => 'stolen-cookie', 'user_id' => $target->id, 'payload' => '', 'last_activity' => time()],
+            ['id' => 'another-device', 'user_id' => $target->id, 'payload' => '', 'last_activity' => time()],
+            ['id' => 'someone-else', 'user_id' => $other->id, 'payload' => '', 'last_activity' => time()],
+        ]);
+
+        $this->actingAs($admin)
+            ->post("/admin/users/{$target->id}/reset-password")
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('sessions', ['id' => 'stolen-cookie']);
+        $this->assertDatabaseMissing('sessions', ['id' => 'another-device']);
+        $this->assertDatabaseHas('sessions', ['id' => 'someone-else']);
+    }
+
     public function test_creating_a_user_emails_a_temporary_password(): void
     {
         Mail::fake();
@@ -239,7 +265,7 @@ class PasswordFlowTest extends TestCase
 
         Mail::assertSent(
             TemporaryPasswordMail::class,
-            fn (TemporaryPasswordMail $mail) => $mail->hasTo('maria@example.com') && $mail->isReset === false,
+            fn (TemporaryPasswordMail $mail) => $mail->hasTo('maria@example.com'),
         );
     }
 
@@ -266,7 +292,9 @@ class PasswordFlowTest extends TestCase
 
         Mail::assertSent(
             TemporaryPasswordMail::class,
-            fn (TemporaryPasswordMail $mail) => $mail->hasTo('joao@example.com') && $mail->isReset === true,
+            // Reenviar convite manda o mesmo e-mail do convite (CR-1-13 do ciclo 1).
+            fn (TemporaryPasswordMail $mail) => $mail->hasTo('joao@example.com')
+                && str_starts_with($mail->envelope()->subject, 'Seu acesso ao '),
         );
 
         $this->post('/admin/logout');

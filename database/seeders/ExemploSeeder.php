@@ -34,14 +34,19 @@ use Illuminate\Support\Str;
  */
 class ExemploSeeder extends Seeder
 {
+    /**
+     * As 8 etapas padrão, na ordem da P10. Provisório: quando o B2 entregar o Service que cria o
+     * quadro (ProjectService/BoardStageService), o seeder passa a chamá-lo e esta lista sai, para a
+     * ordem não morar em dois lugares.
+     */
     private const ETAPAS = [
         [StageRole::QUEUE, 'Backlog'],
         [StageRole::SPRINT, 'To do'],
         [StageRole::DEVELOPMENT, 'Doing'],
+        [StageRole::PAUSED, 'Paused'],
         [StageRole::CODE_REVIEW, 'Code-review'],
         [StageRole::TEST, 'In test'],
         [StageRole::DONE, 'Done'],
-        [StageRole::PAUSED, 'Paused'],
         [StageRole::SUPPORT, 'Support'],
     ];
 
@@ -76,7 +81,7 @@ class ExemploSeeder extends Seeder
                 'client_id' => $client->id,
                 'name' => Exemplo::nome('Joaquim Souza'),
                 'email' => Exemplo::email('joaquim'),
-                'phone' => '11999990000',
+                'phone' => '(11) 99999-0000',
             ]);
 
             $gestora = $this->pessoa('Ana Gestora', 'ana', RoleEnum::PROJECT_MANAGER, 8);

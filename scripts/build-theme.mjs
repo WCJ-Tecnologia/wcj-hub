@@ -71,7 +71,7 @@ function flatten(mode, name) {
     out['--primary'] = require_(brand, 'primary', `${p}.brand`);
     out['--primary-foreground'] = require_(brand, 'primaryForeground', `${p}.brand`);
     // Azul para texto e link: a primária da marca (#1A6CF3) não passa AA como texto
-    // sobre o cinza-claro; aqui entra o tom que passa (#0F4FC4 no claro). ADR-004.
+    // sobre o cinza-claro; aqui entra o tom que passa (#0F4FC4 no claro). ADR-005.
     out['--primary-text'] = require_(brand, 'primaryText', `${p}.brand`);
 
     const n = require_(mode, 'neutrals', p);
@@ -154,7 +154,7 @@ ${block(dark, 'dark')}
     --font-heading: ${fonts.heading};
     --font-mono: ${fonts.mono};
 
-    /* Escala do Hub (ADR-004): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
+    /* Escala do Hub (ADR-005): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
     --radius-sm: calc(var(--radius) - 2px);
     --radius-md: var(--radius);
     --radius-lg: var(--radius);

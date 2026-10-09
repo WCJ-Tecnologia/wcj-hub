@@ -19,6 +19,8 @@ O que é infraestrutura, e não domínio, fica onde o template põe: `app/Http/C
 - FK só numa direção: `Domains/* → Platform` (`banco.txt` 6.2). O Núcleo não conhece módulo.
 - Um domínio não usa Model de outro domínio (regra A7 do `tests/Arch/ArquiteturaTest.php`) nem lê ou grava tabela de outro por SQL (regra A9, no mesmo arquivo). O Platform não usa nada de `App\Domains\`. Precisa do dado de outro domínio: chama o Service dele.
 - Um domínio pode ler os Models do Platform (o dev da tarefa é um `User`), na direção das FKs. Escrita em tabela do Platform passa pelo Service do Platform.
+- O Platform precisa de um dado de módulo (ex.: "quais clientes este gestor gere", que mora em `projects`): declara uma interface em `app/Platform/Contracts/`, com uma implementação vazia no próprio Platform, e o módulo entrega a implementação real em `app/Domains/<X>/Services/`, ligada no `AppServiceProvider` (que fica fora do que A9 varre). O Platform continua sem conhecer `App\Domains\`. Primeiro uso: `ClientManagement` (B1 e B2, revisão de 07/10).
+- Lista geral que só um módulo usa (tipos de tarefa, motivos de retrabalho) é Model e Service desse módulo, mesmo que a tela fique em *Administração*.
 - Policy fora de `app/Policies` é registrada com `Gate::policy()` no `AppServiceProvider`.
 - Model fora de `App\Models` declara `newFactory()`: o Laravel acha a factory pelo nome do namespace e erraria.
 - O morph map (`Relation::enforceMorphMap`, no `AppServiceProvider`) dá o alias de cada Model em `audit_logs.auditable_type` e `notifications.notifiable_type` (`banco.txt`, audit_logs: "alias do morph map"). Model novo entra no mapa no mesmo commit.

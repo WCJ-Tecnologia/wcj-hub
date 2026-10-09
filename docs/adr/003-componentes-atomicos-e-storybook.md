@@ -1,8 +1,8 @@
 # ADR-003: Componentes em Atomic Design, shadcn em pasta própria e Storybook
 
 **Data:** 2026-10-07
-**Estado:** proposta
-**Decidido por:** pendente (Lucas Scholz)
+**Estado:** aprovada
+**Decidido por:** Lucas Scholz, 2026-10-09 (comentário no PR #8)
 
 ## Contexto
 

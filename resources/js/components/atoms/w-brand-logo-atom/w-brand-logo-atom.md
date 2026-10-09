@@ -57,4 +57,5 @@ import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-log
 
 - O `alt` é "WCJ Tecnologia", então o link nunca fica sem nome (regra `link-name` do axe). Em `auto`, a imagem escondida tem `display: none` e sai da árvore de acessibilidade.
 - Para esconder em algum tamanho de tela, passe a classe em `className` (ex.: `lg:hidden`). Esconder só a imagem deixaria um link vazio.
-- Trocar o logo é trocar o SVG em `public/brand/`, a partir do mestre da marca. A configuração `APP_BRAND_LOGO` deixou de existir (ADR-004).
+- Trocar o logo é trocar o SVG em `public/brand/`, a partir do mestre da marca. A configuração `APP_BRAND_LOGO` deixou de existir (ADR-005).
+- Com `href`, o nome acessível do link é "Início" (`aria-label`), não o alt da imagem: a WCJ também é cliente (N7), e o link da ficha dela se chama "WCJ Tecnologia".

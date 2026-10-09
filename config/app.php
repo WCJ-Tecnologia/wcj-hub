@@ -22,7 +22,7 @@ return [
     |
     | What the shell shows as the brand name, shared with the front by
     | HandleInertiaRequests as `app.brand`. The Hub is WCJ-only: the official
-    | logo files live in public/brand/ and are picked by WBrandLogoAtom (ADR-004).
+    | logo files live in public/brand/ and are picked by WBrandLogoAtom (ADR-005).
     |
     */
 
@@ -112,7 +112,7 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'pt_BR'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 

@@ -7,7 +7,6 @@ use App\Platform\Models\User;
 use App\Support\Exemplo;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\ExemploSeeder;
-use Database\Seeders\WcjClientSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -37,8 +36,9 @@ class SementesEExemploTest extends TestCase
         $this->assertSame(['improvement', 'support'], DB::table('task_types')->whereNotNull('slug')->orderBy('id')->pluck('slug')->all());
         $this->assertSame(5, DB::table('rework_reasons')->count());
         $this->assertSame(['Outro'], DB::table('rework_reasons')->where('requires_text', true)->pluck('label')->all());
+        $this->assertSame(['other'], DB::table('rework_reasons')->whereNotNull('slug')->pluck('slug')->all(), 'só o Outro tem slug (P40)');
 
-        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('document', Client::WCJ_CNPJ)->sole();
         $this->assertSame(['WCJ Tecnologia', 'BR'], [$wcj->name, $wcj->country]);
         $this->assertSame(0, User::query()->count(), 'o admin vem do app:create-admin, nunca de seeder');
     }
@@ -64,7 +64,11 @@ class SementesEExemploTest extends TestCase
         $this->assertSame(3, User::query()->where('email', 'like', Exemplo::likeEmail())->count());
         $this->assertSame(3, DB::table('tasks')->count());
         $this->assertSame(3, (int) DB::table('projects')->where('key_prefix', 'EXE')->value('last_task_number'));
-        $this->assertSame(8, DB::table('board_stages')->count());
+        $this->assertSame(
+            ['Backlog', 'To do', 'Doing', 'Paused', 'Code-review', 'In test', 'Done', 'Support'],
+            DB::table('board_stages')->orderBy('position')->pluck('name')->all(),
+            'as 8 etapas na ordem da P10'
+        );
 
         $this->artisan('app:limpar-exemplo', ['--force' => true])->assertSuccessful();
 

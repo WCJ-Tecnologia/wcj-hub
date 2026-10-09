@@ -7,17 +7,18 @@ import { ROLE, WUserFormDialogOrganism, type UserFormData } from './w-user-form-
 
 interface DemoProps {
     editing: boolean;
-    deactivatedNote: string;
+    /** "Ativo" ou "Desativado em …, por …", como o `situation()` devolve. */
+    situation: string;
     nameError: string;
 }
 
-function UserFormDialogDemo({ editing, deactivatedNote, nameError }: DemoProps) {
+function UserFormDialogDemo({ editing, situation, nameError }: DemoProps) {
     const form = useForm<UserFormData>({
         role_id: ROLE.DEVELOPER,
         name: editing ? 'Carla Dias' : '',
         email: editing ? 'carla@exemplo.wcj.test' : '',
         daily_hours: editing ? '6' : '',
-        active: !deactivatedNote,
+        ai_write_allowed: true,
     });
     const { setError, clearErrors } = form;
 
@@ -33,7 +34,7 @@ function UserFormDialogDemo({ editing, deactivatedNote, nameError }: DemoProps) 
             onOpenChange={() => undefined}
             form={form}
             editing={editing}
-            deactivatedNote={deactivatedNote || null}
+            situation={editing ? situation || null : null}
             roles={ROLES}
             onSubmit={(event) => {
                 event.preventDefault();
@@ -49,20 +50,25 @@ const meta = {
     tags: ['autodocs'],
     argTypes: {
         editing: { control: 'boolean' },
-        deactivatedNote: { control: 'text' },
+        situation: { control: 'text' },
         nameError: { control: 'text' },
     },
-    args: { editing: false, deactivatedNote: '', nameError: '' },
+    args: { editing: false, situation: 'Ativo', nameError: '' },
     parameters: {
         layout: 'fullscreen',
-        docs: { description: { component: 'Modal de criar/editar usuário. O `useForm` vive na página; aqui ficam só os campos.' } },
+        docs: {
+            description: {
+                component:
+                    'Modal de convidar e editar usuário (F1 §02). O `useForm` vive na página; aqui ficam só os campos. Desativar e reativar são ações da linha: a situação é só leitura.',
+            },
+        },
     },
 } satisfies Meta<typeof UserFormDialogDemo>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Novo: Story = {};
+export const Convidar: Story = {};
 export const Editando: Story = { args: { editing: true } };
-export const Desativado: Story = { args: { editing: true, deactivatedNote: 'Desativado em 02/10/2026 14:10, por Ana Souza.' } };
+export const Desativado: Story = { args: { editing: true, situation: 'Desativado em 02/10/2026 por Ana Souza' } };
 export const ComErro: Story = { args: { nameError: 'O nome é obrigatório.' } };

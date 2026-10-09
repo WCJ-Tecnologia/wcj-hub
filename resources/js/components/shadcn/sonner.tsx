@@ -11,7 +11,8 @@ function Toaster({ ...props }: ToasterProps) {
     return (
         <Sonner
             className="toaster group"
-            position="bottom-right"
+            // No topo, centralizado (pedido do Cauã, 07/10): embaixo à direita ninguém via.
+            position="top-center"
             duration={4500}
             closeButton
             containerAriaLabel="Avisos"

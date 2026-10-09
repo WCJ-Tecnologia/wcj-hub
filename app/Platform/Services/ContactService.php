@@ -1,0 +1,270 @@
+<?php
+
+namespace App\Platform\Services;
+
+use App\Platform\Contracts\ClientManagement;
+use App\Platform\Enums\AuditActionEnum;
+use App\Platform\Models\Client;
+use App\Platform\Models\Contact;
+use App\Platform\Models\User;
+use App\Platform\Policies\ContactPolicy;
+use App\Support\Like;
+use DomainException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Contatos dos clientes (N8, N11, N12, G2). A validação mora aqui e o FormRequest só a
+ * reaproveita, como no ClientService. Toda escrita grava a auditoria na mesma transação. Recusa
+ * de regra sai como DomainException, com a mensagem para a tela.
+ */
+class ContactService
+{
+    public const ALREADY_USED = 'Contato já usado: desative em vez de excluir';
+
+    public const CLIENT_INACTIVE = 'Cliente desativado: reative o cliente para cadastrar contato.';
+
+    public const DUPLICATE_EMAIL_HIDDEN = 'Já existe um contato com este e-mail';
+
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly ClientManagement $management,
+    ) {}
+
+    /** @return array<string, mixed> */
+    public static function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['nullable', 'string', 'email', 'max:160'],
+            // Texto como a pessoa digitou (F1 §02, D3): cabe o número de fora do Brasil, com o "+".
+            'phone' => ['nullable', 'string', 'max:20'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public static function attributes(): array
+    {
+        return ['name' => 'nome', 'email' => 'e-mail', 'phone' => 'telefone'];
+    }
+
+    /**
+     * N8: e-mail repetido não recusa; o aviso volta para a tela.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{contact: Contact, warning: string|null}
+     */
+    public function create(Client $client, array $data, User $actor): array
+    {
+        $clean = $this->validated($data);
+
+        $contact = DB::transaction(function () use ($client, $clean, $actor) {
+            // N11: cliente desativado não ganha contato novo. Pela linha travada: uma desativação
+            // ao mesmo tempo espera o contato nascer, ou o recusa (CR-1-15).
+            if (! Client::query()->lockForUpdate()->findOrFail($client->getKey())->isActive()) {
+                throw ValidationException::withMessages(['client' => self::CLIENT_INACTIVE]);
+            }
+
+            $contact = $client->contacts()->create($clean);
+            $this->audit->log(AuditActionEnum::CREATED, $contact, null, $this->snapshot($contact), $actor->id);
+
+            return $contact;
+        });
+
+        return ['contact' => $contact, 'warning' => $this->duplicateWarning($contact, $actor)];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return string|null o aviso de e-mail repetido (N8)
+     */
+    public function update(Contact $contact, array $data, User $actor): ?string
+    {
+        $clean = $this->validated($data);
+
+        $updated = DB::transaction(function () use ($contact, $clean, $actor) {
+            $locked = $this->lockedNotAnonymized($contact);
+            $before = $this->snapshot($locked);
+            $locked->fill($clean)->save();
+            $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked), $actor->id);
+
+            return $locked;
+        });
+
+        return $this->duplicateWarning($updated, $actor);
+    }
+
+    /** N11: sai das listas de escolha; o card que já o cita continua citando. */
+    public function deactivate(Contact $contact, User $actor): void
+    {
+        // Pela linha travada (CR-1-15): o anonimizado já está desativado e não ganha outra linha.
+        // Grava e audita por ela também, não pela instância em memória (CR-3-01).
+        DB::transaction(fn () => $contact->setActiveLocked(false, $actor, function (Contact $locked) use ($actor) {
+            $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
+        }));
+    }
+
+    public function reactivate(Contact $contact, User $actor): void
+    {
+        DB::transaction(function () use ($contact, $actor) {
+            // Anonimizado não volta (D5): recusa pela linha travada antes de decidir.
+            $this->lockedNotAnonymized($contact)->setActiveLocked(true, $actor, function (Contact $locked) use ($actor) {
+                $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
+            });
+        });
+    }
+
+    /** G2: só contato nunca citado em card de suporte; o resto se desativa. */
+    public function delete(Contact $contact, User $actor): void
+    {
+        // O "antes" sai da linha travada, não da instância em memória (CR-3-02): uma anonimização no meio não devolve o dado pessoal (N12).
+        $deleted = $contact->deleteIfUnused(function (Contact $deleted) use ($actor) {
+            $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
+        });
+
+        if (! $deleted) {
+            throw new DomainException(self::ALREADY_USED);
+        }
+    }
+
+    /**
+     * N12, a pedido do titular: numa transação só, troca o nome, apaga e-mail e telefone, tira
+     * os mesmos campos da auditoria do contato e grava anonymized sem dado pessoal. Também
+     * desativa (D5), para sair das listas de escolha. Irreversível.
+     */
+    public function anonymize(Contact $contact, User $actor): void
+    {
+        DB::transaction(function () use ($contact, $actor) {
+            $locked = $this->lockedNotAnonymized($contact);
+            $wasActive = $locked->isActive();
+
+            $locked->forceFill(['name' => Contact::ANONYMIZED_NAME, 'email' => null, 'phone' => null])
+                ->setActive(false, $actor)
+                ->save();
+            $this->audit->scrubPersonalData($locked, ['name', 'email', 'phone']);
+            $this->audit->log(
+                AuditActionEnum::ANONYMIZED,
+                $locked,
+                $wasActive ? ['active' => true] : null,
+                $wasActive ? ['active' => false] : null,
+                $actor->id,
+            );
+        });
+    }
+
+    /**
+     * Lista geral (F1 §03, §05). O gestor só vê os clientes que o ClientManagement lista para ele
+     * (F1 §09; nenhum até o B2). A busca no telefone compara só os dígitos dos dois lados.
+     *
+     * @param  array{search: string, client_id: int|null, show_inactive: bool}  $filters
+     * @return LengthAwarePaginator<int, Contact>
+     */
+    public function paginate(array $filters, User $viewer): LengthAwarePaginator
+    {
+        $clientIds = $this->visibleClientIds($viewer);
+        $search = $filters['search'];
+        $digits = preg_replace('/\D/', '', $search) ?? '';
+
+        return Contact::query()
+            ->withAnonymized()
+            ->with(['client:id,name', 'deactivatedBy:id,name'])
+            ->when($clientIds !== null, fn ($query) => $query->whereIn('client_id', $clientIds))
+            ->when(! $filters['show_inactive'], fn ($query) => $query->active())
+            ->when($filters['client_id'] !== null, fn ($query) => $query->where('client_id', $filters['client_id']))
+            ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('name', 'like', Like::contains($search))
+                ->orWhere('email', 'like', Like::contains($search))
+                ->when($digits !== '', fn ($phone) => $phone->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", [Like::contains($digits)]))))
+            ->orderBy('name')
+            ->orderBy('id')
+            ->paginate(20);
+    }
+
+    /** @return list<array{id: int, name: string}> o filtro Cliente: os mesmos clientes que a lista mostra */
+    public function clientOptions(User $viewer): array
+    {
+        $clientIds = $this->visibleClientIds($viewer);
+
+        return Client::query()
+            ->when($clientIds !== null, fn ($query) => $query->whereIn('id', $clientIds))
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (Client $client) => ['id' => $client->id, 'name' => $client->name])
+            ->all();
+    }
+
+    /** @return list<int>|null nulo: todos */
+    private function visibleClientIds(User $viewer): ?array
+    {
+        return $viewer->isAdmin() ? null : $this->management->managedClientIds($viewer);
+    }
+
+    /**
+     * N8, F1 §07, entre os contatos ativos. Nome e cliente só para o Administrador: o outro contato
+     * pode ser de cliente que o gestor não gere (F1 §09; D2 do Lucas em 07/10).
+     */
+    private function duplicateWarning(Contact $contact, User $viewer): ?string
+    {
+        $other = $contact->email === null ? null : Contact::query()
+            ->active()
+            ->with('client:id,name')
+            ->where('email', $contact->email)
+            ->whereKeyNot($contact->getKey())
+            ->orderBy('id')
+            ->first();
+
+        return match (true) {
+            $other === null => null,
+            $viewer->isAdmin() => "Já existe {$other->name} ({$other->client?->name}) com este e-mail",
+            default => self::DUPLICATE_EMAIL_HIDDEN,
+        };
+    }
+
+    /**
+     * D5: anonimizado é estado final. A Policy já responde 403; isto vale para quem chama direto e
+     * para quem passou pela Policy antes de uma anonimização terminar: com a linha travada até o
+     * commit, a checagem e a escrita veem o mesmo contato (A4 da review de 07/10). Chamar dentro
+     * da transação da escrita.
+     */
+    private function lockedNotAnonymized(Contact $contact): Contact
+    {
+        $locked = $this->lockedForWrite($contact);
+
+        if ($locked->isAnonymized()) {
+            throw new DomainException(ContactPolicy::ANONYMIZED);
+        }
+
+        return $locked;
+    }
+
+    /** A linha travada até o commit: a checagem e a escrita veem o mesmo contato. */
+    private function lockedForWrite(Contact $contact): Contact
+    {
+        return Contact::query()->lockForUpdate()->findOrFail($contact->getKey());
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{name: string, email: string|null, phone: string|null}
+     */
+    private function validated(array $data): array
+    {
+        // Quem chama o Service direto também não grava as pontas em branco (o HTTP já as tira).
+        $data['phone'] = is_string($data['phone'] ?? null) ? trim($data['phone']) : ($data['phone'] ?? null);
+        $valid = Validator::make($data, self::rules(), [], self::attributes())->validate();
+
+        return [
+            'name' => $valid['name'],
+            'email' => ($valid['email'] ?? '') === '' ? null : $valid['email'],
+            'phone' => ($valid['phone'] ?? '') === '' ? null : $valid['phone'],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function snapshot(Contact $contact): array
+    {
+        return $contact->only(['client_id', 'name', 'email', 'phone']);
+    }
+}

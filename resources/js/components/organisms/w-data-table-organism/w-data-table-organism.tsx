@@ -27,6 +27,8 @@ export interface WDataTableOrganismProps<Row> {
     /** Substitui a tabela quando não há linhas. */
     emptyState?: ReactNode;
     className?: string;
+    /** Destaque de uma linha (ex.: tentativa negada na auditoria), na tabela e no card. */
+    rowClassName?: (row: Row) => string | undefined;
 }
 
 /**
@@ -42,6 +44,7 @@ export function WDataTableOrganism<Row>({
     caption,
     emptyState,
     className,
+    rowClassName,
 }: WDataTableOrganismProps<Row>) {
     if (rows.length === 0 && emptyState) return <>{emptyState}</>;
 
@@ -71,7 +74,7 @@ export function WDataTableOrganism<Row>({
                     </TableHeader>
                     <TableBody>
                         {rows.map((row) => (
-                            <TableRow key={rowKey(row)}>
+                            <TableRow key={rowKey(row)} className={rowClassName?.(row)}>
                                 {columns.map((column) => (
                                     <TableCell key={column.key} className={cn('px-4 py-3 whitespace-normal', column.className)}>
                                         {render(column, row)}
@@ -85,7 +88,7 @@ export function WDataTableOrganism<Row>({
 
             <ul className="divide-y divide-border md:hidden" aria-label={caption}>
                 {rows.map((row) => (
-                    <li key={rowKey(row)} className="p-4">
+                    <li key={rowKey(row)} className={cn('p-4', rowClassName?.(row))}>
                         {mobileCard ? (
                             mobileCard(row)
                         ) : (

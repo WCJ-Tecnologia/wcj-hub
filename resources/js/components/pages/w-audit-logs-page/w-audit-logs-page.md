@@ -1,21 +1,21 @@
 # WAuditLogsPage
 
-Tela · `pages/w-audit-logs-page/w-audit-logs-page.tsx` · story `Pages/Logs de auditoria`
+Tela · `pages/w-audit-logs-page/w-audit-logs-page.tsx` · story `Pages/Auditoria`
 
 ## O que faz
 
-Histórico de auditoria com filtro por ação (Select do shadcn) e por período, tabela, paginação e modal com o antes/depois de cada registro.
+Administração › Auditoria (G3; F1 §03, §05): quem alterou o quê, quando e por onde, e toda tentativa negada. Filtros no `WAuditLogFiltersOrganism` (busca, De/Até com date picker, Quem, Canal, Ação, Tipo de registro, Resultado), lista no `WAuditLogTableOrganism` (linha negada em destaque), paginação e o detalhe no `WAuditLogDetailDialogOrganism`. Quando a tela veio do Histórico de uma ficha, o aviso "Histórico de …" aparece com "Ver toda a auditoria". Só ver e filtrar: não existe editar, apagar nem exportar.
 
-O Laravel chama esta tela por `Inertia::render('admin/audit-logs/index')`. O arquivo `resources/js/pages/admin/audit-logs/index.tsx` só reexporta este componente (ADR-003). Mude a tela aqui, não lá.
+O Laravel chama esta tela por `Inertia::render('admin/audit-logs/index')`. O arquivo `resources/js/pages/admin/audit-logs/index.tsx` só reexporta este componente (ADR-003).
 
 ## Props (vindas do controller)
 
-`logs` (`Paginated<LogRow>`), `filters` (`action`, `from`, `to`), `actionOptions` (`{ value, label }[]`)
+`logs` (`Paginated<AuditLogRow>`), `filters` (`AuditFilters`), `options` (`AuditOptions`), `record` (`string | null`)
 
 ## Observações
 
-Só leitura: auditoria nunca se edita nem se apaga (G3). "Todas as ações" usa o valor sentinela `all`, que vira `action` vazio no request.
+Estados de lista pelo `WListBodyMolecule`. "Limpar filtros" no estado vazio volta ao padrão de 7 dias.
 
 ## Story
 
-As props de exemplo ficam em `.storybook/fixtures.ts`, e as props compartilhadas (usuário logado, marca, flash), em `parameters.inertia` da story. Formulários e navegação não saem do navegador: aparecem no painel **Actions**.
+As props de exemplo ficam em `.storybook/fixtures.ts` (`LOGS`, `AUDIT_FILTERS`, `AUDIT_OPTIONS`).

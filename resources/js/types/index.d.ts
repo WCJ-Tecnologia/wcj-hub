@@ -12,6 +12,10 @@ export interface Abilities {
     delete_records: boolean;
     view_audit_logs: boolean;
     reset_passwords: boolean;
+    /** ClientPolicy::viewAny: Administrador e Gestor de projetos. */
+    view_clients: boolean;
+    /** ContactPolicy::viewAny: Administrador e Gestor de projetos (só os clientes dele). */
+    view_contacts: boolean;
 }
 
 export interface AuthUser {
@@ -27,6 +31,8 @@ export interface AuthUser {
 export interface FlashMessages {
     success?: string;
     error?: string;
+    /** Vem junto do success: a ação foi feita, com um aviso. */
+    warning?: string;
 }
 
 export interface PaginationLink {

@@ -67,10 +67,13 @@ export function WBrandLogoAtom({ variant = 'horizontal', surface = 'auto', size 
         );
     }
 
+    // O nome do link é "Início", não o da marca: a WCJ também é cliente (N7), e um link "WCJ Tecnologia"
+    // no menu confundiria com o da ficha do cliente (leitor de tela e e2e).
     return (
         <Link
             data-slot="w-brand-logo-atom"
             href={href ?? '/'}
+            aria-label="Início"
             className={cn(
                 'flex shrink-0 items-center rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
                 className,

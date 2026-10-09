@@ -7,7 +7,7 @@
 
 {{--
     Cores da marca WCJ (docs/brand/cores.json) em hex inline: o cliente de e-mail não lê CSS
-    externo nem variável. É a única exceção à regra de "só token" (ADR-004). Ink #0C0E13,
+    externo nem variável. É a única exceção à regra de "só token" (ADR-005). Ink #0C0E13,
     fundo #F5F7FB, texto suave #5B6273, rodapé #AEB6C6 sobre o ink. Logo: o ícone PNG (SVG
     é bloqueado no Gmail e no Outlook) com o nome em texto.
 --}}

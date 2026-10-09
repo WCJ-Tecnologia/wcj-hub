@@ -51,8 +51,13 @@ class UserControllerTest extends TestCase
                 'role_id' => RoleEnum::PROJECT_MANAGER->value,
                 'name' => 'Maria S. Lima',
                 'email' => 'maria@example.com',
-                'active' => false,
             ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        // Desativar é ação própria (D3), não mais a caixa "ativo" do formulário.
+        $this->actingAs($admin)
+            ->post('/admin/users/'.$maria->id.'/deactivate')
             ->assertRedirect()
             ->assertSessionHas('success');
 
@@ -78,27 +83,29 @@ class UserControllerTest extends TestCase
         $target = User::factory()->projectManager()->create();
         $payload = ['role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $target->name, 'email' => $target->email];
 
-        $this->actingAs($admin)->put('/admin/users/'.$target->id, [...$payload, 'active' => false])->assertSessionHas('success');
+        // Desativar e reativar são rotas próprias (D3), não mais a caixa "ativo" do formulário.
+        $this->actingAs($admin)->post('/admin/users/'.$target->id.'/deactivate')->assertSessionHas('success');
         $stamp = $target->fresh()->deactivated_at;
 
+        // Desativado só aparece com o filtro "Mostrar desativados" (F1 §03).
         $this->actingAs($admin)
-            ->get('/admin/users?search='.$target->email)
+            ->get('/admin/users?show_inactive=1&search='.$target->email)
             ->assertInertia(fn ($page) => $page
                 ->where('users.data.0.active', false)
                 ->where('users.data.0.deactivated_by', 'Ana Admin')
                 ->where('users.data.0.deactivated_at', LocalTime::format($stamp)));
 
-        // Saving again, or omitting the field, keeps the original stamp.
+        // Deactivating again, or saving the form, keeps the original stamp.
         $this->travel(1)->hour();
-        $this->actingAs($admin)->put('/admin/users/'.$target->id, [...$payload, 'active' => false]);
+        $this->actingAs($admin)->post('/admin/users/'.$target->id.'/deactivate');
         $this->actingAs($admin)->put('/admin/users/'.$target->id, $payload);
         $this->assertEquals($stamp, $target->fresh()->deactivated_at);
 
-        $this->actingAs($admin)->put('/admin/users/'.$target->id, [...$payload, 'active' => true]);
+        $this->actingAs($admin)->post('/admin/users/'.$target->id.'/reactivate')->assertSessionHas('success');
         $this->assertDatabaseHas('users', ['id' => $target->id, 'deactivated_at' => null, 'deactivated_by' => null]);
 
         // The way back is in the audit trail.
-        $last = AuditLog::query()->where('auditable_id', $target->id)->where('action', 'updated')->latest('id')->firstOrFail();
+        $last = AuditLog::query()->where('auditable_id', $target->id)->where('action', 'reactivated')->latest('id')->firstOrFail();
         $this->assertSame(['active' => [false, true]], $last->changes);
     }
 
@@ -196,8 +203,12 @@ class UserControllerTest extends TestCase
 
         // Now $admin is the last one.
         $this->actingAs($other->fresh())
-            ->put('/admin/users/'.$admin->id, ['role_id' => RoleEnum::ADMIN->value, 'name' => $admin->name, 'email' => $admin->email, 'active' => false])
+            ->post('/admin/users/'.$admin->id.'/deactivate')
             ->assertForbidden();
+        $this->actingAs($admin)
+            ->post('/admin/users/'.$admin->id.'/deactivate')
+            ->assertSessionHas('error');
+        $this->assertTrue($admin->fresh()->isActive());
 
         $lastAdmin = User::factory()->admin()->create();
         $admin->fresh()->setActive(false, null)->save();

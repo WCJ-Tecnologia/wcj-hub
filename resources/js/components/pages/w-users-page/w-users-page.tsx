@@ -1,74 +1,52 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { KeyRound, Pencil, Plus, Trash2, Users } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { History, MailPlus, Pencil, Plus, Trash2, UserCheck, UserX, Users } from 'lucide-react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 
-import { WStatusPillAtom } from '@/components/atoms/w-status-pill-atom/w-status-pill-atom';
 import { WConfirmDialogMolecule } from '@/components/molecules/w-confirm-dialog-molecule/w-confirm-dialog-molecule';
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
+import { WListBodyMolecule } from '@/components/molecules/w-list-body-molecule/w-list-body-molecule';
 import { WPaginationMolecule } from '@/components/molecules/w-pagination-molecule/w-pagination-molecule';
 import { WRowActionsMolecule } from '@/components/molecules/w-row-actions-molecule/w-row-actions-molecule';
 import { WSearchInputMolecule } from '@/components/molecules/w-search-input-molecule/w-search-input-molecule';
-import { WDataTableOrganism, type WColumn } from '@/components/organisms/w-data-table-organism/w-data-table-organism';
+import { WShowInactiveToggleMolecule } from '@/components/molecules/w-show-inactive-toggle-molecule/w-show-inactive-toggle-molecule';
 import {
     ROLE,
     WUserFormDialogOrganism,
     type UserFormData,
 } from '@/components/organisms/w-user-form-dialog-organism/w-user-form-dialog-organism';
-import { Badge } from '@/components/shadcn/badge';
+import { WUserTableOrganism, type UserRow } from '@/components/organisms/w-user-table-organism/w-user-table-organism';
 import { Button } from '@/components/shadcn/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { WAppLayoutTemplate } from '@/components/templates/w-app-layout-template/w-app-layout-template';
+import { useListVisit } from '@/hooks/use-list-visit';
+import { useRowAction } from '@/hooks/use-row-action';
+import { situation } from '@/lib/situation';
 import type { Paginated, SharedProps } from '@/types';
 
-export interface UserRow {
-    id: number;
-    name: string;
-    email: string;
-    active: boolean;
-    /** Só vem para quem pode editar. */
-    deactivated_at?: string | null;
-    deactivated_by?: string | null;
-    role_id: number;
-    role_label: string;
-    /** decimal(6,2) como texto ("8.00"); null = sem carga (N3). */
-    daily_hours: string | null;
-    must_change_password: boolean;
-}
+export type { UserRow };
 
 export interface WUsersPageProps {
     users: Paginated<UserRow>;
-    filters: { search: string; role_id: number | null };
+    filters: { search: string; role_id: number | null; show_inactive: boolean };
     roles: { id: number; label: string }[];
 }
 
-const EMPTY: UserFormData = {
-    role_id: ROLE.DEVELOPER,
-    name: '',
-    email: '',
-    daily_hours: '',
-    active: true,
-};
+type ConfirmKind = 'resend' | 'deactivate' | 'delete' | 'disconnect';
 
-/** O Radix Select não aceita item com valor vazio: "todos" usa este valor e vira `undefined` no request. */
+const EMPTY: UserFormData = { role_id: ROLE.DEVELOPER, name: '', email: '', daily_hours: '', ai_write_allowed: true };
+
+/** O Radix Select não aceita item com valor vazio: "todos" usa este valor e vira `role_id` ausente no request. */
 const ALL = 'all';
 
-/** "8.00" → "8 h"; "7.50" → "7,5 h". */
-const formatHours = (hours: string | null) => (hours === null ? '—' : `${Number(hours).toLocaleString('pt-BR')} h`);
-
-/** Tela Cadastros › Usuários (Inertia: `admin/users/index`). */
+/** Tela Administração › Usuários (Inertia: `admin/users/index`; F1 §03). */
 export function WUsersPage({ users, filters, roles }: WUsersPageProps) {
-    const currentUser = usePage<SharedProps>().props.auth.user;
-    const canManage = Boolean(currentUser?.abilities.manage_users);
-    const canDelete = Boolean(currentUser?.abilities.delete_records);
+    const abilities = usePage<SharedProps>().props.auth.user?.abilities;
+    const list = useListVisit();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<UserRow | null>(null);
-    const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
-    const [confirmReset, setConfirmReset] = useState<UserRow | null>(null);
-    const [busy, setBusy] = useState(false);
+    const [confirm, setConfirm] = useState<{ kind: ConfirmKind; row: UserRow } | null>(null);
+    const rowAction = useRowAction();
     const form = useForm<UserFormData>(EMPTY);
-
-    const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
-    const canResetPassword = () => Boolean(currentUser?.abilities.reset_passwords);
 
     const openCreate = () => {
         form.setData(EMPTY);
@@ -78,114 +56,153 @@ export function WUsersPage({ users, filters, roles }: WUsersPageProps) {
     };
 
     const openEdit = (row: UserRow) => {
-        form.setData({
-            role_id: row.role_id,
-            name: row.name,
-            email: row.email,
-            daily_hours: row.daily_hours ?? '',
-            active: row.active,
-        });
+        const { role_id, name, email, ai_write_allowed } = row;
+        form.setData({ role_id, name, email, daily_hours: row.daily_hours ?? '', ai_write_allowed });
         form.clearErrors();
         setEditing(row);
         setOpen(true);
     };
 
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        const options = { preserveScroll: true, onSuccess: () => setOpen(false) };
+    const save = () => {
+        const options = { preserveScroll: true, onSuccess: () => setOpen(false), onFinish: () => setConfirm(null) };
         if (editing) form.put(`/admin/users/${editing.id}`, options);
         else form.post('/admin/users', options);
     };
 
-    /** Opções comuns às ações de linha (excluir, reenviar senha). */
-    const rowRequest = (done: () => void) => ({
-        preserveScroll: true,
-        onStart: () => setBusy(true),
-        onFinish: () => {
-            setBusy(false);
-            done();
+    // IA4, IA6: trocar o papel ou a marca da IA derruba as conexões de IA da pessoa; avisa antes.
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        const disconnects = editing && (form.data.role_id !== editing.role_id || form.data.ai_write_allowed !== editing.ai_write_allowed);
+        if (disconnects) setConfirm({ kind: 'disconnect', row: editing });
+        else save();
+    };
+
+    // Ao terminar, a ação da linha fecha a confirmação que a disparou.
+    const closeConfirm = { onFinish: () => setConfirm(null) };
+
+    const filterParams = {
+        search: filters.search || undefined,
+        role_id: filters.role_id ?? undefined,
+        show_inactive: filters.show_inactive ? 1 : undefined,
+    };
+    const visit = (next: Record<string, string | number | undefined>) =>
+        router.get('/admin/users', { ...filterParams, ...next }, { preserveState: true, replace: true });
+
+    const CONFIRM: Record<
+        ConfirmKind,
+        {
+            title: (row: UserRow) => string;
+            text: (row: UserRow) => ReactNode;
+            label: string;
+            destructive?: boolean;
+            run: (row: UserRow) => void;
+        }
+    > = {
+        resend: {
+            title: () => 'Reenviar convite',
+            text: (row) => `Vamos mandar uma senha provisória nova para ${row.email}. A anterior deixa de valer na hora.`,
+            label: 'Reenviar',
+            run: (row) => rowAction.post(`/admin/users/${row.id}/reset-password`, row, closeConfirm),
         },
-    });
+        deactivate: {
+            title: () => 'Desativar usuário',
+            text: (row) => `${row.name} perde o acesso imediatamente. Continuar?`,
+            label: 'Desativar',
+            destructive: true,
+            run: (row) => rowAction.post(`/admin/users/${row.id}/deactivate`, row, closeConfirm),
+        },
+        delete: {
+            title: (row) => `Excluir ${row.name}?`,
+            text: () => 'Excluir de verdade. Não dá para desfazer.',
+            label: 'Excluir',
+            destructive: true,
+            run: (row) => rowAction.del(`/admin/users/${row.id}`, row, closeConfirm),
+        },
+        disconnect: {
+            title: () => 'Desconectar a IA',
+            text: (row) => `As conexões de IA de ${row.name} serão desconectadas. Continuar?`,
+            label: 'Salvar',
+            run: save,
+        },
+    };
 
-    const filterByRole = (value: string) =>
-        router.get(
-            '/admin/users',
-            { search: filters.search || undefined, role_id: value === ALL ? undefined : value },
-            { preserveState: true, replace: true },
-        );
-
-    const newButton = canManage ? (
+    const newButton = abilities?.manage_users ? (
         <Button onClick={openCreate}>
-            <Plus className="size-4" aria-hidden /> Novo usuário
+            <Plus className="size-4" aria-hidden /> Convidar usuário
         </Button>
     ) : undefined;
 
-    const rowActions = (row: UserRow, labeled = false) =>
-        canManage && (
-            <WRowActionsMolecule
-                labeled={labeled}
-                actions={[
-                    {
-                        label: 'Enviar senha',
-                        ariaLabel: `Enviar nova senha para ${row.name}`,
-                        icon: KeyRound,
-                        onClick: () => setConfirmReset(row),
-                        hidden: !canResetPassword(),
-                    },
-                    { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row) },
-                    {
-                        label: 'Excluir',
-                        ariaLabel: `Excluir ${row.name}`,
-                        icon: Trash2,
-                        onClick: () => setConfirmDelete(row),
-                        destructive: true,
-                        hidden: !canDelete,
-                    },
-                ]}
-            />
-        );
+    // Cada botão da linha vem decidido pela UserPolicy no servidor (row.can), como em Clientes e
+    // Contatos; a tela só esconde. Histórico é da tela de auditoria, por isso a ability global.
+    const rowActions = (row: UserRow, labeled = false) => (
+        <WRowActionsMolecule
+            labeled={labeled}
+            busy={rowAction.isBusy(row)}
+            disabled={rowAction.isLocked(row)}
+            // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
+            className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
+            actions={[
+                {
+                    label: 'Reenviar convite',
+                    ariaLabel: `Reenviar convite para ${row.name}`,
+                    icon: MailPlus,
+                    onClick: () => setConfirm({ kind: 'resend', row }),
+                    hidden: !row.can.resend_invite,
+                },
+                { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.update },
+                {
+                    label: 'Desativar',
+                    ariaLabel: `Desativar ${row.name}`,
+                    icon: UserX,
+                    onClick: () => setConfirm({ kind: 'deactivate', row }),
+                    hidden: !row.can.deactivate,
+                },
+                {
+                    label: 'Reativar',
+                    ariaLabel: `Reativar ${row.name}`,
+                    icon: UserCheck,
+                    onClick: () => rowAction.post(`/admin/users/${row.id}/reactivate`, row),
+                    hidden: !row.can.reactivate,
+                },
+                {
+                    label: 'Excluir',
+                    ariaLabel: `Excluir ${row.name}`,
+                    icon: Trash2,
+                    onClick: () => setConfirm({ kind: 'delete', row }),
+                    destructive: true,
+                    hidden: !row.can.delete,
+                },
+                {
+                    label: 'Histórico',
+                    ariaLabel: `Histórico de ${row.name}`,
+                    icon: History,
+                    onClick: () => router.visit(`/admin/audit-logs?type=user&id=${row.id}`),
+                    hidden: !abilities?.view_audit_logs,
+                },
+            ]}
+        />
+    );
 
-    const columns: WColumn<UserRow>[] = [
-        {
-            key: 'name',
-            header: 'Nome',
-            cell: (row) => (
-                <>
-                    <p className="font-medium">{row.name}</p>
-                    {row.must_change_password && (
-                        <p className="mt-1">
-                            <Badge variant="warning">Trocar senha no próximo acesso</Badge>
-                        </p>
-                    )}
-                </>
-            ),
-        },
-        { key: 'role_label', header: 'Papel', cell: (row) => <Badge variant="info">{row.role_label}</Badge> },
-        { key: 'email', header: 'E-mail', className: 'text-muted-foreground', cell: (row) => row.email },
-        {
-            key: 'daily_hours',
-            header: 'Carga diária',
-            className: 'text-muted-foreground tabular-nums',
-            cell: (row) => formatHours(row.daily_hours),
-        },
-        { key: 'active', header: 'Status', cell: (row) => <WStatusPillAtom kind="user" status={row.active} /> },
-        { key: 'actions', header: <span className="sr-only">Ações</span>, className: 'text-right', cell: (row) => rowActions(row) },
-    ];
+    const filtered = Boolean(filters.search || filters.role_id);
+    const current = confirm ? CONFIRM[confirm.kind] : null;
 
     return (
-        <WAppLayoutTemplate eyebrow="Cadastros" title="Usuários" subtitle="Quem acessa o sistema e com qual papel" actions={newButton}>
+        <WAppLayoutTemplate eyebrow="Administração" title="Usuários" subtitle="Quem acessa o Hub, com qual papel e carga diária" actions={newButton}>
             <Head title="Usuários" />
 
-            <div className="mb-4 grid gap-2 sm:grid-cols-[1fr_14rem]">
+            <div className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-center">
                 <WSearchInputMolecule
                     url="/admin/users"
                     value={filters.search}
-                    params={{ role_id: filters.role_id }}
+                    params={filterParams}
                     placeholder="Buscar por nome ou e-mail…"
                     label="Buscar usuários"
                 />
-                <Select value={filters.role_id ? String(filters.role_id) : ALL} onValueChange={filterByRole}>
-                    <SelectTrigger aria-label="Papel">
+                <Select
+                    value={filters.role_id ? String(filters.role_id) : ALL}
+                    onValueChange={(value) => visit({ role_id: value === ALL ? undefined : value })}
+                >
+                    <SelectTrigger aria-label="Papel" className="sm:w-56">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -197,39 +214,26 @@ export function WUsersPage({ users, filters, roles }: WUsersPageProps) {
                         ))}
                     </SelectContent>
                 </Select>
+                <WShowInactiveToggleMolecule
+                    checked={filters.show_inactive}
+                    onChange={(checked) => visit({ show_inactive: checked ? 1 : undefined })}
+                />
             </div>
 
-            <WDataTableOrganism
-                caption="Lista de usuários"
-                columns={columns}
-                rows={users.data}
-                rowKey={(row) => row.id}
-                emptyState={
-                    <WEmptyStateMolecule
-                        icon={<Users className="size-5" aria-hidden />}
-                        title="Nenhum usuário encontrado"
-                        description="Cadastre as pessoas que vão acessar o sistema. Cada uma recebe uma senha temporária por e-mail."
-                        action={newButton}
-                    />
-                }
-                mobileCard={(row) => (
-                    <>
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                                <p className="truncate font-semibold">{row.name}</p>
-                                <p className="truncate text-xs text-muted-foreground">{row.email}</p>
-                            </div>
-                            <WStatusPillAtom kind="user" status={row.active} size="sm" />
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <Badge variant="info">{row.role_label}</Badge>
-                            <Badge variant="outline">{formatHours(row.daily_hours)}</Badge>
-                            {row.must_change_password && <Badge variant="warning">Trocar senha</Badge>}
-                        </div>
-                        {rowActions(row, true)}
-                    </>
-                )}
-            />
+            <WListBodyMolecule list={list} failedTitle="Não foi possível carregar os usuários" loadingText="Carregando usuários…">
+                <WUserTableOrganism
+                    rows={users.data}
+                    actions={rowActions}
+                    emptyState={
+                        <WEmptyStateMolecule
+                            icon={<Users className="size-5" aria-hidden />}
+                            title={filtered ? 'Nenhum usuário com esses filtros' : 'Nenhum usuário ainda'}
+                            description="Convide as pessoas que vão acessar o Hub. Cada uma recebe o acesso por e-mail."
+                            action={newButton}
+                        />
+                    }
+                />
+            </WListBodyMolecule>
 
             <WPaginationMolecule meta={users} />
 
@@ -238,58 +242,20 @@ export function WUsersPage({ users, filters, roles }: WUsersPageProps) {
                 onOpenChange={setOpen}
                 form={form}
                 editing={editing !== null}
-                deactivatedNote={
-                    editing?.deactivated_at
-                        ? `Desativado em ${editing.deactivated_at}${editing.deactivated_by ? `, por ${editing.deactivated_by}` : ''}.`
-                        : null
-                }
+                situation={editing ? situation(editing) : null}
                 roles={roles}
                 onSubmit={submit}
             />
 
             <WConfirmDialogMolecule
-                open={confirmDelete !== null}
-                onOpenChange={(next) => !next && setConfirmDelete(null)}
-                title="Excluir usuário"
-                description={
-                    <>
-                        Excluir <strong className="text-foreground">{confirmDelete?.name}</strong>? Só é possível excluir quem nunca entrou
-                        no sistema. Se a pessoa já usou, desmarque &quot;Usuário ativo&quot; em Editar.
-                    </>
-                }
-                confirmLabel="Excluir"
-                destructive
-                loading={busy}
-                onConfirm={() =>
-                    confirmDelete &&
-                    router.delete(
-                        `/admin/users/${confirmDelete.id}`,
-                        rowRequest(() => setConfirmDelete(null)),
-                    )
-                }
-            />
-
-            <WConfirmDialogMolecule
-                open={confirmReset !== null}
-                onOpenChange={(next) => !next && setConfirmReset(null)}
-                title="Enviar senha temporária"
-                description={
-                    <>
-                        Vamos mandar uma senha temporária para <strong className="text-foreground">{confirmReset?.email}</strong>. No
-                        próximo acesso, {confirmReset ? firstName(confirmReset.name) : 'a pessoa'} escolhe uma senha nova. A atual deixa de
-                        valer na hora.
-                    </>
-                }
-                confirmLabel="Enviar agora"
-                loading={busy}
-                onConfirm={() =>
-                    confirmReset &&
-                    router.post(
-                        `/admin/users/${confirmReset.id}/reset-password`,
-                        {},
-                        rowRequest(() => setConfirmReset(null)),
-                    )
-                }
+                open={confirm !== null}
+                onOpenChange={(next) => !next && setConfirm(null)}
+                title={confirm && current ? current.title(confirm.row) : ''}
+                description={confirm && current ? current.text(confirm.row) : undefined}
+                confirmLabel={current?.label}
+                destructive={current?.destructive}
+                loading={rowAction.busy || form.processing}
+                onConfirm={() => confirm && current?.run(confirm.row)}
             />
         </WAppLayoutTemplate>
     );

@@ -1,8 +1,8 @@
-# ADR-004: Identidade visual da WCJ no Hub
+# ADR-005: Identidade visual da WCJ no Hub
 
 **Data:** 2026-10-08
-**Estado:** proposta
-**Decidido por:** pendente (Lucas Scholz)
+**Estado:** aprovada
+**Decidido por:** Lucas Scholz, 2026-10-09 (comentário no PR #8)
 
 ## Contexto
 

@@ -6,10 +6,10 @@
 
 1. Edite `design/tokens.json`:
     - `light.brand.primary` / `dark.brand.primary` e os `primaryForeground` (texto sobre a primária).
-    - `brand.primaryText` (Hub, ADR-004): o azul de **texto** e link (`text-primary-text`). Existe porque a primária da marca não passa AA como texto sobre o cinza-claro; no claro é `#0F4FC4`, no escuro `#4D90FF`.
+    - `brand.primaryText` (Hub, ADR-005): o azul de **texto** e link (`text-primary-text`). Existe porque a primária da marca não passa AA como texto sobre o cinza-claro; no claro é `#0F4FC4`, no escuro `#4D90FF`.
     - Neutros (`background`, `foreground`, `card`, `muted`, `border`…), status (`pending`, `approved`, `rejected`, `neutral`, cada um com `fg` e `bg`), `sidebar` e `charts` (exatamente 5).
     - `fonts.sans`, `fonts.heading`, `fonts.mono`. Webfont precisa ser hospedada em `public/` (a CSP não libera origem externa) e declarada com `@font-face` num CSS próprio importado por `app.tsx`.
-    - `radius` (no Hub, `0.3125rem` = 5 px, o canto de tela de produto da marca; a escala `sm` 3 px, `md`/`lg` 5 px, `xl` 8 px, `2xl` 10 px deriva dele no `build-theme.mjs`, ADR-004).
+    - `radius` (no Hub, `0.3125rem` = 5 px, o canto de tela de produto da marca; a escala `sm` 3 px, `md`/`lg` 5 px, `xl` 8 px, `2xl` 10 px deriva dele no `build-theme.mjs`, ADR-005).
     - Tudo em HEX de 6 dígitos. Todo token existe nos dois blocos, `light` e `dark`.
 2. `npm run theme` — reescreve `app.css` com os valores em OKLCH.
 3. Reinicie `npm run dev` (Tailwind v4 gera os utilitários no boot).

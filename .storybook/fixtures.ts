@@ -1,7 +1,13 @@
 /**
  * Dados de exemplo das stories (organismos, templates e telas). Mesmo formato
- * que os controllers mandam; nomes e e-mails no padrão do ExemploSeeder.
+ * que os controllers mandam (Presenters do Núcleo); nomes e e-mails no padrão do ExemploSeeder.
  */
+import type { AuditFilters, AuditOptions } from '@/components/organisms/w-audit-log-filters-organism/w-audit-log-filters-organism';
+import type { AuditLogRow } from '@/components/organisms/w-audit-log-table-organism/w-audit-log-table-organism';
+import type { Country } from '@/components/organisms/w-client-form-dialog-organism/w-client-form-dialog-organism';
+import type { ClientRow } from '@/components/organisms/w-client-table-organism/w-client-table-organism';
+import type { ContactRow } from '@/components/organisms/w-contact-table-organism/w-contact-table-organism';
+import type { UserRow } from '@/components/organisms/w-user-table-organism/w-user-table-organism';
 import type { AuthUser, Paginated, SharedProps } from '@/types';
 
 import { SHARED_PROPS } from './inertia-mock';
@@ -20,7 +26,7 @@ export const DEVELOPER: AuthUser = {
     role: 'developer',
     role_label: 'Desenvolvedor',
     must_change_password: false,
-    abilities: { manage_users: false, delete_records: false, view_audit_logs: false, reset_passwords: false },
+    abilities: { manage_users: false, delete_records: false, view_audit_logs: false, reset_passwords: false, view_clients: false, view_contacts: false },
 };
 
 /** Props compartilhadas com outro usuário logado (ex.: ver o menu de quem não é admin). */
@@ -59,7 +65,9 @@ export function manyPages<T>(data: T[], last = 3): Paginated<T> {
     };
 }
 
-export const USERS = [
+const CAN_USER = { update: true, deactivate: true, reactivate: false, delete: false, resend_invite: true };
+
+export const USERS: UserRow[] = [
     {
         id: 1,
         name: 'Ana Souza',
@@ -70,7 +78,10 @@ export const USERS = [
         role_id: 1,
         role_label: 'Administrador',
         daily_hours: '8.00',
+        ai_write_allowed: true,
         must_change_password: false,
+        last_login_at: '09/10/2026 08:57',
+        can: { ...CAN_USER, deactivate: false, resend_invite: false },
     },
     {
         id: 2,
@@ -82,7 +93,10 @@ export const USERS = [
         role_id: 3,
         role_label: 'Desenvolvedor',
         daily_hours: '6.50',
+        ai_write_allowed: false,
         must_change_password: true,
+        last_login_at: null,
+        can: { ...CAN_USER, delete: true },
     },
     {
         id: 3,
@@ -94,50 +108,191 @@ export const USERS = [
         role_id: 2,
         role_label: 'Gestor de projetos',
         daily_hours: null,
+        ai_write_allowed: true,
         must_change_password: false,
+        last_login_at: '30/09/2026 17:02',
+        can: { update: false, deactivate: false, reactivate: true, delete: false, resend_invite: false },
     },
 ];
 
-export const LOGS = [
+export const COUNTRIES: Country[] = [
+    { code: 'BR', name: 'Brasil' },
+    { code: 'US', name: 'Estados Unidos' },
+    { code: 'NL', name: 'Países Baixos' },
+];
+
+const CAN_CLIENT = { update: true, deactivate: true, reactivate: false, delete: false };
+
+export const CLIENTS: ClientRow[] = [
+    {
+        id: 1,
+        name: 'WCJ Tecnologia',
+        country: 'BR',
+        country_name: 'Brasil',
+        document: '38614817000122',
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        open_projects: 2,
+        can: { ...CAN_CLIENT, deactivate: false },
+    },
+    {
+        id: 2,
+        name: '[Exemplo] Rezende Bouw',
+        country: 'NL',
+        country_name: 'Países Baixos',
+        document: 'NL123456789B01',
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        open_projects: 1,
+        can: CAN_CLIENT,
+    },
+    {
+        id: 3,
+        name: '[Exemplo] Padaria do Bairro',
+        country: 'BR',
+        country_name: 'Brasil',
+        document: '12ABC34501DE35',
+        active: false,
+        deactivated_at: '01/10/2026 10:00',
+        deactivated_by: 'Ana Souza',
+        open_projects: null,
+        can: { update: false, deactivate: false, reactivate: true, delete: true },
+    },
+];
+
+const CAN_CONTACT = { update: true, deactivate: true, reactivate: false, delete: false, anonymize: true };
+
+export const CONTACTS: ContactRow[] = [
+    {
+        id: 1,
+        name: 'Wilson Correia',
+        email: 'wilson@exemplo.wcj.test',
+        phone: '+55 11 99999-0001',
+        client_id: 1,
+        client_name: 'WCJ Tecnologia',
+        active: true,
+        anonymized: false,
+        deactivated_at: null,
+        deactivated_by: null,
+        can: CAN_CONTACT,
+    },
+    {
+        id: 2,
+        name: 'Paola Rezende',
+        email: null,
+        phone: '+31 6 1234 5678',
+        client_id: 2,
+        client_name: '[Exemplo] Rezende Bouw',
+        active: false,
+        anonymized: false,
+        deactivated_at: '03/10/2026 09:30',
+        deactivated_by: 'Ana Souza',
+        can: { update: false, deactivate: false, reactivate: true, delete: false, anonymize: true },
+    },
+    {
+        id: 3,
+        name: 'removido a pedido do titular',
+        email: null,
+        phone: null,
+        client_id: 1,
+        client_name: 'WCJ Tecnologia',
+        active: false,
+        anonymized: true,
+        deactivated_at: '04/10/2026 11:15',
+        deactivated_by: 'Ana Souza',
+        can: { update: false, deactivate: false, reactivate: false, delete: false, anonymize: false },
+    },
+];
+
+export const LOGS: AuditLogRow[] = [
     {
         id: 12,
+        created_at: '02/10/2026 14:10:31',
         user: 'Ana Souza',
         user_email: 'ana@exemplo.wcj.test',
-        action: 'updated',
-        action_label: 'Alterado',
-        entity: 'user',
-        entity_id: 3,
-        outcome: 'success' as const,
-        changes: { active: [true, false] as [unknown, unknown] },
+        channel: 'Tela',
+        action: 'deactivated',
+        action_label: 'Desativado',
+        type: 'user',
+        type_label: 'Usuário',
+        auditable_id: 3,
+        record: 'Usuário Carla Dias',
+        outcome: 'success',
+        changes: [{ field: 'active', label: 'Situação', before: 'Ativo', after: 'Desativado' }],
         ip_address: '10.0.0.4',
-        created_at: '02/10/2026 14:10',
     },
     {
         id: 11,
+        created_at: '02/10/2026 11:02:08',
         user: 'Bruno Lima',
         user_email: 'bruno@exemplo.wcj.test',
+        channel: 'IA: Claude',
         action: 'deleted',
         action_label: 'Excluído',
-        entity: 'user',
-        entity_id: null,
-        outcome: 'denied' as const,
-        changes: null,
+        type: 'client',
+        type_label: 'Cliente',
+        auditable_id: 2,
+        record: 'Cliente [Exemplo] Rezende Bouw',
+        outcome: 'denied',
+        changes: [],
         ip_address: null,
-        created_at: '02/10/2026 11:02',
     },
     {
         id: 10,
+        created_at: '02/10/2026 08:57:44',
         user: 'Ana Souza',
         user_email: 'ana@exemplo.wcj.test',
+        channel: 'Tela',
         action: 'login',
         action_label: 'Login',
-        entity: 'user',
-        entity_id: 1,
-        outcome: 'success' as const,
-        changes: null,
+        type: 'user',
+        type_label: 'Usuário',
+        auditable_id: 1,
+        record: 'Usuário Ana Souza',
+        outcome: 'success',
+        changes: [],
         ip_address: '10.0.0.4',
-        created_at: '02/10/2026 08:57',
     },
 ];
+
+/** Os filtros como o controller devolve sem nada escolhido: "De" vem com 7 dias. */
+export const AUDIT_FILTERS: AuditFilters = {
+    search: '',
+    from: '2026-09-25',
+    to: null,
+    user_id: null,
+    channel: null,
+    action: null,
+    type: null,
+    id: null,
+    outcome: null,
+};
+
+export const AUDIT_OPTIONS: AuditOptions = {
+    users: USERS.map((user) => ({ value: user.id, label: user.name })),
+    channels: [
+        { value: 'screen', label: 'Tela' },
+        { value: 'claude', label: 'IA: Claude' },
+        { value: 'codex', label: 'IA: Codex' },
+    ],
+    actions: [
+        { value: 'created', label: 'Criado' },
+        { value: 'updated', label: 'Alterado' },
+        { value: 'deactivated', label: 'Desativado' },
+        { value: 'deleted', label: 'Excluído' },
+        { value: 'login', label: 'Login' },
+    ],
+    types: [
+        { value: 'user', label: 'Usuário' },
+        { value: 'client', label: 'Cliente' },
+        { value: 'contact', label: 'Contato' },
+    ],
+    outcomes: [
+        { value: 'success', label: 'Ok' },
+        { value: 'denied', label: 'Negado' },
+    ],
+};
 
 export { SHARED_PROPS };

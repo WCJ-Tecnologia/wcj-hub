@@ -70,12 +70,14 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 ## Estado atual
 
-Atualizado em 2026-10-06.
+Atualizado em 2026-10-09.
 
 | Bloco | Estado |
 |---|---|
-| B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | PR `chore/b0-base` (rascunho) |
-| B1 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
+| B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5, 09/10): review de 07/10 aplicada, `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13; CR-1-01 (reenviar convite derruba as sessões) integrado no `UserService::resendInvite` pelo PR #7 |
+| Front: shadcn + Atomic Design + Storybook + marca WCJ (ADR-003, ADR-005) | PR #8 (`chore/marca-wcj`, Lucas Varanda); ADRs aprovados pelo Lucas Scholz em 09/10; `wcj-code-review` ciclo 1 (`.specs/code-reviews/`); rebase sobre o B1 com o porte dos componentes do Núcleo para a estrutura atômica; falta CI verde e o merge |
+| B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
 
@@ -106,13 +108,13 @@ Completo na `docs/necessidade.md`, seção "Vocabulário". O que mais aparece no
 
 Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (`.ai/stacks/laravel-inertia.md`). O que difere do template:
 
-- **Por domínio** (ADR-001): `app/Platform/` (o Núcleo: usuários, papéis, clientes, contatos, auditoria, conexões de IA) e `app/Domains/Projetos/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e `Mcp`. Infraestrutura fica onde o template põe (`app/Http/Middleware`, `app/Console`, `app/Mail`, `app/Providers`, `app/Rules`, `app/Support`).
+- **Por domínio** (ADR-001): `app/Platform/` (o Núcleo: usuários, papéis, clientes, contatos, auditoria, conexões de IA) e `app/Domains/Projetos/`, cada um com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e `Mcp`. Infraestrutura fica onde o template põe (`app/Http/Middleware`, `app/Console`, `app/Mail`, `app/Providers`, `app/Rules`, `app/Support`). O Platform não usa nada de `App\Domains\` (teste A9): dado de módulo que o Núcleo precisa entra por interface em `app/Platform/Contracts/`, com a implementação real no módulo e a ligação no `AppServiceProvider` (ex.: `ClientManagement`). Lista geral de um módulo (tipos de tarefa, motivos de retrabalho) é Model e Service do módulo.
 - **MySQL 8 em tudo, inclusive nos testes** (ADR-002). Nunca SQLite.
 - **Auditoria** em `audit_logs` com `ai_authorization_id` (o canal: nulo = tela), `outcome` (`success`/`denied`) e `changes` (`{"campo": [antes, depois]}`); gravada pelo `Platform\Services\AuditService`.
 - **Morph map** (`AppServiceProvider::registerMorphMap`, `enforceMorphMap`): `audit_logs.auditable_type` guarda o alias (`user`, `task`…), não o nome da classe.
 - **Passport 13** instalado (tabelas e chaves), com as rotas `/oauth/*` desligadas até o B8 (`Passport::ignoreRoutes`). `laravel/mcp` entra no B8.
 - **Parâmetros** em `config/hub.php` + `.env` (T5); não há tabela de configurações.
-- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token. Marca no front pelo ADR-004:
+- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token. Marca no front pelo ADR-005:
   - dois azuis: `bg-primary` (`#1A6CF3`) em botão e foco, `text-primary-text` (`#0F4FC4`) em texto e link, nunca `text-primary`;
   - cantos de 5 px;
   - logo só pelo `WBrandLogoAtom`, com os SVG oficiais em `public/brand/`, que não se redesenham;
@@ -124,9 +126,26 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
   - componentes do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-<nome>-<nível>/`, cada um com `.tsx`, `.md` (manual) e `.stories.tsx` quando há o que ver;
   - `resources/js/pages/*.tsx` só reexporta a tela de `components/pages/`;
   - os layouts são os templates (`w-app-layout-template`, `w-auth-layout-template`);
-  - Select, Sidebar, Table, Pagination, toast (Sonner) e campo de data (`w-date-picker-molecule`, sobre Calendar + Popover) são os do shadcn; nada de `<input type="date">`;
+  - Select, Sidebar, Table, Pagination, toast (Sonner, no topo e centralizado) e campo de data (`w-date-picker-molecule`, sobre Calendar + Popover) são os do shadcn; nada de `<input type="date">`;
   - convenção completa em `resources/js/components/README.md`.
 - **Storybook 10** (`npm run storybook`, porta 6006): catálogo dos componentes, com o `@inertiajs/react` trocado por `.storybook/inertia-mock.tsx` e dados de exemplo em `.storybook/fixtures.ts`. O CI roda `npm run build-storybook`.
+- **Componentes e hooks do projeto**, além da tabela do template (`.ai/stacks/ui.md` §5, que não se edita aqui). Quem criar componente registra nesta tabela no mesmo commit (`ui.md` §5):
+
+| Componente | Onde | Uso |
+|---|---|---|
+| `WListBodyMolecule` | `components/molecules/w-list-body-molecule/` | estados de erro ("Não foi possível carregar…", Tentar de novo) e carregando (`aria-busy`, `role="status"`) em volta da tabela de uma lista, com o `useListVisit` |
+| `useListVisit` | `hooks/use-list-visit.ts` | carregando e erro só das visitas GET de uma lista (busca, filtro, página) |
+| `WShowInactiveToggleMolecule` | `components/molecules/w-show-inactive-toggle-molecule/` | a chave "Mostrar desativados" das listas (F1 §05) |
+| `AlphanumericCnpjInput` | `components/shadcn/masked-input.tsx` | CNPJ alfanumérico com máscara, maiúsculo (N5) |
+| `deactivation()`, `situation()` | `lib/situation.ts` | "em DD/MM/AAAA por Fulano" e "Ativo" / "Desativado em…" / "Anonimizado", nas três tabelas e nos formulários |
+| `WStatusPillAtom` `kind="contact"` e `kind="audit"` | `components/atoms/w-status-pill-atom/` | ativo / desativado / anonimizado do contato; ok / negado da auditoria |
+| `WDataTableOrganism` `rowClassName` | `components/organisms/w-data-table-organism/` | linha negada em destaque na auditoria |
+| `WRowActionsMolecule` `busy` e `disabled` | `components/molecules/w-row-actions-molecule/` | `busy`: esta linha roda (desabilita, esmaece, `aria-busy`); `disabled`: outra linha roda (só desabilita) |
+| `useRowAction` | `hooks/use-row-action.ts` | a única trava de clique duplo das ações de linha: `post`/`del` ignoram o clique enquanto qualquer ação de linha roda (uma visita não-GET cancelaria a outra no Inertia 2), `isBusy(row)`/`isLocked(row)` alimentam o `WRowActionsMolecule`, `busy` é o `loading` dos `WConfirmDialogMolecule` |
+| `WSearchInputMolecule` | `components/molecules/w-search-input-molecule/` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
+| `useContactActions` | `hooks/use-contact-actions.tsx` | criar, editar e as ações de linha do contato, as mesmas na lista geral e na ficha do cliente; devolve `openCreate`, `rowActions` e `dialogs` |
+| `WDatePickerMolecule` | `components/molecules/w-date-picker-molecule/` | campo de data em `AAAA-MM-DD`, no lugar do `<input type="date">`; aceita `id`, `aria-invalid` e `aria-describedby` do `WFormFieldMolecule` |
+| Tabelas e formulários do Núcleo | `components/organisms/w-{user,client,contact,audit-log}-table-organism/`, `w-{user,client,contact}-form-dialog-organism/`, `w-anonymize-contact-dialog-organism/`, `w-audit-log-filters-organism/`, `w-audit-log-detail-dialog-organism/` | as colunas do F1 §03 e os modais do F1 §02/§04, um por entidade; a tela (`components/pages/w-*-page/`) só junta |
 
 ## Como rodar
 
@@ -167,7 +186,9 @@ Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escop
 - Regra na Policy, `authorize()` em todo método; `abilities` no front só esconde botão. Ability nova: `User`, `HandleInertiaRequests`, `types/index.d.ts` e Policy no mesmo commit.
 - Policy fora de `app/Policies`: registrar com `Gate::policy()` no `AppServiceProvider`.
 - A IA conectada age como o usuário dono do token: mesmas Policies; escopo do token nunca passa do papel (IA5).
-- Hoje existe só a `UserPolicy` (admin) e o gate `view-audit-logs`; as demais nascem nos blocos (B1 em diante).
+- Policies do Núcleo (B1): `UserPolicy`, `ClientPolicy`, `ContactPolicy`, `AuditLogPolicy`. As de Projetos nascem a partir do B2.
+- Toda negação de `$this->authorize()` vira linha `outcome = denied` na auditoria, pelo `authorize()` do `App\Http\Controllers\Controller`. FormRequest que valida payload autoriza antes de validar, pelo trait `AuthorizesBeforeValidation` (mesmo caminho auditado), e a ação não chama `authorize()` de novo: sem isso, quem não pode recebe o erro de validação (que revela dado) e a tentativa não vira `denied`. Ability nova entra em `AuditActionEnum::forAbility()`; sem mapeamento, a negação grava o nome cru da ability e a tela mostra "Outra ação". `UserService::choiceList()` e `ClientService::choiceList()` conferem `viewChoiceList` dentro do Service (decisão do Lucas Scholz, 09/10): quem chamar sem permissão recebe `AuthorizationException` e a negação é auditada.
+- "Gestor do cliente" (o gestor gere algum projeto do cliente) vem do contrato `App\Platform\Contracts\ClientManagement` (ADR-001): o Núcleo não lê `projects`. No B1 a ligação é a implementação vazia `App\Platform\Services\NoClientManagement` (ninguém gere cliente algum); o B2 entrega a real em `Projetos\Services\ProjectClientManagement` e troca a ligação no `AppServiceProvider` (o `give()` do `MemoizedClientManagement`, que memoriza "quem gere o quê" por requisição: as Policies perguntam linha a linha). Lista pede o que é do contrato em lote (`openProjectsCountByClient`), nunca por linha. Teste de gestor usa o dublê `tests/Support/ClientManagementFalso.php`, que fica atrás da mesma memória.
 
 ## Regras de domínio
 
@@ -216,10 +237,18 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 
 - Papel: `RoleEnum` / `roles.slug`. Nunca o rótulo, nunca `user_type`.
 - Ativo: `->active()` / `isActive()` do `Deactivatable`. Nunca `whereNull('deactivated_at')` à mão.
-- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem).
+- Auditoria: `AuditService::log()`. Nunca `AuditLog::create()` fora dele (os testes podem). Negação: `AuditService::inspectFor()` (confere a Policy para um usuário e grava `denied`), chamado pelo trait `App\Http\Concerns\AuditsDeniedAbilities` (o `authorize()` do Controller base e o dos FormRequests) e pelos `choiceList()` dos Services. Nunca `AuditService::denied()` direto. Limpar dado pessoal (anonimização): `AuditService::scrubPersonalData()`.
+- Desativar e reativar: ação própria na linha (`POST …/deactivate`, `…/reactivate`), nunca uma caixa "ativo" no formulário (D3 do B1).
+- CNPJ: `App\Rules\AlphanumericCnpj` (alfanumérico, gravado sem máscara e em maiúscula). País: `App\Support\Paises`.
+- Telefone de contato: texto como foi digitado (com o "+"), sem máscara do Brasil; a busca compara só os dígitos (D3 da review do B1).
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
 - Componente: procure em `resources/js/components/` (leia o `.md` da pasta) antes de criar; primitivo só pelo `npm run shadcn -- add`; um `cn` só, o de `@/lib/utils`.
+- Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
+- Unique do banco em gravação simultânea: o trait `App\Platform\Services\Concerns\RefusesDuplicates` (`writeOrRefuseDuplicate`), que vira `ValidationException` só quando o índice violado é o esperado e relança o resto. Nunca `catch (UniqueConstraintViolationException)` solto.
+- Busca por texto: `App\Support\Like::contains()`; nunca `"%{$termo}%"` à mão.
+- Ativar e desativar: `setActiveLocked()` do `Deactivatable`, que abre a própria transação como o `deleteIfUnused` (savepoint quando quem chama já abriu uma), relê com `lockForUpdate`, decide pela linha travada, grava e chama o `$then($locked)` com a auditoria e o efeito próprio. Nunca `isActive()` da instância em memória antes da transação.
+- Escrita que pode cair em deadlock (travas de usuário e de administradores): o trait `App\Platform\Services\Concerns\RetriesDeadlock` (`transactionRetryingDeadlock`), que repete só no 1213, até 3 vezes; o lock wait timeout (1205) não se repete. Todo callback repetido precisa ser repetível: de preferência relendo a linha com `lockForUpdate` dentro do callback e escrevendo nela (`UserService::resendInvite`, `setActiveLocked`); quando a escrita precisa da instância recebida, restaure-a (`getAttributes()`/`getRawOriginal()`) no início de cada tentativa (`UserService::update`).
 
 ## Armadilhas que já custaram tempo
 
