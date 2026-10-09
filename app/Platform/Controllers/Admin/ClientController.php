@@ -9,7 +9,7 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreClientRequest;
 use App\Platform\Services\ClientService;
-use App\Platform\Services\ContactService;
+use App\Platform\Services\ContactPresenter;
 use App\Support\LocalTime;
 use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +23,7 @@ class ClientController extends Controller
     public function __construct(
         private readonly ClientService $clients,
         private readonly ClientManagement $management,
-        private readonly ContactService $contactService,
+        private readonly ContactPresenter $contactPresenter,
     ) {}
 
     public function index(Request $request): Response
@@ -152,7 +152,7 @@ class ClientController extends Controller
             ->orderBy('name')
             ->orderBy('id')
             ->get()
-            ->map(fn (Contact $contact) => $this->contactService->row($contact, $user))
+            ->map(fn (Contact $contact) => $this->contactPresenter->row($contact, $user))
             ->all();
     }
 }

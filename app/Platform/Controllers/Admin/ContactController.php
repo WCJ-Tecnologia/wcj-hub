@@ -7,6 +7,7 @@ use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Requests\Admin\AnonymizeContactRequest;
 use App\Platform\Requests\Admin\StoreContactRequest;
+use App\Platform\Services\ContactPresenter;
 use App\Platform\Services\ContactService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,10 @@ use Inertia\Response;
 /** Contatos (F1; N8, N11, N12). A regra mora no ContactService; quem pode, na ContactPolicy. */
 class ContactController extends Controller
 {
-    public function __construct(private readonly ContactService $contacts) {}
+    public function __construct(
+        private readonly ContactService $contacts,
+        private readonly ContactPresenter $presenter,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -34,7 +38,7 @@ class ContactController extends Controller
 
         return Inertia::render('admin/contacts/index', [
             'contacts' => $this->contacts->paginate($filters, $user)->withQueryString()
-                ->through(fn (Contact $contact) => $this->contacts->row($contact, $user)),
+                ->through(fn (Contact $contact) => $this->presenter->row($contact, $user)),
             'filters' => $filters,
             'clients' => $clients,
         ]);
