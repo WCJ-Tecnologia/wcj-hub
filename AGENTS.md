@@ -75,7 +75,7 @@ Atualizado em 2026-10-09.
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; ciclos 1 a 4 da `wcj-code-review` corrigidos (09/10, `.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 e 10; CR-1-01 no PR #7; falta o merge do Lucas |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5, 09/10): review de 07/10 aplicada, `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13; CR-1-01 (reenviar convite derruba as sessões) integrado no `UserService::resendInvite` pelo PR #7 |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto

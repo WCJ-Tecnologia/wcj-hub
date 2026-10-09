@@ -85,6 +85,9 @@ class UserService
             $plain = $this->passwords->issue($locked);
             $this->audit->log(AuditActionEnum::PASSWORD_RESET, $locked, $before, ['must_change_password' => true], $actor->id);
 
+            // CR-1-01 (PR #7): toda sessão aberta do alvo cai junto com a senha antiga, na mesma transação.
+            $this->sessions->terminateOthers($locked);
+
             return [$locked, $plain];
         });
 
