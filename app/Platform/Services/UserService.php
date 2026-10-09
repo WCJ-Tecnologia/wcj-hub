@@ -64,17 +64,21 @@ class UserService
         return ['user' => $user, 'mailed' => $this->passwords->send($user, $plain, isReset: false)];
     }
 
-    /** Reenviar convite (F1 §04): senha nova, a anterior deixa de valer. Devolve se o e-mail saiu. */
+    /**
+     * Reenviar convite (F1 §04): senha nova, a anterior deixa de valer, e sai o mesmo e-mail do
+     * convite (premissa da spec). Devolve se o e-mail saiu.
+     */
     public function resendInvite(User $user, User $actor): bool
     {
         $plain = DB::transaction(function () use ($user, $actor) {
+            $before = ['must_change_password' => (bool) $user->must_change_password];
             $plain = $this->passwords->issue($user);
-            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, null, ['must_change_password' => true], $actor->id);
+            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, $before, ['must_change_password' => true], $actor->id);
 
             return $plain;
         });
 
-        return $this->passwords->send($user, $plain, isReset: true);
+        return $this->passwords->send($user, $plain, isReset: false);
     }
 
     /**

@@ -157,11 +157,12 @@ class UserServiceTest extends TestCase
         $this->assertTrue($this->service->resendInvite($joao, $this->admin));
 
         $joao->refresh();
-        $plain = $this->sentPassword('joao@example.com', isReset: true);
+        // CR-1-13 do ciclo 1: o mesmo e-mail do convite, e o antes real na auditoria (AC 16).
+        $plain = $this->sentPassword('joao@example.com', isReset: false);
         $this->assertTrue(Hash::check($plain, $joao->password));
         $this->assertFalse(Hash::check('antiga-senha', $joao->password));
         $this->assertTrue($joao->must_change_password);
-        $this->assertAudited($joao, 'password_reset', ['must_change_password' => [null, true]]);
+        $this->assertAudited($joao, 'password_reset', ['must_change_password' => [false, true]]);
         $this->assertStringNotContainsString($plain, (string) json_encode(AuditLog::query()->pluck('changes')));
     }
 
