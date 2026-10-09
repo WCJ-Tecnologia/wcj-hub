@@ -1,6 +1,6 @@
 # Documentos funcionais: WCJ Hub, fatia 1
 
-Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, listagem, ações, filtros, indicadores, avisos e permissões. É o que o dono do módulo aprova antes de a equipe desenvolver (D-GER-28). Criados em 06/10/2026, depois da aprovação do `banco.txt` por Lucas Alencar (D-GER-23) e da decisão de fatiar a v1 (D-GER-24).
+Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, listagem, ações, filtros, indicadores, avisos e permissões. É o que Lucas Scholz aprova antes de a equipe desenvolver (D-GER-28, D-GER-31). Criados em 06/10/2026, depois da aprovação do `banco.txt` por Lucas Alencar (D-GER-23) e da decisão de fatiar a v1 (D-GER-24).
 
 **Escopo desta pasta:** a **fatia 1** = Núcleo mínimo + Projetos + conexões de IA com 6 ferramentas. CRM e GPT "WCJ Hub" são a v2 e terão os próprios funcionais quando a hora chegar.
 
@@ -44,7 +44,7 @@ Mesmo modelo dos funcionais do Gestor PTA e do Projeto Oficinas. Seção que nã
 | 07 | Avisos e documentos gerados | Avisos no sistema, e-mails e qualquer documento que saia da tela: conteúdo, quando e para quem. |
 | 08 | Exportação | O que exporta e em que formato. Na fatia 1 nenhuma regra pede exportação; a seção existe para dizer isso. |
 | 09 | Permissionamento | Quem vê e quem faz, por papel: Administrador, Gestor de projetos, Desenvolvedor. O Comercial não entra em Projetos (C14). A IA do usuário tem exatamente o que ele tem (G4). |
-| 10 | Pontos a validar | Perguntas que surgiram ao escrever e que o dono do módulo responde na aprovação. Não alteram o escopo. |
+| 10 | Pontos a validar | Perguntas que surgiram ao escrever e que Lucas Scholz responde na aprovação (em Projetos, com o feedback do Rafael). Não alteram o escopo. |
 
 Cada frase que vem de uma regra termina com o código dela entre parênteses, por exemplo "(P45)". Em todos os funcionais, **"gestor do projeto"** = o gestor responsável do projeto ou qualquer pessoa com papel Gestor de projetos alocada nele (P1, P5; pode haver mais de um). Cada funcional começa com um cabeçalho fixo: objetivo, regras que alimentam, tabelas do `banco.txt`, depende de, quem aprova.
 

@@ -9,7 +9,7 @@ Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz
 | **Cauã** | Desenvolve blocos (com IA: Claude Code ou Codex, no padrão `ai-systems`). Faz o teste cruzado dos PRs do Vitinho. |
 | **Vitinho** | Desenvolve blocos, do mesmo jeito. Faz o teste cruzado dos PRs do Cauã. |
 | **Lucas Varanda** | Front-end. Tema da marca e fontes no template (`docs/brand/`), shell e os componentes que o Hub pede e o template não tem (kanban, ficha do card, roteiro de QA, linha do tempo), propostos antes de B3 e B5. Revisa o front dos PRs dos blocos (D-GER-29). |
-| **Lucas Scholz** | Dono do produto. Aprova funcional (F1, F8), spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. |
+| **Lucas Scholz** | Dono do produto. Aprova os funcionais (F1 a F8, D-GER-31), a spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. |
 | **Rafael Garcia** | Gestor de projetos. Participou dos funcionais F2 a F7 com feedback e elaboração (a aprovação é do Lucas Scholz, D-GER-31); faz o bugbash no quadro Wpay; homologa. |
 | **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.txt` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
 | **Alaor Rodrigues** | VPS, banco de produção, DNS, backup (B10). |
@@ -110,7 +110,7 @@ P13, P14, P15 (motivo da pausa), ... Onde: Projetos\Services\TaskService::move.
 - [ ] Trilho completo: `validation.md` em PASS pelo Verifier; `conferir-specs.mjs` verde.
 - [ ] Teste cruzado feito pelo outro dev e revisão do Lucas respondida.
 - [ ] `AGENTS.md` do projeto atualizado se o bloco criou vocabulário, armadilha ou "um jeito só".
-- [ ] Os "pontos a validar" do funcional que o Rafael respondeu estão refletidos (ou anotados como pendentes no PR).
+- [ ] Os "pontos a validar" do funcional que o Lucas Scholz respondeu (com o feedback do Rafael, em Projetos) estão refletidos (ou anotados como pendentes no PR).
 
 ## 8. Antes de começar: checklist do Lucas Scholz
 
