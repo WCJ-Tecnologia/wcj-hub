@@ -28,8 +28,7 @@ type ConfirmKind = 'resend' | 'deactivate' | 'delete' | 'disconnect';
 const EMPTY: UserFormData = { role_id: ROLE.DEVELOPER, name: '', email: '', daily_hours: '', ai_write_allowed: true };
 
 export default function UsersIndex({ users, filters, roles }: Props) {
-    const currentUser = usePage<SharedProps>().props.auth.user;
-    const can = currentUser?.abilities;
+    const abilities = usePage<SharedProps>().props.auth.user?.abilities;
     const list = useListVisit();
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<UserRow | null>(null);
@@ -122,59 +121,60 @@ export default function UsersIndex({ users, filters, roles }: Props) {
         },
     };
 
-    const newButton = can?.manage_users ? (
+    const newButton = abilities?.manage_users ? (
         <Button onClick={openCreate}>
             <Plus className="size-4" aria-hidden /> Convidar usuário
         </Button>
     ) : undefined;
 
-    const rowActions = (row: UserRow, labeled = false) =>
-        can?.manage_users && (
-            <RowActions
-                labeled={labeled}
-                // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
-                className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
-                actions={[
-                    {
-                        label: 'Reenviar convite',
-                        ariaLabel: `Reenviar convite para ${row.name}`,
-                        icon: MailPlus,
-                        onClick: () => setConfirm({ kind: 'resend', row }),
-                        hidden: !can.reset_passwords,
-                    },
-                    { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row) },
-                    row.active
-                        ? {
-                              label: 'Desativar',
-                              ariaLabel: `Desativar ${row.name}`,
-                              icon: UserX,
-                              onClick: () => setConfirm({ kind: 'deactivate', row }),
-                          }
-                        : {
-                              label: 'Reativar',
-                              ariaLabel: `Reativar ${row.name}`,
-                              icon: UserCheck,
-                              onClick: () => rowPost(`/admin/users/${row.id}/reactivate`),
-                          },
-                    {
-                        label: 'Excluir',
-                        ariaLabel: `Excluir ${row.name}`,
-                        icon: Trash2,
-                        onClick: () => setConfirm({ kind: 'delete', row }),
-                        destructive: true,
-                        // Quem já entrou não tem o botão (F1 §04); o servidor confere o resto (G2).
-                        hidden: !can.delete_records || row.last_login_at !== null || row.id === currentUser?.id,
-                    },
-                    {
-                        label: 'Histórico',
-                        ariaLabel: `Histórico de ${row.name}`,
-                        icon: History,
-                        onClick: () => router.visit(`/admin/audit-logs?type=user&id=${row.id}`),
-                        hidden: !can.view_audit_logs,
-                    },
-                ]}
-            />
-        );
+    // Cada botão da linha vem decidido pela UserPolicy no servidor (row.can), como em Clientes e
+    // Contatos; a tela só esconde. Histórico é da tela de auditoria, por isso a ability global.
+    const rowActions = (row: UserRow, labeled = false) => (
+        <RowActions
+            labeled={labeled}
+            // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
+            className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
+            actions={[
+                {
+                    label: 'Reenviar convite',
+                    ariaLabel: `Reenviar convite para ${row.name}`,
+                    icon: MailPlus,
+                    onClick: () => setConfirm({ kind: 'resend', row }),
+                    hidden: !row.can.resend_invite,
+                },
+                { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.update },
+                {
+                    label: 'Desativar',
+                    ariaLabel: `Desativar ${row.name}`,
+                    icon: UserX,
+                    onClick: () => setConfirm({ kind: 'deactivate', row }),
+                    hidden: !row.can.deactivate,
+                },
+                {
+                    label: 'Reativar',
+                    ariaLabel: `Reativar ${row.name}`,
+                    icon: UserCheck,
+                    onClick: () => rowPost(`/admin/users/${row.id}/reactivate`),
+                    hidden: !row.can.reactivate,
+                },
+                {
+                    label: 'Excluir',
+                    ariaLabel: `Excluir ${row.name}`,
+                    icon: Trash2,
+                    onClick: () => setConfirm({ kind: 'delete', row }),
+                    destructive: true,
+                    hidden: !row.can.delete,
+                },
+                {
+                    label: 'Histórico',
+                    ariaLabel: `Histórico de ${row.name}`,
+                    icon: History,
+                    onClick: () => router.visit(`/admin/audit-logs?type=user&id=${row.id}`),
+                    hidden: !abilities?.view_audit_logs,
+                },
+            ]}
+        />
+    );
 
     const filtered = Boolean(filters.search || filters.role_id);
     const current = confirm ? CONFIRM[confirm.kind] : null;

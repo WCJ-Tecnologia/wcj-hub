@@ -21,6 +21,8 @@ export interface UserRow {
     must_change_password: boolean;
     /** Último login (auditoria), no fuso local; nulo = nunca entrou. */
     last_login_at: string | null;
+    /** Decidido pela UserPolicy no servidor; a tela só esconde o botão. */
+    can: { update: boolean; deactivate: boolean; reactivate: boolean; delete: boolean; resend_invite: boolean };
 }
 
 /** "8.00" → "8 h"; "7.50" → "7,5 h". */
