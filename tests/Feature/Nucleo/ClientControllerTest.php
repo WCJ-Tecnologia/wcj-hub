@@ -122,7 +122,7 @@ class ClientControllerTest extends TestCase
                 ->where('clients.data.0.can.deactivate', true));
     }
 
-    // AC 10: a WCJ não oferece desativar.
+    // AC 10: a WCJ não oferece desativar nem excluir (CR-2-04).
     public function test_wcj_na_lista_nao_oferece_desativar(): void
     {
         $this->seed(WcjClientSeeder::class);
@@ -131,6 +131,7 @@ class ClientControllerTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->where('clients.data.0.name', 'WCJ Tecnologia')
                 ->where('clients.data.0.can.deactivate', false)
+                ->where('clients.data.0.can.delete', false)
                 ->where('clients.data.0.open_projects', null));
     }
 
@@ -199,6 +200,22 @@ class ClientControllerTest extends TestCase
 
         $this->assertTrue($wcj->fresh()->isActive());
         $this->assertDatabaseHas('audit_logs', ['user_id' => $this->admin->id, 'action' => 'deactivated', 'outcome' => 'denied', 'auditable_type' => 'client', 'auditable_id' => $wcj->id]);
+    }
+
+    // AC 10, CR-2-04: excluir a WCJ pela rota também é recusado e auditado, não só pela Policy e pelo Service.
+    public function test_excluir_a_wcj_responde_403_com_a_mensagem_e_grava_a_negacao(): void
+    {
+        $this->seed(WcjClientSeeder::class);
+        $wcj = Client::query()->where('document', Client::WCJ_CNPJ)->sole();
+
+        $this->actingAs($this->admin)->delete("/admin/clients/{$wcj->id}")
+            ->assertForbidden()
+            ->assertSee('A WCJ não pode ser excluída');
+
+        $this->assertModelExists($wcj);
+        $this->assertTrue($wcj->fresh()->isActive());
+        $this->assertSame(1, AuditLog::query()->count());
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $this->admin->id, 'action' => 'deleted', 'outcome' => 'denied', 'auditable_type' => 'client', 'auditable_id' => $wcj->id]);
     }
 
     // T38 (A2 da review de 07/10): a recusa do Service chega como toast de erro e nada muda.
