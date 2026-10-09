@@ -22,7 +22,9 @@ use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\TimeEntry;
 use App\Domains\Projetos\Models\ValidationType;
 use App\Domains\Projetos\Policies\ProjectPolicy;
+use App\Domains\Projetos\Services\ProjectClientManagement;
 use App\Http\Responses\ThrottledAuthResponse;
+use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\AiAssistant;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\AuditLog;
@@ -31,10 +33,16 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\ContactChannel;
 use App\Platform\Models\Role;
 use App\Platform\Models\User;
+use App\Platform\Policies\AuditLogPolicy;
+use App\Platform\Policies\ClientPolicy;
+use App\Platform\Policies\ContactPolicy;
 use App\Platform\Policies\UserPolicy;
+use App\Platform\Services\MemoizedClientManagement;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -50,11 +58,19 @@ class AppServiceProvider extends ServiceProvider
         // ficam desligadas até o B8 (conexões de IA), que as liga com os escopos, o limitador
         // do /oauth/token (B9) e a tela de autorização.
         Passport::ignoreRoutes();
+
+        // O Núcleo não conhece módulo (A9, ADR-001): pergunta pelo contrato. O B2 troca a
+        // implementação vazia (B1) pela de Projetos no give(): feito no B2; a memória por requisição fica na frente.
+        $this->app->scoped(ClientManagement::class, MemoizedClientManagement::class);
+        $this->app->when(MemoizedClientManagement::class)->needs(ClientManagement::class)->give(ProjectClientManagement::class);
     }
 
     public function boot(): void
     {
         $this->registerMorphMap();
+        // A memória do MemoizedClientManagement vale uma requisição. No FPM o processo já acaba
+        // aí; num processo que atende várias (testes, Octane), a seguinte pergunta de novo.
+        Event::listen(RequestHandled::class, fn () => $this->app->forgetInstance(ClientManagement::class));
         $this->registerPolicies();
         $this->registerRateLimiters();
         $this->registerPasswordPolicy();
@@ -131,8 +147,9 @@ class AppServiceProvider extends ServiceProvider
     private function registerPolicies(): void
     {
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Client::class, ClientPolicy::class);
+        Gate::policy(Contact::class, ContactPolicy::class);
+        Gate::policy(AuditLog::class, AuditLogPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
-
-        Gate::define('view-audit-logs', fn (User $user) => $user->isAdmin());
     }
 }

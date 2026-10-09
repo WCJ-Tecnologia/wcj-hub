@@ -4,12 +4,16 @@ namespace App\Platform\Services;
 
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\AuditLog;
+use App\Platform\Models\User;
+use Illuminate\Auth\Access\Response as GateResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Gravação única da auditoria (G3; docs/banco.txt, audit_logs). Por ora só a tela grava
- * (ai_authorization_id nulo); o canal da IA e a tentativa negada entram com o B1 e o B8.
+ * (ai_authorization_id nulo); o canal da IA entra com o B8.
  */
 class AuditService
 {
@@ -36,8 +40,97 @@ class AuditService
             'auditable_type' => $auditable->getMorphClass(),
             'auditable_id' => $auditable->getKey(),
             'changes' => $this->changes($before, $after),
-            'ip_address' => request()->ip(),
+            'ip_address' => $this->ip(),
         ]);
+    }
+
+    /**
+     * A checagem que barra a ação (G3): confere a Policy para o usuário e, se negar, grava a
+     * tentativa como denied. Só a checagem que barra é tentativa: o can() que monta a tela não
+     * passa por aqui. Quem chama decide o que fazer com a resposta (->authorize() lança 403).
+     */
+    public function inspectFor(User $actor, string $ability, mixed $arguments = []): GateResponse
+    {
+        $response = Gate::forUser($actor)->inspect($ability, $arguments);
+
+        if ($response->denied()) {
+            $this->denied($ability, $this->deniedTarget($ability, $arguments), $actor);
+        }
+
+        return $response;
+    }
+
+    /**
+     * A tentativa barrada pela Policy (G3). Alvo Model: o registro; nome de classe: o tipo,
+     * com id nulo, porque a negação veio antes de existir ou de achar o registro. Outro texto
+     * (gate sem Model) fica como o tipo. Fora dos testes, só pelo inspectFor().
+     */
+    public function denied(string $ability, Model|string $target, ?User $actor = null): AuditLog
+    {
+        $type = match (true) {
+            $target instanceof Model => $target->getMorphClass(),
+            is_subclass_of($target, Model::class) => (new $target)->getMorphClass(),
+            default => $target,
+        };
+
+        return AuditLog::query()->create([
+            'user_id' => $actor?->getKey() ?? Auth::id(),
+            'ai_authorization_id' => null,
+            // audit_logs.action tem 40 caracteres.
+            'action' => mb_substr(AuditActionEnum::forAbility($ability)?->value ?? $ability, 0, 40),
+            'outcome' => AuditLog::OUTCOME_DENIED,
+            'auditable_type' => $type,
+            'auditable_id' => $target instanceof Model ? $target->getKey() : null,
+            'changes' => null,
+            'ip_address' => $this->ip(),
+        ]);
+    }
+
+    /** O registro ou a classe que a Policy recebeu; gate sem Model fica pelo próprio nome. */
+    private function deniedTarget(string $ability, mixed $arguments): Model|string
+    {
+        $target = Arr::wrap($arguments)[0] ?? null;
+
+        return $target instanceof Model || (is_string($target) && is_subclass_of($target, Model::class))
+            ? $target
+            : $ability;
+    }
+
+    /**
+     * Tira as chaves pessoais de changes em toda linha do registro (N12). É a única escrita
+     * que altera linha já gravada; quem chama abre a transação da anonimização.
+     *
+     * @param  list<string>  $fields
+     * @return int linhas alteradas
+     */
+    public function scrubPersonalData(Model $auditable, array $fields): int
+    {
+        $logs = AuditLog::query()
+            ->where('auditable_type', $auditable->getMorphClass())
+            ->where('auditable_id', $auditable->getKey())
+            ->whereNotNull('changes')
+            ->lockForUpdate()
+            ->get();
+
+        $changed = 0;
+        foreach ($logs as $log) {
+            $kept = array_diff_key($log->changes, array_flip($fields));
+            if (count($kept) === count($log->changes)) {
+                continue;
+            }
+
+            $log->changes = $kept === [] ? null : $kept;
+            $log->save();
+            $changed++;
+        }
+
+        return $changed;
+    }
+
+    // A4 (divida.php): o único ponto do Service que lê a requisição.
+    private function ip(): ?string
+    {
+        return request()->ip();
     }
 
     /**

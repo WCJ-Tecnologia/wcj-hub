@@ -5,7 +5,7 @@ namespace App\Domains\Projetos\Services;
 use App\Domains\Projetos\Models\Project;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Services\AuditService;
-use Closure;
+use App\Platform\Services\Concerns\RefusesDuplicates;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +17,11 @@ use Illuminate\Validation\ValidationException;
  */
 class ProjectService
 {
+    use RefusesDuplicates;
+
+    // O nome do índice unique de projects.key_prefix; a mensagem do MySQL o cita.
+    private const PREFIX_UNIQUE = 'projects_key_prefix_unique';
+
     /** Campos que a edição aceita: o cliente só se define na criação (P1). */
     private const EDITABLE = ['manager_id', 'key_prefix', 'name', 'starts_on', 'due_on'];
 
@@ -33,14 +38,14 @@ class ProjectService
      */
     public function create(array $data): Project
     {
-        return $this->guardPrefix($data['key_prefix'], fn () => DB::transaction(function () use ($data) {
+        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($data) {
             $project = Project::query()->create($data);
             $board = $this->stages->createDefaultBoard($project);
 
             $this->audit->log(AuditActionEnum::CREATED, $project, null, [...$this->snapshot($project), 'board_stages' => $board]);
 
             return $project;
-        }));
+        }), fn (UniqueConstraintViolationException $e) => $this->prefixTaken($e, $data['key_prefix']));
     }
 
     /**
@@ -51,7 +56,7 @@ class ProjectService
      */
     public function update(Project $project, array $data): Project
     {
-        return $this->guardPrefix($data['key_prefix'], fn () => DB::transaction(function () use ($project, $data) {
+        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($project, $data) {
             $locked = Project::query()->lockForUpdate()->findOrFail($project->id);
 
             if ($data['key_prefix'] !== $locked->key_prefix && $locked->last_task_number > 0) {
@@ -66,7 +71,7 @@ class ProjectService
             }
 
             return $locked;
-        }));
+        }), fn (UniqueConstraintViolationException $e) => $this->prefixTaken($e, $data['key_prefix']));
     }
 
     /** Mesmo com tarefa aberta; tarefas, sprints e pacotes ficam como estão (P7). */
@@ -121,20 +126,18 @@ class ProjectService
     }
 
     /**
-     * @template T
-     *
-     * @param  Closure(): T  $write
-     * @return T
+     * Só o unique do prefixo vira o erro do campo, com o nome do projeto dono (P3); outro unique
+     * que ninguém previu sobe como veio (RefusesDuplicates, CR-2-11 do B1).
      */
-    private function guardPrefix(string $prefix, Closure $write): mixed
+    private function prefixTaken(UniqueConstraintViolationException $e, string $prefix): ?ValidationException
     {
-        try {
-            return $write();
-        } catch (UniqueConstraintViolationException) {
-            $owner = Project::query()->where('key_prefix', $prefix)->value('name');
-
-            throw ValidationException::withMessages(['key_prefix' => "O prefixo {$prefix} já é do projeto {$owner}."]);
+        if (! str_contains($e->getMessage(), self::PREFIX_UNIQUE)) {
+            return null;
         }
+
+        $owner = Project::query()->where('key_prefix', $prefix)->value('name');
+
+        return ValidationException::withMessages(['key_prefix' => "O prefixo {$prefix} já é do projeto {$owner}."]);
     }
 
     /**

@@ -4,22 +4,27 @@ namespace App\Domains\Projetos\Controllers;
 
 use App\Domains\Projetos\Models\Project;
 use App\Domains\Projetos\Requests\StoreProjectRequest;
+use App\Domains\Projetos\Services\ProjectPresenter;
 use App\Domains\Projetos\Services\ProjectQuery;
 use App\Domains\Projetos\Services\ProjectService;
 use App\Http\Controllers\Controller;
-use App\Platform\Models\User;
 use App\Support\LocalTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** Lista e cadastro do projeto (F2 §02 a §04; escopo B2). A regra mora no ProjectService. */
+/**
+ * Lista e cadastro do projeto (F2 §02 a §04; escopo B2). A regra mora no ProjectService; a linha
+ * da lista, no ProjectPresenter. store e update não autorizam de novo: o StoreProjectRequest
+ * autoriza (e audita a negação) antes de validar.
+ */
 class ProjectController extends Controller
 {
     public function __construct(
         private readonly ProjectService $projects,
         private readonly ProjectQuery $query,
+        private readonly ProjectPresenter $presenter,
     ) {}
 
     public function index(Request $request): Response
@@ -36,7 +41,7 @@ class ProjectController extends Controller
         ];
 
         return Inertia::render('projects/index', [
-            'projects' => $this->query->paginate($user, $filters)->withQueryString()->through(fn (Project $project) => $this->row($project, $user)),
+            'projects' => $this->query->paginate($user, $filters)->withQueryString()->through(fn (Project $project) => $this->presenter->row($project, $user)),
             'filters' => $filters,
             'filterOptions' => $this->query->filterOptions($user),
             // O dev não cria nem edita projeto: não recebe a lista de clientes e gestores (F1 §09).
@@ -47,8 +52,6 @@ class ProjectController extends Controller
 
     public function store(StoreProjectRequest $request): RedirectResponse
     {
-        $this->authorize('create', Project::class);
-
         $project = $this->projects->create($request->projectData());
 
         return back()->with('success', "Projeto {$project->key_prefix} criado com o quadro padrão.");
@@ -56,8 +59,6 @@ class ProjectController extends Controller
 
     public function update(StoreProjectRequest $request, Project $project): RedirectResponse
     {
-        $this->authorize('manage', $project);
-
         $this->projects->update($project, $request->projectData());
 
         return back()->with('success', 'Projeto atualizado.');
@@ -90,29 +91,5 @@ class ProjectController extends Controller
         }
 
         return back()->with('success', "Projeto {$project->key_prefix} excluído.");
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function row(Project $project, User $user): array
-    {
-        return [
-            'id' => $project->id,
-            'key_prefix' => $project->key_prefix,
-            'name' => $project->name,
-            'client' => ['id' => $project->client->id, 'name' => $project->client->name],
-            'manager' => ['id' => $project->manager->id, 'name' => $project->manager->name],
-            'starts_on' => $project->starts_on->toDateString(),
-            'due_on' => $project->due_on?->toDateString(),
-            'finished_at' => LocalTime::format($project->finished_at, 'd/m/Y'),
-            // O prefixo congela depois da 1ª tarefa (P3): a tela o mostra só leitura.
-            'prefix_locked' => $project->last_task_number > 0,
-            'open_cards' => (int) $project->open_cards_count,
-            'can' => [
-                'manage' => $user->can('manage', $project),
-                'delete' => $user->can('delete', $project),
-            ],
-        ];
     }
 }

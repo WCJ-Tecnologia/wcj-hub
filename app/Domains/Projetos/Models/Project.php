@@ -102,8 +102,16 @@ class Project extends Model
         return $this->finished_at !== null;
     }
 
+    /**
+     * Quando a lista carregou `members` filtrado pela pessoa (ProjectQuery), responde sem
+     * consulta; fora dela, pergunta ao banco. A relação carregada só traz o vínculo de quem vê.
+     */
     public function hasMember(User $user): bool
     {
+        if ($this->relationLoaded('members')) {
+            return $this->members->contains('user_id', $user->id);
+        }
+
         return $this->members()->where('user_id', $user->id)->exists();
     }
 

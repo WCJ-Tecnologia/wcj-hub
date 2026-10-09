@@ -17,8 +17,9 @@ Nome e **onde buscar o valor**. Nunca o valor. A lista completa, com os valores 
 |---|---|---|
 | `APP_KEY` | gerada no servidor (`php artisan key:generate`) | uma por ambiente; trocar invalida sessões |
 | `APP_ENV`, `APP_DEBUG`, `APP_URL` | no servidor | `production`, `false`, a URL com `https://` |
+| `APP_LOCALE` | no servidor | `pt_BR`; as mensagens de validação em português dependem dela |
 | `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | cofre da WCJ, item "WCJ Hub — MySQL <ambiente>" (a criar no B10) | MySQL 8 próprio do Hub, separado do Supabase do DaaS (D-GER-14); usuário sem superusuário |
-| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS` | cofre da WCJ, item do SMTP Zoho (o mesmo do sistema de obras; guardado por Lucas Scholz, escopo §7) | `smtp`; sem isto o canal `mail` dos avisos (P22) não sai |
+| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS` | cofre da WCJ, item do SMTP Zoho (o mesmo do sistema de obras; guardado por Lucas Scholz, escopo §7) | `smtp`; sem isto o canal `mail` dos avisos (P22) não sai; nunca `log` em produção: a senha provisória do convite iria em claro para `storage/logs` |
 | `PASSPORT_PRIVATE_KEY`, `PASSPORT_PUBLIC_KEY` | gerados no servidor (`php artisan passport:keys`), ou os arquivos `storage/oauth-*.key` | só a partir do B8 |
 | `TRUSTED_PROXIES` | IP do Nginx/proxy da VPS | atrás de proxy |
 | `SESSION_SECURE_COOKIE` | `true` | HTTPS |

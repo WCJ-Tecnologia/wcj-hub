@@ -40,11 +40,11 @@ O que muda do template está na seção 9 do `banco.txt`: `user_types` vira `rol
 | Papel (`roles.slug`) | Vê | Faz | Não faz |
 |---|---|---|---|
 | Administrador (`admin`) | Tudo | Tudo: usuários, clientes, contatos, auditoria, listas gerais, qualquer projeto, conexões de IA de todos | — |
-| Gestor de projetos (`project_manager`) | Projetos que gere; lista de clientes e de usuários ativos (para escolher) | Tudo nos projetos dele: configuração, alocação, cards, sprint, pacote, indicadores; contatos dos clientes dos projetos dele | Criar cliente e usuário; auditoria geral; projetos de outro gestor |
+| Gestor de projetos (`project_manager`) | Projetos que gere; lista de clientes e de usuários ativos (para escolher) | Tudo nos projetos dele: configuração, alocação, cards, sprint, pacote, indicadores; contatos dos clientes dos projetos dele | Criar usuário; desativar e excluir cliente; auditoria geral; projetos de outro gestor (cria cliente no formulário do projeto e em Administração → Clientes: N6, decisão de 07/10) |
 | Desenvolvedor (`developer`) | Projetos em que está alocado | Cria card no `Backlog`; move a partir do `To do`; edita card, comenta, anexa, cola PR, lança e corrige as próprias horas; marca teste cruzado; roda o roteiro de QA quando é o QA | Excluir ou arquivar card; sprint, pacote e configuração; indicadores por pessoa de outros; Núcleo |
 | Comercial (`sales`) | — | — (sem uso na fatia 1; o papel existe para a v2) | Projetos (C14) |
 
-A IA conectada age como o usuário: mesmas Policies, e o escopo do token nunca passa do papel (IA5). Abilities da fatia 1 (nomes finais na spec do B1): `manage_users`, `manage_clients`, `manage_contacts`, `view_audit`, `manage_lists`, `manage_projects` (criar projeto), e por projeto, via Policy, `view`, `manage` (gestor e admin) e `work` (alocado). Adicionar ability: `User`, `HandleInertiaRequests`, `types/index.d.ts` e Policy no mesmo commit.
+A IA conectada age como o usuário: mesmas Policies, e o escopo do token nunca passa do papel (IA5). Abilities da fatia 1: `manage_users`, `view_clients`, `view_contacts`, `view_audit_logs` (nomes aprovados por Lucas Scholz em 07/10, no PR do B1; `delete_records` e `reset_passwords` seguem só para o Administrador), `manage_lists`, `manage_projects` (criar projeto), e por projeto, via Policy, `view`, `manage` (gestor e admin) e `work` (alocado). Adicionar ability: `User`, `HandleInertiaRequests`, `types/index.d.ts` e Policy no mesmo commit.
 
 ## 5. Blocos de trabalho
 
@@ -72,11 +72,11 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Dados.** `roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`.
 
-**Telas.** `/admin/usuarios` (lista, convidar, editar, desativar, reativar, excluir, histórico); `/admin/clientes` e `/admin/clientes/{id}` com a aba de contatos; `/admin/contatos` (lista geral); `/admin/auditoria` (lista com filtros e detalhe antes/depois); `/perfil` (do template). Campos, colunas, filtros e mensagens: seções 02 a 07 do F1.
+**Telas.** `/admin/users` (lista, convidar, editar, desativar, reativar, excluir, histórico); `/admin/clients` e `/admin/clients/{id}` com a aba de contatos; `/admin/contacts` (lista geral); `/admin/audit-logs` (lista com filtros e detalhe antes/depois); `/admin/profile` (do template). Caminhos em inglês e rótulos em português, como o template (aprovado por Lucas Scholz em 07/10, no PR do B1). Campos, colunas, filtros e mensagens: seções 02 a 07 do F1.
 
-**Regras.** N1 a N9, N11, N12, G2, G3 em `Platform\Services\UserService` (convidar com e-mail de convite e senha provisória, notificação `UserInvited` no canal `mail`, reenviar convite, trocar papel, carga e a marca "IA pode escrever", desativar revogando sessões e conexões de IA, reativar, excluir só sem histórico), `ClientService` (CNPJ alfanumérico, unique por país, desativar sem trava), `ContactService` (aviso de e-mail repetido, anonimizar numa transação limpando `audit_logs.changes`), `AuditService` (gravação única usada por todos os Services; consulta com filtros).
+**Regras.** N1 a N9, N11, N12, G2, G3 em `Platform\Services\UserService` (convidar com e-mail de convite e senha provisória pelo Mailable `TemporaryPasswordMail`, reenviar convite, trocar papel, carga e a marca "IA pode escrever", desativar revogando sessões e conexões de IA, reativar, excluir só sem histórico), `ClientService` (CNPJ alfanumérico, unique por país, desativar sem trava), `ContactService` (aviso de e-mail repetido, anonimizar numa transação limpando `audit_logs.changes`), `AuditService` (gravação única usada por todos os Services; consulta com filtros).
 
-**Permissão.** `UserPolicy` (só admin), `ClientPolicy` (`create`: admin e gestor; `update`: admin e gestor dos projetos do cliente; `deactivate` e `delete`: admin), `ContactPolicy` (gestor cria e edita contato nos clientes dos projetos dele), `AuditLogPolicy` (só admin). Dev vê nomes de usuários só pelas telas de Projetos. "Gestor dos projetos do cliente" é dado de Projetos e o Platform não lê `projects` (A9): as Policies perguntam ao contrato `Platform\Contracts\ClientManagement` (`manages(User, Client)` e `managedClientIds(User)`); o B1 entrega o contrato e a implementação vazia `Platform\Services\NoClientManagement` (ninguém gere cliente algum, ligada no `AppServiceProvider`), e o B2 troca pela real (revisão de 07/10).
+**Permissão.** `UserPolicy` (só admin), `ClientPolicy` (`create`: admin e gestor, no formulário do projeto e em Administração → Clientes; `update`: admin e gestor dos projetos do cliente; `deactivate` e `delete`: admin, nunca a WCJ, que também é recusada no `ClientService` (N7)), `ContactPolicy` (gestor cria e edita contato nos clientes dos projetos dele), `AuditLogPolicy` (só admin). Dev vê nomes de usuários só pelas telas de Projetos. "Gestor dos projetos do cliente" é dado de Projetos e o Platform não lê `projects` (A9): as Policies perguntam ao contrato `Platform\Contracts\ClientManagement` (`manages(User, Client)` e `managedClientIds(User)`); o B1 entrega o contrato e a implementação vazia `Platform\Services\NoClientManagement` (ninguém gere cliente algum, ligada no `AppServiceProvider`), e o B2 troca pela real (revisão de 07/10).
 
 ### B2. Projeto e configuração do quadro
 
@@ -86,7 +86,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Dados.** `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons`.
 
-**Telas.** `/projetos` (lista: os que o papel vê); `/projetos/novo` e `/projetos/{id}/editar`, com o botão *Novo cliente* inline que chama o `ClientService` do Platform (N6); `/projetos/{id}/configuracao` com as abas Pessoas, Etapas, Áreas e Padrões; `/admin/listas` com Tipos de tarefa e Motivos de retrabalho. Encerrar e reabrir na ficha do projeto.
+**Telas.** `/projetos` (lista: os que o papel vê); criar e editar por modal na própria lista (decisão do Lucas Scholz em 09/10/2026, no PR #6; o escopo previa `/projetos/novo` e `/projetos/{id}/editar`), com o botão *Novo cliente* inline que chama o `ClientService` do Platform (N6); `/projetos/{id}/configuracao` com as abas Pessoas, Etapas, Áreas e Padrões; `/admin/listas` com Tipos de tarefa e Motivos de retrabalho. Encerrar e reabrir na ficha do projeto.
 
 **Regras.** P1 (cliente fixo após criar; gestor responsável + gestores alocados), P2, P3 (prefixo congela após a 1ª tarefa), P5 (tirar pessoa limpa dev e QA das tarefas na mesma transação), P7, P8, P10 (nasce com as 8 etapas), P11 (papel fixo; uma etapa ativa de `queue`, `sprint` e `support`, travada pela coluna gerada `single_role_key`; "pelo menos uma" no Service), P12 (arquivar etapa com tarefas pede destino), P15 e P46 (padrões), P18, P40, G7, em `Projetos\Services\ProjectService`, `BoardStageService`, `ProjectAreaService` e `ListService` (as duas listas gerais são Models de Projetos: o Service mora em `Projetos\Services`, não no Platform, pela regra A9). O B2 também entrega `Projetos\Services\ProjectClientManagement`, a implementação do contrato `Platform\Contracts\ClientManagement` que o B1 deixa pronto (quais clientes um gestor gere: `projects.manager_id` ou alocado com papel gestor em `project_members`), e troca a ligação no `AppServiceProvider`.
 
@@ -205,7 +205,7 @@ O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Sch
 
 | Trava | Com quem | Bloqueia |
 |---|---|---|
-| ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28). Rafael Garcia valida Projetos no bugbash. | Rafael Garcia | Nada: as specs podem começar. |
+| ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28, D-GER-31). Rafael Garcia participou com feedback e elaboração e valida Projetos no bugbash. | Lucas Scholz | Nada: as specs podem começar. |
 | ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira (`banco.txt` §7, R15 e as 3 colunas de 06/10) em 06/10. | Lucas Alencar | Nada. |
 | Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | ele mesmo | B8 |
 | Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | ele mesmo | O canal `mail` do B3 (o `database` não espera). |

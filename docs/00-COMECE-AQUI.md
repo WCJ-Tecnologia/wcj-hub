@@ -30,7 +30,7 @@ Atualizado em 2026-10-06.
 1. **Tabela "Decisões registradas"** no topo do `docs/necessidade.md`: vence qualquer texto mais abaixo e qualquer ata. Guarda só decisões de projeto.
 2. **`docs/necessidade.md`**: o requisito consolidado. As regras de produto são as G, N, P, C e IA; em Projetos, a premissa (kanban sem trava) vale acima de todas.
 3. **`docs/banco.txt`**: o modelo de dados aprovado; cada coluna aponta para a regra que a usa.
-4. **`docs/funcional/`**: como cada bloco funciona na tela, aprovado pelo dono do módulo (D-GER-28). Manda em tela, campo, ação e permissão.
+4. **`docs/funcional/`**: como cada bloco funciona na tela, aprovado por Lucas Scholz (D-GER-28, D-GER-31). Manda em tela, campo, ação e permissão.
 5. **`docs/escopo.md`**: os blocos técnicos (tabelas, rotas, Services, ordem). Manda no técnico; não contraria o funcional.
 6. **`docs/plano-de-desenvolvimento.md`**: quem faz o quê e o rito do PR.
 7. **`docs/atas/`**: o que foi dito em cada reunião (fonte, não resumo final).

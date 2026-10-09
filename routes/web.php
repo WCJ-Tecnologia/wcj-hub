@@ -2,6 +2,8 @@
 
 use App\Domains\Projetos\Controllers\ProjectController;
 use App\Platform\Controllers\Admin\AuditLogController;
+use App\Platform\Controllers\Admin\ClientController;
+use App\Platform\Controllers\Admin\ContactController;
 use App\Platform\Controllers\Admin\DashboardController;
 use App\Platform\Controllers\Admin\ProfileController;
 use App\Platform\Controllers\Admin\UserController;
@@ -65,6 +67,20 @@ Route::prefix('admin')
 
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+        Route::post('users/{user}/reactivate', [UserController::class, 'reactivate'])->name('users.reactivate');
+
+        Route::resource('clients', ClientController::class)->except(['create', 'edit']);
+        Route::post('clients/{client}/deactivate', [ClientController::class, 'deactivate'])->name('clients.deactivate');
+        Route::post('clients/{client}/reactivate', [ClientController::class, 'reactivate'])->name('clients.reactivate');
+
+        Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::post('clients/{client}/contacts', [ContactController::class, 'store'])->name('clients.contacts.store');
+        Route::put('contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+        Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+        Route::post('contacts/{contact}/deactivate', [ContactController::class, 'deactivate'])->name('contacts.deactivate');
+        Route::post('contacts/{contact}/reactivate', [ContactController::class, 'reactivate'])->name('contacts.reactivate');
+        Route::post('contacts/{contact}/anonymize', [ContactController::class, 'anonymize'])->name('contacts.anonymize');
 
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     });

@@ -12,6 +12,10 @@ export interface Abilities {
     delete_records: boolean;
     view_audit_logs: boolean;
     reset_passwords: boolean;
+    /** ClientPolicy::viewAny: Administrador e Gestor de projetos. */
+    view_clients: boolean;
+    /** ContactPolicy::viewAny: Administrador e Gestor de projetos (só os clientes dele). */
+    view_contacts: boolean;
     /** ProjectPolicy::viewAny: todos menos o Comercial (C14). */
     view_projects: boolean;
     /** ProjectPolicy::create: Administrador e Gestor de projetos. */
@@ -31,6 +35,8 @@ export interface AuthUser {
 export interface FlashMessages {
     success?: string;
     error?: string;
+    /** Vem junto do success: a ação foi feita, com um aviso. */
+    warning?: string;
 }
 
 export interface PaginationLink {
@@ -58,10 +64,8 @@ export interface Option {
 }
 
 export interface AppBrand {
-    /** Client identity shown in the shell (APP_BRAND_NAME). */
+    /** Brand name shown in the shell (APP_BRAND_NAME). The logo files are fixed in WBrandLogoAtom. */
     name: string;
-    /** Path under public/ (APP_BRAND_LOGO). */
-    logo: string;
 }
 
 export interface AppInfo {

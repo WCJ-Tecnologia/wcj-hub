@@ -60,6 +60,17 @@ class ProjectPermissionTest extends TestCase
         ];
     }
 
+    /** Toda negação vira linha `denied` na auditoria (G3): editar, encerrar e reabrir são `manage` (= updated). */
+    private function assertDeniedAudited(User $user, string ...$actions): void
+    {
+        foreach ($actions as $action) {
+            $this->assertDatabaseHas('audit_logs', [
+                'user_id' => $user->id, 'action' => $action, 'outcome' => 'denied', 'auditable_type' => 'project',
+                ...($action === 'created' ? [] : ['auditable_id' => $this->project->id]),
+            ]);
+        }
+    }
+
     private function assertProjectUnchanged(): void
     {
         $fresh = Project::query()->find($this->project->id);
@@ -82,6 +93,7 @@ class ProjectPermissionTest extends TestCase
 
         $this->assertProjectUnchanged();
         $this->assertSame(1, Project::query()->count());
+        $this->assertDeniedAudited($dev, 'updated', 'deleted', 'created');
     }
 
     public function test_a_manager_who_does_not_manage_the_project_gets_403_and_nothing_changes(): void
@@ -93,6 +105,7 @@ class ProjectPermissionTest extends TestCase
         }
 
         $this->assertProjectUnchanged();
+        $this->assertDeniedAudited($outroGestor, 'updated', 'deleted');
     }
 
     public function test_sales_gets_403_on_every_write_and_nothing_changes(): void
@@ -107,6 +120,7 @@ class ProjectPermissionTest extends TestCase
 
         $this->assertProjectUnchanged();
         $this->assertSame(1, Project::query()->count());
+        $this->assertDeniedAudited($comercial, 'updated', 'deleted', 'created');
     }
 
     public function test_a_manager_allocated_in_the_project_manages_it_like_the_responsible(): void
@@ -130,6 +144,7 @@ class ProjectPermissionTest extends TestCase
         $this->actingAs($rebaixado)->put("/projetos/{$this->project->id}", $this->editPayload())->assertForbidden();
 
         $this->assertProjectUnchanged();
+        $this->assertDeniedAudited($rebaixado, 'updated');
     }
 
     public function test_only_the_admin_deletes_even_the_responsible_manager_gets_403(): void
@@ -139,6 +154,7 @@ class ProjectPermissionTest extends TestCase
         $this->actingAs($responsavel)->delete("/projetos/{$this->project->id}")->assertForbidden();
 
         $this->assertModelExists($this->project);
+        $this->assertDeniedAudited($responsavel, 'deleted');
     }
 
     public function test_admin_and_manager_create_projects(): void

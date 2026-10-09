@@ -15,6 +15,11 @@ const NOISE: RegExp[] = [
 ];
 
 type Fixtures = {
+    /**
+     * console.error that one test provokes on purpose (e.g. a 500 answered to check the error
+     * state). Set per test with test.use; empty everywhere else.
+     */
+    expectedConsoleErrors: RegExp[];
     /** Fails the test if any page error or console.error survived the noise filter. */
     consoleGuard: void;
     /** WCAG 2.0/2.1 A + AA. color-contrast stays on. */
@@ -22,8 +27,10 @@ type Fixtures = {
 };
 
 export const test = base.extend<Fixtures>({
+    expectedConsoleErrors: [[], { option: true }],
+
     consoleGuard: [
-        async ({ page }, use) => {
+        async ({ page, expectedConsoleErrors }, use) => {
             const errors: string[] = [];
 
             page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
@@ -33,7 +40,7 @@ export const test = base.extend<Fixtures>({
 
             await use();
 
-            const real = errors.filter((entry) => !NOISE.some((pattern) => pattern.test(entry)));
+            const real = errors.filter((entry) => ![...NOISE, ...expectedConsoleErrors].some((pattern) => pattern.test(entry)));
             expect(real, 'erros de JavaScript ou console.error durante o teste').toEqual([]);
         },
         { auto: true },

@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
+import storybook from 'eslint-plugin-storybook';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -15,6 +16,7 @@ export default tseslint.config(
             'playwright-report/**',
             'test-results/**',
             '.harness/**',
+            'storybook-static/**',
         ],
     },
     js.configs.recommended,
@@ -28,6 +30,11 @@ export default tseslint.config(
         },
         languageOptions: { globals: globals.browser },
     },
+    {
+        files: ['.storybook/**/*.{ts,tsx}'],
+        languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    },
+    ...storybook.configs['flat/recommended'],
     {
         files: ['e2e/**/*.{ts,mjs}', 'scripts/**/*.mjs', '.ai/adapters/**/*.mjs', '.ai/skills/*.mjs', '*.config.{js,ts}'],
         languageOptions: { globals: globals.node },

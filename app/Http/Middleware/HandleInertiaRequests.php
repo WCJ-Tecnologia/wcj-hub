@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Projetos\Models\Project;
+use App\Platform\Models\AuditLog;
+use App\Platform\Models\Client;
+use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -29,7 +32,6 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name'),
                 'brand' => [
                     'name' => config('app.brand.name'),
-                    'logo' => config('app.brand.logo'),
                 ],
             ],
             'auth' => [
@@ -38,6 +40,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                // Salvou, mas há o que conferir (ex.: e-mail de contato repetido, N8).
+                'warning' => fn () => $request->session()->get('warning'),
             ],
         ];
     }
@@ -58,10 +62,13 @@ class HandleInertiaRequests extends Middleware
             'role_label' => $user->type()->label(),
             'must_change_password' => $user->must_change_password,
             'abilities' => [
-                'manage_users' => $user->isAdmin(),
+                'manage_users' => $user->can('viewAny', User::class),
                 'delete_records' => $user->isAdmin(),
-                'view_audit_logs' => $user->isAdmin(),
+                'view_audit_logs' => $user->can('viewAny', AuditLog::class),
                 'reset_passwords' => $user->isAdmin(),
+                // Menu Administração (F1 §09): o gestor vê clientes e os contatos dos clientes dele.
+                'view_clients' => $user->can('viewAny', Client::class),
+                'view_contacts' => $user->can('viewAny', Contact::class),
                 // Da ProjectPolicy (F2 §09): o Comercial não entra em Projetos (C14).
                 'view_projects' => $user->can('viewAny', Project::class),
                 'manage_projects' => $user->can('create', Project::class),

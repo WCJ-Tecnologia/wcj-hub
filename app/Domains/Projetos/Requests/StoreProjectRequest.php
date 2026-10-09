@@ -6,6 +6,7 @@ use App\Domains\Projetos\Models\Project;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
+use App\Platform\Requests\Concerns\AuthorizesBeforeValidation;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,18 +18,21 @@ use Illuminate\Validation\Rule;
  */
 class StoreProjectRequest extends FormRequest
 {
+    use AuthorizesBeforeValidation;
+
     public const DELIVERY = 'delivery';
 
     public const CONTINUOUS = 'continuous';
 
-    /** Quem não pode recebe 403 antes da validação: não descobre nada pelos erros dos campos. */
-    public function authorize(): bool
+    /**
+     * Criar (sem projeto na rota) ou editar. A negação é auditada (G3) e chega antes da validação:
+     * quem não pode não descobre nada pelos erros dos campos (AuthorizesBeforeValidation, B1).
+     */
+    protected function abilityAndArguments(): array
     {
         $project = $this->route('project');
 
-        return $project instanceof Project
-            ? (bool) $this->user()?->can('manage', $project)
-            : (bool) $this->user()?->can('create', Project::class);
+        return $project instanceof Project ? ['manage', $project] : ['create', Project::class];
     }
 
     protected function prepareForValidation(): void

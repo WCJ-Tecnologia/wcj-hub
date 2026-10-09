@@ -5,6 +5,7 @@ namespace Tests\Feature\Projetos;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
@@ -60,9 +61,41 @@ class ProjectListTest extends TestCase
         $this->assertSame(['BBB'], $this->prefixesFor($this->dev));
     }
 
-    public function test_sales_does_not_enter_projects(): void
+    public function test_sales_does_not_enter_projects_and_the_denial_is_audited(): void
     {
-        $this->actingAs(User::factory()->sales()->create())->get('/projetos')->assertForbidden();
+        $comercial = User::factory()->sales()->create();
+
+        $this->actingAs($comercial)->get('/projetos')->assertForbidden();
+
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $comercial->id, 'action' => 'viewed', 'outcome' => 'denied', 'auditable_type' => 'project']);
+    }
+
+    /** CR-2-03: `can.manage` por linha lê o vínculo carregado em lote; o número de consultas não cresce com a página. */
+    public function test_the_manager_list_loads_the_membership_in_batch_not_per_row(): void
+    {
+        $gestor = User::factory()->projectManager()->create();
+        $alocar = function (int $quantos) use ($gestor): void {
+            for ($i = 0; $i < $quantos; $i++) {
+                $this->alocar($this->projeto(), $gestor);
+            }
+        };
+        $consultas = function () use ($gestor): int {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->actingAs($gestor)->get('/projetos')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('projects.data', fn ($rows) => collect($rows)->every(fn ($row) => $row['can']['manage'] === true)));
+            $total = count(DB::getQueryLog());
+            DB::disableQueryLog();
+
+            return $total;
+        };
+
+        $alocar(3);
+        $comTres = $consultas();
+        $alocar(12);
+        $comQuinze = $consultas();
+
+        $this->assertSame($comTres, $comQuinze, 'a lista do gestor fez consultas a mais por linha');
     }
 
     public function test_finished_projects_are_hidden_until_the_filter_asks_for_them(): void

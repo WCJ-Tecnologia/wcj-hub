@@ -7,6 +7,7 @@ use App\Domains\Projetos\Models\StageRole;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
+use App\Support\Like;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -22,11 +23,14 @@ class ProjectQuery
      */
     public function paginate(User $user, array $filters): LengthAwarePaginator
     {
-        $like = '%'.$filters['search'].'%';
+        $like = Like::contains($filters['search']);
 
         return Project::query()
             ->visibleTo($user)
             ->with(['client:id,name', 'manager:id,name'])
+            // O vínculo da pessoa vem em lote: a Policy (can.manage por linha) lê a relação carregada,
+            // não uma consulta por projeto (CR-2-03; "lista pede em lote, nunca por linha").
+            ->with(['members' => fn ($members) => $members->where('user_id', $user->id)])
             // Cards fora da etapa de papel Pronto, para a confirmação de encerrar (F2 §04).
             ->withCount(['tasks as open_cards_count' => fn (Builder $tasks) => $tasks
                 ->whereNull('archived_at')
