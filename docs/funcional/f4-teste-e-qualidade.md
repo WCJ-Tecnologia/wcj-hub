@@ -8,7 +8,7 @@
 | **Regras que alimentam** | P32 a P39 (`docs/necessidade.md`), com P20, P22 e P24 no que tocam o teste. |
 | **Tabelas do `banco.txt`** | `tasks` (`cross_tested_by`, `cross_tested_at`, `qa_id`, `developer_id`), `task_acceptance_criteria`, `test_results`, `task_attachments` (evidência). Leitura de `board_stages` (etapa de teste) e `validation_types` (origem do retrabalho). |
 | **Depende de** | [F3](f3-quadro-e-card.md): card, critérios de aceite, mover card e o diálogo de volta para desenvolvimento. |
-| **Quem aprova** | Rafael Garcia (gestor de projetos, D-GER-02). |
+| **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
 Fica fora deste bloco: criar e editar critérios (F3), mover card em geral (F3), pacote e homologação (F6) e os indicadores de retrabalho (F7).
 

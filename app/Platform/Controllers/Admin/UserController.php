@@ -3,199 +3,99 @@
 namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
-use App\Platform\Services\AuditService;
-use App\Platform\Services\SessionService;
-use App\Platform\Services\TemporaryPasswordService;
-use App\Support\LocalTime;
+use App\Platform\Services\UserPresenter;
+use App\Platform\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/**
- * Tela de usuários do template, ajustada à seção 9 do banco.txt (papel e carga diária). A
- * tela completa, com convite, conexões de IA e o resto das regras N1 a N4, é do B1.
- */
+/** Usuários (F1; N1 a N4, N11). A regra mora no UserService. */
 class UserController extends Controller
 {
     public function __construct(
-        private readonly AuditService $audit,
-        private readonly TemporaryPasswordService $passwords,
+        private readonly UserService $users,
+        private readonly UserPresenter $presenter,
     ) {}
 
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
 
-        $search = (string) $request->string('search');
-        $role = $request->integer('role_id');
+        $filters = [
+            'search' => (string) $request->string('search'),
+            'role_id' => $request->integer('role_id') ?: null,
+            'show_inactive' => $request->boolean('show_inactive'),
+        ];
+
         $viewer = $request->user();
 
-        $users = User::query()
-            ->with('deactivatedBy:id,name')
-            ->when($search !== '', fn ($query) => $query->where(function ($inner) use ($search) {
-                $inner->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            }))
-            ->when($role > 0, fn ($query) => $query->where('role_id', $role))
-            ->orderBy('name')
-            ->paginate(20)
-            ->withQueryString()
-            ->through(fn (User $user) => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'active' => $user->isActive(),
-                // Who deactivated only reaches whoever can edit (seguranca.md §6).
-                ...($viewer->can('update', $user) ? [
-                    'deactivated_at' => LocalTime::format($user->deactivated_at),
-                    'deactivated_by' => $user->deactivatedBy?->name,
-                ] : []),
-                'role_id' => $user->role_id,
-                'role_label' => $user->type()->label(),
-                'daily_hours' => $user->daily_hours,
-                'must_change_password' => $user->must_change_password,
-            ]);
-
         return Inertia::render('admin/users/index', [
-            'users' => $users,
-            'filters' => ['search' => $search, 'role_id' => $role ?: null],
-            'roles' => collect(RoleEnum::cases())->map(fn (RoleEnum $r) => [
-                'id' => $r->value,
-                'label' => $r->label(),
-            ]),
+            'users' => $this->users->paginate($filters)->withQueryString()->through(fn (User $user) => $this->presenter->row($user, $viewer)),
+            'filters' => $filters,
+            'roles' => array_map(fn (RoleEnum $role) => ['id' => $role->value, 'label' => $role->label()], RoleEnum::cases()),
         ]);
     }
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $this->authorize('create', User::class);
+        ['user' => $user, 'mailed' => $mailed] = $this->users->invite($request->validated(), $request->user());
 
-        $data = $request->validated();
-        $actor = $request->user();
-
-        // users.password é not null (N1): a senha provisória nasce junto com a linha.
-        $user = DB::transaction(function () use ($data, $actor) {
-            $user = new User([
-                'role_id' => $data['role_id'],
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'daily_hours' => $data['daily_hours'] ?? null,
-            ]);
-            $user->setActive((bool) ($data['active'] ?? true), $actor);
-            $this->passwords->issue($user, isReset: false);
-
-            return $user;
-        });
-
-        $this->audit->log(AuditActionEnum::CREATED, $user, null, $this->snapshot($user));
-
-        return back()->with(
-            'success',
-            'Pronto. Mandamos uma senha temporária para '.$user->email.'. No primeiro acesso, a pessoa troca.',
-        );
+        // A senha provisória vai só por e-mail (N1): nunca na tela.
+        return $mailed
+            ? back()->with('success', "Convite enviado para {$user->email}. No primeiro acesso, a pessoa troca a senha.")
+            : back()->with('error', 'Usuário criado; o e-mail não pôde ser enviado. Use Reenviar convite.');
     }
 
     public function update(StoreUserRequest $request, User $user): RedirectResponse
     {
-        $this->authorize('update', $user);
-
-        $data = $request->validated();
-        $before = $this->snapshot($user);
-        $active = (bool) ($data['active'] ?? $user->isActive());
-
-        if (! ((int) $data['role_id'] === RoleEnum::ADMIN->value && $active) && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Este é o último administrador ativo. Promova outra pessoa antes de alterar o papel.');
-        }
-
-        $user->fill([
-            'role_id' => $data['role_id'],
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'daily_hours' => $data['daily_hours'] ?? null,
-        ]);
-
-        $user->setActive($active, $request->user())->save();
-
-        $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user));
-
-        return back()->with('success', 'Usuário atualizado.');
+        return $this->attempt(fn () => $this->users->update($user, $request->validated(), $request->user()), 'Usuário atualizado.');
     }
 
-    public function destroy(User $user): RedirectResponse
+    public function deactivate(Request $request, User $user): RedirectResponse
+    {
+        $this->authorize('deactivate', $user);
+
+        return $this->attempt(fn () => $this->users->deactivate($user, $request->user()), "{$user->name} perdeu o acesso.");
+    }
+
+    public function reactivate(Request $request, User $user): RedirectResponse
+    {
+        $this->authorize('reactivate', $user);
+
+        return $this->attempt(fn () => $this->users->reactivate($user, $request->user()), "{$user->name} voltou a ter acesso.");
+    }
+
+    // Já usado (G2): toast de erro com a mensagem e nada muda, não 403 (D6 do Lucas, 07/10).
+    public function destroy(Request $request, User $user): RedirectResponse
     {
         $this->authorize('delete', $user);
 
-        if ($this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Este é o último administrador ativo. Promova outra pessoa antes de excluir.');
-        }
-
-        $before = $this->snapshot($user);
-
-        $deleted = $user->deleteIfUnused(function (User $deleted) use ($before) {
-            Password::broker()->deleteToken($deleted);
-            $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null);
-        });
-
-        if (! $deleted) {
-            return back()->with('error', 'Esta pessoa já usou o sistema. Para tirar o acesso, edite e desmarque "Usuário ativo".');
-        }
-
-        return back()->with('success', 'Usuário excluído.');
+        return $this->attempt(fn () => $this->users->delete($user, $request->user()), 'Usuário excluído.');
     }
 
-    public function resetPassword(Request $request, User $user, SessionService $sessions): RedirectResponse
+    /** Reenviar convite (D4: a rota reset-password do template). */
+    public function resetPassword(Request $request, User $user): RedirectResponse
     {
-        $this->authorize('resetPassword', $user);
+        $this->authorize('resendInvite', $user);
 
-        $isSelf = $user->is($request->user());
-        DB::transaction(function () use ($user, $sessions) {
-            $this->passwords->issue($user, isReset: true);
-            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, null, ['must_change_password' => true]);
-            $sessions->terminateOthers($user); // every open session of the target drops (CR-1-01)
-        });
+        if (! $this->users->resendInvite($user, $request->user())) {
+            return back()->with('error', 'Senha provisória gerada; o e-mail não pôde ser enviado. Use Reenviar convite.');
+        }
 
-        if ($isSelf) {
+        if ($user->is($request->user())) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()
-                ->route('login')
+            return redirect()->route('login')
                 ->with('success', "Mandamos uma senha temporária para {$user->email}. Entra com ela e, na hora, escolhe uma só sua.");
         }
 
-        return back()->with(
-            'success',
-            "Mandamos uma senha temporária para {$user->email}. {$user->firstName()} troca ela no próximo acesso.",
-        );
-    }
-
-    private function isLastActiveAdmin(User $user): bool
-    {
-        if (! $user->isAdmin() || ! $user->isActive()) {
-            return false;
-        }
-
-        return ! User::query()
-            ->active()
-            ->where('role_id', RoleEnum::ADMIN->value)
-            ->whereKeyNot($user->getKey())
-            ->exists();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function snapshot(User $user): array
-    {
-        return [...$user->only(['name', 'email', 'role_id', 'daily_hours']), 'active' => $user->isActive()];
+        return back()->with('success', "Convite reenviado para {$user->email}. {$user->firstName()} troca a senha no próximo acesso.");
     }
 }

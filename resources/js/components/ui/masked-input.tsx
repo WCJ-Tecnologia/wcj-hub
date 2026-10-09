@@ -1,7 +1,17 @@
 import * as React from 'react';
 
 import { Input } from '@/components/ui/input';
-import { maskCnpj, maskCpf, maskDocument, maskPhone, moneyDisplay, moneyFromTyped, onlyDigits } from '@/lib/masks';
+import {
+    cnpjFromTyped,
+    maskAlphanumericCnpj,
+    maskCnpj,
+    maskCpf,
+    maskDocument,
+    maskPhone,
+    moneyDisplay,
+    moneyFromTyped,
+    onlyDigits,
+} from '@/lib/masks';
 import { cn } from '@/lib/utils';
 
 type BaseProps = Omit<React.ComponentProps<'input'>, 'value' | 'onChange'>;
@@ -56,6 +66,24 @@ export function DocumentInput({
             {...props}
             value={mask(value)}
             onChange={(event) => onChange(onlyDigits(event.target.value).slice(0, limit))}
+            className={cn('tabular-nums', className)}
+        />
+    );
+}
+
+/**
+ * CNPJ alfanumérico (N5): aceita letras, mostra a máscara e guarda o valor cru em maiúsculas.
+ */
+export function AlphanumericCnpjInput({ value, onChange, className, ...props }: MaskedProps) {
+    return (
+        <Input
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="00.000.000/0000-00"
+            {...props}
+            value={maskAlphanumericCnpj(value)}
+            onChange={(event) => onChange(cnpjFromTyped(event.target.value))}
             className={cn('tabular-nums', className)}
         />
     );

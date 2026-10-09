@@ -63,12 +63,17 @@ final class Concorrencia
      * No teste, confira sempre: $corrida->rodou (o gatilho casou) e $corrida->outroErro === null
      * (a outra caiu por trava ou passou; qualquer outra queda, como 403 ou 419, invalida a prova).
      *
+     * "bloqueada" aceita espera e deadlock juntos; $corrida->codigo diz qual foi (no MySQL, 1205
+     * espera, 1213 deadlock, 3572 NOWAIT). Mesmo assim, deadlock de verdade não se forma aqui: a
+     * principal fica parada no PHP enquanto a outra roda. Ordem de trava se prova pela sequência
+     * de consultas "for update" da principal, não por este teste.
+     *
      * @param  Closure(QueryExecuted): bool  $gatilho
-     * @return object{rodou: bool, bloqueada: bool, retorno: mixed, outroErro: ?string}
+     * @return object{rodou: bool, bloqueada: bool, codigo: int|string|null, retorno: mixed, outroErro: ?string}
      */
     public static function intercalarDepoisDe(Closure $gatilho, Closure $outraRequisicao, ?TestCase $teste = null): object
     {
-        $resultado = (object) ['rodou' => false, 'bloqueada' => false, 'retorno' => null, 'outroErro' => null];
+        $resultado = (object) ['rodou' => false, 'bloqueada' => false, 'codigo' => null, 'retorno' => null, 'outroErro' => null];
         $principal = DB::getDefaultConnection();
 
         DB::connection($principal)->listen(function (QueryExecuted $consulta) use ($gatilho, $outraRequisicao, $resultado, $principal, $teste): void {
@@ -86,6 +91,7 @@ final class Concorrencia
                 self::conferirResposta($resultado);
             } catch (QueryException $e) {
                 $resultado->bloqueada = self::ehTrava($e);
+                $resultado->codigo = self::codigo($e);
                 if (! $resultado->bloqueada) {
                     $resultado->outroErro = $e->getMessage();
                 }
@@ -131,5 +137,11 @@ final class Concorrencia
     {
         return in_array((int) ($e->errorInfo[1] ?? 0), self::CODIGOS_DE_TRAVA, true)
             || in_array($e->errorInfo[0] ?? '', ['55P03', '40P01'], true);
+    }
+
+    /** O código do motor (MySQL: 1205, 1213…) ou, sem ele, o SQLSTATE (Postgres). */
+    private static function codigo(QueryException $e): int|string|null
+    {
+        return isset($e->errorInfo[1]) ? (int) $e->errorInfo[1] : ($e->errorInfo[0] ?? null);
     }
 }

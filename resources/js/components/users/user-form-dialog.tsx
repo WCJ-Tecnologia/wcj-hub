@@ -3,11 +3,11 @@ import type { FormEvent } from 'react';
 
 import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 /** Espelha App\Platform\Enums\RoleEnum (docs/banco.txt, roles). */
 export const ROLE = { ADMIN: 1, PROJECT_MANAGER: 2, DEVELOPER: 3, SALES: 4 } as const;
@@ -18,20 +18,20 @@ export interface UserFormData {
     email: string;
     /** Carga diária em horas decimais (N3); vazio = sem carga. */
     daily_hours: string;
-    active: boolean;
+    /** IA4: a IA desta pessoa altera dados (true) ou só consulta. */
+    ai_write_allowed: boolean;
 }
 
 /**
- * Modal de criar/editar usuário. O `useForm` vive na página (um só,
- * reaproveitado para os dois casos); aqui ficam só os campos. Ajuste mínimo do
- * B0 (papel e carga diária); a tela completa é do B1.
+ * Modal de convidar e editar usuário (F1 §02). O `useForm` vive na página; aqui ficam só os
+ * campos. Desativar e reativar são ações da linha (D3): a situação aqui é só leitura.
  */
 export function UserFormDialog({
     open,
     onOpenChange,
     form,
     editing,
-    deactivatedNote,
+    situation,
     roles,
     onSubmit,
 }: {
@@ -39,8 +39,8 @@ export function UserFormDialog({
     onOpenChange: (open: boolean) => void;
     form: InertiaFormProps<UserFormData>;
     editing: boolean;
-    /** "Desativado em …, por …": quem e quando, gravados pelo servidor. */
-    deactivatedNote?: string | null;
+    /** "Ativo" ou "Desativado em …, por …": quem e quando, gravados pelo servidor. */
+    situation?: string | null;
     roles: { id: number; label: string }[];
     onSubmit: (event: FormEvent) => void;
 }) {
@@ -48,11 +48,11 @@ export function UserFormDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{editing ? 'Editar usuário' : 'Novo usuário'}</DialogTitle>
+                    <DialogTitle>{editing ? 'Editar usuário' : 'Convidar usuário'}</DialogTitle>
                     <DialogDescription>
                         {editing
-                            ? 'Para redefinir a senha, use o botão da chave na lista.'
-                            : 'A pessoa recebe uma senha temporária por e-mail e escolhe a definitiva no primeiro acesso.'}
+                            ? 'Para mandar uma senha provisória nova, use Reenviar convite na lista.'
+                            : 'A pessoa recebe por e-mail o endereço do Hub, o login e uma senha provisória, que troca no primeiro acesso.'}
                     </DialogDescription>
                 </DialogHeader>
                 <DialogBody>
@@ -75,13 +75,19 @@ export function UserFormDialog({
                             <FormField label="E-mail" htmlFor="email" required error={form.errors.email}>
                                 <Input type="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                             </FormField>
-                            <FormField label="Carga diária (horas)" htmlFor="daily_hours" error={form.errors.daily_hours}>
+                            <FormField
+                                label="Carga diária (horas)"
+                                htmlFor="daily_hours"
+                                required={form.data.role_id === ROLE.DEVELOPER}
+                                error={form.errors.daily_hours}
+                            >
                                 <Input
                                     type="number"
                                     inputMode="decimal"
                                     min="0.25"
                                     max="24"
-                                    step="0.25"
+                                    // Horas com decimais (F1 §02): 7,3 vale; sem passo fixo (D9 do Lucas).
+                                    step="any"
                                     value={form.data.daily_hours}
                                     onChange={(e) => form.setData('daily_hours', e.target.value)}
                                 />
@@ -89,23 +95,33 @@ export function UserFormDialog({
                         </div>
 
                         <div>
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    id="active"
-                                    checked={form.data.active}
-                                    onCheckedChange={(checked) => form.setData('active', checked === true)}
-                                    aria-describedby={deactivatedNote ? 'active-note' : undefined}
+                            <div className="flex items-center gap-3">
+                                <Switch
+                                    id="ai_write_allowed"
+                                    checked={form.data.ai_write_allowed}
+                                    onCheckedChange={(checked) => form.setData('ai_write_allowed', checked)}
+                                    aria-describedby="ai_write_allowed-hint"
+                                    aria-invalid={Boolean(form.errors.ai_write_allowed)}
                                 />
-                                <Label htmlFor="active" className="cursor-pointer">
-                                    Usuário ativo
+                                <Label htmlFor="ai_write_allowed" className="cursor-pointer">
+                                    IA pode escrever
                                 </Label>
                             </div>
-                            {deactivatedNote && (
-                                <p id="active-note" className="mt-1.5 text-xs text-muted-foreground">
-                                    {deactivatedNote}
+                            <p id="ai_write_allowed-hint" className="mt-1.5 text-xs text-muted-foreground">
+                                Desligado, a IA desta pessoa só consulta. Mudar desconecta as conexões de IA dela, que reconecta.
+                            </p>
+                            {form.errors.ai_write_allowed && (
+                                <p className="mt-1 text-xs font-medium text-destructive" role="alert">
+                                    {form.errors.ai_write_allowed}
                                 </p>
                             )}
                         </div>
+
+                        {situation && (
+                            <p className="text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">Situação:</span> {situation}
+                            </p>
+                        )}
                     </form>
                 </DialogBody>
                 <DialogFooter>
@@ -113,7 +129,7 @@ export function UserFormDialog({
                         Cancelar
                     </Button>
                     <Button type="submit" form="user-form" disabled={form.processing}>
-                        {editing ? 'Salvar alterações' : 'Cadastrar usuário'}
+                        {editing ? 'Salvar alterações' : 'Enviar convite'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
