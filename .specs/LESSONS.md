@@ -86,6 +86,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: validation.md rodada 10, mutante g2 (app/Platform/Services/Concerns/RetriesDeadlock.php:40) (services)
 - last seen: 2026-10-09T14:12:49Z
 
+### L-013 - When a model helper opens its own transaction, test it called outside any transaction with DatabaseTruncation and a failing callback, since RefreshDatabase and transactional callers hide a missing transaction
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `models` · harmful: 0
+- features: b1-nucleo
+- evidence: mutante d, app/Platform/Models/Concerns/Deactivatable.php:138 (rodada 12) (models)
+- last seen: 2026-10-09T15:01:42Z
+
+### L-014 - In a search test, pin every column the search reads in the fixtures, since a random factory value can match the normalized term
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: b1-nucleo
+- evidence: tests/Feature/Nucleo/ClientServiceTest.php:508 (rodada 12, 1a execucao) (tests)
+- last seen: 2026-10-09T15:01:42Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

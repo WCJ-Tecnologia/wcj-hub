@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 13,
+  "next_id": 15,
   "lessons": [
     {
       "id": "L-001",
@@ -229,6 +229,42 @@
       ],
       "created": "2026-10-09T14:12:49Z",
       "last_seen": "2026-10-09T14:12:49Z"
+    },
+    {
+      "id": "L-013",
+      "key": "surviving_mutant::when a model helper opens its own transaction test it called outside any transaction with databasetruncation and a failing callback since refreshdatabase and transactional callers hide a missing transaction",
+      "text": "When a model helper opens its own transaction, test it called outside any transaction with DatabaseTruncation and a failing callback, since RefreshDatabase and transactional callers hide a missing transaction",
+      "signal": "surviving_mutant",
+      "scope": "models",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "mutante d, app/Platform/Models/Concerns/Deactivatable.php:138 (rodada 12) (models)"
+      ],
+      "created": "2026-10-09T15:01:42Z",
+      "last_seen": "2026-10-09T15:01:42Z"
+    },
+    {
+      "id": "L-014",
+      "key": "gate_fail::in a search test pin every column the search reads in the fixtures since a random factory value can match the normalized term",
+      "text": "In a search test, pin every column the search reads in the fixtures, since a random factory value can match the normalized term",
+      "signal": "gate_fail",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/Nucleo/ClientServiceTest.php:508 (rodada 12, 1a execucao) (tests)"
+      ],
+      "created": "2026-10-09T15:01:42Z",
+      "last_seen": "2026-10-09T15:01:42Z"
     }
   ]
 }
