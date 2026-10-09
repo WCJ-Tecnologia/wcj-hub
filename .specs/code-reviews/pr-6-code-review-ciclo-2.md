@@ -20,9 +20,9 @@
 | CR-1-02 | Linha da lista montada no controller | ❌ Não resolvido | `ProjectController.php:98-116` (`row()`) |
 | CR-1-03 | `guardPrefix` captura `UniqueConstraintViolationException` solto | ❌ Não resolvido | `ProjectService.php:129-138` |
 | CR-1-04 | `'%'.$termo.'%'` à mão | ❌ Não resolvido | `ProjectQuery.php:25,36-38` |
-| CR-1-05 | Modal × telas `/projetos/novo` e `/projetos/{id}/editar` do escopo | ❌ Não resolvido, **aguarda decisão do Lucas Scholz** | `routes/web.php:76-83`; recomendação abaixo (DA-11) |
+| CR-1-05 | Modal × telas `/projetos/novo` e `/projetos/{id}/editar` do escopo | ✅ **Decidido pelo Lucas Scholz em 09/10/2026: fica o modal** (o que o PR fez). Resta só alinhar o escopo B2 ("Telas") no rebase | `routes/web.php:76-83`; DA-11 / FP-08 do `PROJECT-PATTERNS.md` |
 
-Resolvidos: 0 · Abertos: 5 · Regressões: 0 (nada mudou no código).
+Resolvidos: 1 (CR-1-05, por decisão) · Abertos: 4 · Regressões: 0 (nada mudou no código).
 
 ---
 
@@ -251,13 +251,13 @@ Só visual; o filtro e a pill já distinguem.
 | Médio | 4 (CR-2-02, CR-2-03, CR-2-04, CR-2-05) | deveria corrigir |
 | Baixo | 2 (CR-2-06, CR-2-07) | detalhe |
 
-**Achados anteriores:** 5 abertos (CR-1-01 a CR-1-05), 0 resolvidos, 0 regressões. O CR-1-01 continua **bloqueante** e agora é acionável (o B1 está na `main`); o CR-1-05 aguarda o Lucas Scholz.
+**Achados anteriores:** 4 abertos (CR-1-01 a CR-1-04), 1 resolvido por decisão (CR-1-05: modal, Lucas Scholz 09/10), 0 regressões. O CR-1-01 continua **bloqueante** e agora é acionável (o B1 está na `main`).
 
 **Principais riscos:** (1) rebase sobre a `main` com B1 + #8: 9 conflitos e o front inteiro a portar para a estrutura atômica; (2) negação de permissão sem auditoria (CR-1-01) até o rebase; (3) o gestor sem gerir cliente/contato enquanto `ProjectClientManagement` não existir (CR-2-05).
 
 **Avaliação geral:** o backend do passo 1 é bom (o ciclo 1 já disse: transações com `lockForUpdate`, `scopeVisibleTo` espelhando a Policy, G2 e G3 das escritas corretos, testes por regra e por papel) e os achados são de integração e de padrão de projeto, não de regra de negócio. O custo real está no front: o PR nasceu antes do ADR-003 e precisa ser reescrito na estrutura atômica, o mesmo trabalho que o #8 fez com o B1. Recomendação de ordem para o Vitinho: rebase + porte do front (CR-2-01) → CR-1-01 a CR-1-04 (helpers do Núcleo) → CR-2-02/CR-2-03 → corpo do PR (CR-2-04/05) → detalhes.
 
-**Decisão pendente do Lucas Scholz:** CR-1-05 (modal na lista × telas `/projetos/novo` e `/projetos/{id}/editar`). Recomendação: aceitar o modal (é o gabarito do `.ai/stacks/ui.md` §4 e o que o B1 fez em Usuários/Clientes) e ajustar o escopo B2; a ficha de configuração (`/projetos/{id}/configuracao`, abas) continua página própria.
+**Decidido pelo Lucas Scholz (09/10/2026):** CR-1-05 fica como o PR fez, modal na lista (gabarito do `.ai/stacks/ui.md` §4, igual ao B1). No rebase, trocar no `docs/escopo.md` (B2, "Telas") `/projetos/novo` e `/projetos/{id}/editar` por "modal na lista"; a configuração (`/projetos/{id}/configuracao`, abas) continua página própria.
 
 **Recomendação final: não apta para merge** (bloqueantes CR-1-01 e CR-2-01). Resolvidos os dois e os deveria-corrigir, **apta com ajustes**.
 

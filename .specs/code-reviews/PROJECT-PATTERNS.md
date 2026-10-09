@@ -176,10 +176,10 @@
 - **Origem:** pr-8 ciclo 1; **decidido pelo Lucas Scholz em 09/10/2026:** #5 primeiro (mergeado, main `a1a052e`), #7 em seguida (`1a98616`), #8 faz o rebase e porta o B1 para a estrutura atômica, depois #6
 - **Implica:** no ciclo 2 do PR-8, conferir se o rebase portou a lista nominal (ListBody, useListVisit, ShowInactiveToggle, useRowAction, RowActions busy/disabled, StatusPill contact/audit, DataTable rowClassName, SearchInput do CR-1-10, telas de clientes/contatos/auditoria, tabela do AGENTS.md)
 
-### DA-11 — Criar e editar projeto por modal na lista (não as telas `/projetos/novo` e `/projetos/{id}/editar` do escopo B2): decisão pendente
-- **Motivo:** o escopo B2 nomeia as duas telas; o PR-6 fez modal, que é o gabarito do `.ai/stacks/ui.md` §4 e o que o B1 fez em Usuários e Clientes
-- **Origem:** pr-6 ciclo 1 (CR-1-05); **decisão pendente do Lucas Scholz**; recomendação do ciclo 2: aceitar o modal e ajustar o escopo; a configuração (`/projetos/{id}/configuracao`, abas) segue página própria
-- **Implica:** até a decisão, status "aguarda decisão", sem subir a criticidade; decidido, vira FP ou achado de doc (AP-04)
+### DA-11 — Criar e editar projeto por modal na lista, não as telas `/projetos/novo` e `/projetos/{id}/editar` do escopo B2
+- **Motivo:** decisão do Lucas Scholz em 09/10/2026 ("segue o que o Vitinho fez"): o modal é o gabarito do `.ai/stacks/ui.md` §4 e o que o B1 fez em Usuários e Clientes
+- **Origem:** pr-6 ciclo 1 (CR-1-05), decidido no ciclo 2
+- **Implica:** não apontar "faltam as telas /projetos/novo e /editar"; o `docs/escopo.md` (B2, "Telas") precisa ser alinhado no rebase (AP-04 se ficar para trás); a configuração (`/projetos/{id}/configuracao`, abas) continua página própria
 
 ### DA-12 — `ProjectClientManagement` é do B2 e precisa entrar no passo 2 (ou antes)
 - **Motivo:** com o B1 na `main`, `ClientPolicy`/`ContactPolicy` perguntam ao contrato `ClientManagement`, ligado a `NoClientManagement`: o gestor não gere cliente nem vê contato (F1 §09) até o B2 entregar a real (escopo B2)
