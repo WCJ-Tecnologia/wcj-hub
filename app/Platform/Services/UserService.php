@@ -124,14 +124,16 @@ class UserService
     public function deactivate(User $user, User $actor): void
     {
         DB::transaction(function () use ($user, $actor) {
+            // Primeiro os administradores ativos, depois o alvo: a mesma ordem de update e delete.
+            // Na ordem inversa, dois admins que se desativam um ao outro entram em deadlock (CR-2-01).
+            $this->ensureNotLastActiveAdmin($user, 'desativar');
+
             // Decide pela linha travada, não pela instância em memória: dois cliques ou dois
             // admins não gravam duas desativações (CR-1-15).
-            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
-            if (! $locked->isActive()) {
+            if (! User::query()->lockForUpdate()->findOrFail($user->getKey())->isActive()) {
                 return;
             }
 
-            $this->ensureNotLastActiveAdmin($locked, 'desativar');
             $user->setActive(false, $actor)->save();
             $this->audit->log(AuditActionEnum::DEACTIVATED, $user, ['active' => true], ['active' => false], $actor->id);
             $this->revokeAiAuthorizations($user, $actor);

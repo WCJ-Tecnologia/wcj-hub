@@ -17,6 +17,7 @@ use Database\Seeders\AiAssistantSeeder;
 use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -405,6 +406,29 @@ class UserServiceTest extends TestCase
         $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
         $this->assertEquals($stamp, $a->fresh()->deactivated_at);
         $this->assertSame($other->id, $a->fresh()->deactivated_by);
+    }
+
+    // CR-2-01: desativar um administrador trava primeiro os administradores ativos e só depois a
+    // linha do alvo, na mesma ordem de update e delete. Com a ordem invertida, a Ana desativando
+    // a Bia e a Bia desativando a Ana ao mesmo tempo entram em deadlock (1213) e uma recebe 500.
+    public function test_desativar_admin_trava_os_administradores_antes_do_alvo(): void
+    {
+        $bia = User::factory()->admin()->create();
+        $travas = [];
+        DB::listen(function (QueryExecuted $consulta) use (&$travas) {
+            if (str_contains($consulta->sql, 'for update')) {
+                $travas[] = $consulta;
+            }
+        });
+
+        $this->service->deactivate($bia, $this->admin);
+
+        $this->assertGreaterThanOrEqual(2, count($travas));
+        $this->assertStringContainsString('`role_id` = ?', $travas[0]->sql, 'A primeira trava não é a dos administradores.');
+        $this->assertStringContainsString('`deactivated_at` is null', $travas[0]->sql);
+        $this->assertStringContainsString('`users`.`id` = ?', $travas[1]->sql, 'A segunda trava não é a do alvo.');
+        $this->assertSame([$bia->id], $travas[1]->bindings);
+        $this->assertFalse($bia->fresh()->isActive());
     }
 
     public function test_desativar_quem_ja_esta_desativado_mantem_o_carimbo_original(): void

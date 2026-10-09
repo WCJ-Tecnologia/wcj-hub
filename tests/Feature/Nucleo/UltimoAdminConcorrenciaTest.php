@@ -58,4 +58,29 @@ class UltimoAdminConcorrenciaTest extends TestCase
         );
         $this->assertTrue($corrida->bloqueada, 'A outra requisição passou pela checagem sem esperar a principal.');
     }
+
+    // CR-2-01: a Ana desativa a Bia enquanto a Bia desativa a Ana, com a outra requisição logo
+    // depois da PRIMEIRA trava da principal (hoje a dos administradores ativos). A outra espera
+    // a principal (trava, não deadlock), e sobra exatamente um administrador ativo.
+    public function test_ana_desativa_bia_enquanto_bia_desativa_ana_a_outra_espera_e_sobra_um_admin(): void
+    {
+        $ana = User::factory()->admin()->create(['name' => 'Ana Admin']);
+        $bia = User::factory()->admin()->create(['name' => 'Bia Admin']);
+        $users = app(UserService::class);
+
+        $corrida = Concorrencia::intercalarDepoisDe(
+            fn (QueryExecuted $consulta) => str_contains($consulta->sql, 'for update'),
+            fn () => $users->deactivate(User::query()->findOrFail($ana->id), $bia),
+        );
+
+        $users->deactivate($bia, $ana);
+
+        $this->assertTrue($corrida->rodou, 'Nenhuma consulta com trava rodou na principal.');
+        $this->assertNull($corrida->outroErro);
+        $this->assertTrue($corrida->bloqueada, 'A outra requisição não esperou a principal.');
+        $this->assertSame(
+            [$ana->id],
+            User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->pluck('id')->all(),
+        );
+    }
 }
