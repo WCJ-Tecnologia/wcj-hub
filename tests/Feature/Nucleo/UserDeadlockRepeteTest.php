@@ -9,9 +9,11 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
 use App\Platform\Services\UserService;
+use Illuminate\Database\DeadlockException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use PDOException;
@@ -136,5 +138,27 @@ class UserDeadlockRepeteTest extends TestCase
         $this->assertFalse($dev->fresh()->must_change_password);
         $this->assertSame(0, AuditLog::query()->where('action', 'password_reset')->count());
         Mail::assertNothingSent();
+    }
+
+    // Transação aberta por quem chamou (o B8 pode fazer isso): o deadlock já desfez a de fora
+    // inteira, então repetir só a de dentro gravaria em cima de nada. Sobe na primeira tentativa;
+    // quem abriu a transação é que repete (rodada 10 do Verifier, mutante g2).
+    public function test_dentro_de_transacao_aberta_por_fora_nao_repete_e_sobe(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dev = User::factory()->developer()->create(['name' => 'Maria Souza', 'daily_hours' => '8']);
+        $this->deadlockNaPrimeiraAuditoria();
+
+        try {
+            DB::transaction(fn () => app(UserService::class)->update($dev, ['role_id' => RoleEnum::DEVELOPER->value, 'name' => 'Maria Lima', 'email' => $dev->email, 'daily_hours' => '8'], $admin));
+            $this->fail('O deadlock não subiu.');
+        } catch (PDOException $e) {
+            // Aninhado, o Laravel o embrulha em DeadlockException (PDOException), com o erro do MySQL dentro.
+            $this->assertSame(1213, ($e instanceof DeadlockException ? $e->getPrevious() : $e)->errorInfo[1]);
+        }
+
+        $this->assertSame(1, $this->tentativas);
+        $this->assertSame('Maria Souza', $dev->fresh()->name);
+        $this->assertSame(0, AuditLog::query()->where('action', 'updated')->count());
     }
 }
