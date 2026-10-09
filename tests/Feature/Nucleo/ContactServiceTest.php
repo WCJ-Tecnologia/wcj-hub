@@ -276,6 +276,22 @@ class ContactServiceTest extends TestCase
         $this->assertSame($other->id, $a->fresh()->deactivated_by);
     }
 
+    // CR-3-01: a instância carregada antes de uma reativação ainda parece desativada em memória;
+    // desativar grava e audita pela linha travada e desativa de fato.
+    public function test_desativar_pela_instancia_carregada_antes_da_reativacao_desativa(): void
+    {
+        $id = Contact::factory()->inactive()->create(['client_id' => $this->client->id])->id;
+        $velha = Contact::query()->findOrFail($id);
+        $this->service->reactivate(Contact::query()->findOrFail($id), $this->admin);
+
+        $this->service->deactivate($velha, $this->admin);
+
+        $linha = Contact::query()->findOrFail($id);
+        $this->assertFalse($linha->isActive());
+        $this->assertSame($this->admin->id, $linha->deactivated_by);
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+    }
+
     // CR-1-15 do ciclo 1, N11: o cliente desativado depois de carregado (ainda "ativo" em
     // memória) não ganha contato novo.
     public function test_recusa_contato_em_cliente_desativado_por_outra_instancia(): void

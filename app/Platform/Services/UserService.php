@@ -126,16 +126,18 @@ class UserService
             // Na ordem inversa, dois admins que se desativam um ao outro entram em deadlock (CR-2-01).
             $this->ensureNotLastActiveAdmin($user, 'desativar');
 
-            // Decide pela linha travada, não pela instância em memória: dois cliques ou dois
-            // admins não gravam duas desativações (CR-1-15).
-            if (! User::query()->lockForUpdate()->findOrFail($user->getKey())->isActive()) {
+            // Decide, grava e audita pela linha travada, não pela instância em memória: dois
+            // cliques ou dois admins não gravam duas desativações (CR-1-15), e a instância velha
+            // "desativada" não audita uma desativação que não houve (CR-3-01).
+            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
+            if (! $locked->isActive()) {
                 return;
             }
 
-            $user->setActive(false, $actor)->save();
-            $this->audit->log(AuditActionEnum::DEACTIVATED, $user, ['active' => true], ['active' => false], $actor->id);
-            $this->revokeAiAuthorizations($user, $actor);
-            $this->sessions->terminateOthers($user);
+            $locked->setActive(false, $actor)->save();
+            $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
+            $this->revokeAiAuthorizations($locked, $actor);
+            $this->sessions->terminateOthers($locked);
         });
     }
 
@@ -239,13 +241,15 @@ class UserService
      */
     private function ensureNotLastActiveAdmin(User $user, string $action): void
     {
-        if (! $user->isAdmin() || ! $user->isActive()) {
+        // Pelo banco, não só pela instância (CR-3-01). A releitura vai sem trava: a do alvo vem
+        // depois da dos administradores (CR-2-01). Quem decide é o conjunto travado abaixo.
+        if (! $user->isAdmin() && ! User::query()->findOrFail($user->getKey())->isAdmin()) {
             return;
         }
 
         $activeAdmins = User::query()->active()->where('role_id', RoleEnum::ADMIN->value)->lockForUpdate()->pluck('id');
 
-        if ($activeAdmins->doesntContain(fn (int $id) => $id !== $user->getKey())) {
+        if ($activeAdmins->contains($user->getKey()) && $activeAdmins->doesntContain(fn (int $id) => $id !== $user->getKey())) {
             throw new DomainException("Este é o último administrador ativo. Promova outra pessoa antes de {$action}.");
         }
     }

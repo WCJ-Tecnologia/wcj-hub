@@ -442,6 +442,49 @@ class UserServiceTest extends TestCase
         $this->assertSame(1, AuditLog::query()->where('action', 'reactivated')->count());
     }
 
+    // CR-3-01: espelho do anterior. A instância carregada antes de uma reativação ainda parece
+    // desativada em memória; desativar grava e audita pela linha travada e desativa de fato,
+    // com as sessões e as conexões de IA derrubadas junto.
+    public function test_desativar_pela_instancia_carregada_antes_da_reativacao_desativa(): void
+    {
+        config(['session.driver' => 'database']);
+        $id = User::factory()->developer()->inactive()->create()->id;
+        $velha = User::query()->findOrFail($id);
+        $this->service->reactivate(User::query()->findOrFail($id), $this->admin);
+        [$claude] = $this->aiAuthorizations($velha);
+        DB::table('sessions')->insert(['id' => 'notebook', 'user_id' => $id, 'payload' => '', 'last_activity' => time()]);
+
+        $this->service->deactivate($velha, $this->admin);
+
+        $linha = User::query()->findOrFail($id);
+        $this->assertFalse($linha->isActive());
+        $this->assertSame($this->admin->id, $linha->deactivated_by);
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+        $this->assertDatabaseMissing('sessions', ['user_id' => $id]);
+        $this->assertNotNull($claude->fresh()->revoked_at);
+
+        // Sem desativação de fato, nada de derrubar sessão nem gravar outra linha.
+        DB::table('sessions')->insert(['id' => 'celular', 'user_id' => $id, 'payload' => '', 'last_activity' => time()]);
+        $this->service->deactivate($velha, $this->admin);
+        $this->assertDatabaseHas('sessions', ['id' => 'celular', 'user_id' => $id]);
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+    }
+
+    // CR-3-01: a trava do último administrador decide pelo banco, não pela instância. A Bia,
+    // carregada desativada, foi reativada e ficou como a única administradora ativa.
+    public function test_ultimo_admin_carregado_desativado_antes_da_reativacao_nao_se_desativa(): void
+    {
+        $bia = User::factory()->admin()->inactive()->create();
+        $velha = User::query()->findOrFail($bia->id);
+        $this->service->reactivate($bia->fresh(), $this->admin);
+        $this->service->deactivate($this->admin->fresh(), $bia);
+
+        $this->assertThrows(fn () => $this->service->deactivate($velha, $this->admin), DomainException::class, 'último administrador ativo');
+
+        $this->assertTrue($bia->fresh()->isActive());
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+    }
+
     // CR-2-01: desativar um administrador trava primeiro os administradores ativos e só depois a
     // linha do alvo, na mesma ordem de update e delete. Com a ordem invertida, a Ana desativando
     // a Bia e a Bia desativando a Ana ao mesmo tempo entram em deadlock (1213) e uma recebe 500.

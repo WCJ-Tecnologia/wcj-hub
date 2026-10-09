@@ -106,13 +106,14 @@ class ClientService
         }
 
         DB::transaction(function () use ($client, $actor) {
-            // Decide pela linha travada, não pela instância em memória (CR-1-15).
-            if (! Client::query()->lockForUpdate()->findOrFail($client->getKey())->isActive()) {
+            // Decide, grava e audita pela linha travada, não pela instância em memória (CR-1-15, CR-3-01).
+            $locked = Client::query()->lockForUpdate()->findOrFail($client->getKey());
+            if (! $locked->isActive()) {
                 return;
             }
 
-            $client->setActive(false, $actor)->save();
-            $this->audit->log(AuditActionEnum::DEACTIVATED, $client, ['active' => true], ['active' => false], $actor->id);
+            $locked->setActive(false, $actor)->save();
+            $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
         });
     }
 

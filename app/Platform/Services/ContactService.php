@@ -101,12 +101,14 @@ class ContactService
     {
         DB::transaction(function () use ($contact, $actor) {
             // Pela linha travada (CR-1-15): o anonimizado já está desativado e não ganha outra linha.
-            if (! $this->lockedForWrite($contact)->isActive()) {
+            // Grava e audita por ela também, não pela instância em memória (CR-3-01).
+            $locked = $this->lockedForWrite($contact);
+            if (! $locked->isActive()) {
                 return;
             }
 
-            $contact->setActive(false, $actor)->save();
-            $this->audit->log(AuditActionEnum::DEACTIVATED, $contact, ['active' => true], ['active' => false], $actor->id);
+            $locked->setActive(false, $actor)->save();
+            $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
         });
     }
 
