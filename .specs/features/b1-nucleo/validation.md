@@ -1,8 +1,17 @@
-# B1 Núcleo Validation (rodada 12, focada nas correções do ciclo 5)
+# B1 Núcleo Validation (rodada 13, focada nos Fix 7 e 8 da rodada 12)
 
-## Validation: FAIL
+## Validation: PASS
 
-**Result**: FAIL na rodada 12, por **um gap Minor, só de teste**. As duas correções do ciclo 5 da `wcj-code-review` estão no código. O CR-5-01 (`ba6ed33`) tem teste que discrimina: o `resendInvite` relê o alvo com `lockForUpdate` dentro do callback (`app/Platform/Services/UserService.php:83`), tira o `before` dessa linha (`:84`), emite a senha nela (`:85`) e manda o e-mail para o endereço dela (`:91`); o teste novo `tests/Feature/Nucleo/UserServiceTest.php:178-190` afirma a troca obrigatória gravada pela instância velha (`:186`), `changes` `{"must_change_password":[false,true]}` (`:187`) e a senha no e-mail do endereço do banco (`:189`). Os três mutantes do CR-5-01 (a, b, c) morreram, e o `UserDeadlockRepeteTest.php:89` continua verde sem as linhas de restauração da memória (e mata o mutante a). O que reprova é o CR-5-02 (`7487b53`): tirar a `DB::transaction` do `setActiveLocked` (`app/Platform/Models/Concerns/Deactivatable.php:138`), mutante d, **sobreviveu à suíte inteira** (359 passed, `DB_TESTE=container`). Uma sonda descartável sem `RefreshDatabase` (`DatabaseTruncation`), que chama o `setActiveLocked` fora de transação com um `$then` que lança, **passa no código e falha com o mutante** (a desativação fica gravada sem a auditoria): o mutante não é equivalente, e o G3 do chamado solto, que é a razão do CR-5-02, não tem prova. Hoje os seis chamadores abrem transação antes, por isso Minor. Correção barata, só teste (Fix 7). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8 local) **359 passed (2930 assertions)** na 2ª execução (a 1ª teve 1 falha intermitente fora do diff, `ClientServiceTest.php:508`, explicada em "Gate (rodada 12)"), typecheck, eslint, build, guard **1053 pass**, Playwright **68 passed**. Detalhe na seção "Rodada 12".
+**Result**: PASS na rodada 13. O gap da rodada 12 (Fix 7, Minor, só teste: o `setActiveLocked` chamado fora de transação, mutante d sobrevivente) está fechado pelo `7f65222`, que só cria `tests/Feature/Nucleo/SetActiveLockedTransacaoTest.php`. O teste usa `DatabaseTruncation` + `UsaBancoDeVerdade` (`:21`), sem `RefreshDatabase`, afirma `DB::transactionLevel() === 0` antes da chamada (`:39`), chama `setActiveLocked(false, $admin, $then)` com um `$then` que lança (`:42-44`), confere que a exceção sobe com a mensagem dela (`:47`; `:45` reprova se ela não subir) e afirma pelo banco que `deactivated_at` e `deactivated_by` continuam nulos (`:51`). Numa worktree descartável com MySQL descartável (`DB_TESTE=container`), o **mutante d morreu** exatamente em `:51` (a linha ficou com `deactivated_at` preenchido e `deactivated_by = 1`). A observação Fix 8 (busca de clientes intermitente) está fechada pelo `fc7b73d`: os quatro clientes do `test_busca_trata_porcento_e_sublinhado_como_texto` nascem com `country = 'US'` e `document = null` (`tests/Feature/Nucleo/ClientServiceTest.php:505`), então a busca só casa pelo nome; **10 de 10** execuções seguidas verdes. Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8 local) **360 passed (2934 assertions)** na 1ª execução, typecheck, eslint, build, guard **1053 pass**, Playwright **68 passed**; `specs:check` e `validate_state.py` com exit 0. O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 13".
+
+**Date (rodada 13)**: 2026-10-09
+**Spec (rodada 13)**: `.specs/features/b1-nucleo/spec.md`, aprovada por Lucas Scholz em 09/10/2026 (sem mudança desde a rodada 10)
+**Diff range (rodada 13)**: `56139b2..fc7b73d`, dois commits só de teste: `7f65222` (Fix 7: `tests/Feature/Nucleo/SetActiveLockedTransacaoTest.php`, +53, arquivo novo) e `fc7b73d` (Fix 8: `tests/Feature/Nucleo/ClientServiceTest.php`, +3/−1)
+**Verifier (rodada 13)**: subagente independente (autor ≠ verifier), escopo focado nos Fix 7 e 8 da rodada 12
+
+## Rodada 12 (histórico): FAIL
+
+**Result (rodada 12)**: FAIL na rodada 12, por **um gap Minor, só de teste**. As duas correções do ciclo 5 da `wcj-code-review` estão no código. O CR-5-01 (`ba6ed33`) tem teste que discrimina: o `resendInvite` relê o alvo com `lockForUpdate` dentro do callback (`app/Platform/Services/UserService.php:83`), tira o `before` dessa linha (`:84`), emite a senha nela (`:85`) e manda o e-mail para o endereço dela (`:91`); o teste novo `tests/Feature/Nucleo/UserServiceTest.php:178-190` afirma a troca obrigatória gravada pela instância velha (`:186`), `changes` `{"must_change_password":[false,true]}` (`:187`) e a senha no e-mail do endereço do banco (`:189`). Os três mutantes do CR-5-01 (a, b, c) morreram, e o `UserDeadlockRepeteTest.php:89` continua verde sem as linhas de restauração da memória (e mata o mutante a). O que reprova é o CR-5-02 (`7487b53`): tirar a `DB::transaction` do `setActiveLocked` (`app/Platform/Models/Concerns/Deactivatable.php:138`), mutante d, **sobreviveu à suíte inteira** (359 passed, `DB_TESTE=container`). Uma sonda descartável sem `RefreshDatabase` (`DatabaseTruncation`), que chama o `setActiveLocked` fora de transação com um `$then` que lança, **passa no código e falha com o mutante** (a desativação fica gravada sem a auditoria): o mutante não é equivalente, e o G3 do chamado solto, que é a razão do CR-5-02, não tem prova. Hoje os seis chamadores abrem transação antes, por isso Minor. Correção barata, só teste (Fix 7). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8 local) **359 passed (2930 assertions)** na 2ª execução (a 1ª teve 1 falha intermitente fora do diff, `ClientServiceTest.php:508`, explicada em "Gate (rodada 12)"), typecheck, eslint, build, guard **1053 pass**, Playwright **68 passed**. Detalhe na seção "Rodada 12".
 
 **Date (rodada 12)**: 2026-10-09
 **Spec (rodada 12)**: `.specs/features/b1-nucleo/spec.md`, aprovada por Lucas Scholz em 09/10/2026 (sem mudança desde a rodada 10)
@@ -104,6 +113,7 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | 10 (focada nas correções dos ciclos 3 e 4 da code review, CR-4-02) | `7b96b12` | **FAIL** | 1 mutante sobrevivente, fora da lista pedida: g2, sem a guarda `DB::transactionLevel() > 0` do `RetriesDeadlock.php:40` (repetir dentro de transação aberta por quem chamou), que o código afirma e nenhum teste prova. As 14 mutações das famílias a–j mortas; 15 linhas de AC com evidência; PHP 357 passed (container), e2e 68 passed, guard 1053 | Fix 6, só teste |
 | 11 (focada no Fix 6 da rodada 10) | `7c228a8` | **PASS** | g2 morto por `tests/Feature/Nucleo/UserDeadlockRepeteTest.php:154` (o teste novo `:146-163`: 1213 sobe, 1 tentativa, nada gravado, 0 `updated`); h e f continuam mortos; PHP 358 passed (MySQL 8 local), e2e 68 passed, guard 1053 | - |
 | 12 (focada nas correções do ciclo 5 da code review) | `7487b53` | **FAIL** | 1 mutante sobrevivente: d, `setActiveLocked` sem a `DB::transaction` (`Deactivatable.php:138`), 359 passed na suíte inteira; sonda sem `RefreshDatabase` prova que não é equivalente (G3 do chamado solto sem teste). CR-5-01 com evidência: a, b, c mortos por `UserServiceTest.php:178` (e a também por `UserDeadlockRepeteTest.php:89`); PHP 359 passed (MySQL 8 local, 2ª execução; 1ª com 1 falha intermitente fora do diff), e2e 68 passed, guard 1053 | Fix 7, só teste |
+| 13 (focada nos Fix 7 e 8 da rodada 12) | `fc7b73d` | **PASS** | d morto por `tests/Feature/Nucleo/SetActiveLockedTransacaoTest.php:51` (o teste novo `:35-52`: fora de transação, `$then` que lança, exceção sobe, `deactivated_at`/`deactivated_by` nulos no banco); busca de clientes 10/10 com os quatro clientes sem documento (Fix 8); PHP 360 passed (MySQL 8 local, 1ª execução), e2e 68 passed, guard 1053 | - |
 
 ---
 
@@ -125,14 +135,109 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | Ciclos 3 e 4 da code review (`e9b2731..7b96b12`) | ⚠️ Conferidos na rodada 10, com 1 gap | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 10)", sensor 14/15 (g2 sobreviveu: Fix 6) |
 | Fix 6 da rodada 10 (`7c228a8`) | ✅ Conferido na rodada 11 | Sem tarefa `T52+`, como os ciclos: o commit cita o Fix 6 e o mutante g2. "Done when" do Fix 6 verdadeiro: o caso passa e o g2 morre |
 | Ciclo 5 da code review (`ba6ed33`, `7487b53`) | ⚠️ Conferido na rodada 12, com 1 gap | Sem tarefa `T52+`, como os ciclos anteriores: cada commit cita o achado `CR-5-nn`. CR-5-01 com teste que discrimina; CR-5-02 sem teste (mutante d, Fix 7) |
+| Fix 7 e Fix 8 da rodada 12 (`7f65222`, `fc7b73d`) | ✅ Conferidos na rodada 13 | Sem tarefa `T52+`, como os ciclos: cada commit cita o Fix e a rodada 12. "Done when" do Fix 7 verdadeiro: o caso passa no HEAD e o mutante d morre. Fix 8: 10/10 |
 | T35 | ✅ Done | `ClientProjects` só aparece no texto histórico da T5 em `tasks.md`; `AGENTS.md:110,158`, `docs/escopo.md:79,91` e `design.md:192` falam do `ClientManagement` |
 
+`tasks.md` (rodada 13): igual à rodada 12, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos Fix 7 e 8 não toca o arquivo).
 `tasks.md` (rodada 12): igual à rodada 11, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff do ciclo 5 não toca o arquivo).
 `tasks.md` (rodada 11): igual à rodada 10, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o `7c228a8` não toca o arquivo).
 `tasks.md` (rodada 10): igual à rodada 9, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos 3 e 4 não toca o arquivo).
 `tasks.md` (rodada 9): igual à rodada 8, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos não toca o arquivo).
 `tasks.md` (rodada 8): 51 tarefas `### T`, 175 caixas marcadas, 0 abertas.
 `tasks.md` (rodada 6): 36 tarefas `### T`, 134 caixas marcadas, 0 abertas. Na rodada 5: 35 tarefas, 131 caixas; na rodada 4: 31 tarefas, 115 caixas.
+
+---
+
+## Rodada 13 (focada nos Fix 7 e 8 da rodada 12)
+
+Escopo: o Fix 7 da rodada 12 (o `setActiveLocked` chamado fora de transação, mutante d) e a observação Fix 8 (a busca de clientes intermitente). Nenhum arquivo de produção mudou desde `7487b53`: os ACs, o sensor do CR-5-01 e as decisões da rodada 12 continuam como registrados abaixo.
+
+### O diff só toca testes
+
+`git diff 56139b2..fc7b73d --stat`: 2 arquivos, +56/−1.
+
+| Commit | Arquivo | O quê |
+|---|---|---|
+| `7f65222` (Fix 7) | `tests/Feature/Nucleo/SetActiveLockedTransacaoTest.php` (+53, novo) | `test_chamado_fora_de_transacao_desfaz_a_gravacao_quando_o_then_falha` (`:35-52`), com `DatabaseTruncation` + `UsaBancoDeVerdade` (`:21`), `exigirBancoDeVerdade()` (`:25`) e `limparOQueFicou()` (`:31`), no molde do `TravaDeleteIfUnusedTest` |
+| `fc7b73d` (Fix 8) | `tests/Feature/Nucleo/ClientServiceTest.php` (+3/−1) | os quatro clientes do `test_busca_trata_porcento_e_sublinhado_como_texto` nascem com `'country' => 'US', 'document' => null` (`:505`), com o comentário do porquê (`:502-503`) |
+
+### Spec-anchored (rodada 13)
+
+| Comportamento | Esperado (Fix 7 da rodada 12; G3; docblock de `Deactivatable.php:129-131`) | `file:line` + assertion | Result |
+|---|---|---|---|
+| G3 no `setActiveLocked` chamado solto (CR-5-02): gravar e auditar num commit só, sem depender de quem chama | fora de transação, um `$then` que falha sobe e desfaz a desativação | `tests/Feature/Nucleo/SetActiveLockedTransacaoTest.php:39` `assertSame(0, DB::transactionLevel())` antes da chamada; `:42-44` `setActiveLocked(false, $admin, fn → throw new RuntimeException('a auditoria falhou'))`; `:45` `fail('A exceção do $then não subiu.')` se voltar; `:47` `assertSame('a auditoria falhou', $e->getMessage())`; `:50` `assertSame(0, DB::transactionLevel())` depois; `:51` `assertDatabaseHas('clients', ['id' => …, 'deactivated_at' => null, 'deactivated_by' => null])`. Código: `Deactivatable.php:138` (`DB::transaction`), `:145` (`save`), `:148` (`$then`) | ✅ (mutante d morto) |
+| CR-1-18, busca com `%` e `_` como texto, sem a jogada do CNPJ aleatório (Fix 8) | `'a_b'` casa só `a_b`; `'100%'` casa só `Promoção 100%`, em toda execução | `tests/Feature/Nucleo/ClientServiceTest.php:505` (os quatro sem documento, país `US`: o `clients_document_br_check` só exige documento para BR), asserções inalteradas em `:510-511`. **10/10** execuções seguidas de `--filter=test_busca_trata_porcento_e_sublinhado_como_texto` no MySQL 8 local, cada uma `1 passed (2 assertions)` | ✅ |
+
+O `fail()` de `:45` lança `AssertionFailedError`, que não é `RuntimeException`: se o `$then` não fosse chamado (cliente já inativo, `return false`) ou se a exceção fosse engolida, o teste reprova em vez de passar pelo `catch`. O `assertDatabaseHas` com `null` vira `whereNull` no Laravel: afirma as duas colunas nulas pelo banco, depois de a transação do próprio método ter sido desfeita. A classe não usa `RefreshDatabase`, então a transação que decide é a do `setActiveLocked`.
+
+**Status (rodada 13)**: a linha que era GAP na rodada 12 tem evidência; a busca deixou de ser intermitente. 0 GAP, 0 spec-precision gap novo.
+
+### Sensor (rodada 13)
+
+Worktree descartável do HEAD `fc7b73d` no diretório temporário da sessão, fora do repositório (`git worktree add --detach`), `vendor` copiado da árvore real, nenhum `.env*` lido nem copiado; `php artisan config:clear`. `DB_TESTE=container php artisan test --filter=SetActiveLockedTransacaoTest` (MySQL 8.4 descartável por execução). **Sem mutação: 1 passed (4 assertions)**. Mutante: troca exata por script (uma ocorrência de cada ponta, conferida no `git diff`: 2 linhas), a mesma execução, `git checkout` do arquivo e `git status --porcelain` da worktree vazio.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| d | `Deactivatable.php:138` | `setActiveLocked` sem a `DB::transaction`, corpo mantido: `return DB::transaction(function () use (…) {` → `return (function () use (…) {` e `});` → `})();` | ✅ morto (1 failed, 4 assertions) | `SetActiveLockedTransacaoTest.php:35`, em `:51`: a linha ficou com `"deactivated_at": "2026-10-09 15:06:37"` e `"deactivated_by": 1` (a desativação gravada sem a auditoria) |
+
+**Sensor depth**: focado (o comportamento do Fix 7). **Resultado**: 1/1 morto. ✅ O Fix 8 não tem mutante: é estabilidade de teste, provada pelas 10 execuções.
+
+Isolamento: `git status --porcelain` da árvore real antes de tudo e depois de `git worktree remove --force` + `git worktree prune`, os dois vazios e iguais (`diff` sem diferença); `git worktree list` igual ao de antes (`diff` sem diferença: as cinco worktrees de antes).
+
+Ambiente: o container `wcj-hub-mysql-1` caiu por memória (exit 137) durante o sensor com o MySQL descartável, como nas rodadas 9 a 12; voltou com `docker start` (healthy) antes do gate, que rodou todo no banco local.
+
+### Gate (rodada 13, árvore real, HEAD `fc7b73d`)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (MySQL 8 local na 3306; `config:clear` antes) | **360 passed (2934 assertions)**, 0 failed, 0 skipped, 50,9 s, exit 0, na 1ª execução |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` (eslint) | exit 0, sem aviso |
+| `npm run build` | `✓ built in 3.17s`, exit 0 |
+| `npm run test:guard` | **1053 pass**, 0 fail, 0 skipped |
+| e2e (`npm run e2e:prepare` exit 0; `npm run e2e:serve` na 8000, livre antes; `npx playwright test`) | **68 passed** (1.8 min), 0 failed. Servidor morto depois (PID da 8000), porta livre |
+
+Antes (rodada 12): 359 PHP (2930 assertions). Agora: **+1 PHP** (o teste do Fix 7, +4 assertions). e2e igual (68). Nenhum teste removido.
+
+### Code Quality (rodada 13)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ Um teste novo no molde do `TravaDeleteIfUnusedTest` e uma linha de fixture no teste da busca |
+| No scope creep | ✅ Nenhum arquivo de produção, migração, Policy ou ability |
+| Matches patterns | ✅ `DatabaseTruncation` + `UsaBancoDeVerdade` + `limparOQueFicou`, como os outros testes de transação de verdade; `try`/`fail`/`catch` como o `UserDeadlockRepeteTest` |
+| Spec-anchored outcome check | ✅ Afirma exatamente o "Done when" do Fix 7: nível 0, exceção sobe, `deactivated_at` e `deactivated_by` nulos no banco |
+| Comportamento declarado com prova | ✅ O docblock de `Deactivatable.php:129-131` ("the save and the audit never split in two") agora tem teste que o discrimina (d) |
+| Every test maps to a requirement | ✅ O teste cita o CR-5-02 e o Fix 7 (`SetActiveLockedTransacaoTest.php:14-17`); o comentário do Fix 8 cita a rodada 12 (`ClientServiceTest.php:502-503`) |
+| Guidelines | `.ai/core/especificacao.md` §5; `.ai/core/testes.md` §10 e §11 |
+
+### Declared Deviations (rodada 13)
+
+- Nenhum novo. Continuam, sem reprovar, os da rodada 10 (e da 9).
+- `grep -rn SPEC_DEVIATION app resources tests`: vazio.
+
+### Saída dos validadores (rodada 13)
+
+Rodados depois de escrever este relatório:
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+validate_state: 0 error(s) across [b1-nucleo]           (exit 0)
+
+$ npm run specs:check
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none, esperado: só documentos)
+validate_tasks: 0 error(s), 2 warning(s)
+[b1-nucleo] validate_state.py: ok
+conferir-specs: 1 feature(s), 0 problema(s)             (exit 0)
+```
+
+### Lições (`.specs/lessons.json`), rodada 13
+
+Rodada PASS sem sinal novo (nenhum mutante sobrevivente, nenhum spec-precision gap, nenhum `SPEC_DEVIATION`, gate verde na 1ª execução): pela `references/lessons.md`, **nenhuma lição gravada**. A L-013 e a L-014 (candidatas da rodada 12) foram aplicadas aqui e os testes que pedem fecharam os dois pontos, mas a promoção a `confirmed` só vem pela recorrência em outra feature, e `penalize` é só para lição confirmada que falhou. `.specs/LESSONS.md` não foi editado à mão.
+
+- `lessons.py status`: `14 total | confirmed=0 candidate=14 quarantined=0` (igual à rodada 12).
 
 ---
 
