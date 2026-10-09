@@ -122,10 +122,11 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 | `useListVisit` | `hooks/use-list-visit.ts` | carregando e erro só das visitas GET de uma lista (busca, filtro, página) |
 | `ShowInactiveToggle` | `components/show-inactive-toggle.tsx` | a chave "Mostrar desativados" das listas (F1 §05) |
 | `AlphanumericCnpjInput` | `components/ui/masked-input.tsx` | CNPJ alfanumérico com máscara, maiúsculo (N5) |
-| `deactivation()` | `lib/situation.ts` | "em DD/MM/AAAA por Fulano" da situação, nas três tabelas |
+| `deactivation()`, `situation()` | `lib/situation.ts` | "em DD/MM/AAAA por Fulano" e "Ativo" / "Desativado em…" / "Anonimizado", nas três tabelas e nos formulários |
 | `StatusPill` `kind="contact"` e `kind="audit"` | `components/status-pill.tsx` | ativo / desativado / anonimizado do contato; ok / negado da auditoria |
 | `DataTable` `rowClassName` | `components/data-table.tsx` | linha negada em destaque na auditoria |
-| `RowActions` `busy` | `components/row-actions.tsx` | trava os botões e sinaliza a linha enquanto a ação dela roda |
+| `RowActions` `busy` e `disabled` | `components/row-actions.tsx` | `busy`: esta linha roda (desabilita, esmaece, `aria-busy`); `disabled`: outra linha roda (só desabilita) |
+| `useRowAction` | `hooks/use-row-action.ts` | a única trava de clique duplo das ações de linha: `post`/`del` ignoram o clique enquanto qualquer ação de linha roda (uma visita não-GET cancelaria a outra no Inertia 2), `isBusy(row)`/`isLocked(row)` alimentam o `RowActions`, `busy` é o `loading` dos `ConfirmDialog` |
 | `SearchInput` | `components/search-input.tsx` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
 
 ## Como rodar
@@ -223,6 +224,9 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Telefone de contato: texto como foi digitado (com o "+"), sem máscara do Brasil; a busca compara só os dígitos (D3 da review do B1).
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
+- Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
+- Unique do banco em gravação simultânea: o trait `App\Platform\Services\Concerns\RefusesDuplicates` (`writeOrRefuseDuplicate`), que vira `ValidationException` só quando o índice violado é o esperado e relança o resto. Nunca `catch (UniqueConstraintViolationException)` solto.
+- Busca por texto: `App\Support\Like::contains()`; nunca `"%{$termo}%"` à mão.
 
 ## Armadilhas que já custaram tempo
 

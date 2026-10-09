@@ -105,7 +105,7 @@ Abordagens consideradas para o ponto que não é óbvio, a negação auditada (s
 | Policy | Regras (F1 §09) |
 | --- | --- |
 | `UserPolicy` (alterada) | `viewAny`, `create`, `update`, `deactivate`, `reactivate`, `resendInvite`: admin. `delete`: admin e não a si mesmo. `viewChoiceList`: admin e gestor |
-| `ClientPolicy` (nova) | `viewAny`, `view`, `create`: admin e gestor. `update`: admin, ou gestor que gere o cliente. `deactivate`: admin, nunca a WCJ. `reactivate`, `delete`: admin. `viewChoiceList`: admin e gestor |
+| `ClientPolicy` (nova) | `viewAny`, `view`, `create`: admin e gestor. `update`: admin, ou gestor que gere o cliente. `deactivate` e `delete`: admin, nunca a WCJ (a mesma recusa no `ClientService`, D14). `reactivate`: admin. `viewChoiceList`: admin e gestor |
 | `ContactPolicy` (nova) | `viewAny`: admin e gestor (a lista do gestor é filtrada pelos clientes dele). `create(Client)`, `update`: admin, ou gestor que gere o cliente do contato. `deactivate`, `reactivate`, `delete`, `anonymize`: admin. Contato anonimizado: `update`, `reactivate`, `anonymize` negam |
 | `AuditLogPolicy` (nova) | `viewAny`: admin. Substitui o gate `view-audit-logs` |
 

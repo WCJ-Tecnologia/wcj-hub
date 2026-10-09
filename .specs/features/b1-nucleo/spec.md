@@ -1,6 +1,6 @@
 # B1 Núcleo: usuários, clientes, contatos e auditoria — Specification
 
-Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.0 (aprovado em 06/10/2026), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.txt`](../../../docs/banco.txt) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
+Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.2 (aprovado em 06/10/2026; v1.1 de 08/10 e v1.2 de 09/10 com as decisões das reviews), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.txt`](../../../docs/banco.txt) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
 
 **Approved by**: Lucas Scholz, 2026-10-09
 
@@ -54,7 +54,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 | Aviso de e-mail repetido no contato | Mensagem na tela depois do envio, sem recusar; a resposta do servidor inclui `warning` quando existe outro contato ativo com o mesmo e-mail. Nome e cliente do outro contato só para o Administrador; quem não é Administrador recebe "Já existe um contato com este e-mail" (D2, 07/10) | N8 "avisa, sem recusar"; F1 §09 (o gestor não vê contato de cliente que não é dele) | y |
 | CNPJ alfanumérico | 14 caracteres, letras maiúsculas e números, com os dois últimos dígitos verificadores calculados pela regra do CNPJ alfanumérico (Receita, jul/2026); gravado sem máscara; comparado sem caixa pela colation do banco | N5; evita aceitar lixo e evita recusar o CNPJ novo | y |
 | País | Lista ISO 3166-1 alfa-2, rótulo em português; padrão `BR` | `clients.country char(2)` | y |
-| Cliente WCJ não desativável | `ClientPolicy::deactivate` recusa o cliente semeado (documento `38614817000122`) com 403; `ClientService::update` recusa trocar o país ou o documento dela com "O CNPJ e o país da WCJ não podem ser alterados" (o nome continua editável) | F1 §10.3 (06/10); A2 da review de 07/10: sem isso, editar o CNPJ tirava a proteção | y |
+| Cliente WCJ não desativável nem excluível | `ClientPolicy::deactivate` e `ClientPolicy::delete` recusam o cliente semeado (documento `38614817000122`) com 403, e `ClientService::deactivate` e `::delete` recusam com `DomainException` quem chama o Service direto (D14, 09/10); `ClientService::update` recusa trocar o país ou o documento dela com "O CNPJ e o país da WCJ não podem ser alterados" (o nome continua editável) | F1 §10.3 (06/10); A2 da review de 07/10: sem isso, editar o CNPJ tirava a proteção | y |
 | Anonimizar limpa `audit_logs.changes` | Numa transação: `name`, `email`, `phone` da linha e os mesmos campos dentro de `changes` de toda linha de `audit_logs` cujo `auditable` é o contato; grava `anonymized` sem dados | N12 e `banco.txt` (contacts) | y |
 | Página de 50 na auditoria, período padrão 7 dias | Como o F1 §03 e §05 | Decisão do funcional | y |
 | Mensagens de recusa em português, na linguagem do usuário | Textos do F1 §04 e §07 | `especificacao.md` §6 | y |
