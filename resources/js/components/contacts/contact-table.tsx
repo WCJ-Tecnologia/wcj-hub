@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { DataTable, type Column } from '@/components/data-table';
 import { StatusPill } from '@/components/status-pill';
-import { deactivation } from '@/lib/situation';
+import { deactivation, situation } from '@/lib/situation';
 import { cn } from '@/lib/utils';
 
 export interface ContactRow {
@@ -25,10 +25,6 @@ export interface ContactRow {
 }
 
 export const contactStatus = (row: ContactRow) => (row.anonymized ? 'anonymized' : row.active);
-
-/** "Ativo", "Anonimizado" ou "Desativado em DD/MM/AAAA por Fulano". */
-export const contactSituation = (row: ContactRow) =>
-    row.anonymized ? 'Anonimizado' : row.active ? 'Ativo' : `Desativado ${deactivation(row)}`;
 
 // Desativado e anonimizado ficam em cinza (F1 §03).
 const muted = (row: ContactRow) => cn(!row.active && 'text-muted-foreground');
@@ -100,7 +96,7 @@ export function ContactTable({
                         </div>
                         <StatusPill kind="contact" status={contactStatus(row)} size="sm" />
                     </div>
-                    {!row.active && !row.anonymized && <p className="mt-2 text-xs text-muted-foreground">{contactSituation(row)}</p>}
+                    {!row.active && !row.anonymized && <p className="mt-2 text-xs text-muted-foreground">{situation(row)}</p>}
                     {actions(row, true)}
                 </>
             )}

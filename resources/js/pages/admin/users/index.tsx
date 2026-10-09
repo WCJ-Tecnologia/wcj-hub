@@ -12,10 +12,11 @@ import { ShowInactiveToggle } from '@/components/show-inactive-toggle';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { ROLE, UserFormDialog, type UserFormData } from '@/components/users/user-form-dialog';
-import { situation, UserTable, type UserRow } from '@/components/users/user-table';
+import { UserTable, type UserRow } from '@/components/users/user-table';
 import { useListVisit } from '@/hooks/use-list-visit';
 import { useRowAction } from '@/hooks/use-row-action';
 import AppLayout from '@/layouts/app-layout';
+import { situation } from '@/lib/situation';
 import type { Paginated, SharedProps } from '@/types';
 
 interface Props {

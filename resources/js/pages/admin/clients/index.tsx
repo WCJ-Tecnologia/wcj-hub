@@ -3,7 +3,7 @@ import { Building2, History, Pencil, Plus, Power, RotateCcw, Trash2 } from 'luci
 import { useState, type FormEvent } from 'react';
 
 import { BRASIL, ClientFormDialog, type ClientFormData, type Country } from '@/components/clients/client-form-dialog';
-import { ClientTable, situation, type ClientRow } from '@/components/clients/client-table';
+import { ClientTable, type ClientRow } from '@/components/clients/client-table';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
 import { ListBody } from '@/components/list-body';
@@ -16,6 +16,7 @@ import { Select } from '@/components/ui/select';
 import { useListVisit } from '@/hooks/use-list-visit';
 import { useRowAction } from '@/hooks/use-row-action';
 import AppLayout from '@/layouts/app-layout';
+import { situation } from '@/lib/situation';
 import type { Paginated, SharedProps } from '@/types';
 
 interface Props {

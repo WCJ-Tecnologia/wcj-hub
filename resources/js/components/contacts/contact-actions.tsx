@@ -5,9 +5,10 @@ import { useState, type FormEvent } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { AnonymizeContactDialog } from '@/components/contacts/anonymize-contact-dialog';
 import { ContactFormDialog, type ContactFormData } from '@/components/contacts/contact-form-dialog';
-import { contactSituation, type ContactRow } from '@/components/contacts/contact-table';
+import { type ContactRow } from '@/components/contacts/contact-table';
 import { RowActions } from '@/components/row-actions';
 import { useRowAction } from '@/hooks/use-row-action';
+import { situation } from '@/lib/situation';
 import type { SharedProps } from '@/types';
 
 const EMPTY: ContactFormData = { name: '', email: '', phone: '' };
@@ -122,7 +123,7 @@ export function useContactActions() {
                 form={form}
                 editing={editing !== null}
                 clientName={(editing ? editing.client_name : newFor?.name) ?? ''}
-                situation={editing ? contactSituation(editing) : null}
+                situation={editing ? situation(editing) : null}
                 onSubmit={submit}
             />
 
