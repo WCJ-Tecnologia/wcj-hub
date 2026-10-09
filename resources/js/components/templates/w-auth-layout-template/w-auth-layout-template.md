@@ -6,7 +6,7 @@ Template · `templates/w-auth-layout-template/w-auth-layout-template.tsx` · sto
 
 A tela dividida das páginas sem login (login, esqueci a senha, nova senha, primeiro acesso):
 
-- **desktop:** painel da marca à esquerda (logo, nome, aviso de acesso restrito e rodapé com o ano) e o conteúdo à direita;
+- **desktop:** painel da marca à esquerda (logo completo na versão `fundo-escuro`, nome, aviso de acesso restrito e rodapé com o ano) e o conteúdo à direita. O fundo leva o padrão de nós (recorte) no canto superior direito, cortado pela borda e longe do texto: sem brilho nem desfoque, como manda o Brand Board;
 - **celular:** só o conteúdo, com o logo pequeno no canto.
 
 Ele já põe o `<Head title>`. O `<h1>` fica no conteúdo da página.

@@ -112,7 +112,13 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 - **Morph map** (`AppServiceProvider::registerMorphMap`, `enforceMorphMap`): `audit_logs.auditable_type` guarda o alias (`user`, `task`…), não o nome da classe.
 - **Passport 13** instalado (tabelas e chaves), com as rotas `/oauth/*` desligadas até o B8 (`Passport::ignoreRoutes`). `laravel/mcp` entra no B8.
 - **Parâmetros** em `config/hub.php` + `.env` (T5); não há tabela de configurações.
-- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token.
+- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token. Marca no front pelo ADR-004:
+  - dois azuis: `bg-primary` (`#1A6CF3`) em botão e foco, `text-primary-text` (`#0F4FC4`) em texto e link, nunca `text-primary`;
+  - cantos de 5 px;
+  - logo só pelo `WBrandLogoAtom`, com os SVG oficiais em `public/brand/`, que não se redesenham;
+  - eyebrow, rótulo e número em Space Mono;
+  - padrão de nós só no painel do login;
+  - e-mail com hex inline da marca (`resources/views/components/mail-layout.blade.php`).
 - **Front em Atomic Design** (ADR-003, diverge do `.ai/stacks/ui.md` e do `laravel-inertia.md`, que ainda citam `components/ui/`, `layouts/` e o Select nativo):
   - primitivos do shadcn planos em `resources/js/components/shadcn/`; o `components.json` aponta para lá e o primitivo novo entra por `npm run shadcn -- add <nome>`;
   - componentes do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-<nome>-<nível>/`, cada um com `.tsx`, `.md` (manual) e `.stories.tsx` quando há o que ver;

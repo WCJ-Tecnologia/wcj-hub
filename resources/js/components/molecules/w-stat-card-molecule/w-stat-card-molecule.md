@@ -6,6 +6,8 @@ Molécula · `molecules/w-stat-card-molecule/w-stat-card-molecule.tsx` · story 
 
 Indicador do dashboard: rótulo, número grande, ícone num quadrado colorido, dica opcional e barra de progresso opcional. É feito sobre o `Card` do shadcn.
 
+O número segue o "número como prova" do Brand Board: Space Mono, azul de texto (`text-primary-text`), algarismos tabulares. O tom `primary` do ícone é o tint da marca (`bg-accent`), com o ícone azul.
+
 ## Props
 
 | Prop        | Tipo                                                              | Padrão      | Obrigatória | Para quê                                                             |

@@ -3,6 +3,10 @@
  * template não libera origem externa (design/README.md). Os nomes batem com fonts.* do
  * design/tokens.json. Pesos que existem: Hanken Grotesk 400/600/700 (corpo), Space Grotesk
  * 400/500/700 (títulos), Space Mono 400/700 (rótulos e dados).
+ *
+ * Faixas de peso (ADR-004): o peso pedido que não tem arquivo cai no arquivo da faixa, nunca
+ * em negrito sintético. font-medium (500) usa a SemiBold da Hanken (antes caía no 400);
+ * font-semibold e font-extrabold usam a Bold da Space Grotesk e da Space Mono.
  */
 @font-face {
     font-family: 'Hanken Grotesk';
@@ -14,14 +18,14 @@
 @font-face {
     font-family: 'Hanken Grotesk';
     src: url('/fonts/HankenGrotesk-SemiBold.ttf') format('truetype');
-    font-weight: 600;
+    font-weight: 500 600;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: 'Hanken Grotesk';
     src: url('/fonts/HankenGrotesk-Bold.ttf') format('truetype');
-    font-weight: 700;
+    font-weight: 700 900;
     font-style: normal;
     font-display: swap;
 }
@@ -42,7 +46,7 @@
 @font-face {
     font-family: 'Space Grotesk';
     src: url('/fonts/SpaceGrotesk-Bold.ttf') format('truetype');
-    font-weight: 700;
+    font-weight: 600 900;
     font-style: normal;
     font-display: swap;
 }
@@ -56,7 +60,7 @@
 @font-face {
     font-family: 'Space Mono';
     src: url('/fonts/SpaceMono-Bold.ttf') format('truetype');
-    font-weight: 700;
+    font-weight: 600 900;
     font-style: normal;
     font-display: swap;
 }

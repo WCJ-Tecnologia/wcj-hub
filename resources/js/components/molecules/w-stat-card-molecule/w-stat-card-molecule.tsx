@@ -7,7 +7,7 @@ export type WStatCardTone = 'default' | 'pending' | 'approved' | 'rejected' | 'p
 
 const TONES: Record<WStatCardTone, string> = {
     default: 'bg-muted text-muted-foreground',
-    primary: 'bg-primary/12 text-primary',
+    primary: 'bg-accent text-accent-foreground',
     pending: 'bg-status-pending-bg text-status-pending',
     approved: 'bg-status-approved-bg text-status-approved',
     rejected: 'bg-status-rejected-bg text-status-rejected',
@@ -39,7 +39,8 @@ export function WStatCardMolecule({ label, value, hint, icon: Icon, tone = 'defa
                 )}
             </div>
 
-            <p className="mt-2 font-heading text-2xl font-bold tracking-tight">{value}</p>
+            {/* Número como prova (Brand Board): Space Mono, azul. */}
+            <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-primary-text tabular-nums">{value}</p>
 
             {progress !== undefined && (
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">

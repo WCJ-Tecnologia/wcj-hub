@@ -6,6 +6,8 @@ Molécula · `molecules/w-empty-state-molecule/w-empty-state-molecule.tsx` · st
 
 Estado vazio de listagem ou painel: ícone num círculo, título, explicação e, opcionalmente, a ação que resolve o vazio ("Novo usuário").
 
+O círculo segue a regra de ícone com fundo da marca: ícone azul sobre o tint `#E9F1FE` (`bg-accent text-accent-foreground`). Sem padrão de nós aqui, por decisão (ADR-004).
+
 **Use** como `emptyState` do `WDataTableOrganism` ou quando um painel não tem dados.
 
 ## Props

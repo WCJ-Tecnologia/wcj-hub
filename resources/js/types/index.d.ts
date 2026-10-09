@@ -54,10 +54,8 @@ export interface Option {
 }
 
 export interface AppBrand {
-    /** Client identity shown in the shell (APP_BRAND_NAME). */
+    /** Brand name shown in the shell (APP_BRAND_NAME). The logo files are fixed in WBrandLogoAtom. */
     name: string;
-    /** Path under public/ (APP_BRAND_LOGO). */
-    logo: string;
 }
 
 export interface AppInfo {

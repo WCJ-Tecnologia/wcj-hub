@@ -1,9 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
-import { History, LayoutDashboard, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { History, LayoutDashboard, PanelLeftClose, UserRound, Users, type LucideIcon } from 'lucide-react';
 
 import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-logo-atom';
 import { WProductWordmarkAtom } from '@/components/atoms/w-product-wordmark-atom/w-product-wordmark-atom';
 import { Avatar, AvatarFallback } from '@/components/shadcn/avatar';
+import { Button } from '@/components/shadcn/button';
 import {
     Sidebar,
     SidebarContent,
@@ -68,7 +69,7 @@ export interface WAppSidebarOrganismProps {
  */
 export function WAppSidebarOrganism({ nav = NAV }: WAppSidebarOrganismProps) {
     const { url, props } = usePage<SharedProps>();
-    const { setOpenMobile } = useSidebar();
+    const { isMobile, setOpenMobile } = useSidebar();
     const user = props.auth.user;
 
     if (!user) return null;
@@ -76,14 +77,36 @@ export function WAppSidebarOrganism({ nav = NAV }: WAppSidebarOrganismProps) {
     const isActive = (href: string) => url === href || url.startsWith(href + '/') || url.startsWith(href + '?');
 
     return (
-        <Sidebar data-slot="w-app-sidebar-organism" collapsible="icon" className="border-r-0">
+        <Sidebar data-slot="w-app-sidebar-organism" collapsible="icon" className="border-sidebar-border">
             <SidebarHeader className="h-[4.25rem] flex-row items-center border-b border-sidebar-border px-4 text-white group-data-[collapsible=icon]:px-2">
-                {/* Recolhido, mostra só o começo do logo (o símbolo), no tamanho de um ícone. */}
+                {/* Aberto: logo horizontal (desenho de 16 a 40 px). Recolhido (3rem): o símbolo inteiro, regra da marca para pouco espaço. */}
                 <WBrandLogoAtom
-                    showText={false}
+                    variant="horizontal"
+                    surface="dark"
+                    size="md"
                     href="/admin/dashboard"
-                    className="overflow-hidden group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:justify-start"
+                    className="group-data-[collapsible=icon]:hidden"
                 />
+                <WBrandLogoAtom
+                    variant="symbol"
+                    surface="dark"
+                    size="xs"
+                    href="/admin/dashboard"
+                    className="mx-auto hidden group-data-[collapsible=icon]:flex"
+                />
+                {/* Gaveta do celular: o Sidebar do shadcn esconde o X padrão do Sheet, então o fechar fica aqui. */}
+                {isMobile && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setOpenMobile(false)}
+                        aria-label="Fechar menu"
+                        className="ml-auto size-9 text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    >
+                        <PanelLeftClose aria-hidden />
+                    </Button>
+                )}
             </SidebarHeader>
 
             <SidebarContent className="scrollbar-slim">
@@ -98,7 +121,7 @@ export function WAppSidebarOrganism({ nav = NAV }: WAppSidebarOrganismProps) {
 
                         return (
                             <SidebarGroup key={group.title}>
-                                <SidebarGroupLabel className="text-2xs font-semibold tracking-[0.16em] text-sidebar-foreground/75 uppercase">
+                                <SidebarGroupLabel className="font-mono text-2xs tracking-[0.16em] text-sidebar-foreground/75 uppercase">
                                     {group.title}
                                 </SidebarGroupLabel>
                                 <SidebarGroupContent>

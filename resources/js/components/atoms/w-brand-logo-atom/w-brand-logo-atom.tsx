@@ -1,44 +1,67 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 
 import { cn } from '@/lib/utils';
-import type { SharedProps } from '@/types';
 
-export type WBrandLogoSize = 'sm' | 'md' | 'lg';
+/** Versão do desenho. Regra da marca pela altura do desenho: completo ≥ 40 px, horizontal de 16 a 40 px, símbolo abaixo de 16 px. */
+export type WBrandLogoVariant = 'full' | 'horizontal' | 'symbol';
 
-const IMAGE_SIZE: Record<WBrandLogoSize, string> = {
-    sm: 'h-7 max-w-[10rem]',
-    md: 'h-8 max-w-[11rem]',
-    lg: 'h-11 max-w-[14rem]',
+/** Fundo onde o logo fica. `auto` acompanha o tema (classe .dark no <html>). */
+export type WBrandLogoSurface = 'light' | 'dark' | 'auto';
+
+export type WBrandLogoSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+
+/** Altura da imagem. Os SVG já trazem a área de proteção (o raio de um nó em volta), então o desenho é menor que a caixa. */
+const HEIGHT: Record<WBrandLogoSize, string> = {
+    xs: 'h-5',
+    sm: 'h-6',
+    md: 'h-7',
+    lg: 'h-10',
+    xl: 'h-14',
 };
 
+/** Arquivos oficiais, copiados sem alteração de docs/brand/logo/ (a marca proíbe redesenhar ou recolorir). */
+const FILES: Record<WBrandLogoVariant, { light: string; dark: string }> = {
+    full: { light: '/brand/wcj-logo-fundo-claro.svg', dark: '/brand/wcj-logo-fundo-escuro.svg' },
+    horizontal: { light: '/brand/wcj-logo-horizontal-fundo-claro.svg', dark: '/brand/wcj-logo-horizontal-fundo-escuro.svg' },
+    symbol: { light: '/brand/wcj-simbolo-azul.svg', dark: '/brand/wcj-simbolo-azul-claro.svg' },
+};
+
+const ALT = 'WCJ Tecnologia';
+
 export interface WBrandLogoAtomProps {
-    className?: string;
-    /** Mostra o nome da marca ao lado da imagem. */
-    showText?: boolean;
+    variant?: WBrandLogoVariant;
+    surface?: WBrandLogoSurface;
     size?: WBrandLogoSize;
     /** Destino do link; `false` renderiza sem link. Padrão: `/`. */
     href?: string | false;
+    className?: string;
 }
 
 /**
- * The client's logo, read from the shared `app.brand` props (APP_BRAND_NAME and
- * APP_BRAND_LOGO in .env). Swap public/brand/logo.svg for the real file.
+ * Logo da WCJ nos arquivos oficiais de public/brand/. Escolha a versão pela
+ * altura e o fundo pela superfície: `dark` na sidebar e no painel do login,
+ * `auto` sobre a página (troca com o tema).
  */
-export function WBrandLogoAtom({ className, showText = true, size = 'md', href }: WBrandLogoAtomProps) {
-    const { brand } = usePage<SharedProps>().props.app;
+export function WBrandLogoAtom({ variant = 'horizontal', surface = 'auto', size = 'md', href, className }: WBrandLogoAtomProps) {
+    const files = FILES[variant];
+    const image = cn('w-auto max-w-none shrink-0', HEIGHT[size]);
 
-    // `className` goes on the outermost element: a hidden inner span would leave
+    // Em `auto`, as duas versões vão para o DOM e o tema esconde uma (display: none sai da árvore de acessibilidade).
+    const inner =
+        surface === 'auto' ? (
+            <>
+                <img src={files.light} alt={ALT} className={cn(image, 'dark:hidden')} />
+                <img src={files.dark} alt={ALT} className={cn(image, 'hidden dark:block')} />
+            </>
+        ) : (
+            <img src={files[surface]} alt={ALT} className={image} />
+        );
+
+    // `className` goes on the outermost element: a hidden inner image would leave
     // a visible, nameless link behind (axe: link-name).
-    const inner = (
-        <>
-            <img src={brand.logo} alt={brand.name} className={cn('w-auto shrink-0 object-contain object-left', IMAGE_SIZE[size])} />
-            {showText && <span className="truncate text-sm font-bold tracking-tight">{brand.name}</span>}
-        </>
-    );
-
     if (href === false) {
         return (
-            <span data-slot="w-brand-logo-atom" className={cn('flex min-w-0 shrink-0 items-center gap-2.5', className)}>
+            <span data-slot="w-brand-logo-atom" className={cn('flex shrink-0 items-center', className)}>
                 {inner}
             </span>
         );
@@ -49,7 +72,7 @@ export function WBrandLogoAtom({ className, showText = true, size = 'md', href }
             data-slot="w-brand-logo-atom"
             href={href ?? '/'}
             className={cn(
-                'flex min-w-0 shrink-0 items-center gap-2.5 rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
+                'flex shrink-0 items-center rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
                 className,
             )}
         >

@@ -10,11 +10,13 @@ O menu lateral do backoffice, montado sobre o **Sidebar do shadcn** (`shadcn/sid
 - **Recolhido:**
     - cada item mostra o nome num tooltip à direita;
     - os títulos dos grupos somem;
-    - o logo fica só no símbolo (os primeiros 32 px da imagem);
+    - o logo troca do horizontal para o símbolo da marca (`WBrandLogoAtom variant="symbol"`), pela regra de tamanho;
     - o rodapé vira as iniciais do usuário.
-- **Celular e tablet (< 1024 px):** vira uma gaveta (`Sheet`, Radix), com trava de foco, ESC e retorno do foco ao botão que abriu. Fecha sozinha ao navegar.
+- **Celular e tablet (< 1024 px):** vira uma gaveta (`Sheet`, Radix), com trava de foco, ESC e retorno do foco ao botão que abriu. Fecha sozinha ao navegar. Fecha pelo botão "Fechar menu" (X no cabeçalho, só na gaveta), pelo ESC, tocando fora ou ao navegar.
 
 A navegação é **declarada em dado** (`NAV`, no mesmo arquivo). Cada item pode ter `visible(abilities)`, e um grupo sem item visível some.
+
+Os títulos de grupo são rótulos em Space Mono (Brand Board). O logo aberto é o horizontal na versão `fundo-escuro`.
 
 ## Props
 

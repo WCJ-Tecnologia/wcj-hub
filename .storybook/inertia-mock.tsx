@@ -12,7 +12,7 @@ import { action } from 'storybook/actions';
 import type { SharedProps } from '@/types';
 
 export const SHARED_PROPS: SharedProps = {
-    app: { name: 'WCJ Hub', brand: { name: 'WCJ Tecnologia', logo: '/brand/logo.svg' } },
+    app: { name: 'WCJ Hub', brand: { name: 'WCJ Hub' } },
     auth: {
         user: {
             id: 1,

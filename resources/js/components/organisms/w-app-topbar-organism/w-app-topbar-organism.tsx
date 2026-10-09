@@ -32,11 +32,11 @@ export function WAppTopbarOrganism() {
     return (
         <header
             data-slot="w-app-topbar-organism"
-            className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md lg:px-6"
+            className="sticky top-0 z-30 flex h-[4.25rem] items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md lg:px-6"
         >
             <SidebarTrigger className="size-9" aria-label="Abrir ou fechar o menu" />
 
-            <WBrandLogoAtom showText={false} size="sm" className="lg:hidden" href="/admin/dashboard" />
+            <WBrandLogoAtom variant="horizontal" surface="auto" size="sm" className="lg:hidden" href="/admin/dashboard" />
             <p className="hidden min-w-0 flex-1 truncate text-sm font-medium text-muted-foreground lg:block">{brand.name}</p>
             <span className="flex-1 lg:hidden" />
 

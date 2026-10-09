@@ -60,7 +60,7 @@ export function WDataTableOrganism<Row>({
                                     key={column.key}
                                     scope="col"
                                     className={cn(
-                                        'h-auto px-4 py-3 text-xs font-semibold tracking-wide whitespace-normal text-muted-foreground uppercase',
+                                        'h-auto px-4 py-3 font-mono text-xs tracking-wide whitespace-normal text-muted-foreground uppercase',
                                         column.className,
                                     )}
                                 >

@@ -7,18 +7,51 @@ const meta = {
     component: WBrandLogoAtom,
     tags: ['autodocs'],
     argTypes: {
-        size: { control: 'inline-radio', options: ['sm', 'md', 'lg'] },
-        showText: { control: 'boolean' },
+        variant: { control: 'inline-radio', options: ['full', 'horizontal', 'symbol'] },
+        surface: { control: 'inline-radio', options: ['light', 'dark', 'auto'] },
+        size: { control: 'inline-radio', options: ['xs', 'sm', 'md', 'lg', 'xl'] },
         href: { control: 'text', description: 'Destino do link. Use `false` (aba Code) para renderizar sem link.' },
     },
-    args: { size: 'md', showText: true, href: '/admin/dashboard' },
-    parameters: { docs: { description: { component: 'Logo e nome da marca, lidos de `app.brand` (APP_BRAND_NAME, APP_BRAND_LOGO).' } } },
+    args: { variant: 'horizontal', surface: 'auto', size: 'md', href: '/admin/dashboard' },
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Logo da WCJ nos arquivos oficiais. Versão pela altura (completo ≥ 40 px, horizontal 16–40 px, símbolo < 16 px); `surface` escolhe a cor para o fundo.',
+            },
+        },
+    },
 } satisfies Meta<typeof WBrandLogoAtom>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ComNome: Story = {};
-export const SoLogo: Story = { args: { showText: false } };
-export const Grande: Story = { args: { size: 'lg' } };
-export const SemLink: Story = { args: { href: false } };
+/** Sobre a página: troca de cor com o tema (barra do Storybook). */
+export const HorizontalNaPagina: Story = {};
+
+/** Painel do login: logo completo sobre o ink da sidebar. */
+export const CompletoNoEscuro: Story = {
+    args: { variant: 'full', surface: 'dark', size: 'xl', href: false },
+    decorators: [
+        (Story) => (
+            <div className="rounded-md bg-sidebar p-6">
+                <Story />
+            </div>
+        ),
+    ],
+};
+
+/** Sidebar recolhida: só o símbolo. */
+export const SimboloNoEscuro: Story = {
+    args: { variant: 'symbol', surface: 'dark', size: 'xs' },
+    decorators: [
+        (Story) => (
+            <div className="rounded-md bg-sidebar p-4">
+                <Story />
+            </div>
+        ),
+    ],
+};
+
+/** Logo completo sobre a página (troca com o tema). */
+export const CompletoNaPagina: Story = { args: { variant: 'full', surface: 'auto', size: 'xl', href: false } };

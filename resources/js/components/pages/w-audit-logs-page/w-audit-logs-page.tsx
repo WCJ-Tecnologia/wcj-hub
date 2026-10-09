@@ -149,13 +149,13 @@ export function WAuditLogsPage({ logs, filters, actionOptions }: WAuditLogsPageP
                             <div className="space-y-4">
                                 {selected.outcome === 'denied' && <Badge variant="warning">Tentativa negada</Badge>}
                                 <div>
-                                    <p className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Antes</p>
+                                    <p className="mb-1 font-mono text-xs tracking-wide text-muted-foreground uppercase">Antes</p>
                                     <pre className="scrollbar-slim max-h-56 overflow-auto rounded-lg bg-muted p-3 font-mono text-xs">
                                         {JSON.stringify(side(selected, 0), null, 2)}
                                     </pre>
                                 </div>
                                 <div>
-                                    <p className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">Depois</p>
+                                    <p className="mb-1 font-mono text-xs tracking-wide text-muted-foreground uppercase">Depois</p>
                                     <pre className="scrollbar-slim max-h-56 overflow-auto rounded-lg bg-muted p-3 font-mono text-xs">
                                         {JSON.stringify(side(selected, 1), null, 2)}
                                     </pre>

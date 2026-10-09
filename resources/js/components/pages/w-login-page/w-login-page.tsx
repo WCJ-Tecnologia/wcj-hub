@@ -68,7 +68,7 @@ export function WLoginPage() {
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                         <Label htmlFor="password">Senha</Label>
-                        <Link href="/admin/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                        <Link href="/admin/forgot-password" className="text-xs font-medium text-primary-text hover:underline">
                             Esqueci minha senha
                         </Link>
                     </div>

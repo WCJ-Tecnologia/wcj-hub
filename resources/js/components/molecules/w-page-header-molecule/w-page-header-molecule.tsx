@@ -23,7 +23,13 @@ export function WPageHeaderMolecule({ eyebrow, title, subtitle, actions, classNa
             className={cn('mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}
         >
             <div className="min-w-0">
-                {eyebrow && <p className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{eyebrow}</p>}
+                {eyebrow && (
+                    // Eyebrow técnico da marca: Space Mono maiúsculo, azul, com o fio fino abrindo a seção.
+                    <p className="mb-1.5 flex items-center gap-2 font-mono text-xs tracking-wider text-primary-text uppercase">
+                        <span className="h-px w-6 bg-primary-text" aria-hidden />
+                        {eyebrow}
+                    </p>
+                )}
                 <h1 className="truncate font-heading text-xl font-bold tracking-tight sm:text-2xl">{title}</h1>
                 {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
             </div>

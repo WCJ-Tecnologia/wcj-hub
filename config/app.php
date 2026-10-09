@@ -20,17 +20,16 @@ return [
     | Brand
     |--------------------------------------------------------------------------
     |
-    | What the shell shows as the client's identity. The logo is a path under
-    | public/. Both are shared with the front by HandleInertiaRequests as
-    | `app.brand` and rendered by the BrandLogo component.
+    | What the shell shows as the brand name, shared with the front by
+    | HandleInertiaRequests as `app.brand`. The Hub is WCJ-only: the official
+    | logo files live in public/brand/ and are picked by WBrandLogoAtom (ADR-004).
     |
     */
 
     'brand' => [
         'name' => env('APP_BRAND_NAME', env('APP_NAME', 'ai-systems')),
-        'logo' => env('APP_BRAND_LOGO', '/brand/logo.svg'),
         // Cor da barra do navegador no celular. Combine com o token sidebar do design/tokens.json.
-        'theme_color' => env('APP_THEME_COLOR', '#111827'),
+        'theme_color' => env('APP_THEME_COLOR', '#0C0E13'),
     ],
 
     /*

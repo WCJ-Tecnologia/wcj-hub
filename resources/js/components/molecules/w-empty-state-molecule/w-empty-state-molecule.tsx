@@ -17,7 +17,7 @@ export function WEmptyStateMolecule({ title, description, icon, action }: WEmpty
             data-slot="w-empty-state-molecule"
             className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 px-6 py-14 text-center"
         >
-            <div className="mb-4 grid size-12 place-items-center rounded-full bg-muted text-muted-foreground">
+            <div className="mb-4 grid size-12 place-items-center rounded-full bg-accent text-accent-foreground">
                 {icon ?? <Inbox className="size-5" />}
             </div>
             <h3 className="font-heading text-base font-semibold">{title}</h3>

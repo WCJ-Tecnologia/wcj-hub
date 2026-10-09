@@ -10,7 +10,7 @@ export interface WAuthBackLinkAtomProps {
 export function WAuthBackLinkAtom({ href, children }: WAuthBackLinkAtomProps) {
     return (
         <p data-slot="w-auth-back-link-atom" className="mt-6 text-center text-sm text-muted-foreground">
-            <Link href={href} className="font-medium text-primary hover:underline">
+            <Link href={href} className="font-medium text-primary-text hover:underline">
                 {children}
             </Link>
         </p>
