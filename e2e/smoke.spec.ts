@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { deleteContactsNamed } from './helpers/dados';
 import { AdminPage } from './pages/admin.page';
 
 const SCREENS = [
@@ -82,24 +83,29 @@ async function openNewContact(admin: AdminPage) {
 
 /**
  * Cria um contato na ficha da WCJ, abre o diálogo de anonimizar dele, roda o axe e, no fim,
- * cancela e exclui o contato: o banco do e2e não fica com sobra.
+ * cancela e exclui o contato pela tela. Se o teste cair no meio, o finally apaga pelo nome: o
+ * banco do e2e não fica com sobra.
  */
 async function withAnonymizeDialog(admin: AdminPage, check: () => Promise<void>) {
     const name = `E2E Contato ${Date.now()}`;
-    await openNewContact(admin);
-    await admin.dialog.getByLabel('Nome').fill(name);
-    await admin.dialog.getByRole('button', { name: 'Criar contato' }).click();
-    await expect(admin.dialog).toBeHidden();
+    try {
+        await openNewContact(admin);
+        await admin.dialog.getByLabel('Nome').fill(name);
+        await admin.dialog.getByRole('button', { name: 'Criar contato' }).click();
+        await expect(admin.dialog).toBeHidden();
 
-    await admin.page.getByRole('button', { name: `Anonimizar ${name}` }).click();
-    await expect(admin.dialog).toBeVisible();
-    await expect(admin.dialog.getByText('Digite ANONIMIZAR para confirmar.')).toBeVisible();
-    await check();
+        await admin.page.getByRole('button', { name: `Anonimizar ${name}` }).click();
+        await expect(admin.dialog).toBeVisible();
+        await expect(admin.dialog.getByText('Digite ANONIMIZAR para confirmar.')).toBeVisible();
+        await check();
 
-    await admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
-    await admin.page.getByRole('button', { name: `Excluir ${name}` }).click();
-    await admin.dialog.getByRole('button', { name: 'Excluir' }).click();
-    await expect(admin.page.getByText(name)).toHaveCount(0);
+        await admin.dialog.getByRole('button', { name: 'Cancelar' }).click();
+        await admin.page.getByRole('button', { name: `Excluir ${name}` }).click();
+        await admin.dialog.getByRole('button', { name: 'Excluir' }).click();
+        await expect(admin.page.getByText(name)).toHaveCount(0);
+    } finally {
+        deleteContactsNamed(name);
+    }
 }
 
 test('@smoke o modal de contato passa no axe', async ({ page, axe }) => {

@@ -50,3 +50,20 @@ export function deleteClient(id: number): void {
 export function deactivateClient(id: number): void {
     tinker(`App\\Platform\\Models\\Client::query()->whereKey(${id})->update(['deactivated_at' => now()]);`);
 }
+
+/**
+ * Apaga o cliente com este documento (sem máscara, como gravado) e os contatos dele. Não faz nada
+ * quando não existe: serve de limpeza em finally, depois de o teste já ter excluído pela tela.
+ */
+export function deleteClientByDocument(document: string): void {
+    tinker(`
+        $ids = App\\Platform\\Models\\Client::query()->where('document', ${JSON.stringify(document)})->pluck('id');
+        App\\Platform\\Models\\Contact::query()->whereIn('client_id', $ids)->delete();
+        App\\Platform\\Models\\Client::query()->whereKey($ids)->delete();
+    `);
+}
+
+/** Apaga os contatos com este nome. Não faz nada quando não existem (limpeza em finally). */
+export function deleteContactsNamed(name: string): void {
+    tinker(`App\\Platform\\Models\\Contact::query()->where('name', ${JSON.stringify(name)})->delete();`);
+}
