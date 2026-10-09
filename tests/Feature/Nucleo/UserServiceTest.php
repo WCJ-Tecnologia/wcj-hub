@@ -485,6 +485,31 @@ class UserServiceTest extends TestCase
         $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
     }
 
+    // CR-4-03: o papel também vem do banco. A Bia, carregada como desenvolvedora, foi promovida
+    // por outra instância e ficou como a única administradora ativa: a instância velha não a
+    // desativa, não a exclui nem a rebaixa.
+    public function test_ultimo_admin_carregado_antes_da_promocao_nao_se_desativa_exclui_nem_rebaixa(): void
+    {
+        $bia = User::factory()->developer()->create(['daily_hours' => '8']);
+        $velha = User::query()->findOrFail($bia->id);
+        $this->service->update($bia->fresh(), ['role_id' => RoleEnum::ADMIN->value, 'name' => $bia->name, 'email' => $bia->email], $this->admin);
+        $this->service->deactivate($this->admin->fresh(), $bia->fresh());
+        $rebaixar = ['role_id' => RoleEnum::PROJECT_MANAGER->value, 'name' => $bia->name, 'email' => $bia->email];
+
+        foreach ([
+            'desativar' => fn () => $this->service->deactivate($velha, $this->admin),
+            'excluir' => fn () => $this->service->delete($velha, $this->admin),
+            'alterar o papel' => fn () => $this->service->update($velha, $rebaixar, $this->admin),
+        ] as $action => $attempt) {
+            $this->assertThrows($attempt, DomainException::class, "Este é o último administrador ativo. Promova outra pessoa antes de {$action}.");
+        }
+
+        $linha = $bia->fresh();
+        $this->assertTrue($linha->isAdmin());
+        $this->assertTrue($linha->isActive());
+        $this->assertSame(1, AuditLog::query()->where('action', 'deactivated')->count());
+    }
+
     // CR-2-01: desativar um administrador trava primeiro os administradores ativos e só depois a
     // linha do alvo, na mesma ordem de update e delete. Com a ordem invertida, a Ana desativando
     // a Bia e a Bia desativando a Ana ao mesmo tempo entram em deadlock (1213) e uma recebe 500.
