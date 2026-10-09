@@ -105,30 +105,18 @@ class ClientService
             throw new DomainException(ClientPolicy::WCJ_NOT_DEACTIVATABLE);
         }
 
-        DB::transaction(function () use ($client, $actor) {
-            // Decide, grava e audita pela linha travada, não pela instância em memória (CR-1-15, CR-3-01).
-            $locked = Client::query()->lockForUpdate()->findOrFail($client->getKey());
-            if (! $locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(false, $actor)->save();
+        // Decide, grava e audita pela linha travada, não pela instância em memória (CR-1-15, CR-3-01).
+        DB::transaction(fn () => $client->setActiveLocked(false, $actor, function (Client $locked) use ($actor) {
             $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
-        });
+        }));
     }
 
     public function reactivate(Client $client, User $actor): void
     {
-        DB::transaction(function () use ($client, $actor) {
-            // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
-            $locked = Client::query()->lockForUpdate()->findOrFail($client->getKey());
-            if ($locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(true, $actor)->save();
+        // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
+        DB::transaction(fn () => $client->setActiveLocked(true, $actor, function (Client $locked) use ($actor) {
             $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
-        });
+        }));
     }
 
     /** G2: só cliente sem contato e sem projeto; o resto se desativa. */

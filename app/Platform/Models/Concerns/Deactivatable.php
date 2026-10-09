@@ -124,6 +124,31 @@ trait Deactivatable
     }
 
     /**
+     * Activates or deactivates by the locked row, never by the instance in memory: two clicks or
+     * two people write one change, and an old instance does not record a change that did not
+     * happen (CR-1-15, CR-2-06, CR-3-01). Call inside the write's transaction, so the lock lasts
+     * until the commit. Returns false, writing nothing, when the row is already in that state.
+     *
+     * @param  (Closure(static): void)|null  $then  runs with the locked row after the save (audit, side effects)
+     */
+    public function setActiveLocked(bool $active, User $actor, ?Closure $then = null): bool
+    {
+        $locked = static::query()->lockForUpdate()->findOrFail($this->getKey());
+
+        if ($locked->isActive() === $active) {
+            return false;
+        }
+
+        $locked->setActive($active, $actor)->save();
+
+        if ($then !== null) {
+            $then($locked);
+        }
+
+        return true;
+    }
+
+    /**
      * Deletes for real only a record without history. The row stays locked
      * from the check to the delete, so no history can land in between.
      * Returns false, deleting nothing, when there is history.

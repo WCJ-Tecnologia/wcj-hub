@@ -140,34 +140,22 @@ class UserService
             // Na ordem inversa, dois admins que se desativam um ao outro entram em deadlock (CR-2-01).
             $this->ensureNotLastActiveAdmin($user, 'desativar');
 
-            // Decide, grava e audita pela linha travada, não pela instância em memória: dois
-            // cliques ou dois admins não gravam duas desativações (CR-1-15), e a instância velha
-            // "desativada" não audita uma desativação que não houve (CR-3-01).
-            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
-            if (! $locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(false, $actor)->save();
-            $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
-            $this->revokeAiAuthorizations($locked, $actor);
-            $this->sessions->terminateOthers($locked);
+            // Decide, grava e audita pela linha travada (CR-1-15, CR-3-01).
+            $user->setActiveLocked(false, $actor, function (User $locked) use ($actor) {
+                $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
+                $this->revokeAiAuthorizations($locked, $actor);
+                $this->sessions->terminateOthers($locked);
+            });
         });
     }
 
     /** As conexões de IA não voltam: a pessoa reconecta (IA6). */
     public function reactivate(User $user, User $actor): void
     {
-        $this->transactionRetryingDeadlock(function () use ($user, $actor) {
-            // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
-            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
-            if ($locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(true, $actor)->save();
+        // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
+        $this->transactionRetryingDeadlock(fn () => $user->setActiveLocked(true, $actor, function (User $locked) use ($actor) {
             $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
-        });
+        }));
     }
 
     /** G2: só quem nunca entrou e não é referenciado; o resto se desativa. */

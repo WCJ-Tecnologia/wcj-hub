@@ -99,30 +99,20 @@ class ContactService
     /** N11: sai das listas de escolha; o card que já o cita continua citando. */
     public function deactivate(Contact $contact, User $actor): void
     {
-        DB::transaction(function () use ($contact, $actor) {
-            // Pela linha travada (CR-1-15): o anonimizado já está desativado e não ganha outra linha.
-            // Grava e audita por ela também, não pela instância em memória (CR-3-01).
-            $locked = $this->lockedForWrite($contact);
-            if (! $locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(false, $actor)->save();
+        // Pela linha travada (CR-1-15): o anonimizado já está desativado e não ganha outra linha.
+        // Grava e audita por ela também, não pela instância em memória (CR-3-01).
+        DB::transaction(fn () => $contact->setActiveLocked(false, $actor, function (Contact $locked) use ($actor) {
             $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
-        });
+        }));
     }
 
     public function reactivate(Contact $contact, User $actor): void
     {
         DB::transaction(function () use ($contact, $actor) {
-            $locked = $this->lockedNotAnonymized($contact);
-
-            if ($locked->isActive()) {
-                return;
-            }
-
-            $locked->setActive(true, $actor)->save();
-            $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
+            // Anonimizado não volta (D5): recusa pela linha travada antes de decidir.
+            $this->lockedNotAnonymized($contact)->setActiveLocked(true, $actor, function (Contact $locked) use ($actor) {
+                $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
+            });
         });
     }
 
