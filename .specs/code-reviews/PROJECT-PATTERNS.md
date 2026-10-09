@@ -67,8 +67,8 @@
 
 ### DA-02 — Listas de escolha (NUC-13) sem rota JSON; o B2 entrega como props
 - **Motivo:** D6 do `design.md` ("sem fetch direto: tudo via Inertia")
-- **Origem:** design aprovado pelo Cauã; **pendente a palavra do Lucas** (CR-1-05)
-- **Implica:** se aceita, o AC 3 passa a valer no nível da Policy; o B2 precisa chamar `authorize('viewChoiceList')` antes de `choiceList()`
+- **Origem:** design aprovado pelo Cauã; **aceita pelo Lucas em 09/10/2026** como desvio da spec (D13 do design; CR-1-05)
+- **Implica:** o P2 AC 3 vale no nível da Policy; `choiceList(User $viewer)` confere `viewChoiceList` dentro do Service por `AuditService::inspectFor()` e audita a negação. O B2 não precisa chamar `authorize('viewChoiceList')` antes: o Service já o faz. Não apontar "falta rota JSON" nem "AC 3 sem rota"
 
 ### DA-03 — Rotas em inglês, abilities `view_clients`/`view_contacts`/`view_audit_logs`, `delete_records` e `reset_passwords` por `isAdmin()`
 - **Motivo:** D4 e D5 do Lucas, 07/10
@@ -81,6 +81,20 @@
 - **Implica:** não apontar "singleton vaza entre requisições"
 
 ---
+
+### DA-05 — CR-1-01 (reenviar convite derruba sessões) sai em PR próprio, não no PR #5
+- **Motivo:** toca autenticação (inegociável 5); decisão do Lucas Scholz em 09/10/2026 (D15 do design)
+- **Origem:** ciclo 1, CR-1-01; branch `fix/reenviar-convite-derruba-sessoes` a partir da `main`, PR [WCJ-Tecnologia/wcj-hub#7](https://github.com/WCJ-Tecnologia/wcj-hub/pull/7), aberto e sem merge
+- **Implica:** na branch `feat/b1-nucleo` o `UserService::resendInvite` continua sem `terminateOthers` de propósito; o status do CR-1-01 nos ciclos seguintes é "tratado em PR próprio (#7), fora desta branch", não "não resolvido" nem "regressão". Ao integrar os dois PRs, a chamada vai para dentro da transação do `resendInvite` (nota "Atenção ao mergear" do #7). Quem marca o achado de segurança como corrigido é o Lucas, depois do merge e da implantação
+
+### DA-06 — Trava do Service é a mesma da Policy para a WCJ (desativar e excluir)
+- **Motivo:** decisão do Lucas Scholz em 09/10/2026 (D14 do design; CR-1-04): a regra "a WCJ não pode ser excluída" fica na Policy e no Service, como a de desativar
+- **Origem:** ciclo 1; spec Clientes AC 10 e F1 §04 v1.2
+- **Implica:** não apontar como "trava que ninguém pediu"
+
+### DA-07 — Decisões pendentes do Lucas (não são achados novos)
+- **Origem:** ciclo 1: CR-1-11 (prazo da senha provisória: a spec cita regra que o template não tem; prazo pede coluna ou leitura da auditoria), CR-1-12 (`min="0.25"` da carga diária na tela × `gt:0` no servidor), CR-1-23 (índice da auditoria por `created_at`: migração)
+- **Implica:** reverificar o status ("❌ Não resolvido, aguarda decisão"), sem reabrir como achado novo nem subir a criticidade; D16 do design
 
 ## Falsos positivos
 
