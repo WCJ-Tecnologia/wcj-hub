@@ -499,8 +499,10 @@ class ClientServiceTest extends TestCase
     // CR-1-18 do ciclo 1: "%" e "_" digitados na busca são texto, não curinga.
     public function test_busca_trata_porcento_e_sublinhado_como_texto(): void
     {
+        // Sem documento: a busca também compara o termo sem máscara ("a_b" vira "AB", "100%" vira
+        // "100") com o CNPJ, e o CNPJ aleatório da factory às vezes o contém (Fix 8 da rodada 12).
         foreach (['a_b', 'aXb', 'Promoção 100%', 'Promoção 1000'] as $name) {
-            Client::factory()->create(['name' => $name]);
+            Client::factory()->create(['name' => $name, 'country' => 'US', 'document' => null]);
         }
         $names = fn (string $search) => collect($this->service->paginate(['search' => $search, 'country' => null, 'show_inactive' => false])->items())
             ->pluck('name')->all();
