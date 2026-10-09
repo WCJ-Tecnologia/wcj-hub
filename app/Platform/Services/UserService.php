@@ -6,6 +6,7 @@ use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\User;
+use App\Platform\Services\Concerns\RefusesDuplicates;
 use App\Support\Like;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -20,11 +21,16 @@ use Illuminate\Validation\ValidationException;
  */
 class UserService
 {
+    use RefusesDuplicates;
+
     public const DAILY_HOURS_REQUIRED = 'Carga diária é obrigatória para Desenvolvedor';
 
     public const EMAIL_TAKEN = 'Este e-mail já está em uso.';
 
     public const ALREADY_USED = 'Usuário já usado: desative em vez de excluir';
+
+    // O nome do índice unique de users.email; a mensagem do MySQL o cita (key 'users.users_email_unique').
+    private const EMAIL_UNIQUE = 'users_email_unique';
 
     public function __construct(
         private readonly AuditService $audit,
@@ -42,25 +48,21 @@ class UserService
     {
         $this->ensureDailyHours($data);
 
-        try {
-            [$user, $plain] = DB::transaction(function () use ($data, $actor) {
-                $user = new User([
-                    'role_id' => (int) $data['role_id'],
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'daily_hours' => $data['daily_hours'] ?? null,
-                    'ai_write_allowed' => (bool) ($data['ai_write_allowed'] ?? true),
-                ]);
-                // users.password é not null: a senha provisória nasce junto com a linha.
-                $plain = $this->passwords->issue($user);
-                $this->audit->log(AuditActionEnum::CREATED, $user, null, $this->snapshot($user), $actor->id);
+        // Dois convites do mesmo e-mail ao mesmo tempo: os dois passaram pela validação.
+        [$user, $plain] = $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($data, $actor) {
+            $user = new User([
+                'role_id' => (int) $data['role_id'],
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'daily_hours' => $data['daily_hours'] ?? null,
+                'ai_write_allowed' => (bool) ($data['ai_write_allowed'] ?? true),
+            ]);
+            // users.password é not null: a senha provisória nasce junto com a linha.
+            $plain = $this->passwords->issue($user);
+            $this->audit->log(AuditActionEnum::CREATED, $user, null, $this->snapshot($user), $actor->id);
 
-                return [$user, $plain];
-            });
-        } catch (UniqueConstraintViolationException) {
-            // Dois convites do mesmo e-mail ao mesmo tempo: os dois passaram pela validação.
-            throw ValidationException::withMessages(['email' => self::EMAIL_TAKEN]);
-        }
+            return [$user, $plain];
+        }), $this->emailTaken(...));
 
         return ['user' => $user, 'mailed' => $this->passwords->send($user, $plain, isReset: false)];
     }
@@ -89,35 +91,31 @@ class UserService
     {
         $this->ensureDailyHours($data);
 
-        try {
-            DB::transaction(function () use ($user, $data, $actor) {
-                if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
-                    $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
-                }
+        // O FormRequest confere o e-mail antes; outra gravação do mesmo e-mail pode entrar no meio.
+        $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($user, $data, $actor) {
+            if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
+                $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
+            }
 
-                $before = $this->snapshot($user);
+            $before = $this->snapshot($user);
 
-                $user->fill([
-                    'role_id' => (int) $data['role_id'],
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'daily_hours' => $data['daily_hours'] ?? null,
-                    ...(array_key_exists('ai_write_allowed', $data) ? ['ai_write_allowed' => (bool) $data['ai_write_allowed']] : []),
-                ]);
-                $revoke = $user->isDirty(['role_id', 'ai_write_allowed']);
-                $user->save();
+            $user->fill([
+                'role_id' => (int) $data['role_id'],
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'daily_hours' => $data['daily_hours'] ?? null,
+                ...(array_key_exists('ai_write_allowed', $data) ? ['ai_write_allowed' => (bool) $data['ai_write_allowed']] : []),
+            ]);
+            $revoke = $user->isDirty(['role_id', 'ai_write_allowed']);
+            $user->save();
 
-                $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user), $actor->id);
+            $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user), $actor->id);
 
-                // IA4, IA6: o token emitido valia para o papel e a marca antigos.
-                if ($revoke) {
-                    $this->revokeAiAuthorizations($user, $actor);
-                }
-            });
-        } catch (UniqueConstraintViolationException) {
-            // O FormRequest confere o e-mail antes; outra gravação do mesmo e-mail entrou no meio.
-            throw ValidationException::withMessages(['email' => self::EMAIL_TAKEN]);
-        }
+            // IA4, IA6: o token emitido valia para o papel e a marca antigos.
+            if ($revoke) {
+                $this->revokeAiAuthorizations($user, $actor);
+            }
+        }), $this->emailTaken(...));
     }
 
     /** N4, N11, IA6: perde o acesso agora, sessões e conexões de IA incluídas. */
@@ -214,6 +212,14 @@ class UserService
             ->get(['id', 'name', 'role_id', 'deactivated_at'])
             ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name, 'role' => $user->type()->slug()])
             ->all();
+    }
+
+    /** Só o unique do e-mail vira "já em uso"; outro unique relança a exceção original (CR-2-11). */
+    private function emailTaken(UniqueConstraintViolationException $e): ?ValidationException
+    {
+        return str_contains($e->getMessage(), self::EMAIL_UNIQUE)
+            ? ValidationException::withMessages(['email' => self::EMAIL_TAKEN])
+            : null;
     }
 
     /** @param  array<string, mixed>  $data */

@@ -12,12 +12,14 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
 use App\Platform\Services\SessionService;
+use App\Platform\Services\TemporaryPasswordService;
 use App\Platform\Services\UserService;
 use Database\Seeders\AiAssistantSeeder;
 use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +27,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use PDOException;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -638,6 +641,25 @@ class UserServiceTest extends TestCase
 
         $this->assertSame('bia@example.com', $bia->fresh()->email);
         $this->assertSame(0, AuditLog::query()->where('action', 'updated')->count());
+    }
+
+    // CR-2-11: só o unique do e-mail vira "Este e-mail já está em uso"; um unique que ninguém
+    // previu relança a exceção original em vez de virar mensagem errada no campo.
+    public function test_unique_que_nao_e_o_do_email_relanca_a_excecao_original(): void
+    {
+        $outro = new UniqueConstraintViolationException('mysql', 'insert into `users` …', [], new PDOException(
+            "SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'x' for key 'users.users_outro_unique'",
+        ));
+        $this->mock(TemporaryPasswordService::class)->shouldReceive('issue')->andThrow($outro);
+
+        try {
+            app(UserService::class)->invite($this->invitation(), $this->admin);
+            $this->fail('O convite passou.');
+        } catch (UniqueConstraintViolationException $e) {
+            $this->assertSame($outro, $e);
+        }
+
+        $this->assertSame(0, User::query()->where('email', 'maria@example.com')->count());
     }
 
     // CR-1-05 do ciclo 1, NUC-13 (Lista de escolha AC 3): a Policy vale dentro do Service.

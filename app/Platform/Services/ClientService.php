@@ -6,12 +6,12 @@ use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\User;
 use App\Platform\Policies\ClientPolicy;
+use App\Platform\Services\Concerns\RefusesDuplicates;
 use App\Rules\AlphanumericCnpj;
 use App\Support\Like;
 use App\Support\Paises;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent;
@@ -25,6 +25,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ClientService
 {
+    use RefusesDuplicates;
+
     public const ALREADY_USED = 'Cliente já usado: desative em vez de excluir';
 
     public const CNPJ_REQUIRED = 'Informe o CNPJ.';
@@ -69,16 +71,12 @@ class ClientService
     {
         $clean = $this->validated($data, null);
 
-        try {
-            return DB::transaction(function () use ($clean, $actor) {
-                $client = Client::query()->create($clean);
-                $this->audit->log(AuditActionEnum::CREATED, $client, null, $this->snapshot($client), $actor->id);
+        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($clean, $actor) {
+            $client = Client::query()->create($clean);
+            $this->audit->log(AuditActionEnum::CREATED, $client, null, $this->snapshot($client), $actor->id);
 
-                return $client;
-            });
-        } catch (UniqueConstraintViolationException $e) {
-            throw $this->duplicateRefusal($clean, null, $e);
-        }
+            return $client;
+        }), fn () => $this->duplicateRefusal($clean, null));
     }
 
     /** @param  array<string, mixed>  $data */
@@ -92,15 +90,11 @@ class ClientService
             throw new DomainException(self::WCJ_IDENTITY_LOCKED);
         }
 
-        try {
-            DB::transaction(function () use ($client, $clean, $actor) {
-                $before = $this->snapshot($client);
-                $client->fill($clean)->save();
-                $this->audit->log(AuditActionEnum::UPDATED, $client, $before, $this->snapshot($client), $actor->id);
-            });
-        } catch (UniqueConstraintViolationException $e) {
-            throw $this->duplicateRefusal($clean, $client, $e);
-        }
+        $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($client, $clean, $actor) {
+            $before = $this->snapshot($client);
+            $client->fill($clean)->save();
+            $this->audit->log(AuditActionEnum::UPDATED, $client, $before, $this->snapshot($client), $actor->id);
+        }), fn () => $this->duplicateRefusal($clean, $client));
     }
 
     /** N11: projeto aberto não impede; o cliente só sai das listas de escolha. */
@@ -239,19 +233,16 @@ class ClientService
     }
 
     /**
-     * Duas gravações do mesmo documento ao mesmo tempo passam as duas pelo validated(); o unique
-     * do banco barra a segunda, que volta como o mesmo erro de campo (CR-1-02), não como 500.
+     * O unique do país e documento barrou uma gravação que passou pelo validated(): relê e volta
+     * como o mesmo erro de campo. Nulo se o repetido não aparece (outro unique): relança o original.
      *
      * @param  array{name: string, country: string, document: string|null}  $clean
      */
-    private function duplicateRefusal(array $clean, ?Client $ignore, UniqueConstraintViolationException $e): ValidationException
+    private function duplicateRefusal(array $clean, ?Client $ignore): ?ValidationException
     {
         $duplicate = $this->duplicateMessage($clean, $ignore);
-        if ($duplicate === null) {
-            throw $e;
-        }
 
-        return ValidationException::withMessages(['document' => $duplicate]);
+        return $duplicate === null ? null : ValidationException::withMessages(['document' => $duplicate]);
     }
 
     private static function documentLabel(mixed $country): string
