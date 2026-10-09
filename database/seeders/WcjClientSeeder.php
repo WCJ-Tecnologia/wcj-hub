@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Platform\Models\Client;
+use App\Support\Paises;
 use Illuminate\Database\Seeder;
 
 /**
@@ -11,12 +12,10 @@ use Illuminate\Database\Seeder;
  */
 class WcjClientSeeder extends Seeder
 {
-    public const CNPJ = '38614817000122';
-
     public function run(): void
     {
         Client::query()->firstOrCreate(
-            ['country' => 'BR', 'document' => self::CNPJ],
+            ['country' => Paises::BRASIL, 'document' => Client::WCJ_CNPJ],
             ['name' => 'WCJ Tecnologia'],
         );
     }

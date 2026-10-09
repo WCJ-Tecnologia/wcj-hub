@@ -8,7 +8,7 @@
 | **Regras que alimentam** | Premissa de Projetos, P13 a P26, P39, P40, P52, P56; citadas: P7, P14, P16, P17, P45 (`docs/necessidade.md`). |
 | **Tabelas do `banco.txt`** | `tasks`, `task_stage_movements`, `task_priorities`, `task_types`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` (origem do retrabalho), `rework_reasons`, `contacts` e `contact_channels` (card de suporte). |
 | **Depende de** | [F1](f1-nucleo.md) (usuários, contatos) e [F2](f2-projeto-e-configuracao.md) (projeto, pessoas alocadas, colunas, áreas, tipos, motivos de retrabalho). |
-| **Quem aprova** | Rafael Garcia (dono de Projetos, D-GER-02). |
+| **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
 Neste documento, **"qualquer alocado"** quer dizer: o Administrador, o gestor do projeto e o Desenvolvedor alocado no projeto. Nada aqui trava o fluxo (premissa): as únicas recusas são de permissão e de dado inválido.
 

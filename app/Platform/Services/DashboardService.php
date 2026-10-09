@@ -35,7 +35,7 @@ class DashboardService
             ->map(fn (AuditLog $log) => [
                 'id' => $log->id,
                 'user' => $log->user?->name ?? 'Sistema',
-                'action_label' => AuditActionEnum::tryFrom($log->action)?->label() ?? $log->action,
+                'action_label' => AuditActionEnum::labelOf($log->action),
                 'entity' => $log->auditable_type,
                 'entity_id' => $log->auditable_id,
                 'created_at' => LocalTime::format($log->created_at),

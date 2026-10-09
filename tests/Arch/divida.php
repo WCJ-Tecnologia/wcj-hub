@@ -9,10 +9,7 @@ return [
         'app/Platform/Services/AuditService.php usa request()' => ['motivo' => 'o log de auditoria lê o IP da requisição corrente; decidir: exceção da regra ou contexto passado pelo controller', 'teto' => 1],
     ],
     'A6' => [
-        'app/Platform/Controllers/Admin/AuditLogController.php::index' => ['motivo' => 'filtros da listagem no controller (candidato a query dedicada)', 'teto' => 43],
         'app/Platform/Controllers/Admin/ProfileController.php::update' => ['motivo' => 'troca de dados e de senha no mesmo método', 'teto' => 40],
-        'app/Platform/Controllers/Admin/UserController.php' => ['motivo' => 'index com filtros e store com senha temporária no controller', 'teto' => 201],
-        'app/Platform/Controllers/Admin/UserController.php::index' => ['motivo' => 'filtros e mapeamento da listagem no controller', 'teto' => 51],
         'app/Platform/Controllers/Auth/NewPasswordController.php::store' => ['motivo' => 'fluxo do broker de senha do Laravel (código do starter kit)', 'teto' => 39],
     ],
 ];

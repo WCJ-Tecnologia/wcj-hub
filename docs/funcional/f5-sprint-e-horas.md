@@ -8,7 +8,7 @@
 | **Regras que alimentam** | N3, P27 a P31, P45, P46, P48 a P51 (`docs/necessidade.md`), com R5 e R9 da revisão de 01/10. A P47 saiu (R9). |
 | **Tabelas do `banco.txt`** | `sprints`, `tasks` (`sprint_id`, `estimated_hours`, `due_on`, `developer_id`), `time_entries`, `users` (`daily_hours`), `projects` (`sprint_days`). Leitura de `task_stage_movements` e `board_stages` (primeira entrada em desenvolvimento, etapa de pronto). |
 | **Depende de** | [F1](f1-nucleo.md) (carga diária), [F2](f2-projeto-e-configuracao.md) (duração padrão da sprint, etapas do quadro) e [F3](f3-quadro-e-card.md) (quadro, card, mover). |
-| **Quem aprova** | Rafael Garcia (gestor de projetos, D-GER-02). |
+| **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
 Fica fora deste bloco: mover card em geral e o diálogo de retrabalho (F3), e os indicadores somados por projeto e por pessoa, como previsto × realizado e atraso (F7).
 

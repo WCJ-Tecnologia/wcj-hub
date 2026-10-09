@@ -32,6 +32,29 @@ export function maskCnpj(value: string): string {
     return out;
 }
 
+/**
+ * CNPJ alfanumérico da Receita (N5): 12 letras ou números e 2 dígitos, AA.AAA.AAA/AAAA-00.
+ * O valor cru é maiúsculo e sem máscara, como o servidor grava.
+ */
+export function cnpjFromTyped(value: string): string {
+    return value
+        .replace(/[^0-9A-Za-z]/g, '')
+        .toUpperCase()
+        .slice(0, 14);
+}
+
+export function maskAlphanumericCnpj(value: string): string {
+    const raw = cnpjFromTyped(value);
+
+    let out = raw.slice(0, 2);
+    if (raw.length > 2) out += '.' + raw.slice(2, 5);
+    if (raw.length > 5) out += '.' + raw.slice(5, 8);
+    if (raw.length > 8) out += '/' + raw.slice(8, 12);
+    if (raw.length > 12) out += '-' + raw.slice(12, 14);
+
+    return out;
+}
+
 /** Picks CPF or CNPJ by length — useful where the user may be PF or PJ. */
 export function maskDocument(value: string): string {
     const digits = onlyDigits(value);

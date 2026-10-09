@@ -3,9 +3,11 @@
 namespace App\Platform\Models;
 
 use App\Mail\ResetPasswordMail;
+use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Concerns\Deactivatable;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -79,6 +81,20 @@ class User extends Authenticatable
     public function aiAuthorizations(): HasMany
     {
         return $this->hasMany(AiAuthorization::class);
+    }
+
+    /**
+     * "Último acesso" (F1 §03): o login mora na auditoria, não em coluna de users (seção 9).
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeWithLastLogin(Builder $query): void
+    {
+        $query->addSelect(['last_login_at' => AuditLog::query()
+            ->selectRaw('max(created_at)')
+            ->whereColumn('audit_logs.user_id', 'users.id')
+            ->where('action', AuditActionEnum::LOGIN->value),
+        ])->withCasts(['last_login_at' => 'datetime']);
     }
 
     public function type(): RoleEnum

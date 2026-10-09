@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, EyeOff, ShieldX, XCircle } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -21,15 +21,29 @@ type Entry = { tone: Tone; icon: ComponentType<{ className?: string }>; label: s
  */
 const USER: Record<string, Entry> = {
     active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
-    inactive: { tone: 'neutral', icon: XCircle, label: 'Inativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
+// F1 §02: a situação do cliente é Ativo ou Desativado (N11).
 const CLIENT: Record<string, Entry> = {
     active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
-    inactive: { tone: 'neutral', icon: XCircle, label: 'Inativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
 };
 
-const SETS = { user: USER, client: CLIENT };
+// F1 §02: Ativo, Desativado ou Anonimizado (N11, N12).
+const CONTACT: Record<string, Entry> = {
+    active: { tone: 'approved', icon: CheckCircle2, label: 'Ativo' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Desativado' },
+    anonymized: { tone: 'neutral', icon: EyeOff, label: 'Anonimizado' },
+};
+
+// F1 §03: o resultado da linha de auditoria é ok ou negado (G3).
+const AUDIT: Record<string, Entry> = {
+    success: { tone: 'approved', icon: CheckCircle2, label: 'Ok' },
+    denied: { tone: 'rejected', icon: ShieldX, label: 'Negado' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT };
 
 /**
  * Status is never communicated by colour alone — every pill carries an icon and

@@ -8,7 +8,7 @@
 | **Regras que alimentam** | G1, G7, P1, P2, P3, P5, P7, P8, P10, P11, P12, P15, P18, P40, P46 e a premissa de Projetos (`docs/necessidade.md`). |
 | **Tabelas do `banco.txt`** | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons`. |
 | **Depende de** | [F1](f1-nucleo.md): usuários (gestor, pessoas alocadas, carga diária) e clientes. |
-| **Quem aprova** | Rafael Garcia (dono de Projetos). |
+| **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 | **Fora daqui** | O quadro em uso e o card ([F3](f3-quadro-e-card.md)), teste e QA ([F4](f4-teste-e-qualidade.md)), sprint e horas ([F5](f5-sprint-e-horas.md)), pacote ([F6](f6-pacote.md)) e indicadores ([F7](f7-indicadores.md)). |
 
 ## 01. Fluxo funcional

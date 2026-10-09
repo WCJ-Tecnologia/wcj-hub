@@ -1,6 +1,6 @@
 # F1. Núcleo: usuários, clientes, contatos e auditoria
 
-**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.2, de 09/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). A 1.1 traz as decisões do Lucas Scholz na review do PR do B1 (07/10): gestor cria cliente também em Administração → Clientes, aviso de e-mail repetido por papel, telefone como texto, a WCJ sem troca de CNPJ e país, os textos da confirmação de desativar cliente e o rótulo "Outra ação" na auditoria. A 1.2 registra a decisão do ciclo 1 da code review (09/10): a WCJ também não se exclui. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -49,8 +49,8 @@
 |---|---|---|---|---|
 | Cliente | fixo: o cliente de onde se abriu | sim | | Na fatia 1 todo contato é de um cliente (N8). |
 | Nome | texto, até 120 | sim | | |
-| E-mail | e-mail, até 160 | não | | Se já existe contato com este e-mail, aviso "Já existe Fulano (Cliente X) com este e-mail"; segue mesmo assim (N8). |
-| Telefone | texto, até 20 | não | | Como o comercial ou o gestor liga ou chama no WhatsApp. |
+| E-mail | e-mail, até 160 | não | | Se já existe contato ativo com este e-mail, aviso; segue mesmo assim (N8). Para o Administrador: "Já existe Fulano (Cliente X) com este e-mail"; para quem não é Administrador: "Já existe um contato com este e-mail", sem nome nem cliente, porque o outro contato pode ser de cliente que não é dele (§09). |
+| Telefone | texto, até 20 | não | | Como o comercial ou o gestor liga ou chama no WhatsApp. Gravado como foi digitado, com o "+" e os espaços (há cliente fora do Brasil); sem máscara do Brasil. A busca acha pelos dígitos. |
 | Situação | só leitura: Ativo / Desativado em … por … / Anonimizado | | Ativo | (N11, N12) |
 
 ### Auditoria (só leitura)
@@ -68,7 +68,7 @@ Nome e troca de senha vêm do template. A aba *Conexões de IA* está em [F8](f8
 | Usuários | Nome, E-mail, Papel, Carga diária, Último acesso, Situação | Nome | Desativados ficam escondidos; o filtro *Mostrar desativados* os traz, em cinza. Último acesso vem da auditoria (login). |
 | Clientes | Nome, País, CNPJ / identificador, Situação | Nome | Idem para desativados. |
 | Contatos do cliente | Nome, E-mail, Telefone, Situação | Nome | Dentro da ficha do cliente. Uma lista geral *Administração → Contatos*, com a coluna Cliente, para achar uma pessoa sem saber a empresa. |
-| Auditoria | Data e hora, Quem, Canal (Tela, ou IA: Claude, Codex, ChatGPT), Ação (criou, editou, moveu, desativou, arquivou, anonimizou…), Registro (tipo e identificação, ex.: "Card SGM-17", "Usuário Maria"), Resultado (ok / negado) | Mais recente primeiro | Páginas de 50. Linha negada em destaque (G3). |
+| Auditoria | Data e hora, Quem, Canal (Tela, ou IA: Claude, Codex, ChatGPT), Ação (criou, editou, moveu, desativou, arquivou, anonimizou…), Registro (tipo e identificação, ex.: "Card SGM-17", "Usuário Maria"), Resultado (ok / negado) | Mais recente primeiro | Páginas de 50. Linha negada em destaque (G3). Ação que a tela ainda não conhece (ex.: negação de uma permissão nova) aparece como "Outra ação". |
 
 Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda. *Novo cliente*"). Na auditoria: "Nenhum registro com esses filtros".
 
@@ -89,10 +89,10 @@ Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Novo cliente | Administrador; gestor, pelo botão *Novo cliente* do formulário do projeto (F2) | Cria o cliente, sem contrato (N5, N6). | CNPJ repetido: recusa com "Já existe o cliente X com este CNPJ" (N5). |
-| Editar | Administrador; gestor nos clientes dos projetos dele (N6) | Nome, país, documento. | Mesma recusa de CNPJ repetido. |
-| Desativar / Reativar | Administrador | Desativado sai das listas de escolha (ex.: criar projeto) e fica em cinza; ter projeto aberto não impede (N11). | "O cliente X tem N projetos abertos; eles continuam. Desativar?" |
-| Excluir | Administrador | Só cliente sem projeto e sem contato (G2). | "Excluir de verdade. Não dá para desfazer." |
+| Novo cliente | Administrador; gestor, pelo botão *Novo cliente* do formulário do projeto (F2) e em Administração → Clientes | Cria o cliente, sem contrato (N5, N6). | CNPJ repetido: recusa com "Já existe o cliente X com este CNPJ" (N5). |
+| Editar | Administrador; gestor nos clientes dos projetos dele (N6) | Nome, país, documento. Na WCJ, só o nome: o CNPJ e o país são o que a identifica (N7). | Mesma recusa de CNPJ repetido. Na WCJ, trocar CNPJ ou país é recusado com "O CNPJ e o país da WCJ não podem ser alterados". |
+| Desativar / Reativar | Administrador | Desativado sai das listas de escolha (ex.: criar projeto) e fica em cinza; ter projeto aberto não impede (N11). | "O cliente X tem N projetos abertos; eles continuam. Desativar?". Com 1: "O cliente X tem 1 projeto aberto; ele continua. Desativar?". Sem projeto aberto: "O cliente X sai das listas de escolha. Desativar?". |
+| Excluir | Administrador | Só cliente sem projeto e sem contato (G2). A WCJ nunca: é ela que existe em toda instalação (N7). | "Excluir de verdade. Não dá para desfazer." Na WCJ: "A WCJ não pode ser excluída". |
 | Histórico | Administrador | Auditoria filtrada no cliente. | |
 
 ### Contatos
@@ -125,7 +125,7 @@ Não se aplica: nenhuma regra pede número no Núcleo (G5).
 ## 07. Avisos e documentos gerados
 
 - **Convite:** e-mail ao usuário convidado, com o endereço do Hub, o login e a senha provisória, que é trocada no primeiro acesso (N1). *Reenviar convite* manda outro, com senha nova. É o único e-mail do Núcleo.
-- **Aviso de contato repetido:** "Já existe Fulano (Cliente X) com este e-mail" (N8). Deixa seguir.
+- **Aviso de contato repetido:** "Já existe Fulano (Cliente X) com este e-mail" para o Administrador; "Já existe um contato com este e-mail" para quem não é Administrador (N8, §09). Deixa seguir.
 - **Recusa de CNPJ repetido:** "Já existe o cliente X com este CNPJ" (N5). Não segue.
 - Nenhum documento gerado.
 
@@ -140,7 +140,7 @@ Não se aplica na fatia 1: nenhuma regra pede exportação, e a auditoria não e
 | Usuários: ver lista | sim | só nomes ativos, nas telas de alocar e atribuir (F2, F3) | só nomes dos alocados no projeto, nas telas do card (F3) |
 | Usuários: convidar, editar, desativar, excluir | sim | não | não |
 | Clientes: ver lista e ficha | sim | sim, para escolher no projeto (P1) | só o nome do cliente no projeto em que está (P5) |
-| Clientes: criar e editar | sim | cria pelo formulário do projeto; edita os clientes dos projetos dele (N6) | não |
+| Clientes: criar e editar | sim | cria pelo formulário do projeto e em Administração → Clientes; edita os clientes dos projetos dele (N6) | não |
 | Clientes: desativar, excluir | sim | não | não |
 | Contatos: ver | sim | dos clientes dos projetos dele | dos clientes dos projetos dele, só para ler "quem pediu" no card de suporte (P52) |
 | Contatos: criar, editar | sim | nos clientes dos projetos dele (N8) | não |

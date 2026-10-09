@@ -3,12 +3,14 @@
         Oi, {{ $firstName }}.
     </p>
     <p style="margin:16px 0 0;font-size:15px;line-height:1.65;color:#374151;">
-        @if ($isReset)
-            Geramos uma senha temporária para você. Entra com ela e, na hora, escolhe uma que seja só sua.
-        @else
-            Seu acesso ao {{ $appName }} está pronto. A senha abaixo é só para o primeiro login —
-            depois a gente te pede para trocar, combinado?
-        @endif
+        Seu acesso ao {{ $appName }} está pronto. A senha abaixo é só para o primeiro login —
+        depois a gente te pede para trocar, combinado?
+    </p>
+    <p style="margin:24px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700;">
+        Login
+    </p>
+    <p style="margin:0;font-size:16px;font-weight:700;color:#111827;word-break:break-all;">
+        {{ $login }}
     </p>
     <p style="margin:24px 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b7280;font-weight:700;">
         Senha temporária
