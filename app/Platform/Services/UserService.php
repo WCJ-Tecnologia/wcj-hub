@@ -6,6 +6,7 @@ use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\User;
+use App\Support\Like;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -185,8 +186,8 @@ class UserService
             ->with('deactivatedBy:id,name')
             ->when(! $filters['show_inactive'], fn ($query) => $query->active())
             ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")))
+                ->where('name', 'like', Like::contains($search))
+                ->orWhere('email', 'like', Like::contains($search))))
             ->when($filters['role_id'] !== null, fn ($query) => $query->where('role_id', $filters['role_id']))
             ->orderBy('name')
             ->paginate(20);

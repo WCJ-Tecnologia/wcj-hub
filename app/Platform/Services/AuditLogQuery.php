@@ -9,6 +9,7 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use App\Support\Like;
 use App\Support\LocalTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -163,8 +164,8 @@ class AuditLogQuery
      */
     private function whereRecordMatches(Builder $query, string $search): void
     {
-        $like = "%{$search}%";
-        $document = '%'.strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $search) ?? '').'%';
+        $like = Like::contains($search);
+        $document = strtoupper(preg_replace('/[^0-9A-Za-z]/', '', $search) ?? '');
 
         $query->where(fn (Builder $any) => $any
             ->orWhere(fn (Builder $q) => $q->where('auditable_type', 'user')
@@ -172,7 +173,7 @@ class AuditLogQuery
             ->orWhere(fn (Builder $q) => $q->where('auditable_type', 'client')
                 ->whereIn('auditable_id', Client::query()->select('id')->where(fn (Builder $c) => $c
                     ->where('name', 'like', $like)
-                    ->when($document !== '%%', fn (Builder $doc) => $doc->orWhere('document', 'like', $document)))))
+                    ->when($document !== '', fn (Builder $doc) => $doc->orWhere('document', 'like', Like::contains($document))))))
             ->orWhere(fn (Builder $q) => $q->where('auditable_type', 'contact')
                 ->whereIn('auditable_id', Contact::query()->select('id')->where('name', 'like', $like))));
     }

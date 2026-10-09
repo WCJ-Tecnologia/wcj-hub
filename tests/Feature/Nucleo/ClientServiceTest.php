@@ -432,6 +432,19 @@ class ClientServiceTest extends TestCase
         $this->assertSame(0, AuditLog::query()->count());
     }
 
+    // CR-1-18 do ciclo 1: "%" e "_" digitados na busca são texto, não curinga.
+    public function test_busca_trata_porcento_e_sublinhado_como_texto(): void
+    {
+        foreach (['a_b', 'aXb', 'Promoção 100%', 'Promoção 1000'] as $name) {
+            Client::factory()->create(['name' => $name]);
+        }
+        $names = fn (string $search) => collect($this->service->paginate(['search' => $search, 'country' => null, 'show_inactive' => false])->items())
+            ->pluck('name')->all();
+
+        $this->assertSame(['a_b'], $names('a_b'));
+        $this->assertSame(['Promoção 100%'], $names('100%'));
+    }
+
     // Done when: a factory gera CNPJ que o Service aceita.
     public function test_factory_gera_cnpj_valido(): void
     {

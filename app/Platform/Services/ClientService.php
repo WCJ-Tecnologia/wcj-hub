@@ -7,6 +7,7 @@ use App\Platform\Models\Client;
 use App\Platform\Models\User;
 use App\Platform\Policies\ClientPolicy;
 use App\Rules\AlphanumericCnpj;
+use App\Support\Like;
 use App\Support\Paises;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -168,9 +169,9 @@ class ClientService
             ->with('deactivatedBy:id,name')
             ->when(! $filters['show_inactive'], fn ($query) => $query->active())
             ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('document', 'like', "%{$search}%")
-                ->when($unmasked !== '', fn ($masked) => $masked->orWhere('document', 'like', "%{$unmasked}%"))))
+                ->where('name', 'like', Like::contains($search))
+                ->orWhere('document', 'like', Like::contains($search))
+                ->when($unmasked !== '', fn ($masked) => $masked->orWhere('document', 'like', Like::contains($unmasked)))))
             ->when($filters['country'] !== null, fn ($query) => $query->where('country', $filters['country']))
             ->orderBy('name')
             ->paginate(20);

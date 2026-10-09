@@ -8,6 +8,7 @@ use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Policies\ContactPolicy;
+use App\Support\Like;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -182,9 +183,9 @@ class ContactService
             ->when(! $filters['show_inactive'], fn ($query) => $query->active())
             ->when($filters['client_id'] !== null, fn ($query) => $query->where('client_id', $filters['client_id']))
             ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->when($digits !== '', fn ($phone) => $phone->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ["%{$digits}%"]))))
+                ->where('name', 'like', Like::contains($search))
+                ->orWhere('email', 'like', Like::contains($search))
+                ->when($digits !== '', fn ($phone) => $phone->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", [Like::contains($digits)]))))
             ->orderBy('name')
             ->orderBy('id')
             ->paginate(20);
