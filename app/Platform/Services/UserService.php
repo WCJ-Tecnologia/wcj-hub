@@ -7,6 +7,7 @@ use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AiAuthorization;
 use App\Platform\Models\User;
 use App\Platform\Services\Concerns\RefusesDuplicates;
+use App\Platform\Services\Concerns\RetriesDeadlock;
 use App\Support\Like;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -21,7 +22,8 @@ use Illuminate\Validation\ValidationException;
  */
 class UserService
 {
-    use RefusesDuplicates;
+    // Escritas em transactionRetryingDeadlock: só o deadlock repete (CR-3-03, CR-4-04).
+    use RefusesDuplicates, RetriesDeadlock;
 
     public const DAILY_HOURS_REQUIRED = 'Carga diária é obrigatória para Desenvolvedor';
 
@@ -31,11 +33,6 @@ class UserService
 
     // O nome do índice unique de users.email; a mensagem do MySQL o cita (key 'users.users_email_unique').
     private const EMAIL_UNIQUE = 'users_email_unique';
-
-    // Escrita que trava linha de usuário repete a transação em deadlock (CR-3-03): a trava dos
-    // admins ativos vai em ordem de índice e a FK da auditoria trava o ator depois do alvo.
-    // O Laravel também repete no "Lock wait timeout". Os callbacks precisam ser repetíveis.
-    private const ATTEMPTS = 3;
 
     public function __construct(
         private readonly AuditService $audit,
@@ -83,14 +80,14 @@ class UserService
         [$attributes, $original] = [$user->getAttributes(), $user->getRawOriginal()];
 
         // A senha nasce dentro do callback: a tentativa que commita é a que vai no e-mail.
-        $plain = DB::transaction(function () use ($user, $actor, $attributes, $original) {
+        $plain = $this->transactionRetryingDeadlock(function () use ($user, $actor, $attributes, $original) {
             $user->setRawAttributes($original, true)->setRawAttributes($attributes);
             $before = ['must_change_password' => (bool) $user->must_change_password];
             $plain = $this->passwords->issue($user);
             $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, $before, ['must_change_password' => true], $actor->id);
 
             return $plain;
-        }, self::ATTEMPTS);
+        });
 
         return $this->passwords->send($user, $plain);
     }
@@ -107,7 +104,7 @@ class UserService
         [$attributes, $original] = [$user->getAttributes(), $user->getRawOriginal()];
 
         // O FormRequest confere o e-mail antes; outra gravação do mesmo e-mail pode entrar no meio.
-        $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($user, $data, $actor, $attributes, $original) {
+        $this->writeOrRefuseDuplicate(fn () => $this->transactionRetryingDeadlock(function () use ($user, $data, $actor, $attributes, $original) {
             $user->setRawAttributes($original, true)->setRawAttributes($attributes);
 
             if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
@@ -132,13 +129,13 @@ class UserService
             if ($revoke) {
                 $this->revokeAiAuthorizations($user, $actor);
             }
-        }, self::ATTEMPTS), $this->emailTaken(...));
+        }), $this->emailTaken(...));
     }
 
     /** N4, N11, IA6: perde o acesso agora, sessões e conexões de IA incluídas. */
     public function deactivate(User $user, User $actor): void
     {
-        DB::transaction(function () use ($user, $actor) {
+        $this->transactionRetryingDeadlock(function () use ($user, $actor) {
             // Primeiro os administradores ativos, depois o alvo: a mesma ordem de update e delete.
             // Na ordem inversa, dois admins que se desativam um ao outro entram em deadlock (CR-2-01).
             $this->ensureNotLastActiveAdmin($user, 'desativar');
@@ -155,13 +152,13 @@ class UserService
             $this->audit->log(AuditActionEnum::DEACTIVATED, $locked, ['active' => true], ['active' => false], $actor->id);
             $this->revokeAiAuthorizations($locked, $actor);
             $this->sessions->terminateOthers($locked);
-        }, self::ATTEMPTS);
+        });
     }
 
     /** As conexões de IA não voltam: a pessoa reconecta (IA6). */
     public function reactivate(User $user, User $actor): void
     {
-        DB::transaction(function () use ($user, $actor) {
+        $this->transactionRetryingDeadlock(function () use ($user, $actor) {
             // Pela linha travada, como o deactivate: dois "Reativar" juntos gravam uma linha só (CR-2-06).
             $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
             if ($locked->isActive()) {
@@ -170,13 +167,13 @@ class UserService
 
             $locked->setActive(true, $actor)->save();
             $this->audit->log(AuditActionEnum::REACTIVATED, $locked, ['active' => false], ['active' => true], $actor->id);
-        }, self::ATTEMPTS);
+        });
     }
 
     /** G2: só quem nunca entrou e não é referenciado; o resto se desativa. */
     public function delete(User $user, User $actor): void
     {
-        $deleted = DB::transaction(function () use ($user, $actor) {
+        $deleted = $this->transactionRetryingDeadlock(function () use ($user, $actor) {
             $this->ensureNotLastActiveAdmin($user, 'excluir');
 
             // O "antes" sai da linha travada, não da instância em memória (CR-3-02).
@@ -184,7 +181,7 @@ class UserService
                 Password::broker()->deleteToken($deleted);
                 $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
             });
-        }, self::ATTEMPTS);
+        });
 
         if (! $deleted) {
             throw new DomainException(self::ALREADY_USED);

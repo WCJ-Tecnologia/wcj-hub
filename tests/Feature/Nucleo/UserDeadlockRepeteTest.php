@@ -21,8 +21,9 @@ use Tests\TestCase;
 /**
  * CR-3-03: as escritas de usuário repetem a transação em deadlock (1213). O deadlock de verdade
  * não se reproduz no harness; aqui ele é simulado na primeira gravação da auditoria, depois de o
- * alvo já ter sido salvo, e a prova é que a repetição grava o mesmo que uma tentativa só. Com
- * DatabaseTruncation: dentro da transação do RefreshDatabase o Laravel não repete.
+ * alvo já ter sido salvo, e a prova é que a repetição grava o mesmo que uma tentativa só. O lock
+ * wait timeout (1205) não repete (CR-4-04). Com DatabaseTruncation: dentro de uma transação aberta
+ * por fora (a do RefreshDatabase) a escrita não repete.
  */
 class UserDeadlockRepeteTest extends TestCase
 {
@@ -40,18 +41,29 @@ class UserDeadlockRepeteTest extends TestCase
         parent::tearDown();
     }
 
+    /** Quantas vezes a auditoria foi chamada: uma por tentativa da transação. */
+    private int $tentativas = 0;
+
     private function deadlockNaPrimeiraAuditoria(): void
     {
-        $this->app->instance(AuditService::class, new class extends AuditService
+        $this->falhaNaPrimeiraAuditoria('40001', 1213, 'Deadlock found when trying to get lock; try restarting transaction');
+    }
+
+    // O erro como o PDO do MySQL entrega: código no errorInfo, que é o que a repetição confere.
+    private function falhaNaPrimeiraAuditoria(string $sqlstate, int $codigo, string $mensagem): void
+    {
+        $erro = new PDOException("SQLSTATE[{$sqlstate}]: {$codigo} {$mensagem}");
+        $erro->errorInfo = [$sqlstate, $codigo, $mensagem];
+        $tentativas = &$this->tentativas;
+
+        $this->app->instance(AuditService::class, new class($erro, $tentativas) extends AuditService
         {
-            private bool $falhou = false;
+            public function __construct(private readonly PDOException $erro, private int &$tentativas) {}
 
             public function log(AuditActionEnum $action, Model $auditable, ?array $before = null, ?array $after = null, ?int $userId = null, ?int $aiAuthorizationId = null): AuditLog
             {
-                if (! $this->falhou) {
-                    $this->falhou = true;
-
-                    throw new QueryException('mysql', 'insert into `audit_logs`', [], new PDOException('SQLSTATE[40001]: Serialization failure: 1213 Deadlock found when trying to get lock; try restarting transaction'));
+                if ($this->tentativas++ === 0) {
+                    throw new QueryException('mysql', 'insert into `audit_logs`', [], $this->erro);
                 }
 
                 return parent::log($action, $auditable, $before, $after, $userId, $aiAuthorizationId);
@@ -67,6 +79,7 @@ class UserDeadlockRepeteTest extends TestCase
 
         app(UserService::class)->update($dev, ['role_id' => RoleEnum::DEVELOPER->value, 'name' => 'Maria Lima', 'email' => $dev->email, 'daily_hours' => '8'], $admin);
 
+        $this->assertSame(2, $this->tentativas);
         $this->assertSame('Maria Lima', $dev->fresh()->name);
         $this->assertSame(['name' => ['Maria Souza', 'Maria Lima']], AuditLog::query()->where('action', 'updated')->sole()->changes);
     }
@@ -86,5 +99,42 @@ class UserDeadlockRepeteTest extends TestCase
         $this->assertSame(['must_change_password' => [false, true]], AuditLog::query()->where('action', 'password_reset')->sole()->changes);
         Mail::assertSent(TemporaryPasswordMail::class, 1);
         Mail::assertSent(TemporaryPasswordMail::class, fn (TemporaryPasswordMail $mail) => Hash::check($mail->temporaryPassword, $dev->fresh()->password));
+    }
+
+    // O deadlock dentro do deleteIfUnused (transação aninhada) sobe como DeadlockException, com o
+    // 1213 dentro: a transação de fora repete inteira.
+    public function test_excluir_repetido_depois_do_deadlock_na_transacao_aninhada_exclui(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dev = User::factory()->developer()->create();
+        $this->deadlockNaPrimeiraAuditoria();
+
+        app(UserService::class)->delete($dev, $admin);
+
+        $this->assertSame(2, $this->tentativas);
+        $this->assertModelMissing($dev);
+        $this->assertSame(1, AuditLog::query()->where('action', 'deleted')->count());
+    }
+
+    // CR-4-04: o "Lock wait timeout" (1205) não repete. Repetido, seriam até 3 × 50 s segurando
+    // as travas, e a escrita podia commitar depois de a tela já ter recebido erro.
+    public function test_lock_wait_timeout_nao_repete_e_sobe_na_primeira_tentativa(): void
+    {
+        Mail::fake();
+        $admin = User::factory()->admin()->create();
+        $dev = User::factory()->developer()->create(['must_change_password' => false]);
+        $this->falhaNaPrimeiraAuditoria('HY000', 1205, 'Lock wait timeout exceeded; try restarting transaction');
+
+        try {
+            app(UserService::class)->resendInvite($dev, $admin);
+            $this->fail('O lock wait timeout não subiu.');
+        } catch (QueryException $e) {
+            $this->assertSame(1205, $e->errorInfo[1]);
+        }
+
+        $this->assertSame(1, $this->tentativas);
+        $this->assertFalse($dev->fresh()->must_change_password);
+        $this->assertSame(0, AuditLog::query()->where('action', 'password_reset')->count());
+        Mail::assertNothingSent();
     }
 }
