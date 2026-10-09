@@ -126,26 +126,30 @@ trait Deactivatable
     /**
      * Activates or deactivates by the locked row, never by the instance in memory: two clicks or
      * two people write one change, and an old instance does not record a change that did not
-     * happen (CR-1-15, CR-2-06, CR-3-01). Call inside the write's transaction, so the lock lasts
-     * until the commit. Returns false, writing nothing, when the row is already in that state.
+     * happen (CR-1-15, CR-2-06, CR-3-01). Opens its own transaction, like deleteIfUnused (a
+     * savepoint inside the caller's), so the lock always lasts until the commit and the save and
+     * the audit never split in two (CR-5-02). Returns false, writing nothing, when the row is
+     * already in that state.
      *
      * @param  (Closure(static): void)|null  $then  runs with the locked row after the save (audit, side effects)
      */
     public function setActiveLocked(bool $active, User $actor, ?Closure $then = null): bool
     {
-        $locked = static::query()->lockForUpdate()->findOrFail($this->getKey());
+        return DB::transaction(function () use ($active, $actor, $then) {
+            $locked = static::query()->lockForUpdate()->findOrFail($this->getKey());
 
-        if ($locked->isActive() === $active) {
-            return false;
-        }
+            if ($locked->isActive() === $active) {
+                return false;
+            }
 
-        $locked->setActive($active, $actor)->save();
+            $locked->setActive($active, $actor)->save();
 
-        if ($then !== null) {
-            $then($locked);
-        }
+            if ($then !== null) {
+                $then($locked);
+            }
 
-        return true;
+            return true;
+        });
     }
 
     /**
