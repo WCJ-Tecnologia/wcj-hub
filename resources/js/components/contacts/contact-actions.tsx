@@ -24,6 +24,8 @@ export function useContactActions() {
     const [deleting, setDeleting] = useState<ContactRow | null>(null);
     const [anonymizing, setAnonymizing] = useState<ContactRow | null>(null);
     const [busy, setBusy] = useState(false);
+    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
+    const [busyRow, setBusyRow] = useState<number | null>(null);
     const form = useForm<ContactFormData>(EMPTY);
     const anonymizeForm = useForm({ confirmation: '' });
 
@@ -61,21 +63,26 @@ export function useContactActions() {
         anonymizeForm.post(`/admin/contacts/${anonymizing.id}/anonymize`, { preserveScroll: true, onSuccess: () => setAnonymizing(null) });
     };
 
-    const rowRequest = {
+    const rowRequest = (row: ContactRow) => ({
         preserveScroll: true,
-        onStart: () => setBusy(true),
+        onStart: () => {
+            setBusy(true);
+            setBusyRow(row.id);
+        },
         onFinish: () => {
             setBusy(false);
+            setBusyRow(null);
             setDeleting(null);
         },
-    };
+    });
 
     // Desativar e reativar não pedem confirmação (F1 §04); o segundo clique é ignorado enquanto a visita roda.
-    const rowPost = (url: string) => !busy && router.post(url, {}, rowRequest);
+    const rowPost = (url: string, row: ContactRow) => !busy && router.post(url, {}, rowRequest(row));
 
     const rowActions = (row: ContactRow, labeled = false) => (
         <RowActions
             labeled={labeled}
+            busy={busyRow === row.id}
             // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
             className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
             actions={[
@@ -84,14 +91,14 @@ export function useContactActions() {
                     label: 'Desativar',
                     ariaLabel: `Desativar ${row.name}`,
                     icon: Power,
-                    onClick: () => rowPost(`/admin/contacts/${row.id}/deactivate`),
+                    onClick: () => rowPost(`/admin/contacts/${row.id}/deactivate`, row),
                     hidden: !row.can.deactivate,
                 },
                 {
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: RotateCcw,
-                    onClick: () => rowPost(`/admin/contacts/${row.id}/reactivate`),
+                    onClick: () => rowPost(`/admin/contacts/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {
@@ -141,7 +148,7 @@ export function useContactActions() {
                 confirmLabel="Excluir"
                 destructive
                 loading={busy}
-                onConfirm={() => deleting && router.delete(`/admin/contacts/${deleting.id}`, rowRequest)}
+                onConfirm={() => deleting && router.delete(`/admin/contacts/${deleting.id}`, rowRequest(deleting))}
             />
 
             <AnonymizeContactDialog

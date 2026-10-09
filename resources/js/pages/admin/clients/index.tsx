@@ -43,6 +43,8 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
     const [editing, setEditing] = useState<ClientRow | null>(null);
     const [confirm, setConfirm] = useState<{ kind: ConfirmKind; row: ClientRow } | null>(null);
     const [busy, setBusy] = useState(false);
+    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
+    const [busyRow, setBusyRow] = useState<number | null>(null);
     const form = useForm<ClientFormData>(EMPTY);
 
     const openCreate = () => {
@@ -66,14 +68,20 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
         else form.post('/admin/clients', options);
     };
 
-    const rowRequest = {
+    const rowRequest = (row: ClientRow) => ({
         preserveScroll: true,
-        onStart: () => setBusy(true),
+        onStart: () => {
+            setBusy(true);
+            setBusyRow(row.id);
+        },
         onFinish: () => {
             setBusy(false);
+            setBusyRow(null);
             setConfirm(null);
         },
-    };
+    });
+    // O segundo clique é ignorado enquanto a visita roda (Reativar não pede confirmação).
+    const rowPost = (url: string, row: ClientRow) => !busy && router.post(url, {}, rowRequest(row));
 
     const filterParams = {
         search: filters.search || undefined,
@@ -88,13 +96,13 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
             title: () => 'Desativar cliente',
             text: deactivateText,
             label: 'Desativar',
-            run: (row: ClientRow) => router.post(`/admin/clients/${row.id}/deactivate`, {}, rowRequest),
+            run: (row: ClientRow) => rowPost(`/admin/clients/${row.id}/deactivate`, row),
         },
         delete: {
             title: (row: ClientRow) => `Excluir ${row.name}?`,
             text: () => 'Excluir de verdade. Não dá para desfazer.',
             label: 'Excluir',
-            run: (row: ClientRow) => router.delete(`/admin/clients/${row.id}`, rowRequest),
+            run: (row: ClientRow) => router.delete(`/admin/clients/${row.id}`, rowRequest(row)),
         },
     } satisfies Record<ConfirmKind, unknown>;
 
@@ -107,6 +115,7 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
     const rowActions = (row: ClientRow, labeled = false) => (
         <RowActions
             labeled={labeled}
+            busy={busyRow === row.id}
             actions={[
                 { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.update },
                 {
@@ -120,7 +129,7 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: RotateCcw,
-                    onClick: () => router.post(`/admin/clients/${row.id}/reactivate`, {}, rowRequest),
+                    onClick: () => rowPost(`/admin/clients/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {

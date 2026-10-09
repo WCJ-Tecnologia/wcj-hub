@@ -34,6 +34,8 @@ export default function UsersIndex({ users, filters, roles }: Props) {
     const [editing, setEditing] = useState<UserRow | null>(null);
     const [confirm, setConfirm] = useState<{ kind: ConfirmKind; row: UserRow } | null>(null);
     const [busy, setBusy] = useState(false);
+    /** A linha cuja ação está rodando: os botões dela travam e ela esmaece (CR-1-17). */
+    const [busyRow, setBusyRow] = useState<number | null>(null);
     const form = useForm<UserFormData>(EMPTY);
 
     const openCreate = () => {
@@ -65,15 +67,20 @@ export default function UsersIndex({ users, filters, roles }: Props) {
         else save();
     };
 
-    const rowRequest = {
+    const rowRequest = (row: UserRow) => ({
         preserveScroll: true,
-        onStart: () => setBusy(true),
+        onStart: () => {
+            setBusy(true);
+            setBusyRow(row.id);
+        },
         onFinish: () => {
             setBusy(false);
+            setBusyRow(null);
             setConfirm(null);
         },
-    };
-    const rowPost = (url: string) => router.post(url, {}, rowRequest);
+    });
+    // O segundo clique é ignorado enquanto a visita roda (Reativar não pede confirmação).
+    const rowPost = (url: string, row: UserRow) => !busy && router.post(url, {}, rowRequest(row));
 
     const filterParams = {
         search: filters.search || undefined,
@@ -97,21 +104,21 @@ export default function UsersIndex({ users, filters, roles }: Props) {
             title: () => 'Reenviar convite',
             text: (row) => `Vamos mandar uma senha provisória nova para ${row.email}. A anterior deixa de valer na hora.`,
             label: 'Reenviar',
-            run: (row) => rowPost(`/admin/users/${row.id}/reset-password`),
+            run: (row) => rowPost(`/admin/users/${row.id}/reset-password`, row),
         },
         deactivate: {
             title: () => 'Desativar usuário',
             text: (row) => `${row.name} perde o acesso imediatamente. Continuar?`,
             label: 'Desativar',
             destructive: true,
-            run: (row) => rowPost(`/admin/users/${row.id}/deactivate`),
+            run: (row) => rowPost(`/admin/users/${row.id}/deactivate`, row),
         },
         delete: {
             title: (row) => `Excluir ${row.name}?`,
             text: () => 'Excluir de verdade. Não dá para desfazer.',
             label: 'Excluir',
             destructive: true,
-            run: (row) => router.delete(`/admin/users/${row.id}`, rowRequest),
+            run: (row) => router.delete(`/admin/users/${row.id}`, rowRequest(row)),
         },
         disconnect: {
             title: () => 'Desconectar a IA',
@@ -132,6 +139,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
     const rowActions = (row: UserRow, labeled = false) => (
         <RowActions
             labeled={labeled}
+            busy={busyRow === row.id}
             // Até cinco ações: no desktop, três por linha, para a tabela caber sem rolagem lateral.
             className={labeled ? undefined : 'ml-auto w-30 flex-wrap'}
             actions={[
@@ -154,7 +162,7 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                     label: 'Reativar',
                     ariaLabel: `Reativar ${row.name}`,
                     icon: UserCheck,
-                    onClick: () => rowPost(`/admin/users/${row.id}/reactivate`),
+                    onClick: () => rowPost(`/admin/users/${row.id}/reactivate`, row),
                     hidden: !row.can.reactivate,
                 },
                 {

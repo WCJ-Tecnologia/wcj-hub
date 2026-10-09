@@ -18,13 +18,27 @@ export interface RowAction {
 /**
  * Ações de uma linha de listagem. `labeled=false` (desktop): botões de ícone
  * com aria-label. `labeled=true` (card mobile): botões outline com texto.
+ * `busy`: uma ação desta linha está rodando; os botões travam e a linha sinaliza.
  */
-export function RowActions({ actions, labeled = false, className }: { actions: RowAction[]; labeled?: boolean; className?: string }) {
+export function RowActions({
+    actions,
+    labeled = false,
+    busy = false,
+    className,
+}: {
+    actions: RowAction[];
+    labeled?: boolean;
+    busy?: boolean;
+    className?: string;
+}) {
     const visible = actions.filter((action) => !action.hidden);
     if (visible.length === 0) return null;
 
     return (
-        <div className={cn(labeled ? 'mt-3 flex flex-wrap gap-2' : 'flex justify-end gap-1', className)}>
+        <div
+            aria-busy={busy || undefined}
+            className={cn(labeled ? 'mt-3 flex flex-wrap gap-2' : 'flex justify-end gap-1', busy && 'opacity-60', className)}
+        >
             {visible.map((action) => {
                 const Icon = action.icon;
                 return (
@@ -33,6 +47,7 @@ export function RowActions({ actions, labeled = false, className }: { actions: R
                         variant={labeled ? 'outline' : 'ghost'}
                         size={labeled ? 'sm' : 'icon'}
                         onClick={action.onClick}
+                        disabled={busy}
                         aria-label={action.ariaLabel ?? action.label}
                     >
                         <Icon className={cn('size-4', action.destructive && 'text-destructive')} aria-hidden />
