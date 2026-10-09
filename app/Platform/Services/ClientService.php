@@ -167,12 +167,15 @@ class ClientService
     }
 
     /**
-     * Lista de escolha (NUC-13): só ativos, id e nome.
+     * Lista de escolha (NUC-13): só ativos, id e nome. A Policy é conferida aqui, como no
+     * UserService::choiceList() (decisão do Lucas Scholz, 09/10).
      *
      * @return list<array{id: int, name: string}>
      */
-    public function choiceList(): array
+    public function choiceList(User $viewer): array
     {
+        $this->audit->inspectFor($viewer, 'viewChoiceList', Client::class)->authorize();
+
         return Client::query()
             ->active()
             ->orderBy('name')

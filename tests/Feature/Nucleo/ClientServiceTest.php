@@ -10,6 +10,7 @@ use App\Platform\Services\ClientService;
 use App\Rules\AlphanumericCnpj;
 use Database\Seeders\WcjClientSeeder;
 use DomainException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -229,7 +230,7 @@ class ClientServiceTest extends TestCase
         $this->assertNotNull($client->deactivated_at);
         $this->assertSame($this->admin->id, $client->deactivated_by);
         $this->assertAudited($client, 'deactivated', ['active' => [true, false]]);
-        $this->assertNotContains($client->id, array_column($this->service->choiceList(), 'id'));
+        $this->assertNotContains($client->id, array_column($this->service->choiceList($this->admin), 'id'));
     }
 
     public function test_desativar_quem_ja_esta_desativado_mantem_o_carimbo_original(): void
@@ -336,7 +337,7 @@ class ClientServiceTest extends TestCase
 
         $this->assertDatabaseHas('clients', ['id' => $client->id, 'deactivated_at' => null, 'deactivated_by' => null]);
         $this->assertAudited($client, 'reactivated', ['active' => [false, true]]);
-        $this->assertContains($client->id, array_column($this->service->choiceList(), 'id'));
+        $this->assertContains($client->id, array_column($this->service->choiceList($this->admin), 'id'));
     }
 
     // AC 11
@@ -381,7 +382,36 @@ class ClientServiceTest extends TestCase
         Client::factory()->inactive()->create(['name' => 'Desativado']);
         $alfa = Client::factory()->create(['name' => 'Alfa']);
 
-        $this->assertSame([['id' => $alfa->id, 'name' => 'Alfa'], ['id' => $zeta->id, 'name' => 'Zeta']], $this->service->choiceList());
+        $this->assertSame([['id' => $alfa->id, 'name' => 'Alfa'], ['id' => $zeta->id, 'name' => 'Zeta']], $this->service->choiceList($this->admin));
+    }
+
+    // CR-1-05 do ciclo 1, NUC-13 (Lista de escolha AC 3): a Policy vale dentro do Service.
+    public function test_desenvolvedor_e_recusado_na_lista_de_escolha_e_a_negacao_e_auditada(): void
+    {
+        Client::factory()->create();
+        $dev = User::factory()->developer()->create();
+
+        try {
+            $this->service->choiceList($dev);
+            $this->fail('Desenvolvedor recebeu a lista de escolha.');
+        } catch (AuthorizationException) {
+        }
+
+        $log = AuditLog::query()->sole();
+        $this->assertSame(
+            [$dev->id, 'viewed', AuditLog::OUTCOME_DENIED, 'client', null],
+            [$log->user_id, $log->action, $log->outcome, $log->auditable_type, $log->auditable_id],
+        );
+    }
+
+    public function test_gestor_recebe_a_lista_de_escolha_sem_negacao_auditada(): void
+    {
+        $ativo = Client::factory()->create(['name' => 'Ativo']);
+        Client::factory()->inactive()->create(['name' => 'Desativado']);
+        $manager = User::factory()->projectManager()->create();
+
+        $this->assertSame([['id' => $ativo->id, 'name' => 'Ativo']], $this->service->choiceList($manager));
+        $this->assertSame(0, AuditLog::query()->count());
     }
 
     // Done when: a factory gera CNPJ que o Service aceita.

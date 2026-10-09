@@ -4,8 +4,12 @@ namespace App\Platform\Services;
 
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\AuditLog;
+use App\Platform\Models\User;
+use Illuminate\Auth\Access\Response as GateResponse;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Gravação única da auditoria (G3; docs/banco.txt, audit_logs). Por ora só a tela grava
@@ -41,11 +45,27 @@ class AuditService
     }
 
     /**
+     * A checagem que barra a ação (G3): confere a Policy para o usuário e, se negar, grava a
+     * tentativa como denied. Só a checagem que barra é tentativa: o can() que monta a tela não
+     * passa por aqui. Quem chama decide o que fazer com a resposta (->authorize() lança 403).
+     */
+    public function inspectFor(User $actor, string $ability, mixed $arguments = []): GateResponse
+    {
+        $response = Gate::forUser($actor)->inspect($ability, $arguments);
+
+        if ($response->denied()) {
+            $this->denied($ability, $this->deniedTarget($ability, $arguments), $actor);
+        }
+
+        return $response;
+    }
+
+    /**
      * A tentativa barrada pela Policy (G3). Alvo Model: o registro; nome de classe: o tipo,
      * com id nulo, porque a negação veio antes de existir ou de achar o registro. Outro texto
-     * (gate sem Model) fica como o tipo.
+     * (gate sem Model) fica como o tipo. Fora dos testes, só pelo inspectFor().
      */
-    public function denied(string $ability, Model|string $target): AuditLog
+    public function denied(string $ability, Model|string $target, ?User $actor = null): AuditLog
     {
         $type = match (true) {
             $target instanceof Model => $target->getMorphClass(),
@@ -54,7 +74,7 @@ class AuditService
         };
 
         return AuditLog::query()->create([
-            'user_id' => Auth::id(),
+            'user_id' => $actor?->getKey() ?? Auth::id(),
             'ai_authorization_id' => null,
             // audit_logs.action tem 40 caracteres.
             'action' => mb_substr(AuditActionEnum::forAbility($ability)?->value ?? $ability, 0, 40),
@@ -64,6 +84,16 @@ class AuditService
             'changes' => null,
             'ip_address' => $this->ip(),
         ]);
+    }
+
+    /** O registro ou a classe que a Policy recebeu; gate sem Model fica pelo próprio nome. */
+    private function deniedTarget(string $ability, mixed $arguments): Model|string
+    {
+        $target = Arr::wrap($arguments)[0] ?? null;
+
+        return $target instanceof Model || (is_string($target) && is_subclass_of($target, Model::class))
+            ? $target
+            : $ability;
     }
 
     /**

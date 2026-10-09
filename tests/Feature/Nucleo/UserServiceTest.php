@@ -15,6 +15,7 @@ use App\Platform\Services\SessionService;
 use App\Platform\Services\UserService;
 use Database\Seeders\AiAssistantSeeder;
 use DomainException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -541,10 +542,39 @@ class UserServiceTest extends TestCase
         User::factory()->developer()->inactive()->create(['name' => 'Bia Desativada']);
         $caio = User::factory()->developer()->create(['name' => 'Caio Dev']);
 
-        $list = collect($this->service->choiceList())->keyBy('id');
+        $list = collect($this->service->choiceList($this->admin))->keyBy('id');
 
         $this->assertEqualsCanonicalizing([$this->admin->id, $ana->id, $caio->id], $list->keys()->all());
         $this->assertSame(['id' => $caio->id, 'name' => 'Caio Dev', 'role' => 'developer'], $list[$caio->id]);
         $this->assertSame(['id' => $ana->id, 'name' => 'Ana Gestora', 'role' => 'project_manager'], $list[$ana->id]);
+    }
+
+    // CR-1-05 do ciclo 1, NUC-13 (Lista de escolha AC 3): a Policy vale dentro do Service.
+    public function test_desenvolvedor_e_recusado_na_lista_de_escolha_e_a_negacao_e_auditada(): void
+    {
+        $dev = User::factory()->developer()->create();
+
+        try {
+            $this->service->choiceList($dev);
+            $this->fail('Desenvolvedor recebeu a lista de escolha.');
+        } catch (AuthorizationException) {
+        }
+
+        $log = AuditLog::query()->sole();
+        $this->assertSame(
+            [$dev->id, 'viewed', AuditLog::OUTCOME_DENIED, 'user', null],
+            [$log->user_id, $log->action, $log->outcome, $log->auditable_type, $log->auditable_id],
+        );
+    }
+
+    public function test_gestor_recebe_a_lista_de_escolha_sem_negacao_auditada(): void
+    {
+        $manager = User::factory()->projectManager()->create(['name' => 'Ana Gestora']);
+        User::factory()->developer()->inactive()->create(['name' => 'Bia Desativada']);
+
+        $ids = array_column($this->service->choiceList($manager), 'id');
+
+        $this->assertEqualsCanonicalizing([$this->admin->id, $manager->id], $ids);
+        $this->assertSame(0, AuditLog::query()->count());
     }
 }

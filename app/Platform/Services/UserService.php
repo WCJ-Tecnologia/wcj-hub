@@ -181,12 +181,16 @@ class UserService
     }
 
     /**
-     * Lista de escolha (NUC-13): só ativos, sem e-mail, carga nem marca da IA.
+     * Lista de escolha (NUC-13): só ativos, sem e-mail, carga nem marca da IA. A Policy é
+     * conferida aqui (decisão do Lucas Scholz, 09/10): o B2 entrega a lista como prop, sem rota
+     * própria, e quem não pode recebe AuthorizationException, com a negação auditada.
      *
      * @return list<array{id: int, name: string, role: string}>
      */
-    public function choiceList(): array
+    public function choiceList(User $viewer): array
     {
+        $this->audit->inspectFor($viewer, 'viewChoiceList', User::class)->authorize();
+
         return User::query()
             ->active()
             ->orderBy('name')
