@@ -75,21 +75,20 @@ class UserService
      */
     public function resendInvite(User $user, User $actor): bool
     {
-        // Na repetição, recomeça da instância como chegou, como o update: o save() da tentativa
-        // desfeita deixaria a flag "sem mudança", e a repetição não gravaria a troca obrigatória (CR-4-01).
-        [$attributes, $original] = [$user->getAttributes(), $user->getRawOriginal()];
+        // Pela linha travada, como toda escrita de usuário (CV-03): se o alvo trocou a senha no mesmo
+        // instante, a flag relida é false e a troca obrigatória volta a ser gravada (CR-5-01); e a
+        // repetição em deadlock recomeça do banco, não da instância (CR-4-01). A senha nasce dentro do
+        // callback: a tentativa que commita é a que vai no e-mail, para o e-mail da linha travada.
+        [$locked, $plain] = $this->transactionRetryingDeadlock(function () use ($user, $actor) {
+            $locked = User::query()->lockForUpdate()->findOrFail($user->getKey());
+            $before = ['must_change_password' => (bool) $locked->must_change_password];
+            $plain = $this->passwords->issue($locked);
+            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $locked, $before, ['must_change_password' => true], $actor->id);
 
-        // A senha nasce dentro do callback: a tentativa que commita é a que vai no e-mail.
-        $plain = $this->transactionRetryingDeadlock(function () use ($user, $actor, $attributes, $original) {
-            $user->setRawAttributes($original, true)->setRawAttributes($attributes);
-            $before = ['must_change_password' => (bool) $user->must_change_password];
-            $plain = $this->passwords->issue($user);
-            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, $before, ['must_change_password' => true], $actor->id);
-
-            return $plain;
+            return [$locked, $plain];
         });
 
-        return $this->passwords->send($user, $plain);
+        return $this->passwords->send($locked, $plain);
     }
 
     /**

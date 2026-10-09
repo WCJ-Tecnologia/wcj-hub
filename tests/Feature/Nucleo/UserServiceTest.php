@@ -171,6 +171,24 @@ class UserServiceTest extends TestCase
         $this->assertStringNotContainsString($plain, (string) json_encode(AuditLog::query()->pluck('changes')));
     }
 
+    // CR-5-01: a instância chegou com a flag true (convidado que não entrou); o alvo conclui o
+    // primeiro acesso no mesmo instante e zera a flag. Pela linha travada, o reenvio grava a troca
+    // obrigatória de novo e a auditoria registra [false, true]; pela memória, a senha provisória
+    // viraria definitiva e a auditoria sairia sem changes.
+    public function test_reenviar_convite_pela_instancia_velha_grava_a_troca_obrigatoria_pela_linha_travada(): void
+    {
+        $joao = User::factory()->developer()->create(['email' => 'joao@example.com', 'must_change_password' => true]);
+        $velha = User::query()->findOrFail($joao->id);
+        $joao->forceFill(['must_change_password' => false, 'email' => 'joao.novo@example.com'])->save();
+
+        $this->assertTrue($this->service->resendInvite($velha, $this->admin));
+
+        $this->assertTrue($joao->fresh()->must_change_password);
+        $this->assertAudited($joao, 'password_reset', ['must_change_password' => [false, true]]);
+        // O e-mail vai para o endereço da linha travada, não para o da instância velha.
+        $this->assertTrue(Hash::check($this->sentPassword('joao.novo@example.com'), $joao->fresh()->password));
+    }
+
     // AC 4
     public function test_desenvolvedor_sem_carga_diaria_e_recusado_sem_criar_nem_alterar(): void
     {
