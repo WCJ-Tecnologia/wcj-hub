@@ -10,21 +10,21 @@ Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, list
 |---|---|---|
 | `docs/necessidade.md` | WCJ e IA | As regras (G, N, P, IA), a premissa e as decisões. Fonte única das regras. |
 | `docs/banco.txt` | Pessoa técnica | Todas as tabelas e colunas, aprovadas (etapa 2). |
-| **`docs/funcional/Fn-*.md`** | Rafael (Projetos), Lucas Scholz (Núcleo e IA), Cauã e Vitinho | Como cada bloco funciona na tela, campo a campo. Aprovado antes do código. |
+| **`docs/funcional/Fn-*.md`** | Lucas Scholz (aprova), Rafael (feedback e elaboração de Projetos), Cauã e Vitinho | Como cada bloco funciona na tela, campo a campo. Aprovado antes do código. |
 | `docs/escopo.md` | IA e devs | Os mesmos blocos em forma técnica: tabelas, rotas, Policies, ordem (etapa 4). Aponta para o funcional de cada bloco. |
 | `docs/plano-de-desenvolvimento.md` | Cauã, Vitinho e Lucas Scholz | Quem faz o quê, em que ordem, com que trilho, e como o PR anda até o merge. |
 | `.specs/features/<bloco>/` | IA e Verifier | A spec em EARS de cada bloco, gerada pela skill `tlc-spec-driven` a partir do funcional aprovado. |
 
 Um funcional aprovado vira uma feature na skill. Nada que não esteja no funcional entra na spec; nada que não esteja no `banco.txt` entra no funcional.
 
-**Situação em 06/10/2026:** F1 a F8 aprovados por Lucas Scholz (v1.0), com os "pontos a validar" respondidos e aplicados nos próprios documentos, na `necessidade.md`, no `banco.txt` e no `escopo.md`. Rafael Garcia valida Projetos no uso (bugbash).
+**Situação em 06/10/2026:** F1 a F8 aprovados por Lucas Scholz (v1.0), com os "pontos a validar" respondidos e aplicados nos próprios documentos, na `necessidade.md`, no `banco.txt` e no `escopo.md`. Rafael Garcia participou com feedback e elaboração e valida Projetos no uso (bugbash); a aprovação é do Lucas Scholz (D-GER-31).
 
 ## Fluxo de aprovação
 
 | Passo | Quem | O quê |
 |---|---|---|
 | 1 | WCJ (Lucas Scholz, com IA) | Escreve o funcional a partir da `necessidade.md` e do `banco.txt`. |
-| 2 | Rafael Garcia (Projetos) / Lucas Scholz (Núcleo e IA) | Lê, aprova ou devolve com correções. Os "pontos a validar" (seção 10) são respondidos aqui. |
+| 2 | Lucas Scholz, com o feedback do Rafael Garcia em Projetos | Lê, aprova ou devolve com correções. Os "pontos a validar" (seção 10) são respondidos aqui (D-GER-31). |
 | 3 | Cauã ou Vitinho, com IA | Spec na skill (aprovada por Lucas Scholz), código, testes, PR. |
 | 4 | Lucas Scholz | Revisa o PR contra o funcional e a spec; QA cruzado entre os dois devs. |
 | 5 | Rafael e a equipe | Usam no ambiente de teste (bugbash) antes de trocar o Trello. |
@@ -53,12 +53,12 @@ Cada frase que vem de uma regra termina com o código dela entre parênteses, po
 | Bloco | Título | Regras que alimentam | Tabelas | Depende de | Aprova |
 |---|---|---|---|---|---|
 | [F1](f1-nucleo.md) | Núcleo: usuários, clientes, contatos e auditoria | G1–G5, G7, N1–N9, N11, N12 | `roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs` | template (login, troca de senha) | Lucas Scholz |
-| [F2](f2-projeto-e-configuracao.md) | Projeto e configuração do quadro | G1, G7, P1–P3, P5, P7, P8, P10–P12, P15, P18, P40, P46 | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons` | F1 | Rafael Garcia |
-| [F3](f3-quadro-e-card.md) | Quadro e card | P13–P26, P39, P40, P52, P56, premissa | `tasks`, `task_stage_movements`, `task_priorities`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` | F2 | Rafael Garcia |
-| [F4](f4-teste-e-qualidade.md) | Teste cruzado e roteiro de QA | P32–P39 | `tasks` (teste cruzado), `task_acceptance_criteria`, `test_results`, `task_attachments` | F3 | Rafael Garcia |
-| [F5](f5-sprint-e-horas.md) | Sprint, horas e data prevista | N3, P27–P31, P45–P51 | `sprints`, `tasks` (sprint, horas previstas, data prevista), `time_entries` | F3 | Rafael Garcia |
-| [F6](f6-pacote.md) | Pacote (versão) | P41–P44 | `packages`, `tasks` (pacote) | F3 | Rafael Garcia |
-| [F7](f7-indicadores.md) | Indicadores e histórico | P14, P15, P25, P53, P54 (só o que a v1 mostra) | leitura de `task_stage_movements`, `time_entries`, `tasks` | F3, F5 | Rafael Garcia |
+| [F2](f2-projeto-e-configuracao.md) | Projeto e configuração do quadro | G1, G7, P1–P3, P5, P7, P8, P10–P12, P15, P18, P40, P46 | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons` | F1 | Lucas Scholz |
+| [F3](f3-quadro-e-card.md) | Quadro e card | P13–P26, P39, P40, P52, P56, premissa | `tasks`, `task_stage_movements`, `task_priorities`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` | F2 | Lucas Scholz |
+| [F4](f4-teste-e-qualidade.md) | Teste cruzado e roteiro de QA | P32–P39 | `tasks` (teste cruzado), `task_acceptance_criteria`, `test_results`, `task_attachments` | F3 | Lucas Scholz |
+| [F5](f5-sprint-e-horas.md) | Sprint, horas e data prevista | N3, P27–P31, P45–P51 | `sprints`, `tasks` (sprint, horas previstas, data prevista), `time_entries` | F3 | Lucas Scholz |
+| [F6](f6-pacote.md) | Pacote (versão) | P41–P44 | `packages`, `tasks` (pacote) | F3 | Lucas Scholz |
+| [F7](f7-indicadores.md) | Indicadores e histórico | P14, P15, P25, P53, P54 (só o que a v1 mostra) | leitura de `task_stage_movements`, `time_entries`, `tasks` | F3, F5 | Lucas Scholz |
 | [F8](f8-conexoes-de-ia.md) | Conexões de IA e as 6 ferramentas | G4, IA1–IA14 | `ai_assistants`, `ai_authorizations`, `audit_logs`, tabelas do Passport | F1, F3, F5 | Lucas Scholz |
 
 Autenticação, primeiro acesso com senha provisória e troca de senha vêm do template `ai-systems` e não têm funcional próprio. O bloco de segurança do padrão (`.ai/core/seguranca.md` §11, incluindo `core/mcp.md`) entra antes da primeira publicação e também não tem funcional.

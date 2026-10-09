@@ -54,7 +54,8 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-27 | 06/10/2026 | Cortes da fatia 1 no banco (R7 a R11, R13 a R15): saem CRM, `service_types`, `task_validations` e as flags `requires_*`, `sprint_members`, `package_statuses` e `ai_tool_calls`; motivos de retrabalho viram lista geral; o movimento do card guarda quem moveu e o canal; a integridade por projeto é conferida no Service, não por FK composta (Lucas Alencar confere). 41 → 27 tabelas. Indicadores: o atraso desconta a pausa e o realizado tem fallback no tempo em desenvolvimento (R16, R17). |
 | D-GER-30 | 06/10/2026 | **Prova de conceito do MCP, parte 1** (`docs/atas/2026-10-06-poc-mcp.md`): o Claude Code conectado pelo terminal é outro cliente OAuth e derruba a conexão do Claude app (uma por assistente, IA6). **O Claude Code vira o quarto assistente** (`claude_code`, canal `ia:claude_code`), com cartão próprio. Identificação na fatia 1 pelo `redirect_uri` (`claude.ai` = app; `localhost` = Claude Code) mais o nome do cliente. Nenhum assistente pediu confirmação antes de escrever: a IA9 vale como está, e toda escrita pela IA é reversível e auditada. ChatGPT condicional à parte 2; se der trabalho, v2. |
 | D-GER-29 | 06/10/2026 | **Lucas Varanda** (front-end) adapta o template à marca WCJ e desenha os componentes que o Hub pede e o template não tem. A marca entra no Hub inteira, só por `docs/brand/` e `design/tokens.json`; no mestre da marca (`wcj-master-brand-brain/marca/`) é que se muda. |
-| D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado pelo dono do módulo (Projetos: Rafael Garcia; Núcleo e IA: Lucas Scholz) antes da spec. O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
+| D-GER-31 | 09/10/2026 | **Quem aprova os funcionais é Lucas Scholz**, todos os blocos. Rafael Garcia participou de Projetos com feedback e elaboração (reunião de 24/09, modelos e pontos a validar) e valida o uso no bugbash; não assina aprovação. Corrige a D-GER-28. |
+| D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado antes da spec (dono por bloco revisto na D-GER-31). O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
 | D-CRM-04 | 24/09/2026 | Quando o contrato entrar (fora da v1, N10), o Hub é a **única fonte de contratos** e o DaaS consulta o Hub. Oportunidade do roadmap da auditoria é cadastrada à mão, também depois da v1. O funil sai do DaaS quando o CRM do Hub estiver no ar. |
@@ -507,7 +508,7 @@ Consequência para a v1 (IA3):
 | SLA | Prazo de atendimento do chamado, definido pelo contrato e pela prioridade |
 | Assistente / IA | Claude, ChatGPT ou Codex do próprio usuário, conectado pelo MCP (ou o GPT "WCJ Hub", pelas Actions) |
 | Conector | A autorização de um assistente para acessar o sistema em nome do usuário (IA4) |
-| Funcional | Documento por bloco que descreve tela, campos, ações e permissões em linguagem de quem usa; aprovado pelo dono do módulo antes da spec (D-GER-28) |
+| Funcional | Documento por bloco que descreve tela, campos, ações e permissões em linguagem de quem usa; aprovado por Lucas Scholz antes da spec (D-GER-28, D-GER-31) |
 | Fatia 1 | Primeira entrega: Núcleo + Projetos + MCP com 6 ferramentas (D-GER-24). CRM é a v2 |
 
 ## Restrições
@@ -545,7 +546,7 @@ Consequência para a v1 (IA3):
 - [x] Lucas Scholz revisou o `banco.txt` (Sessão D, 24/09).
 - [x] Lucas Alencar aprovou o `banco.txt` em 06/10 (D-GER-23).
 - [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.txt`, R15 e colunas de 06/10) em 06/10.
-- [ ] Rafael Garcia aprova os funcionais de Projetos (`docs/funcional/`, D-GER-28); Lucas Scholz, os de Núcleo e IA.
+- [x] Funcionais F1 a F8 aprovados por Lucas Scholz em 06/10 (D-GER-28, D-GER-31); o Rafael participou de Projetos com feedback e elaboração e valida no bugbash.
 - [x] Prova de conceito, parte 1 (06/10): Claude app e Claude Code pelo terminal são conexões distintas e uma derruba a outra; `claude_code` virou assistente separado (D-GER-30). Codex CLI × Codex no app fica para a parte 2.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
 - [ ] (v2) Prova de conceito: testar se o **modo de voz** do ChatGPT também chama as Actions do GPT, ou se só o ditado funciona.

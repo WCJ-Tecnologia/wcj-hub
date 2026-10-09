@@ -205,7 +205,7 @@ O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Sch
 
 | Trava | Com quem | Bloqueia |
 |---|---|---|
-| ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28). Rafael Garcia valida Projetos no bugbash. | Rafael Garcia | Nada: as specs podem começar. |
+| ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28, D-GER-31). Rafael Garcia participou com feedback e elaboração e valida Projetos no bugbash. | Lucas Scholz | Nada: as specs podem começar. |
 | ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira (`banco.txt` §7, R15 e as 3 colunas de 06/10) em 06/10. | Lucas Alencar | Nada. |
 | Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | ele mesmo | B8 |
 | Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | ele mesmo | O canal `mail` do B3 (o `database` não espera). |
