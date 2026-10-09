@@ -1,4 +1,4 @@
-import { createClient, createContact, deleteClient } from './helpers/dados';
+import { createClient, createContact, deactivateClient, deleteClient } from './helpers/dados';
 import { expect, test } from './fixtures';
 import { AuditLogsPage } from './pages/audit-logs.page';
 import { ClientsPage } from './pages/clients.page';
@@ -167,6 +167,31 @@ test('contato anonimizado aparece como Anonimizado, sem editar, reativar nem ano
         for (const action of ['Editar', 'Reativar', 'Anonimizar']) {
             await expect(row.getByRole('button', { name: `${action} ${removed}` })).toHaveCount(0);
         }
+    } finally {
+        deleteClient(id);
+    }
+});
+
+// CR-1-14 (code review do B1, ciclo 1): o cliente desativado com o Novo contato já aberto. A
+// recusa (N11) chega na chave "client", fora dos campos, e o formulário a mostra.
+test('novo contato em cliente desativado com o formulário aberto mostra a recusa no formulário', async ({ page }) => {
+    const stamp = Date.now();
+    const client = `E2E Cliente desativado no meio ${stamp}`;
+    const contact = `E2E Contato recusado ${stamp}`;
+    const id = createClient(client);
+    const clients = new ClientsPage(page);
+
+    try {
+        await clients.openSheet(client);
+        await page.getByRole('button', { name: 'Novo contato' }).first().click();
+        await expect(clients.admin.dialog).toBeVisible();
+        await clients.admin.dialog.getByLabel('Nome').fill(contact);
+
+        deactivateClient(id);
+        await clients.admin.dialog.getByRole('button', { name: 'Criar contato' }).click();
+
+        await expect(clients.admin.dialog.getByRole('alert')).toHaveText('Cliente desativado: reative o cliente para cadastrar contato.');
+        await expect(page.getByRole('button', { name: `Excluir ${contact}` })).toHaveCount(0);
     } finally {
         deleteClient(id);
     }

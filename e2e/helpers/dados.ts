@@ -45,3 +45,8 @@ export function deleteClient(id: number): void {
         App\\Platform\\Models\\Client::query()->whereKey(${id})->delete();
     `);
 }
+
+/** Desativa o cliente fora da tela, como outro administrador faria com o formulário já aberto. */
+export function deactivateClient(id: number): void {
+    tinker(`App\\Platform\\Models\\Client::query()->whereKey(${id})->update(['deactivated_at' => now()]);`);
+}
