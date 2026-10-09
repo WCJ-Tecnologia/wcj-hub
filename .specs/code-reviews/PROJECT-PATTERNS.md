@@ -2,8 +2,10 @@
 
 > Mantido pela skill `wcj-code-review`. Editável à mão.
 > Atualizado ao final de cada ciclo de review.
+>
+> O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
 
-**Última atualização:** 2026-10-09 · **Reviews acumulados:** 6 (b1-nucleo ciclos 1 a 6; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-09 · **Reviews acumulados:** 7 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -47,7 +49,7 @@
 ### CV-09 — Ação de linha pelo `useRowAction`
 - **Escopo:** botões de linha das listagens (Reativar, Desativar, Excluir…)
 - **Evidência:** `resources/js/hooks/use-row-action.ts`; `RowActions busy`/`disabled`; `e2e/clique-duplo.spec.ts`
-- **Visto em:** b1-nucleo ciclo 3 (CR-2-03, CR-2-07). Guarda por ref (dois cliques no mesmo quadro), outras linhas desabilitadas enquanto uma roda, liberação no `onFinish`. `useState` de `busy` copiado na página é desvio. Nota: a trava liga antes do `onStart`; ouvinte `router.on('before')` que cancele visita a prenderia
+- **Visto em:** b1-nucleo ciclo 3 (CR-2-03, CR-2-07). Guarda por ref (dois cliques no mesmo quadro), outras linhas desabilitadas enquanto uma roda, liberação no `onFinish`. `useState` de `busy` copiado na página é desvio. Nota: a trava liga antes do `onStart`; ouvinte `router.on('before')` que cancele visita a prenderia. **PR-8 ciclo 1:** a `w-users-page.tsx` do #8 (base B0) usava `useState(busy)`; o rebase do #8 trouxe a versão do B1 com `useRowAction` (CR-1-02 do PR-8)
 
 ### CV-10 — Ativar e desativar só por `Deactivatable::setActiveLocked`
 - **Escopo:** `deactivate`/`reactivate` de todo cadastro com `Deactivatable`
@@ -62,7 +64,14 @@
 ### CV-07 — Estado de lista pelo `ListBody`; texto de situação pelo `lib/situation.ts`
 - **Escopo:** páginas de listagem em `resources/js/pages/admin/**`
 - **Evidência:** `components/list-body.tsx`; `lib/situation.ts`; tabela "Componentes e hooks do projeto" no `AGENTS.md`
-- **Visto em:** b1-nucleo ciclo 2 (CR-1-09, CR-1-22). Lista nova não reescreve erro/carregando; componente novo entra na tabela do `AGENTS.md` no mesmo commit
+- **Visto em:** b1-nucleo ciclo 2 (CR-1-09, CR-1-22). Lista nova não reescreve erro/carregando; componente novo entra na tabela do `AGENTS.md` no mesmo commit. **PR-8 ciclo 1:** o #8 (base B0) não tinha `ListBody` nem `useListVisit`; o rebase portou como `WListBodyMolecule` (CR-1-02 do PR-8)
+
+---
+
+### CV-12 — Front em Atomic Design com shadcn em `components/shadcn/`; marca só por token, `text-primary-text` e `WBrandLogoAtom`
+- **Escopo:** `resources/js/components/**`, `.storybook/`, `design/tokens.json`, `public/brand/`
+- **Evidência:** `docs/adr/003-componentes-atomicos-e-storybook.md`; `docs/adr/005-marca-wcj.md`; `resources/js/components/README.md`; `AGENTS.md:112-131` (branch do #8); `rg "components/ui/|@/layouts/" resources/js e2e .storybook` vazio; `rg "text-primary([^-]|$)" resources/js` vazio; `cmp public/brand/*.svg docs/brand/logo/*` idênticos
+- **Visto em:** pr-8 ciclo 1 (aprovado pelo Lucas Scholz em 09/10). Primitivo novo só por `npm run shadcn -- add`; componente do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-<nome>-<nível>/` com `.tsx` + `.md` (+ `.stories.tsx` quando há o que ver); `resources/js/pages/*.tsx` é reexport de uma linha; layouts são os templates; Select, Sidebar, Table, Pagination, Sonner e `w-date-picker-molecule` são os do shadcn (nada de `<input type="date">`); texto azul é `text-primary-text`, nunca `text-primary`; logo só pelo `WBrandLogoAtom` com os SVG oficiais sem retoque; hex inline só nos Blade de e-mail. Desvio: `components/ui/`, `@/layouts/`, hex em componente, `text-[N]`, logo desenhado à mão, primitivo customizado sobrescrito pelo CLI. O `.ai/stacks/ui.md` e o `laravel-inertia.md` ainda citam o modelo antigo (são do template, não se editam aqui): o `AGENTS.md` prevalece
 
 ---
 
@@ -83,10 +92,22 @@
 - **Ação sugerida:** quando a correção toca as três telas, pedir o hook ou o componente no mesmo achado (ex.: `useRowAction()` para `busy`/`busyRow`/`rowPost`); `ListBody` e `deactivation()` já existem (CV-07)
 
 ### AP-04 — Decisão registrada aplicada só em parte dos documentos
-- **Ocorrências:** b1-nucleo ciclo 2 (CR-2-05: a D14 entrou no AC e na F1, não no N7 nem no escopo; corrigido no ciclo 3), b1-nucleo ciclo 3 (CR-3-05: a D-GER-31 corrigiu F2 a F7 e o escopo, mas não `plano-de-desenvolvimento.md:12,113`, `00-COMECE-AQUI.md:33` e `funcional/README.md:3,47`), b1-nucleo ciclo 6 (**CR-6-01**: as correções do CR-5-01 e do CR-5-02 mudaram o padrão no código, e o "Um jeito só" do `AGENTS.md:230-231` seguiu ensinando o antigo: cita o `resendInvite` como exemplo de "restaure a instância" e o `setActiveLocked` como dependente da transação de quem chama)
+- **Ocorrências:** b1-nucleo ciclo 2 (CR-2-05: a D14 entrou no AC e na F1, não no N7 nem no escopo; corrigido no ciclo 3), b1-nucleo ciclo 3 (CR-3-05: a D-GER-31 corrigiu F2 a F7 e o escopo, mas não `plano-de-desenvolvimento.md:12,113`, `00-COMECE-AQUI.md:33` e `funcional/README.md:3,47`), b1-nucleo ciclo 6 (**CR-6-01**: as correções do CR-5-01 e do CR-5-02 mudaram o padrão no código, e o "Um jeito só" do `AGENTS.md:230-231` seguiu ensinando o antigo: cita o `resendInvite` como exemplo de "restaure a instância" e o `setActiveLocked` como dependente da transação de quem chama). **pr-8 ciclo 1:** CR-1-06 (ADR-003 e ADR-004 aprovados em 09/10 seguiam "proposta" e sem `AD-` no `STATE.md`), CR-1-07 (`APP_BRAND_LOGO` removido do `.env.example` e do `config`, não de `.env.testing` e `.env.e2e.example`), CR-1-03 (ADR-004 numerado nas duas branches abertas: #5 ficha do cliente, #8 marca)
 - **Regressões:** 0
 - **Sinal:** commit de decisão que lista os documentos tocados; a porta de leitura (`00-COMECE-AQUI.md`) e o plano ficam de fora; **correção de review que muda um padrão citado no "Um jeito só" do `AGENTS.md`** sem tocar o `AGENTS.md`
 - **Ação sugerida:** em commit de decisão, `git grep` do termo antigo ("dono do módulo", o nome da regra) em `docs/` e `.specs/` antes de fechar
+
+### AP-05 — Fundação de front aberta em paralelo a blocos funcionais, renomeando o que eles editam
+- **Ocorrências:** pr-8 ciclo 1 (CR-1-02): o #8 parte do B0 e move/renomeia `components/ui/*`, `layouts/`, `data-table`, `row-actions`, `search-input`, `status-pill`, `user-form-dialog`, `app-sidebar`, que o #5 (B1) e o #6 (B2) editam; `git merge-tree` dá 9 conflitos com o #5 e 1 com o #6; 30 arquivos do B1 e 21 do B2 importam `@/components/ui/` ou `@/layouts/`; os componentes e hooks do B1 (CV-07, CV-09, `StatusPill` contact/audit, `DataTable rowClassName`, `SearchInput` do CR-1-10) não existem no #8
+- **Regressões:** 0 (ainda não integrado)
+- **Sinal:** PR que renomeia ou move pasta de `resources/js/components/` enquanto há PR aberto de bloco funcional; corpo do PR sem citar os PRs abertos; `git merge-tree --write-tree <branch> <cada PR aberto>` com conflito
+- **Ação sugerida:** rodar o `merge-tree` contra cada PR aberto antes de abrir o PR de fundação e colocar o resultado e a ordem proposta no corpo; quem é dono da estrutura porta os componentes dos outros (lista nominal no PR); rodar os e2e dos blocos portados depois da integração
+
+### AP-06 — Corpo do PR afirma "verde" com CI vermelho ou sem rodar
+- **Ocorrências:** pr-8 ciclo 1 (CR-1-01): "typecheck, lint e build verdes · E2E 13/13" com o job JS caído no `npm ci` em 9 s (lock fora de sincronia) e o E2E pulado
+- **Regressões:** 0
+- **Sinal:** `gh pr checks <n>` com fail/skipping; lock gerado numa máquina e `npm ci` em outra; PR sem link do run
+- **Ação sugerida:** o review começa por `gh pr checks` antes de ler o corpo; o corpo do PR cita o run; `npm ci` local reproduz o CI em segundos
 
 ### AP-03 — Correção no teste e2e sem correção no produto
 - **Ocorrências:** b1-nucleo (A5 → CR-1-10: `SearchInput` cancela escrita em voo; o page object passou a esperar a busca; o produto foi corrigido no ciclo 2, com e2e que força a corrida)
@@ -139,6 +160,16 @@
 - **Origem:** b1-nucleo ciclo 2 (CR-2-02): 22 commits de correção, incluindo Policy dentro do Service e trava de exclusão, sem rodada nova no `validation.md`
 - **Implica:** no ciclo N > 1 de bloco de trilho completo, conferir se o `validation.md` tem rodada posterior às correções; se não, é achado (Médio), não detalhe. Ciclo 3: a Rodada 9 (20/20 mutantes) atendeu ao CR-2-02; conferir por amostragem as linhas de evidência e não pedir de novo o que ela provou. As correções do ciclo 3 (CR-3-01 mexe em desativação) pedem rodada nova. Ciclo 4: não houve rodada sobre `e9b2731..6dec4f4` → CR-4-02 (Médio). Referência: o `validation.md` mais recente cobre o intervalo citado na linha `Result` do topo; conferir o intervalo, não só o PASS. Ciclo 5: rodadas 10 (`fef3766..7b96b12`, FAIL Minor só pelo mutante g2) e 11 (`b0a8d6f..7c228a8`, PASS) atenderam ao CR-4-02. A correção do CR-5-01 mexe em senha e pede rodada nova focada (mutante "emite pela instância em memória"). Ciclo 6: rodadas 12 (`03ae0f3..7487b53`, FAIL Minor só pelo mutante d) e 13 (`56139b2..fc7b73d`, PASS; a linha `Result` do topo cobre só a 13, as duas juntas cobrem o ciclo) atenderam; mutantes a a d mortos. Nenhum mutante tirou só o `lockForUpdate()` do `resendInvite` (CR-6-02)
 
+### DA-09 — Select e campo de data do shadcn no lugar dos nativos; Varanda decide escolhas de front
+- **Motivo:** decisão do Lucas Scholz em 09/10/2026, comentário no PR #8: aprovou o ADR-003 e o ADR-004, inclusive a troca do Select nativo (`.ai/stacks/ui.md` L66) e do `<input type="date">` pelos do shadcn, e deu ao Lucas Varanda autonomia nesse tipo de escolha pela experiência dele
+- **Origem:** pr-8 ciclo 1
+- **Implica:** não apontar "contraria o ui.md: Select nativo" nem "date nativo"; o ui.md é do template e não se edita no projeto, o `AGENTS.md` registra a divergência. Decisão de componente de front do Varanda não precisa de aval ponto a ponto; o que segue precisando de humano é o inegociável 5 (banco, auth, Policy, produção). Se a decisão se confirmar boa, sobe para o template `ai-systems`
+
+### DA-10 — PR #8 é fundação do front e precisa de ordem de integração com #5 e #6 decidida pelo Lucas
+- **Motivo:** CR-1-02 do pr-8: 9 conflitos com o #5, 1 com o #6, 51 imports quebrados, componentes do B1 ausentes
+- **Origem:** pr-8 ciclo 1; **decidido pelo Lucas Scholz em 09/10/2026:** #5 primeiro (mergeado, main `a1a052e`), #7 em seguida (`1a98616`), #8 faz o rebase e porta o B1 para a estrutura atômica, depois #6
+- **Implica:** no ciclo 2 do PR-8, conferir se o rebase portou a lista nominal (ListBody, useListVisit, ShowInactiveToggle, useRowAction, RowActions busy/disabled, StatusPill contact/audit, DataTable rowClassName, SearchInput do CR-1-10, telas de clientes/contatos/auditoria, tabela do AGENTS.md)
+
 ## Falsos positivos
 
 ### FP-01 — Gestor cria cliente em Administração → Clientes (não só pelo formulário do projeto)
@@ -166,6 +197,11 @@
 - **Por que não é problema:** gabarito do template; a F1 §03 cita a chave
 - **Reabrir apenas se:** alguém precisar listar só desativados ou só anonimizados
 
+### FP-06 — Select e `<input type="date">` nativos trocados pelos do shadcn "contra o ui.md"
+- **Apontado em:** pr-8 ciclo 1 (o próprio PR levantou como ponto que pedia aval)
+- **Por que não é problema:** aprovado pelo Lucas Scholz em 09/10/2026 (DA-09); o ui.md é do template
+- **Reabrir apenas se:** o template `ai-systems` incorporar a decisão de outro jeito, ou um uso real no celular pedir o seletor do sistema
+
 ### Registrado sem achado no ciclo 3 (não é FP: o Lucas não foi consultado)
 - Evidência de rodada antiga do `validation.md` (ex.: U3 da rodada 3 citando `isReset`) não se reescreve: o relatório é por rodadas e a mais nova é a vigente. Não apontar.
 - Commit de governança do próprio Lucas dentro do PR do B1 (`f1bebc7`, D-GER-31): não contradiz código; só vira achado se um documento contradisser a decisão (aí é o AP-04).
@@ -190,3 +226,13 @@
 - Comentário `UserService.php:78` "como toda escrita de usuário (CV-03)": o `update` ainda restaura a memória. Imprecisão de comentário.
 - Alvo excluído entre o binding e o reenvio agora dá 404 (`findOrFail` no `$locked`): ganho, não achado.
 - `AGENTS.md:78` e `spec.md:262` seguem sem o ciclo 5 e as rodadas 12 e 13: incompleto (vai junto do CR-6-01).
+
+### Registrado sem achado no ciclo 1 do PR-8 (não é FP: o Lucas não foi consultado)
+- Sentinela `all` dos Selects: Usuários omite `role_id` (`UserController.php:37`, `integer()`); Auditoria manda `''` com `nullable` + `! empty` (`AuditLogController.php:20-31`). Mesmo comportamento do nativo. Não apontar.
+- `WPaginationMolecule.kindOf` depende de "Previous/Next" ou `pagination.*`: o B0 tinha a mesma dependência, `locale` é `en`, não há `lang/`. Não é regressão.
+- `WAuthLayoutTemplate`: `h2` da marca antes do `h1` da tela. `heading-order` é best-practice do axe, fora das tags WCAG do gate. Não apontar enquanto o gate for esse.
+- Cookie `sidebar_state` sem `SameSite`: preferência de UI, `Lax` por padrão do navegador.
+- Hex inline nos Blade de e-mail: exceção documentada do ADR-004. Ícone `brand/wcj-icone-64.png` existe no PR.
+- `.storybook/main.ts` com `import.meta.resolve` e `staticDirs: ['../public']`: Node 22 no CI; servir `public/build` no Storybook é inofensivo.
+- Ícones lucide sem `aria-hidden` explícito em `WStatCardMolecule`/`WEmptyStateMolecule`: o `lucide-react` emite `aria-hidden="true"` por padrão.
+- "E2E 13/13 (axe)" do corpo do PR: não verificado neste ciclo (CI pulou, precisa de Laravel + MySQL). Registrar como "sem evidência", não como achado separado (está no CR-1-01).

@@ -28,6 +28,22 @@ Decisões de projeto (`AD-NNN`) e o ponto de retomada da skill `tlc-spec-driven`
 - **Date**: 2026-10-06
 - **Status**: active (aceita por Cauã; a confirmar pelo Lucas Scholz no PR do B1)
 
+### AD-003
+- **Decision**: Front em Atomic Design: primitivos do shadcn em `components/shadcn/`, componentes do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-*`, telas reexportadas de `resources/js/pages/`, Storybook 10 no CI; Select, Sidebar, Table, Pagination, Sonner e date picker do shadcn no lugar dos nativos. Ver `docs/adr/003-componentes-atomicos-e-storybook.md`.
+- **Reason**: catálogo e manual por componente para quem monta tela com IA; peças à mão sem trava de foco; o Select e o date nativos ficavam fora do tema.
+- **Trade-off**: diverge do `.ai/stacks/ui.md` do template (Select nativo, `components/ui/`, `layouts/`); perde o seletor do sistema no celular; um passo a mais no CI.
+- **Scope**: `resources/js/components/**`, `.storybook/`, `components.json`, `scripts/shadcn.mjs`, `.github/workflows/ci.yml`.
+- **Date**: 2026-10-09
+- **Status**: active
+
+### AD-005
+- **Decision**: Identidade visual da WCJ no Hub: dois azuis (`primary` #1A6CF3 em botão e foco, `primaryText` #0F4FC4 em texto), cantos de 5 px, logos oficiais sem configuração (`WBrandLogoAtom`), Space Mono em eyebrow, rótulo e número, e-mails com hex da marca, manifest. Ver `docs/adr/005-marca-wcj.md`.
+- **Reason**: o Hub é só da WCJ; o azul da marca reprova no AA como texto, então o texto usa o tom profundo.
+- **Trade-off**: a escala de raio do `build-theme.mjs` diverge da do template; trocar logo é trocar SVG a partir do mestre da marca.
+- **Scope**: `design/tokens.json`, `scripts/build-theme.mjs`, `resources/css/`, `public/brand/`, `resources/views/components/mail-layout.blade.php`.
+- **Date**: 2026-10-09
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: b1-nucleo (B1 Núcleo: usuários, clientes, contatos e auditoria), trilho completo.

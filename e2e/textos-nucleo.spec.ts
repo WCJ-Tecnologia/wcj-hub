@@ -25,11 +25,13 @@ test('o documento do cliente se chama CNPJ no Brasil e Identificador fiscal fora
     await expect(dialog.getByLabel('CNPJ')).toBeVisible();
     await expect(dialog.getByLabel('Identificador fiscal')).toHaveCount(0);
 
-    await dialog.getByLabel('País').selectOption('US');
+    await dialog.getByLabel('País').click();
+    await page.getByRole('option', { name: 'Estados Unidos' }).click();
     await expect(dialog.getByLabel('Identificador fiscal')).toBeVisible();
     await expect(dialog.getByLabel('CNPJ')).toHaveCount(0);
 
-    await dialog.getByLabel('País').selectOption('BR');
+    await dialog.getByLabel('País').click();
+    await page.getByRole('option', { name: 'Brasil' }).click();
     await expect(dialog.getByLabel('CNPJ')).toBeVisible();
     await clients.cancelForm();
 });
@@ -259,7 +261,8 @@ test('usuário: desativar e trocar o papel pedem as confirmações do F1 com o n
 
     await page.getByRole('button', { name: `Editar ${name}` }).click();
     const form = page.getByRole('dialog', { name: 'Editar usuário' });
-    await form.getByLabel('Papel').selectOption({ label: 'Gestor de projetos' });
+    await form.getByLabel('Papel').click();
+    await page.getByRole('option', { name: 'Gestor de projetos' }).click();
     await form.getByRole('button', { name: 'Salvar alterações' }).click();
     const confirm = page.getByRole('dialog', { name: 'Desconectar a IA' });
     await expect(confirm.getByText(`As conexões de IA de ${name} serão desconectadas. Continuar?`, { exact: true })).toBeVisible();

@@ -31,7 +31,6 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name'),
                 'brand' => [
                     'name' => config('app.brand.name'),
-                    'logo' => config('app.brand.logo'),
                 ],
             ],
             'auth' => [

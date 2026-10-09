@@ -10,7 +10,8 @@ export class AdminPage {
     constructor(readonly page: Page) {
         this.heading = page.getByRole('heading', { level: 1 });
         this.sidebar = page.getByRole('navigation').first();
-        this.toast = page.getByRole('status');
+        // Sonner: the toaster is a labelled region ("Avisos alt+T"), with aria-live.
+        this.toast = page.getByRole('region', { name: /^Avisos/ });
         this.dialog = page.getByRole('dialog');
     }
 

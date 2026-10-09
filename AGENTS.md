@@ -76,6 +76,7 @@ Atualizado em 2026-10-09.
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
 | B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5, 09/10): review de 07/10 aplicada, `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13; CR-1-01 (reenviar convite derruba as sessões) integrado no `UserService::resendInvite` pelo PR #7 |
+| Front: shadcn + Atomic Design + Storybook + marca WCJ (ADR-003, ADR-005) | PR #8 (`chore/marca-wcj`, Lucas Varanda); ADRs aprovados pelo Lucas Scholz em 09/10; `wcj-code-review` ciclo 1 (`.specs/code-reviews/`); rebase sobre o B1 com o porte dos componentes do Núcleo para a estrutura atômica; falta CI verde e o merge |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
@@ -113,21 +114,38 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 - **Morph map** (`AppServiceProvider::registerMorphMap`, `enforceMorphMap`): `audit_logs.auditable_type` guarda o alias (`user`, `task`…), não o nome da classe.
 - **Passport 13** instalado (tabelas e chaves), com as rotas `/oauth/*` desligadas até o B8 (`Passport::ignoreRoutes`). `laravel/mcp` entra no B8.
 - **Parâmetros** em `config/hub.php` + `.env` (T5); não há tabela de configurações.
-- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token.
+- **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token. Marca no front pelo ADR-005:
+  - dois azuis: `bg-primary` (`#1A6CF3`) em botão e foco, `text-primary-text` (`#0F4FC4`) em texto e link, nunca `text-primary`;
+  - cantos de 5 px;
+  - logo só pelo `WBrandLogoAtom`, com os SVG oficiais em `public/brand/`, que não se redesenham;
+  - eyebrow, rótulo e número em Space Mono;
+  - padrão de nós só no painel do login;
+  - e-mail com hex inline da marca (`resources/views/components/mail-layout.blade.php`).
+- **Front em Atomic Design** (ADR-003, diverge do `.ai/stacks/ui.md` e do `laravel-inertia.md`, que ainda citam `components/ui/`, `layouts/` e o Select nativo):
+  - primitivos do shadcn planos em `resources/js/components/shadcn/`; o `components.json` aponta para lá e o primitivo novo entra por `npm run shadcn -- add <nome>`;
+  - componentes do Hub em `components/{atoms,molecules,organisms,templates,pages}/w-<nome>-<nível>/`, cada um com `.tsx`, `.md` (manual) e `.stories.tsx` quando há o que ver;
+  - `resources/js/pages/*.tsx` só reexporta a tela de `components/pages/`;
+  - os layouts são os templates (`w-app-layout-template`, `w-auth-layout-template`);
+  - Select, Sidebar, Table, Pagination, toast (Sonner, no topo e centralizado) e campo de data (`w-date-picker-molecule`, sobre Calendar + Popover) são os do shadcn; nada de `<input type="date">`;
+  - convenção completa em `resources/js/components/README.md`.
+- **Storybook 10** (`npm run storybook`, porta 6006): catálogo dos componentes, com o `@inertiajs/react` trocado por `.storybook/inertia-mock.tsx` e dados de exemplo em `.storybook/fixtures.ts`. O CI roda `npm run build-storybook`.
 - **Componentes e hooks do projeto**, além da tabela do template (`.ai/stacks/ui.md` §5, que não se edita aqui). Quem criar componente registra nesta tabela no mesmo commit (`ui.md` §5):
 
 | Componente | Onde | Uso |
 |---|---|---|
-| `ListBody` | `components/list-body.tsx` | estados de erro ("Não foi possível carregar…", Tentar de novo) e carregando (`aria-busy`, `role="status"`) em volta da tabela de uma lista, com o `useListVisit` |
+| `WListBodyMolecule` | `components/molecules/w-list-body-molecule/` | estados de erro ("Não foi possível carregar…", Tentar de novo) e carregando (`aria-busy`, `role="status"`) em volta da tabela de uma lista, com o `useListVisit` |
 | `useListVisit` | `hooks/use-list-visit.ts` | carregando e erro só das visitas GET de uma lista (busca, filtro, página) |
-| `ShowInactiveToggle` | `components/show-inactive-toggle.tsx` | a chave "Mostrar desativados" das listas (F1 §05) |
-| `AlphanumericCnpjInput` | `components/ui/masked-input.tsx` | CNPJ alfanumérico com máscara, maiúsculo (N5) |
+| `WShowInactiveToggleMolecule` | `components/molecules/w-show-inactive-toggle-molecule/` | a chave "Mostrar desativados" das listas (F1 §05) |
+| `AlphanumericCnpjInput` | `components/shadcn/masked-input.tsx` | CNPJ alfanumérico com máscara, maiúsculo (N5) |
 | `deactivation()`, `situation()` | `lib/situation.ts` | "em DD/MM/AAAA por Fulano" e "Ativo" / "Desativado em…" / "Anonimizado", nas três tabelas e nos formulários |
-| `StatusPill` `kind="contact"` e `kind="audit"` | `components/status-pill.tsx` | ativo / desativado / anonimizado do contato; ok / negado da auditoria |
-| `DataTable` `rowClassName` | `components/data-table.tsx` | linha negada em destaque na auditoria |
-| `RowActions` `busy` e `disabled` | `components/row-actions.tsx` | `busy`: esta linha roda (desabilita, esmaece, `aria-busy`); `disabled`: outra linha roda (só desabilita) |
-| `useRowAction` | `hooks/use-row-action.ts` | a única trava de clique duplo das ações de linha: `post`/`del` ignoram o clique enquanto qualquer ação de linha roda (uma visita não-GET cancelaria a outra no Inertia 2), `isBusy(row)`/`isLocked(row)` alimentam o `RowActions`, `busy` é o `loading` dos `ConfirmDialog` |
-| `SearchInput` | `components/search-input.tsx` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
+| `WStatusPillAtom` `kind="contact"` e `kind="audit"` | `components/atoms/w-status-pill-atom/` | ativo / desativado / anonimizado do contato; ok / negado da auditoria |
+| `WDataTableOrganism` `rowClassName` | `components/organisms/w-data-table-organism/` | linha negada em destaque na auditoria |
+| `WRowActionsMolecule` `busy` e `disabled` | `components/molecules/w-row-actions-molecule/` | `busy`: esta linha roda (desabilita, esmaece, `aria-busy`); `disabled`: outra linha roda (só desabilita) |
+| `useRowAction` | `hooks/use-row-action.ts` | a única trava de clique duplo das ações de linha: `post`/`del` ignoram o clique enquanto qualquer ação de linha roda (uma visita não-GET cancelaria a outra no Inertia 2), `isBusy(row)`/`isLocked(row)` alimentam o `WRowActionsMolecule`, `busy` é o `loading` dos `WConfirmDialogMolecule` |
+| `WSearchInputMolecule` | `components/molecules/w-search-input-molecule/` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
+| `useContactActions` | `hooks/use-contact-actions.tsx` | criar, editar e as ações de linha do contato, as mesmas na lista geral e na ficha do cliente; devolve `openCreate`, `rowActions` e `dialogs` |
+| `WDatePickerMolecule` | `components/molecules/w-date-picker-molecule/` | campo de data em `AAAA-MM-DD`, no lugar do `<input type="date">`; aceita `id`, `aria-invalid` e `aria-describedby` do `WFormFieldMolecule` |
+| Tabelas e formulários do Núcleo | `components/organisms/w-{user,client,contact,audit-log}-table-organism/`, `w-{user,client,contact}-form-dialog-organism/`, `w-anonymize-contact-dialog-organism/`, `w-audit-log-filters-organism/`, `w-audit-log-detail-dialog-organism/` | as colunas do F1 §03 e os modais do F1 §02/§04, um por entidade; a tela (`components/pages/w-*-page/`) só junta |
 
 ## Como rodar
 
@@ -139,6 +157,7 @@ composer dev                         # servidor, fila, logs e Vite
 
 composer lint && php artisan test    # MySQL 8 (wcj_hub_test); precisa do docker compose up -d mysql
 npm run typecheck && npm run lint && npm run build
+npm run storybook                    # catálogo dos componentes em http://localhost:6006
 npm run e2e:prepare && npm run e2e:serve   # em outro terminal: npx playwright test
 npm run test:guard
 php artisan app:limpar-exemplo       # apaga o dado de exemplo ("[Exemplo] …", @exemplo.wcj.test)
@@ -224,6 +243,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Telefone de contato: texto como foi digitado (com o "+"), sem máscara do Brasil; a busca compara só os dígitos (D3 da review do B1).
 - Domínio fechado: compare pelo id da constante do Model (`StageRole::QUEUE`, `TaskPriority::NORMAL`, `ContactChannel::WHATSAPP`) ou pelo slug; os ids são os da semente.
 - Dado de exemplo: só pelo `ExemploSeeder`, marcado por `App\Support\Exemplo`.
+- Componente: procure em `resources/js/components/` (leia o `.md` da pasta) antes de criar; primitivo só pelo `npm run shadcn -- add`; um `cn` só, o de `@/lib/utils`.
 - Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
 - Unique do banco em gravação simultânea: o trait `App\Platform\Services\Concerns\RefusesDuplicates` (`writeOrRefuseDuplicate`), que vira `ValidationException` só quando o índice violado é o esperado e relança o resto. Nunca `catch (UniqueConstraintViolationException)` solto.
 - Busca por texto: `App\Support\Like::contains()`; nunca `"%{$termo}%"` à mão.

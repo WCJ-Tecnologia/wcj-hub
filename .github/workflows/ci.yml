@@ -48,7 +48,7 @@ jobs:
             echo "MySQL {$v}, {$n} migrations\n"; exit($n > 0 ? 0 : 1);'
 
   js:
-    name: JS (typecheck + lint + build)
+    name: JS (typecheck + lint + build + storybook)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,6 +60,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+      - name: Storybook (stories compilam; ADR-003)
+        run: npm run build-storybook
       - name: Agent guard hooks
         run: npm run test:guard
       - name: Skills (copies in .claude, .cursor and .codex match .ai/skills; installer and specs gate tests)
