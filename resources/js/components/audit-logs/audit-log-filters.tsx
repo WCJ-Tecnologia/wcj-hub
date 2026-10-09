@@ -61,10 +61,6 @@ const SELECTS: { key: keyof AuditOptions; param: keyof AuditFilters; label: stri
 
 /** Período, Quem, Canal, Ação, Tipo de registro, Resultado e a busca pelo registro (F1 §05). */
 export function AuditLogFilters({ filters, options }: { filters: AuditFilters; options: AuditOptions }) {
-    const params = filterParams(filters);
-    const visit = (next: Record<string, string | number | undefined>) =>
-        router.get(AUDIT_URL, { ...params, ...next }, { preserveState: true, replace: true });
-
     // "De" e "Até" com estado local (CR-1-07): cada segmento digitado é uma data válida, e uma
     // visita por tecla devolvia o valor antigo até a resposta chegar. A visita sai 300 ms depois
     // da última mudança (molde do SearchInput), ou na hora ao sair do campo ou com Enter.
@@ -91,6 +87,12 @@ export function AuditLogFilters({ filters, options }: { filters: AuditFilters; o
 
     // "from" vai sempre, vazio quando apagado (filterParams); "to" vazio sai da query.
     const period = (nextFrom: string, nextTo: string) => ({ from: nextFrom, to: nextTo || undefined });
+
+    // Os selects e a busca levam o período dos campos, não o do servidor (CR-2-10): trocar um
+    // select logo depois de aplicar a data cancelaria a visita da data e sairia com o período antigo.
+    const params = { ...filterParams(filters), ...period(from, to) };
+    const visit = (next: Record<string, string | number | undefined>) =>
+        router.get(AUDIT_URL, { ...params, ...next }, { preserveState: true, replace: true });
 
     const applyPeriod = (nextFrom: string, nextTo: string) => {
         if (timer.current) clearTimeout(timer.current);
@@ -159,9 +161,12 @@ export function AuditLogFilters({ filters, options }: { filters: AuditFilters; o
                         key={select.param}
                         value={String(filters[select.param] ?? '')}
                         // Trocar o tipo sai do Histórico de uma ficha: o id era daquele tipo.
-                        onChange={(event) =>
-                            visit({ [select.param]: event.target.value || undefined, ...(select.param === 'type' && { id: undefined }) })
-                        }
+                        // O período dos campos vai junto: a data que esperava a pausa não sai depois.
+                        onChange={(event) => {
+                            if (timer.current) clearTimeout(timer.current);
+                            timer.current = null;
+                            visit({ [select.param]: event.target.value || undefined, ...(select.param === 'type' && { id: undefined }) });
+                        }}
                         aria-label={select.label}
                     >
                         <option value="">{select.all}</option>

@@ -31,3 +31,38 @@ test('auditoria: digitar a data no filtro De faz uma visita só e o campo guarda
     await expect(from).toHaveValue('2026-01-01');
     expect(visits).toEqual(['2026-01-01']);
 });
+
+/**
+ * CR-2-10 (code review do B1, ciclo 2): sair do "De" aplica a data na hora; um select trocado
+ * antes dessa visita voltar saía com o período do servidor e cancelava a da data, e a lista
+ * ficava filtrada por um período diferente do que o campo mostra. Agora os selects levam o
+ * período dos campos. As visitas da lista são seguradas 600 ms para a corrida acontecer sempre.
+ */
+test('auditoria: trocar um select logo depois de aplicar a data mantém a data nova', async ({ page }) => {
+    const audit = new AuditLogsPage(page);
+    await audit.goto();
+
+    await page.route(
+        (url) => url.pathname === '/admin/audit-logs',
+        async (route) => {
+            if (route.request().headers()['x-inertia']) await new Promise((resolve) => setTimeout(resolve, 600));
+            await route.continue().catch(() => undefined);
+        },
+    );
+
+    try {
+        const from = page.getByLabel('De', { exact: true });
+        await from.focus();
+        await page.keyboard.type('01012026', { delay: 50 });
+        await expect(from).toHaveValue('2026-01-01');
+        // Sair do campo aplica a data; o select vem logo em seguida, com a visita da data em voo.
+        await from.blur();
+        await page.getByLabel('Resultado').selectOption({ label: 'Negado' });
+
+        await expect.poll(() => new URL(page.url()).searchParams.get('outcome')).toBe('denied');
+        await expect.poll(() => new URL(page.url()).searchParams.get('from')).toBe('2026-01-01');
+        await expect(from).toHaveValue('2026-01-01');
+    } finally {
+        await page.unrouteAll({ behavior: 'ignoreErrors' }).catch(() => undefined);
+    }
+});
