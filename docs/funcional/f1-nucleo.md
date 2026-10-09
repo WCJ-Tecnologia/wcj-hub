@@ -1,6 +1,6 @@
 # F1. Núcleo: usuários, clientes, contatos e auditoria
 
-**Documento funcional.** Versão 1.1, de 08/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). A 1.1 traz as decisões do Lucas Scholz na review do PR do B1 (07/10): gestor cria cliente também em Administração → Clientes, aviso de e-mail repetido por papel, telefone como texto, a WCJ sem troca de CNPJ e país, os textos da confirmação de desativar cliente e o rótulo "Outra ação" na auditoria. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.2, de 09/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). A 1.1 traz as decisões do Lucas Scholz na review do PR do B1 (07/10): gestor cria cliente também em Administração → Clientes, aviso de e-mail repetido por papel, telefone como texto, a WCJ sem troca de CNPJ e país, os textos da confirmação de desativar cliente e o rótulo "Outra ação" na auditoria. A 1.2 registra a decisão do ciclo 1 da code review (09/10): a WCJ também não se exclui. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
@@ -92,7 +92,7 @@ Estado vazio em toda lista: uma frase e o botão de criar ("Nenhum cliente ainda
 | Novo cliente | Administrador; gestor, pelo botão *Novo cliente* do formulário do projeto (F2) e em Administração → Clientes | Cria o cliente, sem contrato (N5, N6). | CNPJ repetido: recusa com "Já existe o cliente X com este CNPJ" (N5). |
 | Editar | Administrador; gestor nos clientes dos projetos dele (N6) | Nome, país, documento. Na WCJ, só o nome: o CNPJ e o país são o que a identifica (N7). | Mesma recusa de CNPJ repetido. Na WCJ, trocar CNPJ ou país é recusado com "O CNPJ e o país da WCJ não podem ser alterados". |
 | Desativar / Reativar | Administrador | Desativado sai das listas de escolha (ex.: criar projeto) e fica em cinza; ter projeto aberto não impede (N11). | "O cliente X tem N projetos abertos; eles continuam. Desativar?". Com 1: "O cliente X tem 1 projeto aberto; ele continua. Desativar?". Sem projeto aberto: "O cliente X sai das listas de escolha. Desativar?". |
-| Excluir | Administrador | Só cliente sem projeto e sem contato (G2). | "Excluir de verdade. Não dá para desfazer." |
+| Excluir | Administrador | Só cliente sem projeto e sem contato (G2). A WCJ nunca: é ela que existe em toda instalação (N7). | "Excluir de verdade. Não dá para desfazer." Na WCJ: "A WCJ não pode ser excluída". |
 | Histórico | Administrador | Auditoria filtrada no cliente. | |
 
 ### Contatos

@@ -2,9 +2,9 @@
 
 Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.0 (aprovado em 06/10/2026), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.txt`](../../../docs/banco.txt) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
 
-**Approved by**: Lucas Scholz, 2026-10-06
+**Approved by**: Lucas Scholz, 2026-10-09
 
-**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. **Revisada em 07/10/2026** (ponto do Vitinho, aceito por Lucas Scholz): as Policies não leem `projects`; perguntam ao contrato `Platform\Contracts\ClientManagement` (ver premissas e NUC-06/NUC-08). **Revisada em 08/10/2026** com as decisões de Lucas Scholz na review do PR #5 (07/10): excluir o já usado mostra toast de erro, não 403 (D6); textos da confirmação de desativar cliente e o contrato em lote (D7); aviso de e-mail repetido por papel (D2); telefone como texto (D3); gestor cria cliente também em Administração → Clientes (D1); a WCJ não troca de CNPJ nem de país e a autorização vem antes da validação (achados A1 e A2). Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
+**Aprovada por Lucas Scholz em 06/10/2026** (inclusive as premissas de reenvio de convite e de revogação de IA na tabela do Hub). Escrita no mesmo dia com IA. **Revisada em 07/10/2026** (ponto do Vitinho, aceito por Lucas Scholz): as Policies não leem `projects`; perguntam ao contrato `Platform\Contracts\ClientManagement` (ver premissas e NUC-06/NUC-08). **Revisada em 08/10/2026** com as decisões de Lucas Scholz na review do PR #5 (07/10): excluir o já usado mostra toast de erro, não 403 (D6); textos da confirmação de desativar cliente e o contrato em lote (D7); aviso de e-mail repetido por papel (D2); telefone como texto (D3); gestor cria cliente também em Administração → Clientes (D1); a WCJ não troca de CNPJ nem de país e a autorização vem antes da validação (achados A1 e A2). **Revisada em 09/10/2026** com as decisões de Lucas Scholz no ciclo 1 da `wcj-code-review` (`code-reviews/b1-nucleo-code-review-ciclo-1.md`): a WCJ também não se exclui (Clientes AC 10, CR-1-04); as listas de escolha ficam sem rota JSON, com a Policy conferida dentro do Service (P2, CR-1-05); a retirada do aviso "ao sair do campo" é decisão dele (D12 do design, CR-1-06); a aprovação acima cobre a revisão de 08/10. Implementa: Cauã, a partir da fase Tasks. Escopo da skill: **Large** (quatro telas, Policies, exclusão de verdade, e-mail, auditoria).
 
 ## Problem Statement
 
@@ -113,7 +113,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 7. IF um Gestor de projetos edita um cliente que o contrato `ClientManagement` não lista para ele (com a implementação vazia do B1, nenhum), ou tenta desativar, reativar ou excluir qualquer cliente THEN o sistema SHALL responder 403 e manter o cliente sem mudança (F1 §09).
 8. IF um Desenvolvedor acessa qualquer rota de clientes THEN o sistema SHALL responder 403 (F1 §09).
 9. WHEN o Administrador desativa um cliente THEN o sistema SHALL desativar mesmo com projetos abertos, após a confirmação "O cliente X tem N projetos abertos; eles continuam. Desativar?" (N ≥ 2), "O cliente X tem 1 projeto aberto; ele continua. Desativar?" (N = 1) ou "O cliente X sai das listas de escolha. Desativar?" (N = 0), e tirar o cliente das listas de escolha (N11). N vem do contrato `ClientManagement` pelo método em lote `openProjectsCountByClient`, uma chamada por página da lista (D7 de 07/10).
-10. IF o Administrador tenta desativar o cliente WCJ (documento `38614817000122`) THEN o sistema SHALL responder 403 com "A WCJ não pode ser desativada" (N7); IF alguém edita a WCJ trocando o país ou o documento THEN o sistema SHALL recusar com "O CNPJ e o país da WCJ não podem ser alterados" e não mudar nada (N7; A2 de 07/10).
+10. IF o Administrador tenta desativar o cliente WCJ (documento `38614817000122`) THEN o sistema SHALL responder 403 com "A WCJ não pode ser desativada" (N7); IF alguém edita a WCJ trocando o país ou o documento THEN o sistema SHALL recusar com "O CNPJ e o país da WCJ não podem ser alterados" e não mudar nada (N7; A2 de 07/10); IF alguém tenta excluir o cliente WCJ, pela tela ou chamando `ClientService::delete` THEN o sistema SHALL recusar com "A WCJ não pode ser excluída" e não mudar nada, mesmo sem contato nem projeto (N7; CR-1-04, decisão de 09/10).
 11. WHEN o Administrador exclui um cliente sem contato e sem projeto THEN o sistema SHALL apagar a linha e gravar `deleted` na auditoria (G2).
 12. IF o Administrador tenta excluir um cliente com contato ou projeto THEN o sistema SHALL mostrar o toast de erro "Cliente já usado: desative em vez de excluir" e não mudar nada (a linha fica) (G2; D6 de 07/10).
 13. The sistema SHALL listar clientes com Nome, País, CNPJ / identificador e Situação, busca por nome e documento, filtros País e Situação (ativos por padrão), e o estado vazio "Nenhum cliente ainda" com o botão *Novo cliente* (F1 §03, §05).
@@ -176,15 +176,15 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 
 **User Story**: As a Gestor de projetos, I want ver os nomes dos usuários ativos e dos clientes ativos so that eu escolha gestor, pessoas alocadas e cliente ao montar um projeto no B2.
 
-**Why P2**: Não é tela própria do B1; é o endpoint de escolha que o B2 e o B3 consomem.
+**Why P2**: Não é tela própria do B1 nem rota JSON: são os métodos `UserService::choiceList` e `ClientService::choiceList`, que o B2 e o B3 entregam como props das páginas deles (D6 do design, aceita por Lucas Scholz em 09/10, D13; CR-1-05).
 
 **Acceptance Criteria**:
 
 1. WHEN um Gestor de projetos pede a lista de escolha de usuários THEN o sistema SHALL devolver só `id`, `name` e `role` dos usuários ativos, sem e-mail, carga ou marca da IA (F1 §09).
 2. WHEN um Gestor de projetos pede a lista de escolha de clientes THEN o sistema SHALL devolver só `id` e `name` dos clientes ativos (F1 §09).
-3. IF um Desenvolvedor pede a lista de escolha de usuários ou de clientes THEN o sistema SHALL responder 403 (F1 §09; o B3 entrega ao dev só os alocados do projeto).
+3. IF um Desenvolvedor, ou qualquer papel sem `viewChoiceList` na Policy, chama `choiceList()` de usuários ou de clientes THEN o sistema SHALL recusar com `AuthorizationException` (403 quando a chamada vem de uma rota) sem devolver nenhum registro, e gravar a negação em `audit_logs` com `outcome = denied` (F1 §09; a Policy é conferida dentro do Service, por isso nenhum chamador do B2 ou do B8 a pula; o B3 entrega ao dev só os alocados do projeto).
 
-**Independent Test**: Logado como gestor, chamar o endpoint e ver só nome e papel; como dev, 403.
+**Independent Test**: Como gestor, `choiceList()` devolve só nome e papel; como dev, lança a exceção e a auditoria ganha a linha negada.
 
 ---
 

@@ -736,6 +736,8 @@ Observação para o Lucas (não é gap, a spec não pede): a WCJ é reconhecida 
 
 ## Declared Deviations
 
+Em 09/10/2026 (ciclo 1 da `wcj-code-review`, decisões do Lucas Scholz, D12 a D16 do design): o P2 AC 3 deixou de ser desvio, porque a D6 (listas de escolha sem rota) foi aceita e o AC foi reescrito no nível da Policy, conferida dentro de `choiceList()` (CR-1-05); "a WCJ não pode ser excluída" entrou na spec (Clientes AC 10) e no Service (CR-1-04); a retirada do aviso "ao sair do campo" ficou registrada (D12, CR-1-06); a linha **Approved by** da spec passou a 2026-10-09, cobrindo a revisão de 08/10. Os ciclos seguintes estão em `code-reviews/`.
+
 Na rodada 7, o que era desvio e o Lucas Scholz decidiu (review de 07/10) saiu desta tabela e virou regra na spec (T50): os três `destroy` com toast em vez de 403 (**D6**: Usuários AC 12, Clientes AC 12, Contatos AC 9 reescritos; `grep SPEC_DEVIATION` vazio); o 3º método do contrato, agora em lote, `openProjectsCountByClient` (**D7**); as variantes N = 0 e N = 1 do texto de desativar cliente (**D7**, textos como estão); a WCJ com CNPJ e país editáveis (virou recusa, achado **A2**).
 
 ### Decisões do Lucas Scholz (07/10) registradas

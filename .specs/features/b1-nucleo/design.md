@@ -213,3 +213,15 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 | D9 | Carga diária sem passo de 0,25 | `user-form-dialog.tsx` com `step="any"` |
 | D10 | Lista geral de contatos vazia com "Ir para Clientes" até o B2 | Sem mudança |
 | D11 | Contato excluído deixa dado pessoal na linha `deleted` da auditoria | Limitação registrada na `necessidade.md` (N12) |
+
+### Decisões do ciclo 1 da `wcj-code-review` (Lucas Scholz, 09/10/2026)
+
+Relatório: `code-reviews/b1-nucleo-code-review-ciclo-1.md`.
+
+| # | Decisão | Onde ficou |
+| --- | --- | --- |
+| D12 | O aviso de e-mail repetido "ao sair do campo" saiu da premissa na revisão de 08/10 sem decisão registrada; a retirada é decisão do Lucas Scholz em 09/10: o aviso aparece só depois do envio (CR-1-06) | Spec, premissa "Aviso de e-mail repetido no contato"; sem código |
+| D13 | A D6 (listas de escolha sem rota JSON; o B2 entrega como props) é desvio da spec aceito; o P2 AC 3 vale no nível da Policy, conferida dentro de `choiceList()`, com a negação auditada (CR-1-05) | `UserService::choiceList`, `ClientService::choiceList`, `AuditService::inspectFor`; spec P2 |
+| D14 | A WCJ não pode ser excluída: a trava fica na Policy e também no Service, como a de desativar (CR-1-04) | `ClientService::delete`; spec Clientes AC 10; F1 §04 |
+| D15 | CR-1-01 (reenviar convite não derruba as sessões abertas do alvo) é autenticação (inegociável 5): sai em branch própria a partir da `main`, não neste PR | Branch `fix/reenviar-convite-derruba-sessoes`, PR próprio |
+| D16 | Ficam para decisão dele: prazo da senha provisória (CR-1-11, pede coluna ou leitura da auditoria), o `min` da carga diária na tela (CR-1-12, tela × servidor) e o índice da auditoria por `created_at` (CR-1-23, migração) | Relatório do ciclo seguinte, seção "para o Lucas" |
