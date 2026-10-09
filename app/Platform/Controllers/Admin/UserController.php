@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
+use App\Platform\Services\UserPresenter;
 use App\Platform\Services\UserService;
-use App\Support\LocalTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,10 @@ use Inertia\Response;
 /** Usuários (F1; N1 a N4, N11). A regra mora no UserService. */
 class UserController extends Controller
 {
-    public function __construct(private readonly UserService $users) {}
+    public function __construct(
+        private readonly UserService $users,
+        private readonly UserPresenter $presenter,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -32,7 +35,7 @@ class UserController extends Controller
         $viewer = $request->user();
 
         return Inertia::render('admin/users/index', [
-            'users' => $this->users->paginate($filters)->withQueryString()->through(fn (User $user) => $this->row($user, $viewer)),
+            'users' => $this->users->paginate($filters)->withQueryString()->through(fn (User $user) => $this->presenter->row($user, $viewer)),
             'filters' => $filters,
             'roles' => array_map(fn (RoleEnum $role) => ['id' => $role->value, 'label' => $role->label()], RoleEnum::cases()),
         ]);
@@ -94,32 +97,5 @@ class UserController extends Controller
         }
 
         return back()->with('success', "Convite reenviado para {$user->email}. {$user->firstName()} troca a senha no próximo acesso.");
-    }
-
-    /**
-     * Os botões da linha vêm da UserPolicy, como em Clientes e Contatos (CR-1-08): a tela não
-     * repete regra. Excluir só aparece para quem nunca entrou (F1 §04, G2).
-     *
-     * @return array<string, mixed>
-     */
-    private function row(User $user, User $viewer): array
-    {
-        $active = $user->isActive();
-
-        return [
-            ...$user->only(['id', 'name', 'email', 'role_id', 'daily_hours', 'ai_write_allowed', 'must_change_password']),
-            'role_label' => $user->type()->label(),
-            'active' => $active,
-            'deactivated_at' => LocalTime::format($user->deactivated_at),
-            'deactivated_by' => $user->deactivatedBy?->name,
-            'last_login_at' => LocalTime::format($user->last_login_at),
-            'can' => [
-                'update' => $viewer->can('update', $user),
-                'deactivate' => $active && $viewer->can('deactivate', $user),
-                'reactivate' => ! $active && $viewer->can('reactivate', $user),
-                'delete' => $user->last_login_at === null && $viewer->can('delete', $user),
-                'resend_invite' => $viewer->can('resendInvite', $user),
-            ],
-        ];
     }
 }

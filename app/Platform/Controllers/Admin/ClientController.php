@@ -3,14 +3,13 @@
 namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Platform\Contracts\ClientManagement;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreClientRequest;
+use App\Platform\Services\ClientPresenter;
 use App\Platform\Services\ClientService;
 use App\Platform\Services\ContactPresenter;
-use App\Support\LocalTime;
 use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +21,7 @@ class ClientController extends Controller
 {
     public function __construct(
         private readonly ClientService $clients,
-        private readonly ClientManagement $management,
+        private readonly ClientPresenter $presenter,
         private readonly ContactPresenter $contactPresenter,
     ) {}
 
@@ -38,10 +37,10 @@ class ClientController extends Controller
         ];
         $user = $request->user();
         $page = $this->clients->paginate($filters)->withQueryString();
-        $openProjects = $this->openProjects($page->items(), $user);
+        $openProjects = $this->presenter->openProjects($page->items(), $user);
 
         return Inertia::render('admin/clients/index', [
-            'clients' => $page->through(fn (Client $client) => $this->row($client, $user, $openProjects)),
+            'clients' => $page->through(fn (Client $client) => $this->presenter->row($client, $user, $openProjects)),
             'filters' => $filters,
             'countries' => Paises::opcoes(),
             'can' => ['create' => $user->can('create', Client::class)],
@@ -56,7 +55,7 @@ class ClientController extends Controller
         $client->load('deactivatedBy:id,name');
 
         return Inertia::render('admin/clients/show', [
-            'client' => $this->row($client, $user, $this->openProjects([$client], $user)),
+            'client' => $this->presenter->row($client, $user, $this->presenter->openProjects([$client], $user)),
             'contacts' => $user->can('viewAny', [Contact::class, $client]) ? $this->contacts($client, $user) : null,
             // Cliente desativado não ganha contato (N11): o botão some em vez de dar erro.
             'can_create_contact' => $client->isActive() && $user->can('create', [Contact::class, $client]),
@@ -95,52 +94,6 @@ class ClientController extends Controller
         $this->authorize('delete', $client);
 
         return $this->attempt(fn () => $this->clients->delete($client, $request->user()), 'Cliente excluído.');
-    }
-
-    /**
-     * Para a confirmação de desativar (F1 §04): só quem pode desativar precisa do número, e a
-     * página inteira vai numa chamada ao contrato (A7 da review de 07/10).
-     *
-     * @param  array<int, Client>  $clients
-     * @return array<int, int> id do cliente → projetos abertos
-     */
-    private function openProjects(array $clients, User $user): array
-    {
-        $ids = array_values(array_map(
-            fn (Client $client) => $client->id,
-            array_filter($clients, fn (Client $client) => $this->canDeactivate($client, $user)),
-        ));
-
-        return $ids === [] ? [] : $this->management->openProjectsCountByClient($ids);
-    }
-
-    private function canDeactivate(Client $client, User $user): bool
-    {
-        return $client->isActive() && $user->can('deactivate', $client);
-    }
-
-    /**
-     * @param  array<int, int>  $openProjects
-     * @return array<string, mixed>
-     */
-    private function row(Client $client, User $user, array $openProjects): array
-    {
-        $canDeactivate = $this->canDeactivate($client, $user);
-
-        return [
-            ...$client->only(['id', 'name', 'country', 'document']),
-            'country_name' => Paises::nome($client->country),
-            'active' => $client->isActive(),
-            'deactivated_at' => LocalTime::format($client->deactivated_at),
-            'deactivated_by' => $client->deactivatedBy?->name,
-            'open_projects' => $canDeactivate ? ($openProjects[$client->id] ?? 0) : null,
-            'can' => [
-                'update' => $user->can('update', $client),
-                'deactivate' => $canDeactivate,
-                'reactivate' => ! $client->isActive() && $user->can('reactivate', $client),
-                'delete' => $user->can('delete', $client),
-            ],
-        ];
     }
 
     /** @return list<array<string, mixed>> */
