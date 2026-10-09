@@ -84,30 +84,35 @@ class UserService
     {
         $this->ensureDailyHours($data);
 
-        DB::transaction(function () use ($user, $data, $actor) {
-            if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
-                $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
-            }
+        try {
+            DB::transaction(function () use ($user, $data, $actor) {
+                if ((int) $data['role_id'] !== RoleEnum::ADMIN->value) {
+                    $this->ensureNotLastActiveAdmin($user, 'alterar o papel');
+                }
 
-            $before = $this->snapshot($user);
+                $before = $this->snapshot($user);
 
-            $user->fill([
-                'role_id' => (int) $data['role_id'],
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'daily_hours' => $data['daily_hours'] ?? null,
-                ...(array_key_exists('ai_write_allowed', $data) ? ['ai_write_allowed' => (bool) $data['ai_write_allowed']] : []),
-            ]);
-            $revoke = $user->isDirty(['role_id', 'ai_write_allowed']);
-            $user->save();
+                $user->fill([
+                    'role_id' => (int) $data['role_id'],
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'daily_hours' => $data['daily_hours'] ?? null,
+                    ...(array_key_exists('ai_write_allowed', $data) ? ['ai_write_allowed' => (bool) $data['ai_write_allowed']] : []),
+                ]);
+                $revoke = $user->isDirty(['role_id', 'ai_write_allowed']);
+                $user->save();
 
-            $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user), $actor->id);
+                $this->audit->log(AuditActionEnum::UPDATED, $user, $before, $this->snapshot($user), $actor->id);
 
-            // IA4, IA6: o token emitido valia para o papel e a marca antigos.
-            if ($revoke) {
-                $this->revokeAiAuthorizations($user, $actor);
-            }
-        });
+                // IA4, IA6: o token emitido valia para o papel e a marca antigos.
+                if ($revoke) {
+                    $this->revokeAiAuthorizations($user, $actor);
+                }
+            });
+        } catch (UniqueConstraintViolationException) {
+            // O FormRequest confere o e-mail antes; outra gravação do mesmo e-mail entrou no meio.
+            throw ValidationException::withMessages(['email' => self::EMAIL_TAKEN]);
+        }
     }
 
     /** N4, N11, IA6: perde o acesso agora, sessões e conexões de IA incluídas. */

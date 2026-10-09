@@ -549,6 +549,24 @@ class UserServiceTest extends TestCase
         $this->assertSame(['id' => $ana->id, 'name' => 'Ana Gestora', 'role' => 'project_manager'], $list[$ana->id]);
     }
 
+    // CR-1-02 do ciclo 1: o e-mail de outro (gravado depois da validação do FormRequest, ou por
+    // quem chama o Service direto) volta como erro do campo, não como 500.
+    public function test_editar_para_o_email_de_outro_e_recusado_no_campo_sem_gravar(): void
+    {
+        User::factory()->developer()->create(['email' => 'ana@example.com']);
+        $bia = User::factory()->developer()->create(['name' => 'Bia', 'email' => 'bia@example.com', 'daily_hours' => 8]);
+
+        try {
+            $this->service->update($bia, ['role_id' => RoleEnum::DEVELOPER->value, 'name' => 'Bia', 'email' => 'ana@example.com', 'daily_hours' => 8], $this->admin);
+            $this->fail('Gravou o e-mail repetido.');
+        } catch (ValidationException $e) {
+            $this->assertSame(['email' => ['Este e-mail já está em uso.']], $e->errors());
+        }
+
+        $this->assertSame('bia@example.com', $bia->fresh()->email);
+        $this->assertSame(0, AuditLog::query()->where('action', 'updated')->count());
+    }
+
     // CR-1-05 do ciclo 1, NUC-13 (Lista de escolha AC 3): a Policy vale dentro do Service.
     public function test_desenvolvedor_e_recusado_na_lista_de_escolha_e_a_negacao_e_auditada(): void
     {

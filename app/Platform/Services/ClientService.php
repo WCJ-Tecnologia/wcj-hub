@@ -10,6 +10,7 @@ use App\Rules\AlphanumericCnpj;
 use App\Support\Paises;
 use DomainException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent;
@@ -67,12 +68,16 @@ class ClientService
     {
         $clean = $this->validated($data, null);
 
-        return DB::transaction(function () use ($clean, $actor) {
-            $client = Client::query()->create($clean);
-            $this->audit->log(AuditActionEnum::CREATED, $client, null, $this->snapshot($client), $actor->id);
+        try {
+            return DB::transaction(function () use ($clean, $actor) {
+                $client = Client::query()->create($clean);
+                $this->audit->log(AuditActionEnum::CREATED, $client, null, $this->snapshot($client), $actor->id);
 
-            return $client;
-        });
+                return $client;
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            throw $this->duplicateRefusal($clean, null, $e);
+        }
     }
 
     /** @param  array<string, mixed>  $data */
@@ -86,11 +91,15 @@ class ClientService
             throw new DomainException(self::WCJ_IDENTITY_LOCKED);
         }
 
-        DB::transaction(function () use ($client, $clean, $actor) {
-            $before = $this->snapshot($client);
-            $client->fill($clean)->save();
-            $this->audit->log(AuditActionEnum::UPDATED, $client, $before, $this->snapshot($client), $actor->id);
-        });
+        try {
+            DB::transaction(function () use ($client, $clean, $actor) {
+                $before = $this->snapshot($client);
+                $client->fill($clean)->save();
+                $this->audit->log(AuditActionEnum::UPDATED, $client, $before, $this->snapshot($client), $actor->id);
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            throw $this->duplicateRefusal($clean, $client, $e);
+        }
     }
 
     /** N11: projeto aberto não impede; o cliente só sai das listas de escolha. */
@@ -201,19 +210,44 @@ class ClientService
         }
         $clean = ['name' => $valid['name'], 'country' => $valid['country'], 'document' => $document === '' ? null : $document];
 
+        $duplicate = $this->duplicateMessage($clean, $ignore);
+        if ($duplicate !== null) {
+            throw ValidationException::withMessages(['document' => $duplicate]);
+        }
+
+        return $clean;
+    }
+
+    /**
+     * "Já existe o cliente X com este CNPJ", ou nulo se o país e o documento estão livres.
+     *
+     * @param  array{name: string, country: string, document: string|null}  $clean
+     */
+    private function duplicateMessage(array $clean, ?Client $ignore): ?string
+    {
         $existing = $clean['document'] === null ? null : Client::query()
             ->where('country', $clean['country'])
             ->where('document', $clean['document'])
             ->when($ignore !== null, fn ($query) => $query->whereKeyNot($ignore->getKey()))
             ->first(['id', 'name']);
 
-        if ($existing !== null) {
-            throw ValidationException::withMessages([
-                'document' => "Já existe o cliente {$existing->name} com este ".self::documentLabel($clean['country']),
-            ]);
+        return $existing === null ? null : "Já existe o cliente {$existing->name} com este ".self::documentLabel($clean['country']);
+    }
+
+    /**
+     * Duas gravações do mesmo documento ao mesmo tempo passam as duas pelo validated(); o unique
+     * do banco barra a segunda, que volta como o mesmo erro de campo (CR-1-02), não como 500.
+     *
+     * @param  array{name: string, country: string, document: string|null}  $clean
+     */
+    private function duplicateRefusal(array $clean, ?Client $ignore, UniqueConstraintViolationException $e): ValidationException
+    {
+        $duplicate = $this->duplicateMessage($clean, $ignore);
+        if ($duplicate === null) {
+            throw $e;
         }
 
-        return $clean;
+        return ValidationException::withMessages(['document' => $duplicate]);
     }
 
     private static function documentLabel(mixed $country): string
