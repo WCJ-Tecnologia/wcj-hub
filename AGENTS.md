@@ -75,7 +75,7 @@ Atualizado em 2026-10-09.
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; ciclos 1 e 2 da `wcj-code-review` corrigidos (09/10, `.specs/features/b1-nucleo/code-reviews/`), Verifier rodada 9 PASS (20 mutantes mortos); CR-1-01 no PR #7; falta o merge do Lucas |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | PR #5 (`feat/b1-nucleo`, Cauã); review do Lucas Scholz (07/10) aplicada nas fases 12 e 13; ciclos 1 a 4 da `wcj-code-review` corrigidos (09/10, `.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 e 10; CR-1-01 no PR #7; falta o merge do Lucas |
 | B2 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
 
 ## Vocabulário do produto
@@ -227,6 +227,8 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 - Linha de lista para a tela: um Presenter em `app/Platform/Services` (`UserPresenter`, `ClientPresenter`, `ContactPresenter`, `AuditLogPresenter`), com o `can` decidido pela Policy; o controller só chama `->row()`. Nunca montar a linha no controller.
 - Unique do banco em gravação simultânea: o trait `App\Platform\Services\Concerns\RefusesDuplicates` (`writeOrRefuseDuplicate`), que vira `ValidationException` só quando o índice violado é o esperado e relança o resto. Nunca `catch (UniqueConstraintViolationException)` solto.
 - Busca por texto: `App\Support\Like::contains()`; nunca `"%{$termo}%"` à mão.
+- Ativar e desativar: `setActiveLocked()` do `Deactivatable` dentro da transação de quem chama (relê com `lockForUpdate`, decide pela linha travada, grava e chama o `$then($locked)` com a auditoria e o efeito próprio). Nunca `isActive()` da instância em memória antes da transação.
+- Escrita que pode cair em deadlock (travas de usuário e de administradores): o trait `App\Platform\Services\Concerns\RetriesDeadlock` (`transactionRetryingDeadlock`), que repete só no 1213, até 3 vezes; o lock wait timeout (1205) não se repete. Todo callback repetido precisa ser repetível: restaure a instância (`getAttributes()`/`getRawOriginal()`) no início de cada tentativa, como `UserService::update` e `::resendInvite`.
 
 ## Armadilhas que já custaram tempo
 
