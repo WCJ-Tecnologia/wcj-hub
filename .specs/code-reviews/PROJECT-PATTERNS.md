@@ -3,7 +3,7 @@
 > Mantido pela skill `wcj-code-review`. Editável à mão.
 > Atualizado ao final de cada ciclo de review.
 
-**Última atualização:** 2026-10-08 · **Reviews acumulados:** 1 (b1-nucleo ciclo 1; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-09 · **Reviews acumulados:** 2 (b1-nucleo ciclos 1 e 2; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -12,17 +12,17 @@
 ### CV-01 — Negação auditada passa só por `AuditsDeniedAbilities`
 - **Escopo:** `app/Http/Controllers/Controller.php::authorize()` e os FormRequests com `AuthorizesBeforeValidation`
 - **Evidência:** `app/Http/Concerns/AuditsDeniedAbilities.php:18-28`; `app/Platform/Requests/Concerns/AuthorizesBeforeValidation.php:18-23`
-- **Visto em:** b1-nucleo (ciclo 1). FormRequest que valida payload autoriza antes de validar; o controller **não** chama `authorize()` de novo nessas ações.
+- **Visto em:** b1-nucleo (ciclos 1 e 2). FormRequest que valida payload autoriza antes de validar; o controller **não** chama `authorize()` de novo nessas ações. Desde o ciclo 2 a checagem + gravação do `denied` mora em `AuditService::inspectFor()` (`AuditService.php:52-61`), usada pelo trait e pelos `choiceList()` dos Services; `AuditService::denied()` direto é desvio
 
 ### CV-02 — Recusa de regra do Service é `DomainException` e vira toast pelo `attempt()`
 - **Escopo:** controllers do Núcleo
-- **Evidência:** `Controller.php:36-45`; `UserService.php:156`, `ClientService.php:86,101,136`
-- **Visto em:** b1-nucleo. "Já usado", último administrador, WCJ e anonimizado respondem toast de erro, não 403 (D6 do Lucas, 07/10). Ação de escrita fora do `attempt()` é desvio (CR-1-03).
+- **Evidência:** `Controller.php:39-48` (`attempt(Closure $action, string|Closure $success)`: a closure de sucesso recebe o retorno da ação, ex. o aviso do contato em `ContactController.php:57-60`)
+- **Visto em:** b1-nucleo. "Já usado", último administrador, WCJ e anonimizado respondem toast de erro, não 403 (D6 do Lucas, 07/10). Ação de escrita que pode lançar `DomainException` fora do `attempt()` é desvio (CR-1-03, resolvido no ciclo 2). Erro de banco (deadlock, unique não tratado) **não** passa pelo `attempt()`: vira 500 (CR-2-01)
 
 ### CV-03 — Trava "um só" é `lockForUpdate` dentro da transação, com teste de intercalação
 - **Escopo:** `app/Platform/Services/**`
-- **Evidência:** `UserService.php:213-224`; `ContactService.php:265-274`; `tests/Support/Concorrencia.php`; `UltimoAdminConcorrenciaTest.php`, `ContactAnonimizadoConcorrenciaTest.php`
-- **Visto em:** b1-nucleo.
+- **Evidência:** `UserService.php:230-241`; `ContactService.php:240-255` (`lockedNotAnonymized`, `lockedForWrite`); `tests/Support/Concorrencia.php`; `UltimoAdminConcorrenciaTest.php`, `ContactAnonimizadoConcorrenciaTest.php`, `ClientRepetidoConcorrenciaTest.php`
+- **Visto em:** b1-nucleo (ciclos 1 e 2). Desde o ciclo 2 os `deactivate` decidem pela linha relida com `lockForUpdate()`, não pela instância em memória. **Ordem das travas importa:** quem trava várias linhas trava sempre na mesma ordem (no `UserService`, os admins ativos antes do alvo); o `intercalarDepoisDe` só prova a ordem se a intercalação cair entre a 1ª e a 2ª trava (CR-2-01)
 
 ### CV-04 — Dado de outro domínio entra no Núcleo por contrato em lote, memorizado por requisição
 - **Escopo:** `app/Platform/Contracts/ClientManagement`, `MemoizedClientManagement` (ligação `scoped`)
@@ -30,28 +30,38 @@
 - **Visto em:** b1-nucleo. Lista pede em lote (`openProjectsCountByClient`, `managedClientIds`), nunca por linha.
 
 ### CV-05 — `can` por linha vem do servidor, calculado pela Policy
-- **Escopo:** linhas das listas (`ClientController::row`, `ContactService::row`)
-- **Evidência:** `ClientController.php:137-142`; `ContactService.php:228-234`
-- **Visto em:** b1-nucleo. Usuários ainda usa ability global + regra copiada no front (CR-1-08): alinhar.
+- **Escopo:** linhas das listas (`UserController::row`, `ClientController::row`, `ContactPresenter::row`)
+- **Evidência:** `UserController.php:116-122`; `ClientController.php:137-142`; `ContactPresenter.php:28-34`
+- **Visto em:** b1-nucleo (ciclos 1 e 2; Usuários alinhado no CR-1-08). A tela lê `row.can.*`; ability global (`delete_records`, `reset_passwords`) não decide botão de linha. Onde a linha mora ainda está em dois lugares (controller × Presenter, CR-2-12)
+
+### CV-06 — Busca com `LIKE` só por `App\Support\Like::contains()`
+- **Escopo:** toda busca textual dos Services e do `AuditLogQuery`
+- **Evidência:** `app/Support/Like.php:13`; `UserService.php:189-190`, `ClientService.php:172-174`, `ContactService.php:186-188`, `AuditLogQuery.php:167-176`
+- **Visto em:** b1-nucleo ciclo 2 (CR-1-18). `"%{$search}%"` à mão é desvio (o `%` e o `_` digitados viram curinga)
+
+### CV-07 — Estado de lista pelo `ListBody`; texto de situação pelo `lib/situation.ts`
+- **Escopo:** páginas de listagem em `resources/js/pages/admin/**`
+- **Evidência:** `components/list-body.tsx`; `lib/situation.ts`; tabela "Componentes e hooks do projeto" no `AGENTS.md`
+- **Visto em:** b1-nucleo ciclo 2 (CR-1-09, CR-1-22). Lista nova não reescreve erro/carregando; componente novo entra na tabela do `AGENTS.md` no mesmo commit
 
 ---
 
 ## Anti-padrões recorrentes
 
-### AP-01 — Check-then-act fora da transação
-- **Ocorrências:** revisão 07/10 (A3 último admin, A4 anonimizado; corrigidos), b1-nucleo ciclo 1 (CR-1-02 CNPJ/e-mail repetido → 500; CR-1-15 `deactivate` nos 3 cadastros e cliente ativo ao criar contato)
-- **Regressões:** 0
-- **Sinal:** o estado é lido do modelo em memória antes do `DB::transaction`; unique do banco segura o dado mas a exceção vira 500
-- **Ação sugerida:** começar o review pelos Services procurando `if (...)` antes de `DB::transaction`; `UniqueConstraintViolationException` tratada como em `UserService::invite`
+### AP-01 — Check-then-act fora da transação, e a correção que inverte a ordem das travas
+- **Ocorrências:** revisão 07/10 (A3 último admin, A4 anonimizado; corrigidos), b1-nucleo ciclo 1 (CR-1-02 CNPJ/e-mail repetido → 500; CR-1-15 `deactivate` nos 3 cadastros e cliente ativo ao criar contato; ambos corrigidos no ciclo 2), b1-nucleo ciclo 2 (**CR-2-01**: a correção do CR-1-15 travou o alvo antes dos admins ativos → deadlock 1213 → 500; CR-2-06: o `reactivate` de Usuário e Cliente, espelho do que o CR-1-15 corrigiu, ficou de fora)
+- **Regressões:** 0 de ID; 1 de comportamento (o A3 respondia toast na corrida de dois admins; com o CR-2-01 uma das duas responde 500)
+- **Sinal:** o estado é lido do modelo em memória antes do `DB::transaction`; unique do banco segura o dado mas a exceção vira 500; correção de concorrência que acrescenta um `lockForUpdate()` **antes** de uma trava que já existia; correção aplicada a uma ação e não à ação espelho (`deactivate` × `reactivate`)
+- **Ação sugerida:** começar o review pelos Services procurando `if (...)` antes de `DB::transaction`; em cada correção de concorrência, listar as linhas travadas e a ordem, e comparar com as outras escritas que travam as mesmas linhas; conferir a ação espelho; `UniqueConstraintViolationException` tratada como no `ClientService::duplicateRefusal()` (relança o que não reconhece)
 
 ### AP-02 — Mesma coisa em dois ou três lugares entre os cadastros
-- **Ocorrências:** revisão 07/10 (A9 `attempt()` em 3 controllers; corrigido), b1-nucleo ciclo 1 (CR-1-09 esqueleto de lista em 4 páginas, 3 padrões de `row()`; CR-1-08)
+- **Ocorrências:** revisão 07/10 (A9 `attempt()` em 3 controllers; corrigido), b1-nucleo ciclo 1 (CR-1-09 esqueleto de lista em 4 páginas, 3 padrões de `row()`; CR-1-08; corrigidos no ciclo 2), b1-nucleo ciclo 2 (**CR-2-03**: a trava de clique duplo do CR-1-17 nasceu copiada em 3 telas; CR-2-11: captura do unique em dois formatos; CR-2-12: linha da lista em controller × Presenter e `situation()` duplicado)
 - **Regressões:** 0
-- **Sinal:** B1 nasceu com três CRUDs paralelos; B2 a B7 copiam
-- **Ação sugerida:** antes do B2, extrair `ListBody` e o helper de "Desativado em … por …"
+- **Sinal:** B1 nasceu com três CRUDs paralelos; B2 a B7 copiam. A própria correção de um achado de duplicação pode nascer em N cópias, quando é aplicada tela por tela
+- **Ação sugerida:** quando a correção toca as três telas, pedir o hook ou o componente no mesmo achado (ex.: `useRowAction()` para `busy`/`busyRow`/`rowPost`); `ListBody` e `deactivation()` já existem (CV-07)
 
 ### AP-03 — Correção no teste e2e sem correção no produto
-- **Ocorrências:** b1-nucleo (A5 → CR-1-10: `SearchInput` cancela escrita em voo; o page object passou a esperar a busca)
+- **Ocorrências:** b1-nucleo (A5 → CR-1-10: `SearchInput` cancela escrita em voo; o page object passou a esperar a busca; o produto foi corrigido no ciclo 2, com e2e que força a corrida)
 - **Regressões:** 0
 - **Sinal:** e2e verde com o mecanismo intacto
 - **Ação sugerida:** quando um e2e falha por corrida, perguntar se o usuário real cai na mesma corrida
@@ -93,8 +103,13 @@
 - **Implica:** não apontar como "trava que ninguém pediu"
 
 ### DA-07 — Decisões pendentes do Lucas (não são achados novos)
-- **Origem:** ciclo 1: CR-1-11 (prazo da senha provisória: a spec cita regra que o template não tem; prazo pede coluna ou leitura da auditoria), CR-1-12 (`min="0.25"` da carga diária na tela × `gt:0` no servidor), CR-1-23 (índice da auditoria por `created_at`: migração)
-- **Implica:** reverificar o status ("❌ Não resolvido, aguarda decisão"), sem reabrir como achado novo nem subir a criticidade; D16 do design
+- **Origem:** ciclo 1: CR-1-11 (prazo da senha provisória: a spec cita regra que o template não tem; prazo pede coluna ou leitura da auditoria), CR-1-12 (`min="0.25"` da carga diária na tela × `gt:0` no servidor), CR-1-23 (índice da auditoria por `created_at`: migração). Ciclo 2: CR-2-09 ("Reenviar convite" para usuário desativado × F1 §04) e a parte de `abilities` do CR-2-08 (`delete_records` e `reset_passwords` sem leitor no front; mexer em `abilities` exige aprovação)
+- **Implica:** reverificar o status ("❌ Não resolvido, aguarda decisão"), sem reabrir como achado novo nem subir a criticidade; D16 do design. Se o Lucas aceitar o comportamento atual do CR-2-09, ele vira `FP-`
+
+### DA-08 — Trilho completo do B1: correção de review também passa pelo Verifier
+- **Motivo:** `AGENTS.md` ("Trilhos": Verifier em agente separado com PASS e mutação em B1, Policy e exclusão) e `spec.md:262`
+- **Origem:** b1-nucleo ciclo 2 (CR-2-02): 22 commits de correção, incluindo Policy dentro do Service e trava de exclusão, sem rodada nova no `validation.md`
+- **Implica:** no ciclo N > 1 de bloco de trilho completo, conferir se o `validation.md` tem rodada posterior às correções; se não, é achado (Médio), não detalhe
 
 ## Falsos positivos
 
