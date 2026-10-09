@@ -1,9 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertTriangle, Building2, UserRound } from 'lucide-react';
+import { Building2, UserRound } from 'lucide-react';
 
 import { useContactActions } from '@/components/contacts/contact-actions';
 import { ContactTable, type ContactRow } from '@/components/contacts/contact-table';
 import { EmptyState } from '@/components/empty-state';
+import { ListBody } from '@/components/list-body';
 import { Pagination } from '@/components/pagination';
 import { SearchInput } from '@/components/search-input';
 import { ShowInactiveToggle } from '@/components/show-inactive-toggle';
@@ -11,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useListVisit } from '@/hooks/use-list-visit';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import type { Paginated } from '@/types';
 
 interface Props {
@@ -69,40 +69,28 @@ export default function ContactsIndex({ contacts, filters, clients }: Props) {
                 />
             </div>
 
-            {list.failed ? (
-                <EmptyState
-                    icon={<AlertTriangle className="size-5" aria-hidden />}
-                    title="Não foi possível carregar os contatos"
-                    description="Confira a conexão e tente de novo."
-                    action={<Button onClick={list.retry}>Tentar de novo</Button>}
+            <ListBody list={list} failedTitle="Não foi possível carregar os contatos" loadingText="Carregando contatos…">
+                <ContactTable
+                    caption="Lista de contatos"
+                    rows={contacts.data}
+                    actions={rowActions}
+                    showClient
+                    emptyState={
+                        <EmptyState
+                            icon={<UserRound className="size-5" aria-hidden />}
+                            title={filtered ? 'Nenhum contato com esses filtros' : 'Nenhum contato ainda'}
+                            description="O contato é cadastrado na ficha do cliente, em Novo contato."
+                            action={
+                                <Button variant="outline" asChild>
+                                    <Link href="/admin/clients">
+                                        <Building2 className="size-4" aria-hidden /> Ir para Clientes
+                                    </Link>
+                                </Button>
+                            }
+                        />
+                    }
                 />
-            ) : (
-                <div aria-busy={list.loading} className={cn('transition-opacity', list.loading && 'opacity-60')}>
-                    <p role="status" className="sr-only">
-                        {list.loading ? 'Carregando contatos…' : ''}
-                    </p>
-                    <ContactTable
-                        caption="Lista de contatos"
-                        rows={contacts.data}
-                        actions={rowActions}
-                        showClient
-                        emptyState={
-                            <EmptyState
-                                icon={<UserRound className="size-5" aria-hidden />}
-                                title={filtered ? 'Nenhum contato com esses filtros' : 'Nenhum contato ainda'}
-                                description="O contato é cadastrado na ficha do cliente, em Novo contato."
-                                action={
-                                    <Button variant="outline" asChild>
-                                        <Link href="/admin/clients">
-                                            <Building2 className="size-4" aria-hidden /> Ir para Clientes
-                                        </Link>
-                                    </Button>
-                                }
-                            />
-                        }
-                    />
-                </div>
-            )}
+            </ListBody>
 
             <Pagination meta={contacts} />
 

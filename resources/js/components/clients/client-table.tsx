@@ -5,6 +5,7 @@ import { BRASIL } from '@/components/clients/client-form-dialog';
 import { DataTable, type Column } from '@/components/data-table';
 import { StatusPill } from '@/components/status-pill';
 import { maskAlphanumericCnpj } from '@/lib/masks';
+import { deactivation } from '@/lib/situation';
 import { cn } from '@/lib/utils';
 
 export interface ClientRow {
@@ -26,10 +27,6 @@ export interface ClientRow {
 /** CNPJ com máscara; identificador fiscal como foi digitado. */
 export const formatDocument = (row: Pick<ClientRow, 'country' | 'document'>) =>
     row.document === null ? '—' : row.country === BRASIL ? maskAlphanumericCnpj(row.document) : row.document;
-
-/** "em DD/MM/AAAA por Fulano" (F1 §02, Situação). */
-export const deactivation = (row: Pick<ClientRow, 'deactivated_at' | 'deactivated_by'>) =>
-    `em ${row.deactivated_at?.slice(0, 10) ?? '—'}${row.deactivated_by ? ` por ${row.deactivated_by}` : ''}`;
 
 export const situation = (row: ClientRow) => (row.active ? 'Ativo' : `Desativado ${deactivation(row)}`);
 

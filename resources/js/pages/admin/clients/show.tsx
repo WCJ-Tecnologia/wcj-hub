@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, History, Plus, UserRound } from 'lucide-react';
 
 import { documentLabel } from '@/components/clients/client-form-dialog';
-import { deactivation, formatDocument, type ClientRow } from '@/components/clients/client-table';
+import { formatDocument, type ClientRow } from '@/components/clients/client-table';
 import { useContactActions } from '@/components/contacts/contact-actions';
 import { ContactTable, type ContactRow } from '@/components/contacts/contact-table';
 import { EmptyState } from '@/components/empty-state';
@@ -10,6 +10,7 @@ import { StatusPill } from '@/components/status-pill';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { deactivation } from '@/lib/situation';
 import type { SharedProps } from '@/types';
 
 interface Props {

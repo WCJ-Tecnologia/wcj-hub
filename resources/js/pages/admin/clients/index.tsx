@@ -1,11 +1,12 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertTriangle, Building2, History, Pencil, Plus, Power, RotateCcw, Trash2 } from 'lucide-react';
+import { Building2, History, Pencil, Plus, Power, RotateCcw, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { BRASIL, ClientFormDialog, type ClientFormData, type Country } from '@/components/clients/client-form-dialog';
 import { ClientTable, situation, type ClientRow } from '@/components/clients/client-table';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
+import { ListBody } from '@/components/list-body';
 import { Pagination } from '@/components/pagination';
 import { RowActions } from '@/components/row-actions';
 import { SearchInput } from '@/components/search-input';
@@ -14,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useListVisit } from '@/hooks/use-list-visit';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import type { Paginated, SharedProps } from '@/types';
 
 interface Props {
@@ -180,32 +180,20 @@ export default function ClientsIndex({ clients, filters, countries, can }: Props
                 />
             </div>
 
-            {list.failed ? (
-                <EmptyState
-                    icon={<AlertTriangle className="size-5" aria-hidden />}
-                    title="Não foi possível carregar os clientes"
-                    description="Confira a conexão e tente de novo."
-                    action={<Button onClick={list.retry}>Tentar de novo</Button>}
+            <ListBody list={list} failedTitle="Não foi possível carregar os clientes" loadingText="Carregando clientes…">
+                <ClientTable
+                    rows={clients.data}
+                    actions={rowActions}
+                    emptyState={
+                        <EmptyState
+                            icon={<Building2 className="size-5" aria-hidden />}
+                            title={filtered ? 'Nenhum cliente com esses filtros' : 'Nenhum cliente ainda'}
+                            description="Cadastre as empresas atendidas. Todo projeto nasce ligado a um cliente."
+                            action={newButton}
+                        />
+                    }
                 />
-            ) : (
-                <div aria-busy={list.loading} className={cn('transition-opacity', list.loading && 'opacity-60')}>
-                    <p role="status" className="sr-only">
-                        {list.loading ? 'Carregando clientes…' : ''}
-                    </p>
-                    <ClientTable
-                        rows={clients.data}
-                        actions={rowActions}
-                        emptyState={
-                            <EmptyState
-                                icon={<Building2 className="size-5" aria-hidden />}
-                                title={filtered ? 'Nenhum cliente com esses filtros' : 'Nenhum cliente ainda'}
-                                description="Cadastre as empresas atendidas. Todo projeto nasce ligado a um cliente."
-                                action={newButton}
-                            />
-                        }
-                    />
-                </div>
-            )}
+            </ListBody>
 
             <Pagination meta={clients} />
 

@@ -1,9 +1,10 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertTriangle, History, MailPlus, Pencil, Plus, Trash2, UserCheck, UserX, Users } from 'lucide-react';
+import { History, MailPlus, Pencil, Plus, Trash2, UserCheck, UserX, Users } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
+import { ListBody } from '@/components/list-body';
 import { Pagination } from '@/components/pagination';
 import { RowActions } from '@/components/row-actions';
 import { SearchInput } from '@/components/search-input';
@@ -14,7 +15,6 @@ import { ROLE, UserFormDialog, type UserFormData } from '@/components/users/user
 import { situation, UserTable, type UserRow } from '@/components/users/user-table';
 import { useListVisit } from '@/hooks/use-list-visit';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import type { Paginated, SharedProps } from '@/types';
 
 interface Props {
@@ -209,32 +209,20 @@ export default function UsersIndex({ users, filters, roles }: Props) {
                 />
             </div>
 
-            {list.failed ? (
-                <EmptyState
-                    icon={<AlertTriangle className="size-5" aria-hidden />}
-                    title="Não foi possível carregar os usuários"
-                    description="Confira a conexão e tente de novo."
-                    action={<Button onClick={list.retry}>Tentar de novo</Button>}
+            <ListBody list={list} failedTitle="Não foi possível carregar os usuários" loadingText="Carregando usuários…">
+                <UserTable
+                    rows={users.data}
+                    actions={rowActions}
+                    emptyState={
+                        <EmptyState
+                            icon={<Users className="size-5" aria-hidden />}
+                            title={filtered ? 'Nenhum usuário com esses filtros' : 'Nenhum usuário ainda'}
+                            description="Convide as pessoas que vão acessar o Hub. Cada uma recebe o acesso por e-mail."
+                            action={newButton}
+                        />
+                    }
                 />
-            ) : (
-                <div aria-busy={list.loading} className={cn('transition-opacity', list.loading && 'opacity-60')}>
-                    <p role="status" className="sr-only">
-                        {list.loading ? 'Carregando usuários…' : ''}
-                    </p>
-                    <UserTable
-                        rows={users.data}
-                        actions={rowActions}
-                        emptyState={
-                            <EmptyState
-                                icon={<Users className="size-5" aria-hidden />}
-                                title={filtered ? 'Nenhum usuário com esses filtros' : 'Nenhum usuário ainda'}
-                                description="Convide as pessoas que vão acessar o Hub. Cada uma recebe o acesso por e-mail."
-                                action={newButton}
-                            />
-                        }
-                    />
-                </div>
-            )}
+            </ListBody>
 
             <Pagination meta={users} />
 

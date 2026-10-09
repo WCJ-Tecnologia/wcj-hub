@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import { DataTable, type Column } from '@/components/data-table';
 import { StatusPill } from '@/components/status-pill';
+import { deactivation } from '@/lib/situation';
 import { cn } from '@/lib/utils';
 
 export interface ContactRow {
@@ -24,10 +25,6 @@ export interface ContactRow {
 }
 
 export const contactStatus = (row: ContactRow) => (row.anonymized ? 'anonymized' : row.active);
-
-/** "em DD/MM/AAAA por Fulano" (F1 §02, Situação). */
-const deactivation = (row: ContactRow) =>
-    `em ${row.deactivated_at?.slice(0, 10) ?? '—'}${row.deactivated_by ? ` por ${row.deactivated_by}` : ''}`;
 
 /** "Ativo", "Anonimizado" ou "Desativado em DD/MM/AAAA por Fulano". */
 export const contactSituation = (row: ContactRow) =>

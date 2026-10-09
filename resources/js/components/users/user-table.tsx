@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { DataTable, type Column } from '@/components/data-table';
 import { StatusPill } from '@/components/status-pill';
 import { Badge } from '@/components/ui/badge';
+import { deactivation } from '@/lib/situation';
 import { cn } from '@/lib/utils';
 
 export interface UserRow {
@@ -27,10 +28,6 @@ export interface UserRow {
 
 /** "8.00" → "8 h"; "7.50" → "7,5 h". */
 const formatHours = (hours: string | null) => (hours === null ? '—' : `${Number(hours).toLocaleString('pt-BR')} h`);
-
-/** "em DD/MM/AAAA por Fulano" (F1 §02, Situação). */
-const deactivation = (row: UserRow) =>
-    `em ${row.deactivated_at?.slice(0, 10) ?? '—'}${row.deactivated_by ? ` por ${row.deactivated_by}` : ''}`;
 
 export const situation = (row: UserRow) => (row.active ? 'Ativo' : `Desativado ${deactivation(row)}`);
 

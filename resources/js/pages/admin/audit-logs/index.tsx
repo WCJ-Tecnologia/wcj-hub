@@ -1,16 +1,16 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { AlertTriangle, History, X } from 'lucide-react';
+import { History, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { AuditLogDetailDialog } from '@/components/audit-logs/audit-log-detail-dialog';
 import { AUDIT_URL, AuditLogFilters, type AuditFilters, type AuditOptions } from '@/components/audit-logs/audit-log-filters';
 import { AuditLogTable, type AuditLogRow } from '@/components/audit-logs/audit-log-table';
 import { EmptyState } from '@/components/empty-state';
+import { ListBody } from '@/components/list-body';
 import { Pagination } from '@/components/pagination';
 import { Button } from '@/components/ui/button';
 import { useListVisit } from '@/hooks/use-list-visit';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
 import type { Paginated } from '@/types';
 
 interface Props {
@@ -54,36 +54,24 @@ export default function AuditLogsIndex({ logs, filters, options, record }: Props
 
             <AuditLogFilters filters={filters} options={options} />
 
-            {list.failed ? (
-                <EmptyState
-                    icon={<AlertTriangle className="size-5" aria-hidden />}
-                    title="Não foi possível carregar a auditoria"
-                    description="Confira a conexão e tente de novo."
-                    action={<Button onClick={list.retry}>Tentar de novo</Button>}
+            <ListBody list={list} failedTitle="Não foi possível carregar a auditoria" loadingText="Carregando a auditoria…">
+                <AuditLogTable
+                    rows={logs.data}
+                    onOpen={setSelected}
+                    emptyState={
+                        <EmptyState
+                            icon={<History className="size-5" aria-hidden />}
+                            title="Nenhum registro com esses filtros"
+                            description="Amplie o período ou limpe os filtros."
+                            action={
+                                <Button variant="outline" onClick={clearFilters}>
+                                    Limpar filtros
+                                </Button>
+                            }
+                        />
+                    }
                 />
-            ) : (
-                <div aria-busy={list.loading} className={cn('transition-opacity', list.loading && 'opacity-60')}>
-                    <p role="status" className="sr-only">
-                        {list.loading ? 'Carregando a auditoria…' : ''}
-                    </p>
-                    <AuditLogTable
-                        rows={logs.data}
-                        onOpen={setSelected}
-                        emptyState={
-                            <EmptyState
-                                icon={<History className="size-5" aria-hidden />}
-                                title="Nenhum registro com esses filtros"
-                                description="Amplie o período ou limpe os filtros."
-                                action={
-                                    <Button variant="outline" onClick={clearFilters}>
-                                        Limpar filtros
-                                    </Button>
-                                }
-                            />
-                        }
-                    />
-                </div>
-            )}
+            </ListBody>
 
             <Pagination meta={logs} />
 
