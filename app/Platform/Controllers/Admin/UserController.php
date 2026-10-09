@@ -8,6 +8,7 @@ use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
 use App\Platform\Services\AuditService;
+use App\Platform\Services\SessionService;
 use App\Platform\Services\TemporaryPasswordService;
 use App\Support\LocalTime;
 use Illuminate\Http\RedirectResponse;
@@ -150,17 +151,16 @@ class UserController extends Controller
         return back()->with('success', 'Usuário excluído.');
     }
 
-    public function resetPassword(Request $request, User $user): RedirectResponse
+    public function resetPassword(Request $request, User $user, SessionService $sessions): RedirectResponse
     {
         $this->authorize('resetPassword', $user);
 
         $isSelf = $user->is($request->user());
-
-        $this->passwords->issue($user, isReset: true);
-
-        $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, null, [
-            'must_change_password' => true,
-        ]);
+        DB::transaction(function () use ($user, $sessions) {
+            $this->passwords->issue($user, isReset: true);
+            $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, null, ['must_change_password' => true]);
+            $sessions->terminateOthers($user); // every open session of the target drops (CR-1-01)
+        });
 
         if ($isSelf) {
             Auth::guard('web')->logout();
