@@ -19,9 +19,10 @@ export class AdminPage {
     }
 
     /**
-     * Digita na busca da lista aberta e espera a visita da busca voltar e a URL trazer o termo. O
-     * SearchInput navega 300 ms depois da digitação (debounce); uma ação clicada antes disso é
-     * cancelada por essa visita: o PUT do Editar morria com status -1 (A5 da review de 07/10).
+     * Digita na busca da lista aberta e espera a visita da busca voltar e a URL trazer o termo: a
+     * ação seguinte acha a linha já filtrada. O SearchInput navega 300 ms depois da digitação
+     * (debounce); desde o CR-1-10 a busca espera uma escrita em voo terminar, em vez de cancelá-la
+     * (e2e/busca-e-escrita.spec.ts).
      */
     async search(box: Locator, term: string) {
         const path = new URL(this.page.url()).pathname;
