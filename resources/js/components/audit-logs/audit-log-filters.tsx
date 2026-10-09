@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import { SearchInput } from '@/components/search-input';
 import { Input } from '@/components/ui/input';
@@ -64,6 +65,51 @@ export function AuditLogFilters({ filters, options }: { filters: AuditFilters; o
     const visit = (next: Record<string, string | number | undefined>) =>
         router.get(AUDIT_URL, { ...params, ...next }, { preserveState: true, replace: true });
 
+    // "De" e "Até" com estado local (CR-1-07): cada segmento digitado é uma data válida, e uma
+    // visita por tecla devolvia o valor antigo até a resposta chegar. A visita sai 300 ms depois
+    // da última mudança (molde do SearchInput), ou na hora ao sair do campo ou com Enter.
+    const [from, setFrom] = useState(filters.from ?? '');
+    const [to, setTo] = useState(filters.to ?? '');
+    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Quando o servidor responde com outro período (Limpar filtros, Histórico de uma ficha), o
+    // campo acompanha: ajuste durante o render, sem efeito em cascata (react.dev, "You might not
+    // need an effect").
+    const [server, setServer] = useState({ from: filters.from, to: filters.to });
+    if (server.from !== filters.from || server.to !== filters.to) {
+        if (server.from !== filters.from) setFrom(filters.from ?? '');
+        if (server.to !== filters.to) setTo(filters.to ?? '');
+        setServer({ from: filters.from, to: filters.to });
+    }
+
+    useEffect(
+        () => () => {
+            if (timer.current) clearTimeout(timer.current);
+        },
+        [],
+    );
+
+    // "from" vai sempre, vazio quando apagado (filterParams); "to" vazio sai da query.
+    const period = (nextFrom: string, nextTo: string) => ({ from: nextFrom, to: nextTo || undefined });
+
+    const applyPeriod = (nextFrom: string, nextTo: string) => {
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = null;
+        if (nextFrom === (filters.from ?? '') && nextTo === (filters.to ?? '')) return;
+        visit(period(nextFrom, nextTo));
+    };
+
+    const schedulePeriod = (nextFrom: string, nextTo: string) => {
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => applyPeriod(nextFrom, nextTo), 300);
+    };
+
+    const applyOnEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        applyPeriod(from, to);
+    };
+
     return (
         <div className="mb-4 space-y-2">
             <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-center">
@@ -81,8 +127,13 @@ export function AuditLogFilters({ filters, options }: { filters: AuditFilters; o
                     <Input
                         id="audit-from"
                         type="date"
-                        value={filters.from ?? ''}
-                        onChange={(event) => visit({ from: event.target.value })}
+                        value={from}
+                        onChange={(event) => {
+                            setFrom(event.target.value);
+                            schedulePeriod(event.target.value, to);
+                        }}
+                        onBlur={() => applyPeriod(from, to)}
+                        onKeyDown={applyOnEnter}
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -92,8 +143,13 @@ export function AuditLogFilters({ filters, options }: { filters: AuditFilters; o
                     <Input
                         id="audit-to"
                         type="date"
-                        value={filters.to ?? ''}
-                        onChange={(event) => visit({ to: event.target.value || undefined })}
+                        value={to}
+                        onChange={(event) => {
+                            setTo(event.target.value);
+                            schedulePeriod(from, event.target.value);
+                        }}
+                        onBlur={() => applyPeriod(from, to)}
+                        onKeyDown={applyOnEnter}
                     />
                 </div>
             </div>
