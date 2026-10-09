@@ -81,6 +81,35 @@ class UserControllerTest extends TestCase
                 ->where('filters.show_inactive', true));
     }
 
+    // CR-1-08 do ciclo 1: os botões de cada linha vêm da UserPolicy, no servidor.
+    public function test_botoes_da_linha_decididos_pela_policy(): void
+    {
+        $bia = User::factory()->developer()->create(['name' => 'Bia Dev']);
+        $this->login($bia, '2026-10-05 12:00:00');
+        User::factory()->developer()->create(['name' => 'Caio Dev']);
+        User::factory()->projectManager()->inactive()->create(['name' => 'Duda Gestora']);
+
+        $can = fn (bool $update, bool $deactivate, bool $reactivate, bool $delete, bool $resend) => [
+            'update' => $update, 'deactivate' => $deactivate, 'reactivate' => $reactivate, 'delete' => $delete, 'resend_invite' => $resend,
+        ];
+
+        $this->actingAs($this->admin)->get('/admin/users?show_inactive=1')
+            ->assertInertia(fn ($page) => $page
+                ->has('users.data', 4)
+                // A si mesmo: não exclui, nem sem nunca ter entrado (a Policy nega).
+                ->where('users.data.0.name', 'Ana Admin')
+                ->where('users.data.0.can', $can(true, true, false, false, true))
+                // Já entrou: não exclui (F1 §04).
+                ->where('users.data.1.name', 'Bia Dev')
+                ->where('users.data.1.can', $can(true, true, false, false, true))
+                // Nunca entrou: exclui.
+                ->where('users.data.2.name', 'Caio Dev')
+                ->where('users.data.2.can', $can(true, true, false, true, true))
+                // Desativado: reativa em vez de desativar.
+                ->where('users.data.3.name', 'Duda Gestora')
+                ->where('users.data.3.can', $can(true, false, true, true, true)));
+    }
+
     // AC 1, 2: a senha provisória nunca aparece na tela.
     public function test_convidar_responde_sem_a_senha_e_grava_a_marca_da_ia(): void
     {

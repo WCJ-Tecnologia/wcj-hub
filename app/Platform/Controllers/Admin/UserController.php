@@ -29,8 +29,10 @@ class UserController extends Controller
             'show_inactive' => $request->boolean('show_inactive'),
         ];
 
+        $viewer = $request->user();
+
         return Inertia::render('admin/users/index', [
-            'users' => $this->users->paginate($filters)->withQueryString()->through($this->row(...)),
+            'users' => $this->users->paginate($filters)->withQueryString()->through(fn (User $user) => $this->row($user, $viewer)),
             'filters' => $filters,
             'roles' => array_map(fn (RoleEnum $role) => ['id' => $role->value, 'label' => $role->label()], RoleEnum::cases()),
         ]);
@@ -94,17 +96,30 @@ class UserController extends Controller
         return back()->with('success', "Convite reenviado para {$user->email}. {$user->firstName()} troca a senha no próximo acesso.");
     }
 
-    /** @return array<string, mixed> */
-    private function row(User $user): array
+    /**
+     * Os botões da linha vêm da UserPolicy, como em Clientes e Contatos (CR-1-08): a tela não
+     * repete regra. Excluir só aparece para quem nunca entrou (F1 §04, G2).
+     *
+     * @return array<string, mixed>
+     */
+    private function row(User $user, User $viewer): array
     {
+        $active = $user->isActive();
+
         return [
             ...$user->only(['id', 'name', 'email', 'role_id', 'daily_hours', 'ai_write_allowed', 'must_change_password']),
             'role_label' => $user->type()->label(),
-            'active' => $user->isActive(),
+            'active' => $active,
             'deactivated_at' => LocalTime::format($user->deactivated_at),
             'deactivated_by' => $user->deactivatedBy?->name,
-            // Nunca entrou: o botão Excluir aparece; o servidor confere o resto (G2).
             'last_login_at' => LocalTime::format($user->last_login_at),
+            'can' => [
+                'update' => $viewer->can('update', $user),
+                'deactivate' => $active && $viewer->can('deactivate', $user),
+                'reactivate' => ! $active && $viewer->can('reactivate', $user),
+                'delete' => $user->last_login_at === null && $viewer->can('delete', $user),
+                'resend_invite' => $viewer->can('resendInvite', $user),
+            ],
         ];
     }
 }
