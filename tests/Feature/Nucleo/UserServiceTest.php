@@ -555,6 +555,26 @@ class UserServiceTest extends TestCase
     }
 
     // AC 12
+    // CR-3-02: o "antes" da exclusão sai da linha travada, não da instância carregada antes de
+    // uma edição por outra instância.
+    public function test_excluir_pela_instancia_velha_audita_o_antes_da_linha_travada(): void
+    {
+        $user = $this->service->invite($this->invitation(), $this->admin)['user'];
+        $velha = User::query()->findOrFail($user->id);
+        $this->service->update(User::query()->findOrFail($user->id), $this->invitation(['name' => 'Maria Souza Lima']), $this->admin);
+
+        $this->service->delete($velha, $this->admin);
+
+        $this->assertModelMissing($user);
+        $this->assertAudited($user, 'deleted', [
+            'name' => ['Maria Souza Lima', null],
+            'email' => ['maria@example.com', null],
+            'role_id' => [RoleEnum::DEVELOPER->value, null],
+            'daily_hours' => ['7.50', null],
+            'ai_write_allowed' => [true, null],
+        ]);
+    }
+
     public function test_excluir_quem_tem_historico_e_recusado_e_a_linha_fica(): void
     {
         $signedIn = User::factory()->developer()->create();

@@ -159,14 +159,13 @@ class UserService
     /** G2: só quem nunca entrou e não é referenciado; o resto se desativa. */
     public function delete(User $user, User $actor): void
     {
-        $before = $this->snapshot($user);
-
-        $deleted = DB::transaction(function () use ($user, $before, $actor) {
+        $deleted = DB::transaction(function () use ($user, $actor) {
             $this->ensureNotLastActiveAdmin($user, 'excluir');
 
-            return $user->deleteIfUnused(function (User $deleted) use ($before, $actor) {
+            // O "antes" sai da linha travada, não da instância em memória (CR-3-02).
+            return $user->deleteIfUnused(function (User $deleted) use ($actor) {
                 Password::broker()->deleteToken($deleted);
-                $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null, $actor->id);
+                $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
             });
         });
 

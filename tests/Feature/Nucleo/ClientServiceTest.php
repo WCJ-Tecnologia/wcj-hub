@@ -419,6 +419,24 @@ class ClientServiceTest extends TestCase
         ]);
     }
 
+    // CR-3-02: o "antes" da exclusão sai da linha travada, não da instância carregada antes de
+    // uma edição por outra instância.
+    public function test_excluir_pela_instancia_velha_audita_o_antes_da_linha_travada(): void
+    {
+        $client = $this->service->create($this->data(), $this->admin);
+        $velha = Client::query()->findOrFail($client->id);
+        $this->service->update(Client::query()->findOrFail($client->id), $this->data(['name' => 'Padaria Pão Quentinho']), $this->admin);
+
+        $this->service->delete($velha, $this->admin);
+
+        $this->assertModelMissing($client);
+        $this->assertAudited($client, 'deleted', [
+            'name' => ['Padaria Pão Quentinho', null],
+            'country' => ['BR', null],
+            'document' => ['12ABC34501DE35', null],
+        ]);
+    }
+
     // AC 12
     public function test_excluir_cliente_com_contato_ou_projeto_e_recusado_e_a_linha_fica(): void
     {

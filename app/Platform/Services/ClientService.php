@@ -139,10 +139,9 @@ class ClientService
             throw new DomainException(ClientPolicy::WCJ_NOT_DELETABLE);
         }
 
-        $before = $this->snapshot($client);
-
-        $deleted = $client->deleteIfUnused(function (Client $deleted) use ($before, $actor) {
-            $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null, $actor->id);
+        // O "antes" sai da linha travada, não da instância em memória (CR-3-02).
+        $deleted = $client->deleteIfUnused(function (Client $deleted) use ($actor) {
+            $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
         });
 
         if (! $deleted) {

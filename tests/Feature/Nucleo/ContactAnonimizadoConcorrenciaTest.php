@@ -104,4 +104,31 @@ class ContactAnonimizadoConcorrenciaTest extends TestCase
         $this->assertTrue($corrida->bloqueada, 'A anonimização entrou entre a checagem e a reativação.');
         $this->assertTrue($this->contact->fresh()->isActive());
     }
+
+    // CR-3-02: excluir tira o "antes" da auditoria da linha travada, não da instância carregada
+    // antes. Uma anonimização que chega na trava espera; a edição feita por outra instância antes
+    // da exclusão entra no "antes", e o dado que ela substituiu não volta para a auditoria (N12).
+    public function test_excluir_audita_o_antes_pela_linha_travada_e_a_anonimizacao_espera(): void
+    {
+        $velha = Contact::query()->findOrFail($this->contact->id);
+        app(ContactService::class)->update(Contact::query()->findOrFail($this->contact->id), ['name' => 'Ana Lima Souza', 'email' => 'ana.souza@padaria.test', 'phone' => '11977770000'], $this->admin);
+        $corrida = Concorrencia::intercalarDepoisDe(
+            fn (QueryExecuted $consulta) => str_contains($consulta->sql, 'from `contacts`') && str_contains($consulta->sql, 'for update'),
+            fn () => app(ContactService::class)->anonymize(Contact::query()->findOrFail($this->contact->id), $this->admin),
+        );
+
+        app(ContactService::class)->delete($velha, $this->admin);
+
+        $this->assertTrue($corrida->rodou, 'A trava do contato na exclusão não rodou.');
+        $this->assertNull($corrida->outroErro);
+        $this->assertTrue($corrida->bloqueada, 'A anonimização entrou entre a trava e a exclusão.');
+        $this->assertFalse($this->anonimizado());
+        $this->assertNull(Contact::query()->find($this->contact->id));
+        $deleted = (string) DB::table('audit_logs')->where('auditable_type', 'contact')->where('auditable_id', $this->contact->id)
+            ->where('action', 'deleted')->value('changes');
+        $this->assertStringContainsString('Ana Lima Souza', $deleted);
+        $this->assertStringContainsString('ana.souza@padaria.test', $deleted);
+        $this->assertStringNotContainsString('ana@padaria.test', $deleted);
+        $this->assertStringNotContainsString('11988880000', $deleted);
+    }
 }

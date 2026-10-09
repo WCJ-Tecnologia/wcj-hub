@@ -129,10 +129,9 @@ class ContactService
     /** G2: só contato nunca citado em card de suporte; o resto se desativa. */
     public function delete(Contact $contact, User $actor): void
     {
-        $before = $this->snapshot($contact);
-
-        $deleted = $contact->deleteIfUnused(function (Contact $deleted) use ($before, $actor) {
-            $this->audit->log(AuditActionEnum::DELETED, $deleted, $before, null, $actor->id);
+        // O "antes" sai da linha travada, não da instância em memória (CR-3-02): uma anonimização no meio não devolve o dado pessoal (N12).
+        $deleted = $contact->deleteIfUnused(function (Contact $deleted) use ($actor) {
+            $this->audit->log(AuditActionEnum::DELETED, $deleted, $this->snapshot($deleted), null, $actor->id);
         });
 
         if (! $deleted) {
