@@ -191,7 +191,7 @@ class ClientControllerTest extends TestCase
     public function test_desativar_a_wcj_responde_403_com_a_mensagem_e_grava_a_negacao(): void
     {
         $this->seed(WcjClientSeeder::class);
-        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('document', Client::WCJ_CNPJ)->sole();
 
         $this->actingAs($this->admin)->post("/admin/clients/{$wcj->id}/deactivate")
             ->assertForbidden()
@@ -205,12 +205,12 @@ class ClientControllerTest extends TestCase
     public function test_editar_o_cnpj_da_wcj_mostra_a_recusa_e_nada_muda(): void
     {
         $this->seed(WcjClientSeeder::class);
-        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('document', Client::WCJ_CNPJ)->sole();
 
         $this->actingAs($this->admin)->put("/admin/clients/{$wcj->id}", $this->data(['name' => 'WCJ Tecnologia']))
             ->assertRedirect()->assertSessionHas('error', 'O CNPJ e o país da WCJ não podem ser alterados');
 
-        $this->assertSame(WcjClientSeeder::CNPJ, $wcj->fresh()->document);
+        $this->assertSame(Client::WCJ_CNPJ, $wcj->fresh()->document);
         $this->assertSame(0, AuditLog::query()->count());
     }
 

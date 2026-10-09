@@ -9,7 +9,6 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use App\Platform\Requests\Admin\AnonymizeContactRequest;
 use App\Platform\Services\UserService;
-use Database\Seeders\WcjClientSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -89,7 +88,7 @@ class AutorizaAntesDeValidarTest extends TestCase
         $this->as(RoleEnum::DEVELOPER);
         $antes = Client::query()->count();
 
-        $response = $this->post('/admin/clients', ['name' => '', 'country' => 'BR', 'document' => WcjClientSeeder::CNPJ]);
+        $response = $this->post('/admin/clients', ['name' => '', 'country' => 'BR', 'document' => Client::WCJ_CNPJ]);
 
         $this->assertNegadoUmaVez($response, 'created', 'client', null);
         $response->assertDontSee('Já existe o cliente');
@@ -102,7 +101,7 @@ class AutorizaAntesDeValidarTest extends TestCase
         $cliente = Client::factory()->create(['name' => 'Padaria Pão Quente']);
         $this->as($papel);
 
-        $response = $this->put("/admin/clients/{$cliente->id}", ['name' => '', 'country' => 'BR', 'document' => WcjClientSeeder::CNPJ]);
+        $response = $this->put("/admin/clients/{$cliente->id}", ['name' => '', 'country' => 'BR', 'document' => Client::WCJ_CNPJ]);
 
         $this->assertNegadoUmaVez($response, 'updated', 'client', $cliente->id);
         $this->assertSame('Padaria Pão Quente', $cliente->fresh()->name);

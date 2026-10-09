@@ -103,7 +103,7 @@ class ClientPolicyTest extends TestCase
     public function test_wcj_nunca_se_desativa_nem_pelo_administrador(): void
     {
         $this->seed(WcjClientSeeder::class);
-        $wcj = Client::query()->where('country', 'BR')->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('country', 'BR')->where('document', Client::WCJ_CNPJ)->sole();
         $admin = User::factory()->admin()->create();
 
         $response = Gate::forUser($admin)->inspect('deactivate', $wcj);
@@ -119,7 +119,7 @@ class ClientPolicyTest extends TestCase
     public function test_wcj_nunca_se_exclui_nem_sem_historico(): void
     {
         $this->seed(WcjClientSeeder::class);
-        $wcj = Client::query()->where('country', 'BR')->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('country', 'BR')->where('document', Client::WCJ_CNPJ)->sole();
         $admin = User::factory()->admin()->create();
 
         $response = Gate::forUser($admin)->inspect('delete', $wcj);
@@ -133,7 +133,7 @@ class ClientPolicyTest extends TestCase
     public function test_a_wcj_renomeada_continua_protegida(): void
     {
         $this->seed(WcjClientSeeder::class);
-        $wcj = Client::query()->where('country', 'BR')->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('country', 'BR')->where('document', Client::WCJ_CNPJ)->sole();
         $wcj->update(['name' => 'WCJ Tecnologia e Desenvolvimento de Sistemas Ltda']);
         $admin = User::factory()->admin()->create();
 
@@ -147,7 +147,7 @@ class ClientPolicyTest extends TestCase
         $admin = User::factory()->admin()->create();
         $homonimo = Client::factory()->create(['country' => 'BR', 'name' => 'WCJ Tecnologia']);
 
-        $this->assertNotSame(WcjClientSeeder::CNPJ, $homonimo->document);
+        $this->assertNotSame(Client::WCJ_CNPJ, $homonimo->document);
         $this->assertTrue(Gate::forUser($admin)->inspect('deactivate', $homonimo)->allowed());
         $this->assertTrue(Gate::forUser($admin)->inspect('delete', $homonimo)->allowed());
     }
@@ -155,7 +155,7 @@ class ClientPolicyTest extends TestCase
     public function test_o_mesmo_documento_em_outro_pais_nao_e_a_wcj(): void
     {
         $admin = User::factory()->admin()->create();
-        $foreign = Client::factory()->create(['country' => 'PT', 'document' => WcjClientSeeder::CNPJ]);
+        $foreign = Client::factory()->create(['country' => 'PT', 'document' => Client::WCJ_CNPJ]);
 
         $this->assertTrue($admin->can('deactivate', $foreign));
     }

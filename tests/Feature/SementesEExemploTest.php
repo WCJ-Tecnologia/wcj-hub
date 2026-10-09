@@ -7,7 +7,6 @@ use App\Platform\Models\User;
 use App\Support\Exemplo;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\ExemploSeeder;
-use Database\Seeders\WcjClientSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -39,7 +38,7 @@ class SementesEExemploTest extends TestCase
         $this->assertSame(['Outro'], DB::table('rework_reasons')->where('requires_text', true)->pluck('label')->all());
         $this->assertSame(['other'], DB::table('rework_reasons')->whereNotNull('slug')->pluck('slug')->all(), 'só o Outro tem slug (P40)');
 
-        $wcj = Client::query()->where('document', WcjClientSeeder::CNPJ)->sole();
+        $wcj = Client::query()->where('document', Client::WCJ_CNPJ)->sole();
         $this->assertSame(['WCJ Tecnologia', 'BR'], [$wcj->name, $wcj->country]);
         $this->assertSame(0, User::query()->count(), 'o admin vem do app:create-admin, nunca de seeder');
     }
