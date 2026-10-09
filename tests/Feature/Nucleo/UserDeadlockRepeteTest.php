@@ -80,6 +80,9 @@ class UserDeadlockRepeteTest extends TestCase
 
         app(UserService::class)->resendInvite($dev, $admin);
 
+        // CR-4-01: a tentativa desfeita já tinha sincronizado a flag na memória; a repetição
+        // precisa gravá-la de novo, senão a senha provisória vira definitiva.
+        $this->assertTrue($dev->fresh()->must_change_password);
         $this->assertSame(['must_change_password' => [false, true]], AuditLog::query()->where('action', 'password_reset')->sole()->changes);
         Mail::assertSent(TemporaryPasswordMail::class, 1);
         Mail::assertSent(TemporaryPasswordMail::class, fn (TemporaryPasswordMail $mail) => Hash::check($mail->temporaryPassword, $dev->fresh()->password));

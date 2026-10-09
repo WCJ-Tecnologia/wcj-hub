@@ -78,11 +78,14 @@ class UserService
      */
     public function resendInvite(User $user, User $actor): bool
     {
-        // Fora do callback: na repetição, o issue() da tentativa desfeita já mudou a memória.
-        $before = ['must_change_password' => (bool) $user->must_change_password];
+        // Na repetição, recomeça da instância como chegou, como o update: o save() da tentativa
+        // desfeita deixaria a flag "sem mudança", e a repetição não gravaria a troca obrigatória (CR-4-01).
+        [$attributes, $original] = [$user->getAttributes(), $user->getRawOriginal()];
 
         // A senha nasce dentro do callback: a tentativa que commita é a que vai no e-mail.
-        $plain = DB::transaction(function () use ($user, $before, $actor) {
+        $plain = DB::transaction(function () use ($user, $actor, $attributes, $original) {
+            $user->setRawAttributes($original, true)->setRawAttributes($attributes);
+            $before = ['must_change_password' => (bool) $user->must_change_password];
             $plain = $this->passwords->issue($user);
             $this->audit->log(AuditActionEnum::PASSWORD_RESET, $user, $before, ['must_change_password' => true], $actor->id);
 
