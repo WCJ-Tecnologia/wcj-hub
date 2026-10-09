@@ -114,6 +114,19 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 - **Passport 13** instalado (tabelas e chaves), com as rotas `/oauth/*` desligadas até o B8 (`Passport::ignoreRoutes`). `laravel/mcp` entra no B8.
 - **Parâmetros** em `config/hub.php` + `.env` (T5); não há tabela de configurações.
 - **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token.
+- **Componentes e hooks do projeto**, além da tabela do template (`.ai/stacks/ui.md` §5, que não se edita aqui). Quem criar componente registra nesta tabela no mesmo commit (`ui.md` §5):
+
+| Componente | Onde | Uso |
+|---|---|---|
+| `ListBody` | `components/list-body.tsx` | estados de erro ("Não foi possível carregar…", Tentar de novo) e carregando (`aria-busy`, `role="status"`) em volta da tabela de uma lista, com o `useListVisit` |
+| `useListVisit` | `hooks/use-list-visit.ts` | carregando e erro só das visitas GET de uma lista (busca, filtro, página) |
+| `ShowInactiveToggle` | `components/show-inactive-toggle.tsx` | a chave "Mostrar desativados" das listas (F1 §05) |
+| `AlphanumericCnpjInput` | `components/ui/masked-input.tsx` | CNPJ alfanumérico com máscara, maiúsculo (N5) |
+| `deactivation()` | `lib/situation.ts` | "em DD/MM/AAAA por Fulano" da situação, nas três tabelas |
+| `StatusPill` `kind="contact"` e `kind="audit"` | `components/status-pill.tsx` | ativo / desativado / anonimizado do contato; ok / negado da auditoria |
+| `DataTable` `rowClassName` | `components/data-table.tsx` | linha negada em destaque na auditoria |
+| `RowActions` `busy` | `components/row-actions.tsx` | trava os botões e sinaliza a linha enquanto a ação dela roda |
+| `SearchInput` | `components/search-input.tsx` | do template, mas aqui espera a escrita em voo terminar antes de buscar (CR-1-10) |
 
 ## Como rodar
 
