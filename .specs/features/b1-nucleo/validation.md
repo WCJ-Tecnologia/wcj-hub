@@ -1,8 +1,17 @@
-# B1 Núcleo Validation (rodada 10, focada nas correções dos ciclos 3 e 4 da code review)
+# B1 Núcleo Validation (rodada 11, focada no Fix 6 da rodada 10)
 
-## Validation: FAIL
+## Validation: PASS
 
-**Result**: FAIL na rodada 10, por **um gap Minor, só de teste**. As correções dos ciclos 3 e 4 da `wcj-code-review` (`fef3766..7b96b12`) estão no código e, no que a spec pede, têm teste que discrimina: os ACs que o diff toca (Usuários AC 3, 8, 11, 14 e 16; Clientes AC 11; Contatos AC 8 e 10, com a N12; G3) têm evidência `arquivo:linha` com o valor da spec, e **as 14 mutações das famílias pedidas (a–j, com as variantes d2, e2 e i1–i3) morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O que reprova é uma 15ª mutação, fora da lista pedida, no código novo do `RetriesDeadlock`: tirar a guarda `|| DB::transactionLevel() > 0` (`app/Platform/Services/Concerns/RetriesDeadlock.php:40`) **sobreviveu** às 172 provas pertinentes. A guarda é o que impede repetir a transação quando quem chama já abriu outra (o deadlock já desfez a de fora); o trait e o `UserDeadlockRepeteTest.php:26` afirmam esse comportamento, e nenhum teste o prova. Uma sonda descartável (o `update` dentro de `DB::transaction`, deadlock simulado) passou com a guarda e falhou sem ela: o mutante não é equivalente. Hoje nenhum caminho de produção chama o `UserService` dentro de transação aberta (só os testes com `RefreshDatabase`), por isso Minor. Correção barata, só teste (Fix 6). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **357 passed (2917 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed**. Detalhe na seção "Rodada 10".
+**Result**: PASS na rodada 11. O único gap da rodada 10 (Fix 6, Minor, só teste: a guarda `|| DB::transactionLevel() > 0` de `app/Platform/Services/Concerns/RetriesDeadlock.php:40` sem prova, mutante g2 sobrevivente) está fechado pelo `7c228a8`, que só acrescenta `test_dentro_de_transacao_aberta_por_fora_nao_repete_e_sobe` em `tests/Feature/Nucleo/UserDeadlockRepeteTest.php:146-163`. O teste chama `UserService::update` dentro de `DB::transaction(...)` aberta por fora, com o deadlock 1213 simulado na primeira auditoria, e afirma: a exceção sobe com o 1213 (`:157`), **1 tentativa** (`:160`), o nome continua o do banco (`:161`) e nenhuma linha `updated` (`:162`). Numa worktree descartável com MySQL descartável (`DB_TESTE=container`), o **g2 morreu** exatamente nesse teste (`:154`, "O deadlock não subiu."), e os mutantes `ATTEMPTS = 1` (h) e "repete também o 1205" (f) continuam mortos. Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8 local) **358 passed (2921 assertions)**, typecheck, eslint, build, guard **1053 pass**, Playwright **68 passed**; `specs:check` e `validate_state.py` com exit 0. O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 11".
+
+**Date (rodada 11)**: 2026-10-09
+**Spec (rodada 11)**: `.specs/features/b1-nucleo/spec.md`, aprovada por Lucas Scholz em 09/10/2026 (sem mudança desde a rodada 10)
+**Diff range (rodada 11)**: `b0a8d6f..7c228a8`, um commit só (`7c228a8`): `tests/Feature/Nucleo/UserDeadlockRepeteTest.php` (+24)
+**Verifier (rodada 11)**: subagente independente (autor ≠ verifier), escopo focado no Fix 6 da rodada 10
+
+## Rodada 10 (histórico): FAIL
+
+**Result (rodada 10)**: FAIL na rodada 10, por **um gap Minor, só de teste**. As correções dos ciclos 3 e 4 da `wcj-code-review` (`fef3766..7b96b12`) estão no código e, no que a spec pede, têm teste que discrimina: os ACs que o diff toca (Usuários AC 3, 8, 11, 14 e 16; Clientes AC 11; Contatos AC 8 e 10, com a N12; G3) têm evidência `arquivo:linha` com o valor da spec, e **as 14 mutações das famílias pedidas (a–j, com as variantes d2, e2 e i1–i3) morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O que reprova é uma 15ª mutação, fora da lista pedida, no código novo do `RetriesDeadlock`: tirar a guarda `|| DB::transactionLevel() > 0` (`app/Platform/Services/Concerns/RetriesDeadlock.php:40`) **sobreviveu** às 172 provas pertinentes. A guarda é o que impede repetir a transação quando quem chama já abriu outra (o deadlock já desfez a de fora); o trait e o `UserDeadlockRepeteTest.php:26` afirmam esse comportamento, e nenhum teste o prova. Uma sonda descartável (o `update` dentro de `DB::transaction`, deadlock simulado) passou com a guarda e falhou sem ela: o mutante não é equivalente. Hoje nenhum caminho de produção chama o `UserService` dentro de transação aberta (só os testes com `RefreshDatabase`), por isso Minor. Correção barata, só teste (Fix 6). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **357 passed (2917 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed**. Detalhe na seção "Rodada 10".
 
 **Date (rodada 10)**: 2026-10-09
 **Spec (rodada 10)**: `.specs/features/b1-nucleo/spec.md`, aprovada por Lucas Scholz em 09/10/2026 (o diff só marca a caixa do critério de sucesso do Verifier, `spec.md:262`)
@@ -84,6 +93,7 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | 8 (focada nos gaps da rodada 7) | `445f5d2` | **PASS** | Estado vazio 20/20 com `--repeat-each=10`; texto N = 1 afirmado em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos; e2e 56/56 duas vezes; PHP 322 passed | - |
 | 9 (focada nas correções dos ciclos 1 e 2 da code review, CR-2-02) | `cb509d9` | **PASS** | 17 linhas de AC com evidência e valor da spec; P2 AC 3 deixa de ser desvio (D13); 20 mutações (a–j) mortas, 0 sobrevivente; PHP 345 passed (container), e2e 68 passed, guard 1053 | - |
 | 10 (focada nas correções dos ciclos 3 e 4 da code review, CR-4-02) | `7b96b12` | **FAIL** | 1 mutante sobrevivente, fora da lista pedida: g2, sem a guarda `DB::transactionLevel() > 0` do `RetriesDeadlock.php:40` (repetir dentro de transação aberta por quem chamou), que o código afirma e nenhum teste prova. As 14 mutações das famílias a–j mortas; 15 linhas de AC com evidência; PHP 357 passed (container), e2e 68 passed, guard 1053 | Fix 6, só teste |
+| 11 (focada no Fix 6 da rodada 10) | `7c228a8` | **PASS** | g2 morto por `tests/Feature/Nucleo/UserDeadlockRepeteTest.php:154` (o teste novo `:146-163`: 1213 sobe, 1 tentativa, nada gravado, 0 `updated`); h e f continuam mortos; PHP 358 passed (MySQL 8 local), e2e 68 passed, guard 1053 | - |
 
 ---
 
@@ -103,12 +113,104 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | T51 | ✅ Done | Conferida na rodada 8: os 3 "Done when" marcados são verdade (estado vazio 20/20 com `--repeat-each=10`; texto N = 1 com `exact`, plural no lugar do singular pego; 56/56 duas vezes com banco recriado). O comentário de `AuthorizesBeforeValidation.php:12` agora diz o que acontece (a observação "Comentário impreciso" da rodada 7) |
 | Ciclos 1 e 2 da code review (`ddd4888..cb509d9`) | ✅ Conferidos na rodada 9 | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 9)" e sensor 20/20 |
 | Ciclos 3 e 4 da code review (`e9b2731..7b96b12`) | ⚠️ Conferidos na rodada 10, com 1 gap | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 10)", sensor 14/15 (g2 sobreviveu: Fix 6) |
+| Fix 6 da rodada 10 (`7c228a8`) | ✅ Conferido na rodada 11 | Sem tarefa `T52+`, como os ciclos: o commit cita o Fix 6 e o mutante g2. "Done when" do Fix 6 verdadeiro: o caso passa e o g2 morre |
 | T35 | ✅ Done | `ClientProjects` só aparece no texto histórico da T5 em `tasks.md`; `AGENTS.md:110,158`, `docs/escopo.md:79,91` e `design.md:192` falam do `ClientManagement` |
 
+`tasks.md` (rodada 11): igual à rodada 10, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o `7c228a8` não toca o arquivo).
 `tasks.md` (rodada 10): igual à rodada 9, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos 3 e 4 não toca o arquivo).
 `tasks.md` (rodada 9): igual à rodada 8, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos não toca o arquivo).
 `tasks.md` (rodada 8): 51 tarefas `### T`, 175 caixas marcadas, 0 abertas.
 `tasks.md` (rodada 6): 36 tarefas `### T`, 134 caixas marcadas, 0 abertas. Na rodada 5: 35 tarefas, 131 caixas; na rodada 4: 31 tarefas, 115 caixas.
+
+---
+
+## Rodada 11 (focada no Fix 6 da rodada 10)
+
+Escopo: o Fix 6 da rodada 10 (a repetição dentro de transação aberta por quem chamou, mutante g2). Os ACs, o sensor e as decisões da rodada 10 continuam como registrados abaixo: nenhum arquivo de produção mudou desde `7b96b12`.
+
+### O diff só toca um teste
+
+`git diff b0a8d6f..7c228a8 --stat`: `tests/Feature/Nucleo/UserDeadlockRepeteTest.php` (+24), 1 arquivo. São o teste novo (`:143-163`), o `use Illuminate\Support\Facades\DB` (`:16`) e o docblock da classe (`:27-28`), que agora diz o que o teste prova.
+
+### Spec-anchored (rodada 11)
+
+| Comportamento | Esperado (Fix 6 da rodada 10; `RetriesDeadlock.php:36-38`) | `file:line` + assertion | Result |
+|---|---|---|---|
+| Repetição: dentro de transação aberta por quem chamou, não repete | o 1213 sobe na primeira tentativa; nada gravado; nenhuma auditoria | `tests/Feature/Nucleo/UserDeadlockRepeteTest.php:153` `DB::transaction(fn () => app(UserService::class)->update($dev, …'Maria Lima'…))` com `deadlockNaPrimeiraAuditoria()` (`:150`); `:154` `$this->fail('O deadlock não subiu.')` se a chamada voltar; `:157` `assertSame(1213, ($e instanceof DeadlockException ? $e->getPrevious() : $e)->errorInfo[1])`; `:160` `assertSame(1, $this->tentativas)`; `:161` `assertSame('Maria Souza', $dev->fresh()->name)`; `:162` `assertSame(0, AuditLog::query()->where('action', 'updated')->count())`. Código: `RetriesDeadlock.php:40` | ✅ (g2 morto) |
+
+O `catch (PDOException)` cobre as duas formas: dentro da transação de fora o Laravel embrulha o deadlock em `DeadlockException` (subclasse de `PDOException`) e o `:157` desembrulha antes de conferir o 1213. O `fail()` de `:154` lança `AssertionFailedError`, que não é `PDOException`: a chamada que volta sem exceção reprova, não é engolida pelo `catch`. "Nada gravado" é afirmado pelo banco (`fresh()` e a contagem em `audit_logs`), depois de a transação de fora ter sido desfeita. A classe usa `DatabaseTruncation` (`:32`): a transação de fora é só a do teste.
+
+**Status (rodada 11)**: a linha que era GAP na rodada 10 tem evidência. 0 GAP, 0 spec-precision gap novo.
+
+### Sensor (rodada 11)
+
+Worktree descartável do HEAD no diretório temporário da sessão, fora do repositório (`git worktree add --detach`), `vendor` copiado da árvore real, nenhum `.env*` copiado; `php artisan config:clear`. `DB_TESTE=container php artisan test --filter=UserDeadlockRepeteTest` (MySQL 8.4 descartável por execução). **Sem mutação: 5 passed (19 assertions)**. Cada mutante: troca exata por script (uma ocorrência só, conferida), a mesma execução, `git checkout` do arquivo e `git status --porcelain` da worktree vazio.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| g2 | `RetriesDeadlock.php:40` | sem a guarda `\|\| DB::transactionLevel() > 0` | ✅ morto (1 failed, 4 passed) | `UserDeadlockRepeteTest.php:146`, `AssertionFailedError` em `:154` (a 2ª tentativa grava e a chamada volta). Só esse teste falhou |
+| h | `RetriesDeadlock.php:22` | `ATTEMPTS = 1` | ✅ morto (3 failed, 2 passed) | `UserDeadlockRepeteTest.php:76`, `:89` (`QueryException` de `:68`) e `:108` (`DeadlockException`) |
+| f | `RetriesDeadlock.php:40` | repete também o 1205 (`! in_array($code, [1213, 1205], true)`) | ✅ morto (1 failed, 4 passed) | `UserDeadlockRepeteTest.php:123` (`AssertionFailedError` em `:132`) |
+
+**Sensor depth**: focado (o comportamento do Fix 6, mais as duas regressões vizinhas pedidas). **Resultado**: 3/3 mortos. ✅
+
+Isolamento: `git status --porcelain` da árvore real antes de tudo e depois de `git worktree remove --force` + `git worktree prune`, os dois vazios e iguais (`diff` sem diferença); `git worktree list` igual ao de antes (`diff` sem diferença: as cinco worktrees de antes).
+
+Ambiente: o container `wcj-hub-mysql-1` caiu por memória (exit 137) durante o sensor com o MySQL descartável, como nas rodadas 9 e 10; voltou com `docker start` (healthy) antes do gate, que rodou todo no banco local.
+
+### Gate (rodada 11, árvore real, HEAD `7c228a8`)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (MySQL 8 local na 3306; `config:clear` antes) | **358 passed (2921 assertions)**, 0 failed, 0 skipped, 51,6 s |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` (eslint) | exit 0, sem aviso |
+| `npm run build` | `✓ built in 4.78s`, exit 0 |
+| `npm run test:guard` | **1053 pass**, 0 fail, 0 skipped |
+| e2e (`npm run e2e:prepare` exit 0; `npm run e2e:serve` na 8000, livre antes; `npx playwright test`) | **68 passed** (1.6 min), 0 failed. Servidor morto depois (PID da 8000), porta livre |
+
+Antes (rodada 10): 357 PHP (2917 assertions). Agora: **+1 PHP** (o teste do Fix 6, +4 assertions). e2e igual (68). Nenhum teste removido.
+
+### Code Quality (rodada 11)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ Um teste, no arquivo que já simula o deadlock, com o mesmo helper (`deadlockNaPrimeiraAuditoria`) e o mesmo contador |
+| No scope creep | ✅ Nenhum arquivo de produção, nenhuma migração, Policy ou ability |
+| Matches patterns | ✅ Mesmo formato do teste do 1205 (`:123-141`): `try`/`fail`/`catch`, código do erro, tentativas, estado no banco |
+| Spec-anchored outcome check | ✅ Afirma exatamente o "Done when" do Fix 6: 1213, 1 tentativa, nome igual, 0 `updated` |
+| Comportamento declarado com prova | ✅ A guarda que dois comentários afirmavam agora tem teste que a discrimina (g2) |
+| Every test maps to a requirement | ✅ O teste cita a rodada 10 e o mutante g2 (`:143-145`) |
+| Guidelines | `.ai/core/especificacao.md` §5; `.ai/core/testes.md` §10 e §11 |
+
+### Declared Deviations (rodada 11)
+
+- Nenhum novo. Continuam, sem reprovar, os da rodada 10 (e da 9).
+- `grep -rn SPEC_DEVIATION app resources tests`: vazio.
+
+### Saída dos validadores (rodada 11)
+
+Rodados depois de escrever este relatório:
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+validate_state: 0 error(s) across [b1-nucleo]           (exit 0)
+
+$ npm run specs:check
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none, esperado: só documentos)
+validate_tasks: 0 error(s), 2 warning(s)
+[b1-nucleo] validate_state.py: ok
+conferir-specs: 1 feature(s), 0 problema(s)             (exit 0)
+```
+
+### Lições (`.specs/lessons.json`), rodada 11
+
+Rodada PASS sem sinal novo (nenhum mutante sobrevivente, nenhum spec-precision gap, nenhum `SPEC_DEVIATION`, gate verde): pela `references/lessons.md`, **nenhuma lição gravada**. A L-012 (candidata da rodada 10, do mesmo g2) fica como está: ela foi aplicada aqui e o teste que pede matou o mutante, mas a promoção a `confirmed` só vem pela recorrência em outra feature (o script conta features distintas), e `penalize` é só para lição confirmada que falhou. `.specs/LESSONS.md` não foi editado à mão.
+
+- `lessons.py status`: `12 total | confirmed=0 candidate=12 quarantined=0` (igual à rodada 10).
+- `lessons.py list --status candidate --query "outer transaction"`: `L-012 (candidate, x1) [scope:services]`.
 
 ---
 
