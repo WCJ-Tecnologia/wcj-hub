@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 12,
+  "next_id": 13,
   "lessons": [
     {
       "id": "L-001",
@@ -211,6 +211,24 @@
       ],
       "created": "2026-10-08T15:10:35Z",
       "last_seen": "2026-10-08T15:23:26Z"
+    },
+    {
+      "id": "L-012",
+      "key": "surviving_mutant::when a retry helper declares that it does not retry inside a transaction opened by the caller test that branch by calling it inside an outer transaction",
+      "text": "When a retry helper declares that it does not retry inside a transaction opened by the caller, test that branch by calling it inside an outer transaction",
+      "signal": "surviving_mutant",
+      "scope": "services",
+      "status": "candidate",
+      "features": [
+        "b1-nucleo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 10, mutante g2 (app/Platform/Services/Concerns/RetriesDeadlock.php:40) (services)"
+      ],
+      "created": "2026-10-09T14:12:49Z",
+      "last_seen": "2026-10-09T14:12:49Z"
     }
   ]
 }

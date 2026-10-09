@@ -80,6 +80,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: Clientes AC 9 (N = 1), resources/js/pages/admin/clients/index.tsx:35 (e2e) (+1 more)
 - last seen: 2026-10-08T15:23:26Z
 
+### L-012 - When a retry helper declares that it does not retry inside a transaction opened by the caller, test that branch by calling it inside an outer transaction
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `services` · harmful: 0
+- features: b1-nucleo
+- evidence: validation.md rodada 10, mutante g2 (app/Platform/Services/Concerns/RetriesDeadlock.php:40) (services)
+- last seen: 2026-10-09T14:12:49Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

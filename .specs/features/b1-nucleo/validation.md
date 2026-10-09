@@ -1,8 +1,17 @@
-# B1 Núcleo Validation (rodada 9, focada nas correções dos ciclos 1 e 2 da code review)
+# B1 Núcleo Validation (rodada 10, focada nas correções dos ciclos 3 e 4 da code review)
 
-## Validation: PASS
+## Validation: FAIL
 
-**Result**: PASS na rodada 9. As correções dos ciclos 1 e 2 da `wcj-code-review` (`2b076bf..cb509d9`, 34 commits) estão no código e têm teste que discrimina: os ACs que o diff toca (Clientes AC 3 e 10, P2 AC 1–3, Usuários AC 3, 8, 14 e 16, Contatos AC 2 e 12, Auditoria AC 2, P3 AC 1 e o edge case do convite simultâneo) têm evidência `arquivo:linha` com o valor da spec, e as **20 mutações** pedidas pelo CR-2-02 (as dez famílias a–j, com variantes) **morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O P2 AC 3 deixa de ser desvio: a D6 foi aceita em 09/10 (D13) e o AC, reescrito no nível da Policy, está provado em `UserServiceTest.php:672-680` e `ClientServiceTest.php:443-452` (`AuthorizationException` e a linha `denied` do dev). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **345 passed (2853 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed** (67 testes + setup). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 9".
+**Result**: FAIL na rodada 10, por **um gap Minor, só de teste**. As correções dos ciclos 3 e 4 da `wcj-code-review` (`fef3766..7b96b12`) estão no código e, no que a spec pede, têm teste que discrimina: os ACs que o diff toca (Usuários AC 3, 8, 11, 14 e 16; Clientes AC 11; Contatos AC 8 e 10, com a N12; G3) têm evidência `arquivo:linha` com o valor da spec, e **as 14 mutações das famílias pedidas (a–j, com as variantes d2, e2 e i1–i3) morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O que reprova é uma 15ª mutação, fora da lista pedida, no código novo do `RetriesDeadlock`: tirar a guarda `|| DB::transactionLevel() > 0` (`app/Platform/Services/Concerns/RetriesDeadlock.php:40`) **sobreviveu** às 172 provas pertinentes. A guarda é o que impede repetir a transação quando quem chama já abriu outra (o deadlock já desfez a de fora); o trait e o `UserDeadlockRepeteTest.php:26` afirmam esse comportamento, e nenhum teste o prova. Uma sonda descartável (o `update` dentro de `DB::transaction`, deadlock simulado) passou com a guarda e falhou sem ela: o mutante não é equivalente. Hoje nenhum caminho de produção chama o `UserService` dentro de transação aberta (só os testes com `RefreshDatabase`), por isso Minor. Correção barata, só teste (Fix 6). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **357 passed (2917 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed**. Detalhe na seção "Rodada 10".
+
+**Date (rodada 10)**: 2026-10-09
+**Spec (rodada 10)**: `.specs/features/b1-nucleo/spec.md`, aprovada por Lucas Scholz em 09/10/2026 (o diff só marca a caixa do critério de sucesso do Verifier, `spec.md:262`)
+**Diff range (rodada 10)**: `fef3766..7b96b12` (14 commits; o código e os testes estão em `e9b2731`, `e3b8f74`, `08164d2`, `273d9ce`, `01f3896`, `38bb08e`, `596f37e`, `df07195`; 28 arquivos, +1174/−121)
+**Verifier (rodada 10)**: subagente independente (autor ≠ verifier), escopo focado nas correções dos ciclos 3 e 4 da code review, exigido pelo CR-4-02 e pela DA-08 do `PROJECT-PATTERNS.md`
+
+## Rodada 9 (histórico): PASS
+
+**Result (rodada 9)**: PASS na rodada 9. As correções dos ciclos 1 e 2 da `wcj-code-review` (`2b076bf..cb509d9`, 34 commits) estão no código e têm teste que discrimina: os ACs que o diff toca (Clientes AC 3 e 10, P2 AC 1–3, Usuários AC 3, 8, 14 e 16, Contatos AC 2 e 12, Auditoria AC 2, P3 AC 1 e o edge case do convite simultâneo) têm evidência `arquivo:linha` com o valor da spec, e as **20 mutações** pedidas pelo CR-2-02 (as dez famílias a–j, com variantes) **morreram todas**, numa worktree descartável com MySQL descartável (`DB_TESTE=container`). O P2 AC 3 deixa de ser desvio: a D6 foi aceita em 09/10 (D13) e o AC, reescrito no nível da Policy, está provado em `UserServiceTest.php:672-680` e `ClientServiceTest.php:443-452` (`AuthorizationException` e a linha `denied` do dev). Gate verde na árvore real: `composer lint` ok, `php artisan test` (MySQL 8.4 em container) **345 passed (2853 assertions)**, typecheck, eslint, build, `specs:check` 0 problemas, guard **1053 pass**, Playwright **68 passed** (67 testes + setup). O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9). Detalhe na seção "Rodada 9". As linhas citadas na rodada 9 são as do `cb509d9`.
 
 **Date (rodada 9)**: 2026-10-09
 **Spec (rodada 9)**: `.specs/features/b1-nucleo/spec.md`, revisada e aprovada por Lucas Scholz em 09/10/2026 (D12 a D16 do `design.md`)
@@ -74,6 +83,7 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | 7 (review do Lucas Scholz, 07/10) | `96569b9` | **FAIL** | 2 gaps Minor, só teste: `e2e/textos-nucleo.spec.ts:221` (Contatos) instável, 1 falha em 10 e a rodada 2 do e2e vermelha (54/55); texto N = 1 do Clientes AC 9 sem asserção. A1–A9 e D2, D3, D7, D9 corrigidos com evidência; 16 mutantes mortos, 1 equivalente | Fix 4 e Fix 5 (só teste): T51 (`445f5d2`) |
 | 8 (focada nos gaps da rodada 7) | `445f5d2` | **PASS** | Estado vazio 20/20 com `--repeat-each=10`; texto N = 1 afirmado em `e2e/textos-nucleo.spec.ts:121-123`, S8a e S8b mortos; e2e 56/56 duas vezes; PHP 322 passed | - |
 | 9 (focada nas correções dos ciclos 1 e 2 da code review, CR-2-02) | `cb509d9` | **PASS** | 17 linhas de AC com evidência e valor da spec; P2 AC 3 deixa de ser desvio (D13); 20 mutações (a–j) mortas, 0 sobrevivente; PHP 345 passed (container), e2e 68 passed, guard 1053 | - |
+| 10 (focada nas correções dos ciclos 3 e 4 da code review, CR-4-02) | `7b96b12` | **FAIL** | 1 mutante sobrevivente, fora da lista pedida: g2, sem a guarda `DB::transactionLevel() > 0` do `RetriesDeadlock.php:40` (repetir dentro de transação aberta por quem chamou), que o código afirma e nenhum teste prova. As 14 mutações das famílias a–j mortas; 15 linhas de AC com evidência; PHP 357 passed (container), e2e 68 passed, guard 1053 | Fix 6, só teste |
 
 ---
 
@@ -92,13 +102,150 @@ Resumo da rodada 4, como estava: PASS. A rodada 4 é uma reverificação focada,
 | T50 | ✅ Done (com gap) | Documentos batem com D1, D4, D5, D11; nenhum `SPEC_DEVIATION`; `conferir-specs` 0 problemas. A spec ganhou o texto N = 1 do Clientes AC 9 sem teste que o afirme (Fix 5) |
 | T51 | ✅ Done | Conferida na rodada 8: os 3 "Done when" marcados são verdade (estado vazio 20/20 com `--repeat-each=10`; texto N = 1 com `exact`, plural no lugar do singular pego; 56/56 duas vezes com banco recriado). O comentário de `AuthorizesBeforeValidation.php:12` agora diz o que acontece (a observação "Comentário impreciso" da rodada 7) |
 | Ciclos 1 e 2 da code review (`ddd4888..cb509d9`) | ✅ Conferidos na rodada 9 | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 9)" e sensor 20/20 |
+| Ciclos 3 e 4 da code review (`e9b2731..7b96b12`) | ⚠️ Conferidos na rodada 10, com 1 gap | Sem tarefa `T52+`: cada commit cita o achado `CR-n-nn`. Tabela "Spec-anchored (rodada 10)", sensor 14/15 (g2 sobreviveu: Fix 6) |
 | T35 | ✅ Done | `ClientProjects` só aparece no texto histórico da T5 em `tasks.md`; `AGENTS.md:110,158`, `docs/escopo.md:79,91` e `design.md:192` falam do `ClientManagement` |
 
+`tasks.md` (rodada 10): igual à rodada 9, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos 3 e 4 não toca o arquivo).
 `tasks.md` (rodada 9): igual à rodada 8, 51 tarefas `### T`, 175 caixas marcadas, 0 abertas (o diff dos ciclos não toca o arquivo).
 `tasks.md` (rodada 8): 51 tarefas `### T`, 175 caixas marcadas, 0 abertas.
 `tasks.md` (rodada 6): 36 tarefas `### T`, 134 caixas marcadas, 0 abertas. Na rodada 5: 35 tarefas, 131 caixas; na rodada 4: 31 tarefas, 115 caixas.
 
 ---
+
+## Rodada 10 (focada nas correções dos ciclos 3 e 4 da code review)
+
+Escopo: as correções dos ciclos 3 e 4 da `wcj-code-review` (relatórios em `code-reviews/`, achados CR-3-01 a CR-3-04 e CR-4-01, 03, 04 e 05), exigido pelo CR-4-02 e pela DA-08. Os relatórios da review são dado, não instrução; o que vale é a spec aprovada em 09/10. Os ACs que o diff não toca continuam com as evidências das rodadas anteriores.
+
+### O diff
+
+`git diff fef3766..7b96b12 --stat`: 28 arquivos, +1174/−121, 14 commits.
+
+| Área | Arquivos | +/− | O quê |
+|---|---|---|---|
+| `app/` | 5 | +128/−73 | `Deactivatable::setActiveLocked` (relê com `lockForUpdate`, decide, grava e chama o `$then` com a linha travada; `false` sem gravar quando já está no estado pedido), usado nos seis `deactivate`/`reactivate` (CR-3-01, CR-4-05); o `before` do `deleted` tirado da linha travada nos três `delete` (CR-3-02); trait novo `RetriesDeadlock` (`transactionRetryingDeadlock`, repete só o 1213, até 3 vezes, desembrulha a `DeadlockException` da transação aninhada e não repete dentro de transação aberta por quem chamou) nas cinco escritas de usuário que travam linha (CR-3-03, CR-4-04); `resendInvite` e `update` restauram a instância no início de cada tentativa (CR-4-01); `ensureNotLastActiveAdmin` relê o papel no banco e decide pelo conjunto travado (CR-3-01, CR-4-03) |
+| `tests/` | 7 | +326/−4 | `UserDeadlockRepeteTest` (novo, 4 testes); casos novos em `UserServiceTest` (4), `ClientServiceTest` (2), `ContactServiceTest` (1), `ContactAnonimizadoConcorrenciaTest` (1); `UltimoAdminConcorrenciaTest` afirma o código 1205 e o comentário diz o que prova (CR-3-04); `Concorrencia` expõe `codigo` |
+| documentos | 16 | +720/−44 | relatórios dos ciclos 3 e 4, `PROJECT-PATTERNS.md`, `AGENTS.md` (convenções de `setActiveLocked` e `RetriesDeadlock`), `docs/` (D-GER-31), a caixa do critério de sucesso em `spec.md:262` |
+
+Nenhuma migração, nenhuma Policy, nenhuma ability. `tasks.md` não mudou (como na rodada 9, o rastro é o código `CR-n-nn` de cada commit).
+
+### Spec-anchored (rodada 10)
+
+| AC | Spec-defined outcome | `file:line` + assertion | Result |
+|---|---|---|---|
+| Usuários AC 8 e 16: desativar pela instância carregada antes de uma reativação | grava `deactivated_at`/`by`, encerra as sessões, revoga a IA, audita `deactivated`, na mesma transação | `tests/Feature/Nucleo/UserServiceTest.php:460` `assertFalse($linha->isActive())`, `:461` `deactivated_by` = admin, `:462` 1 `deactivated`, `:463` `assertDatabaseMissing('sessions', ['user_id' => $id])`, `:464` `revoked_at` preenchido. Código: `app/Platform/Models/Concerns/Deactivatable.php:134-148`, `app/Platform/Services/UserService.php:144-148` (log, revogação e sessões pelo `$locked`). Atomicidade: `UserServiceTest.php:341` e `:352` (sem mudança, verdes) | ✅ (a, b mortos) |
+| G3 / N11: desativar sem desativação de fato | nenhuma linha de auditoria nem efeito para escrita que não aconteceu | `UserServiceTest.php:468-470` segundo `deactivate` da instância velha: a sessão `celular` fica e continua 1 `deactivated`; `:410` (desativação dupla), `:427` (reativação dupla); `ClientServiceTest.php:252`, `:270`; `ContactServiceTest.php:263`. Código: `Deactivatable.php:138-140` (`return false`) | ✅ (b morto, 8 falhas) |
+| Clientes (N11) e Contatos AC 7: desativar pela instância carregada antes de uma reativação | inativo, `deactivated_by` de quem desativou, 1 `deactivated` | `ClientServiceTest.php:309-311`; `ContactServiceTest.php:290-292`. Código: `ClientService.php:109-111`, `ContactService.php:104-106` | ✅ (a morto) |
+| Usuários AC 10 / Clientes / Contatos: reativar pelo `setActiveLocked` | reativa de fato pela linha travada; uma linha `reactivated` | `UserServiceTest.php:441-442`, `ClientServiceTest.php:294-295`, `ContactServiceTest.php:339` (`assertAudited(…, 'reactivated', ['active' => [false, true]])`) | ✅ (a morto) |
+| Contatos AC 12 (D5): reativar anonimizado | recusa com "Contato anonimizado: não pode ser alterado", nada muda, inclusive com a anonimização entrando entre a checagem e a reativação | `ContactServiceTest.php:375-386` (mensagem exata, segue inativo); `ContactAnonimizadoConcorrenciaTest.php:87` (a reativação que checou antes não reativa). Código: `ContactService.php:111-115` (`lockedNotAnonymized` antes do `setActiveLocked`) | ✅ (j morto) |
+| Usuários AC 14: último administrador decidido pelo banco (situação) | a instância velha "desativada" da última admin ativa não a desativa: "Este é o último administrador ativo…" | `UserServiceTest.php:482` `assertThrows(…, DomainException::class, 'último administrador ativo')`, `:484` segue ativa, `:485` 1 `deactivated`. Código: `UserService.php:243-256` (sem `isActive()` da instância; decide por `$activeAdmins->contains(...)`) | ✅ (d2 morto) |
+| Usuários AC 14: último administrador decidido pelo banco (papel, CR-4-03) | a instância velha "desenvolvedora" da última admin ativa não a desativa, não a exclui nem a rebaixa | `UserServiceTest.php:504` a mensagem exata "Este é o último administrador ativo. Promova outra pessoa antes de {desativar, excluir, alterar o papel}." nas três ações, `:508-510` segue admin, ativa e 1 `deactivated`. Código: `UserService.php:247` (releitura do papel) | ✅ (d morto) |
+| Usuários AC 14 / edge case: ordem das travas | admins ativos antes do alvo | `UserServiceTest.php:529-532` 1ª `for update` com `role_id` e `deactivated_at is null`, 2ª com `bindings = [$bia->id]`. Código: `UserService.php:141` antes de `:144`. A corrida `UltimoAdminConcorrenciaTest.php:60,85` agora afirma 1205 e diz no comentário (`:63-68`) que não prova a ordem (CR-3-04) | ✅ (c morto) |
+| Usuários AC 3 e 16: reenviar convite repetido depois de deadlock (CR-4-01) | `must_change_password = true` no banco; a senha do e-mail é a que ficou; `changes` = `{must_change_password: [false, true]}`; um e-mail | `tests/Feature/Nucleo/UserDeadlockRepeteTest.php:98` `assertTrue($dev->fresh()->must_change_password)`, `:99` `sole()->changes` = `['must_change_password' => [false, true]]`, `:100` 1 e-mail, `:101` `Hash::check($mail->temporaryPassword, $dev->fresh()->password)`. Código: `UserService.php:80-88` | ✅ (e, h mortos) |
+| Usuários AC 16: editar repetido depois de deadlock | grava a mudança e audita uma linha com o antes e o depois | `UserDeadlockRepeteTest.php:82` 2 tentativas, `:83` nome novo, `:84` `sole()->changes` = `['name' => ['Maria Souza', 'Maria Lima']]`. Código: `UserService.php:104-108` | ✅ (e2, h mortos) |
+| Repetição: só o 1213 repete; o 1205 sobe sem repetir (CR-4-04) | 1205: exceção com o código 1205, 1 tentativa, nada gravado, nenhum e-mail | `UserDeadlockRepeteTest.php:132` `assertSame(1205, $e->errorInfo[1])`, `:135` 1 tentativa, `:136` flag continua `false`, `:137` 0 `password_reset` (G3), `:138` `Mail::assertNothingSent()`. Código: `RetriesDeadlock.php:39-42` | ✅ (f morto) |
+| Repetição: deadlock na transação aninhada (`DeadlockException`) também repete | exclui, 2 tentativas, uma linha `deleted` | `UserDeadlockRepeteTest.php:114-116`. Código: `RetriesDeadlock.php:39` | ✅ (g, h mortos) |
+| Repetição: dentro de transação aberta por quem chamou, não repete | o 1213 sobe na hora (o MySQL já desfez a transação de fora) | **sem asserção**. Afirmado em `RetriesDeadlock.php:36-38` e no docblock de `UserDeadlockRepeteTest.php:26`; nenhum teste chama o Service dentro de transação aberta com deadlock simulado | ❌ GAP (g2 sobreviveu; Fix 6) |
+| Usuários AC 11 / G3: o `before` do `deleted` pela linha travada | `changes` com o nome que estava no banco, não o da instância velha | `UserServiceTest.php:593-599` `assertAudited($user, 'deleted', ['name' => ['Maria Souza Lima', null], …])` (helper `:108` `assertSame($changes, $log->changes)`). Código: `UserService.php:168-171` | ✅ (i3 morto) |
+| Clientes AC 11: idem | `changes` com o nome do banco | `ClientServiceTest.php:432-436` `assertAudited($client, 'deleted', ['name' => ['Padaria Pão Quentinho', null], …])` (helper `:59`). Código: `ClientService.php:130-133` | ✅ (i2 morto) |
+| Contatos AC 8 e 10 (N12): excluir com anonimização no meio | o `deleted` sai da linha travada; a anonimização espera; o dado pessoal que a linha já não tinha não volta para a auditoria | `ContactAnonimizadoConcorrenciaTest.php:122-124` a corrida rodou e a anonimização esperou, `:126` contato apagado, `:129-130` `changes` com o nome e o e-mail do banco, `:131-132` `assertStringNotContainsString` do e-mail e do telefone antigos da instância. Código: `ContactService.php:122-125` | ✅ (i1 morto) |
+
+**Status (rodada 10)**: 16 linhas conferidas, **15 ✅**, **1 GAP** (a repetição dentro de transação aberta), 0 spec-precision gap novo. A linha do gap não é AC da spec: é comportamento que o código novo declara e o teste não prova; entra pelo sensor.
+
+### Sensor (rodada 10)
+
+Worktree descartável do HEAD no diretório temporário da sessão, fora do repositório (`git worktree add --detach`), `vendor` copiado da árvore real, nenhum `.env*` copiado. Testes pertinentes por `php artisan test --filter='(ClientServiceTest|ClientControllerTest|UserServiceTest|UserControllerTest|UltimoAdminConcorrenciaTest|UserDeadlockRepeteTest|ContactServiceTest|ContactControllerTest|ContactAnonimizadoConcorrenciaTest|ContactAnonymizeTest|TravaDeleteIfUnusedTest|PasswordFlowTest)'` com `DB_TESTE=container` (MySQL 8.4 descartável por execução). **Sem mutação: 172 passed (1369 assertions)**. Cada mutante: troca exata por script (uma ocorrência só), a mesma suíte, `git checkout` do arquivo e `git status --porcelain` da worktree vazio.
+
+| # | Alvo | Mutação | Resultado | Quem matou |
+|---|---|---|---|---|
+| a | `Deactivatable.php:142` | `setActiveLocked` grava pela instância em memória (`$this->setActive(...)->save()`) | ✅ morto (5 falhas) | `UserServiceTest.php:448` e `:433`, `ClientServiceTest.php:300` e `:286`, `ContactServiceTest.php:281` |
+| b | `Deactivatable.php:138-140` | sem o `return false` quando a linha já está no estado pedido | ✅ morto (8 falhas) | `UserServiceTest.php:399`, `:417`, `:448` (`:470`), `:536`; `ClientServiceTest.php:236`, `:252`, `:270`; `ContactServiceTest.php:263` |
+| c | `UserService.php:141` | `deactivate` trava o alvo (`lockForUpdate()->findOrFail`) antes dos admins | ✅ morto | `UserServiceTest.php:516` (`:529`, a 1ª trava não é a dos admins) |
+| d | `UserService.php:247` | `ensureNotLastActiveAdmin` sem a releitura do papel no banco (`if (! $user->isAdmin())`) | ✅ morto | `UserServiceTest.php:491` (`ultimo_admin_carregado_antes_da_promocao…`) |
+| d2 | `UserService.php:247` | volta a checar a situação pela instância (`! $user->isActive() \|\| …`) | ✅ morto | `UserServiceTest.php:475` (`ultimo_admin_carregado_desativado…`) |
+| e | `UserService.php:84` | `resendInvite` sem restaurar a instância no callback | ✅ morto | `UserDeadlockRepeteTest.php:87` (`:98`, a flag não foi gravada na repetição) |
+| e2 | `UserService.php:108` | `update` sem restaurar a instância no callback | ✅ morto | `UserDeadlockRepeteTest.php:74` |
+| f | `RetriesDeadlock.php:40` | repete também o 1205 (`! in_array($code, [1213, 1205], true)`) | ✅ morto | `UserDeadlockRepeteTest.php:121` (`:135`, 2 tentativas no lugar de 1) |
+| g | `RetriesDeadlock.php:39` | não desembrulha a `DeadlockException` (`$code = $e->errorInfo[1] ?? null`) | ✅ morto | `UserDeadlockRepeteTest.php:106` (a `DeadlockException` sobe) |
+| h | `RetriesDeadlock.php:22` | `ATTEMPTS = 1` | ✅ morto (3 falhas) | `UserDeadlockRepeteTest.php:74`, `:87`, `:106` |
+| i1 | `ContactService.php:122-124` | `$before = $this->snapshot($contact)` antes do `deleteIfUnused`, usado no callback (a forma antiga) | ✅ morto | `ContactAnonimizadoConcorrenciaTest.php:111` (`:129`: o `changes` trazia "Ana Lima" e o e-mail antigo) |
+| i2 | `ClientService.php:130-132` | idem no cliente | ✅ morto | `ClientServiceTest.php:424` (helper `:59`) |
+| i3 | `UserService.php:167-170` | idem no usuário (snapshot da instância antes da trava) | ✅ morto | `UserServiceTest.php:585` (helper `:108`) |
+| j | `ContactService.php:113` | `reactivate` sem o `lockedNotAnonymized` (`$contact->setActiveLocked(true, …)`) | ✅ morto (2 falhas) | `ContactServiceTest.php:375`, `ContactAnonimizadoConcorrenciaTest.php:87` |
+| g2 | `RetriesDeadlock.php:40` | sem a guarda `\|\| DB::transactionLevel() > 0` (repete dentro de transação aberta por quem chamou) | ❌ **SOBREVIVEU** (172 passed) | nenhum. Sonda descartável na worktree (o `update` dentro de `DB::transaction`, deadlock simulado na 1ª auditoria, espera 1 tentativa e a exceção): passa sem o mutante, falha com ele. Não é equivalente |
+
+Uma primeira versão de i1–i3 (`snapshot($contact)` dentro do callback, que só tem `use ($actor)`) "morreu" por `ErrorException` de variável indefinida, não por asserção: foi descartada e refeita na forma acima, que reproduz o código antigo.
+
+**Sensor depth**: P0 (desativação, último administrador, exclusão, anonimização, auditoria, repetição de transação): 15 mutações à mão. **Resultado**: 14/15 mortos, **1 sobrevivente (g2)**, 0 equivalente. ❌
+
+Isolamento: `git status --porcelain` da árvore real antes de tudo e depois de `git worktree remove --force` + `git worktree prune`, os dois vazios e iguais (`diff` sem diferença); a sonda do g2 foi apagada da worktree antes da remoção. `git worktree list` voltou às quatro de antes.
+
+Ambiente: como na rodada 9, o container `wcj-hub-mysql-1` caiu por memória (exit 137) durante a 1ª execução com o MySQL descartável. Ficou parado durante o sensor e o `php artisan test` da árvore real (os dois no container descartável) e voltou com `docker start` (healthy) antes do e2e, que usa o banco local.
+
+### Gate (rodada 10, árvore real, HEAD `7b96b12`)
+
+| Passo | Resultado |
+|---|---|
+| `composer lint` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test` (`DB_TESTE=container`, MySQL 8.4 descartável; `config:clear` antes) | **357 passed (2917 assertions)**, 0 failed, 0 skipped, 78,7 s |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` (eslint) | exit 0, sem aviso |
+| `npm run build` | `✓ built in 3.53s` |
+| `npm run specs:check` | `validate_spec.py: ok`; `validate_tasks.py: ok, com aviso` (T35 e T50 com `Tests: none`, só documentos, como antes); `validate_state.py: ok` (rodado antes de escrever esta rodada); `conferir-specs: 1 feature(s), 0 problema(s)` |
+| `npm run test:guard` | **1053 pass**, 0 fail, 0 skipped |
+| e2e (`npm run e2e:prepare`, `npm run e2e:serve` na 8000, livre antes; `npx playwright test`) | **68 passed** (1.8 min), 0 failed. Servidor morto depois (PID da 8000), porta livre |
+
+Antes do diff (rodada 9): 345 PHP. Agora: **+12 PHP** (4 do `UserDeadlockRepeteTest`, 4 do `UserServiceTest`, 2 do `ClientServiceTest`, 1 do `ContactServiceTest`, 1 do `ContactAnonimizadoConcorrenciaTest`). e2e igual (68). Nenhum teste removido (o −4 de `tests/` é o comentário e o retorno do `Concorrencia`).
+
+### Code Quality (rodada 10)
+
+| Principle | Status |
+| --- | --- |
+| Minimum code / surgical changes | ✅ `setActiveLocked` tira o esqueleto repetido dos seis métodos (CR-4-05); `RetriesDeadlock` num trait só, usado só no `UserService` |
+| No scope creep | ✅ Nenhuma migração, Policy ou ability; Cliente e Contato ficam no `DB::transaction` sem repetição (só as escritas de usuário travam a lista de admins) |
+| Matches patterns | ✅ `AGENTS.md` ("Um jeito só") ganhou as duas convenções; `lockedForWrite` ainda serve ao `lockedNotAnonymized` (`ContactService.php:233`) |
+| Spec-anchored outcome check | ✅ mensagens exatas do último administrador e de anonimizado; `changes` exatos |
+| Every test maps to a requirement | ✅ os testes novos citam o AC ou o `CR` |
+| Comportamento declarado sem prova | ❌ a guarda de transação aberta (`RetriesDeadlock.php:40`) é afirmada em dois comentários e não tem teste (g2) |
+| Guidelines | `.ai/core/especificacao.md` §5; `.ai/core/testes.md` §10 e §11 |
+
+### Fix 6 (rodada 10): repetição dentro de transação aberta, Minor, só teste
+
+- **Root cause**: o `UserDeadlockRepeteTest` usa `DatabaseTruncation` justamente para ficar fora de transação, e nenhum teste chama uma escrita de usuário dentro de uma transação aberta por quem chama. A guarda `DB::transactionLevel() > 0` pode sair sem que a suíte perceba.
+- **Fix task**: em `tests/Feature/Nucleo/UserDeadlockRepeteTest.php`, um caso que chama `UserService::update` (ou `resendInvite`) dentro de `DB::transaction(...)`, com o deadlock simulado na primeira auditoria, e afirma: a exceção sobe com o 1213, **1 tentativa** (`$this->tentativas`), nada gravado (nome igual, 0 `updated`). Done when: o caso passa e o mutante g2 (sem a guarda) morre.
+- **Priority**: Minor (nenhum caminho de produção chama o `UserService` dentro de transação aberta hoje; o B8 pode chamar).
+
+### Declared Deviations (rodada 10)
+
+- Nenhum novo. Continuam, sem reprovar, os da rodada 9 (texto do último admin "a mensagem do template", textos que a spec não define, os pontos do CR-1-11, CR-1-12, CR-1-23, CR-2-08 e CR-2-09 à espera do Lucas Scholz, CR-1-01 no PR #7).
+- O CR-1-01 (PR #7, `terminateOthers` no reenviar convite) entra num callback que agora se repete: ao integrar, o efeito precisa ser repetível (o ciclo 4 já anota). Fora desta rodada.
+- `grep -rn SPEC_DEVIATION app resources tests`: vazio.
+
+### Saída dos validadores (rodada 10)
+
+Rodados depois de escrever este relatório:
+
+```
+$ python3 .claude/skills/tlc-spec-driven/scripts/validate_state.py b1-nucleo
+  ERROR b1-nucleo: validation.md verdict is FAIL - route the ranked gaps to fix tasks, then re-verify (feature is not done)
+validate_state: 1 error(s) across [b1-nucleo]          (exit 1: esperado com o FAIL; volta a 0 com o Fix 6 e a rodada 11)
+
+$ node .ai/skills/conferir-specs.mjs
+[b1-nucleo] validate_spec.py: ok
+[b1-nucleo] validate_tasks.py: ok, com aviso            (T35 e T50 com Tests: none, esperado: só documentos)
+validate_tasks: 0 error(s), 2 warning(s)
+[b1-nucleo] validate_state.py reprovou                  (o FAIL acima)
+conferir-specs: 1 feature(s), 1 problema(s)             (exit 1)
+```
+
+### Lições (`.specs/lessons.json`), rodada 10
+
+Um sinal, uma lição: o mutante sobrevivente g2.
+
+- `lessons.py add --feature b1-nucleo --signal surviving_mutant --source "validation.md rodada 10, mutante g2 (app/Platform/Services/Concerns/RetriesDeadlock.php:40)" --scope services --text "When a retry helper declares that it does not retry inside a transaction opened by the caller, test that branch by calling it inside an outer transaction"` → `ADDED L-012 (status=candidate, recurrence=1)`.
+- `lessons.py status`: 12 total, 0 confirmed, 12 candidate, 0 quarantined. `.specs/lessons.json` e `.specs/LESSONS.md` gerados pelo script.
+
+---
+
 
 ## Rodada 9 (focada nas correções dos ciclos 1 e 2 da code review)
 
@@ -914,6 +1061,10 @@ O P2 AC 3 saiu desta tabela em 09/10 (D13): a D6 foi aceita, o AC foi reescrito 
 ---
 
 ## Fix Plans
+
+### Fix 6: repetição dentro de transação aberta sem teste (g2), Minor, só teste. ❌ Aberto na rodada 10
+
+Detalhe e tarefa na seção "Rodada 10", "Fix 6 (rodada 10)": um caso no `UserDeadlockRepeteTest` que chama a escrita de usuário dentro de `DB::transaction(...)` com deadlock simulado e afirma 1 tentativa, a exceção e nada gravado; done when o mutante g2 morre.
 
 ### Fix 1: borda do dígito verificador do CNPJ (S10), Minor. ✅ Feito na T31 (`2a32842`), conferido na rodada 4
 
