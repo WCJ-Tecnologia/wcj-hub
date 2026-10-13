@@ -54,7 +54,7 @@ Cada frase que vem de uma regra termina com o código dela entre parênteses, po
 |---|---|---|---|---|---|
 | [F1](f1-nucleo.md) | Núcleo: usuários, clientes, contatos e auditoria | G1–G5, G7, N1–N9, N11, N12 | `roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs` | template (login, troca de senha) | Lucas Scholz |
 | [F2](f2-projeto-e-configuracao.md) | Projeto e configuração do quadro | G1, G7, P1–P3, P5, P7, P8, P10–P12, P15, P18, P40, P46 | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons` | F1 | Lucas Scholz |
-| [F3](f3-quadro-e-card.md) | Quadro e card | P13–P26, P39, P40, P52, P56, premissa | `tasks`, `task_stage_movements`, `task_priorities`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` | F2 | Lucas Scholz |
+| [F3](f3-quadro-e-card.md) | Quadro e card | P13–P26, P39, P40, P52, P56–P59, premissa | `tasks`, `task_participants`, `task_stage_movements`, `task_priorities`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` | F2 | Lucas Scholz |
 | [F4](f4-teste-e-qualidade.md) | Teste cruzado e roteiro de QA | P32–P39 | `tasks` (teste cruzado), `task_acceptance_criteria`, `test_results`, `task_attachments` | F3 | Lucas Scholz |
 | [F5](f5-sprint-e-horas.md) | Sprint, horas e data prevista | N3, P27–P31, P45–P51 | `sprints`, `tasks` (sprint, horas previstas, data prevista), `time_entries` | F3 | Lucas Scholz |
 | [F6](f6-pacote.md) | Pacote (versão) | P41–P44 | `packages`, `tasks` (pacote) | F3 | Lucas Scholz |

@@ -1,12 +1,12 @@
 # F3. Quadro e card
 
-**Documento funcional.** Versão 1.0, de 06/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10). Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
+**Documento funcional.** Versão 1.1, de 13/10/2026. **Aprovado por Lucas Scholz em 06/10/2026**, com os pontos a validar respondidos (seção 10); a versão 1.1 acrescenta as decisões de 13/10 sobre o card do quadro (seção 11, D-GER-32), decididas por ele. Rafael Garcia valida o uso no bugbash. Estrutura e fluxo em [`README.md`](README.md).
 
 | | |
 |---|---|
 | **Objetivo** | Dar ao gestor e aos devs o quadro kanban de cada projeto, no lugar do Trello: criar o card em segundos, escrever nele o que for preciso, arrastar entre as colunas sem trava e guardar quem moveu, quando e por quê. |
-| **Regras que alimentam** | Premissa de Projetos, P13 a P26, P39, P40, P52, P56; citadas: P7, P14, P16, P17, P45 (`docs/necessidade.md`). |
-| **Tabelas do `banco.md`** | `tasks`, `task_stage_movements`, `task_priorities`, `task_types`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` (origem do retrabalho), `rework_reasons`, `contacts` e `contact_channels` (card de suporte). |
+| **Regras que alimentam** | Premissa de Projetos, P13 a P26, P39, P40, P52, P56 a P59; citadas: P7, P14, P16, P17, P45 (`docs/necessidade.md`). |
+| **Tabelas do `banco.md`** | `tasks` (inclusive `parent_task_id` e `cover_attachment_id`, 13/10), `task_participants` (13/10), `task_stage_movements`, `task_priorities`, `task_types`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` (origem do retrabalho), `rework_reasons`, `contacts` e `contact_channels` (card de suporte). |
 | **Depende de** | [F1](f1-nucleo.md) (usuários, contatos) e [F2](f2-projeto-e-configuracao.md) (projeto, pessoas alocadas, colunas, áreas, tipos, motivos de retrabalho). |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
@@ -20,7 +20,7 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 
 **Criar o card.** No topo do `Backlog`, qualquer alocado escreve o título e tecla Enter. O card nasce no `Backlog`, com a próxima chave do projeto (ex.: `SGM-18`), tipo Melhoria e prioridade Normal (P16, P17, P56, R4). O campo fica pronto para o próximo título, como no Trello. Ninguém cria card direto em outra coluna: o dev cria só no `Backlog`, e o gestor também começa por lá (P56). Projeto encerrado não recebe card novo (P7).
 
-**Completar a ficha.** Clicar no card abre a ficha. Tudo além do título é opcional e vem recolhido: tipo, área, prioridade, dev, QA, horas previstas, documento de requisição (Sendo / Quero / Para e informações adicionais) e critérios de aceite `CA_1…CA_n` (P17 a P20, P27). No projeto de cliente, o gestor, ou a IA dele, escreve o card no modelo de requisição; no dia a dia do produto, título e duas linhas bastam. Ao ser definida como dev ou QA, a pessoa recebe aviso no sistema e por e-mail (P22).
+**Completar a ficha.** Clicar no card abre a ficha. Tudo além do título é opcional e vem recolhido: tipo, área, prioridade, dev, QA, participantes, horas previstas, card pai, capa, documento de requisição (Sendo / Quero / Para e informações adicionais) e critérios de aceite `CA_1…CA_n` (P17 a P20, P27, P57 a P59). No projeto de cliente, o gestor, ou a IA dele, escreve o card no modelo de requisição; no dia a dia do produto, título e duas linhas bastam. Ao ser definida como dev ou QA, a pessoa recebe aviso no sistema e por e-mail (P22).
 
 **Pôr na sprint.** Arrastar o card do `Backlog` para o `To do` põe o card na sprint aberta. Só o gestor e o Administrador fazem isso; sem sprint aberta, abre o diálogo de criar sprint já preenchido (P45). O diálogo e a sprint estão em F5.
 
@@ -33,6 +33,8 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 **Card de suporte.** Quando o cliente aciona a WCJ direto, o gestor clica em *Novo card de suporte* no topo da coluna `Support`, informa o título, quem pediu, por onde e quando, e confirma. O card nasce na coluna `Support`, do tipo Suporte e fora da sprint. Dali qualquer alocado o move. Se o gestor ligar o card à sprint (F5), ele continua na mesma coluna (P52).
 
 **Bug de produção.** Achado um bug em produção de algo já entregue, cria-se um card novo e, na ficha, informa-se a tarefa de origem, do mesmo projeto. O card novo é outro card, não volta a original: conta como qualidade do projeto, não como retrabalho do dev (P25).
+
+**Quebrar em cards filhos.** Uma tarefa grande vira um card pai: cada parte é um card normal do quadro (criado no `Backlog` como qualquer outro) que, na ficha, aponta para o pai. Um nível só. O filho tem dev, horas, sprint e histórico próprios e anda pelo quadro sozinho; o pai mostra no quadro quantos filhos estão a fazer, em andamento e concluídos, com uma barra de progresso (P57). Nada trava o pai pelos filhos nem os filhos pelo pai (premissa). Quem precisa acompanhar um card sem ser o dev nem o QA entra como participante (P58). Para o card ter imagem no quadro, qualquer alocado escolhe um anexo como capa (P59).
 
 **Tirar do quadro.** O gestor ou o Administrador abre a ficha e escolhe *Excluir* (só card nunca usado) ou *Arquivar* (card com histórico, com motivo). Arquivados saem do quadro; *Desarquivar* devolve o card ao `Backlog` (P26).
 
@@ -59,6 +61,10 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 | Comentários | texto longo, com autor e data | não | | (P24) |
 | Anexos | arquivos, com o nome original | não | | Download com o nome original (P24). A evidência do QA por critério é F4. |
 | Tarefa de origem | um card do mesmo projeto, pela chave | não | vazio | Preenchida = bug de produção da tarefa indicada (P25). Não aceita o próprio card. |
+| Card pai | um card do mesmo projeto, pela chave | não | vazio | Um nível só: a busca não oferece card que já tem pai nem card que tem filhos, e não aceita o próprio card (P57). Na ficha do filho, a chave e o título do pai com link. |
+| Cards filhos | só leitura: lista com chave, título, coluna e dev | | | Só no card pai; com o resumo "2 a fazer · 1 em andamento · 3 concluídos" e a barra (P57). Filho arquivado não aparece nem conta. |
+| Participantes | zero ou mais pessoas, entre as alocadas no projeto e ativas | não | nenhum | Além do dev e do QA. Qualquer alocado adiciona e remove, inclusive a si mesmo; sem aviso (P58). Quem sai do projeto sai da lista (P5). |
+| Capa | um dos anexos de imagem do card | não | nenhuma | Escolhida na lista de anexos (*Usar como capa* / *Tirar a capa*). Remover o anexo tira a capa (P59). |
 | Sprint | só leitura | | | Nome da sprint ou "Fora de sprint" (P45; F5). |
 | Pacote | só leitura | | | Nome da versão ou vazio (P41; F6). |
 | Data prevista | só leitura | | | Calculada na primeira entrada em `Doing`; vazia sem dev ou sem horas (P28; conta em F5). |
@@ -112,19 +118,27 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 **O quadro.** Uma coluna por etapa ativa do projeto, na ordem de F2. No título de cada coluna, o nome e a contagem de cards nela. Dentro da coluna, a ordem padrão é por prioridade (Urgente primeiro) e, na mesma prioridade, pela chave, do mais antigo para o mais novo. O seletor *Ordem: Prioridade | Manual* no alto do quadro troca para a ordem manual, em que a pessoa arrasta o card para cima e para baixo e o quadro guarda a posição (P13). A escolha do seletor é de cada pessoa, lembrada no navegador. Na coluna de pronto aparecem só os cards da sprint aberta e da última encerrada; os mais antigos vêm com o filtro *Mostrar prontos antigos* (P13).
 
-**O que aparece em cada card do quadro:**
+**O que aparece em cada card do quadro** (disposição decidida em 13/10 sobre a proposta de Lucas Varanda, seção 11):
 
-| Item | Quando aparece | Regra |
-|---|---|---|
-| Chave e título | sempre | (P16) |
-| Tipo | sempre | (P18) |
-| Prioridade | sempre | (P19) |
-| Dev | quando há dev | Nome da pessoa (P20). |
-| Data prevista | quando calculada | (P28; F5) |
-| Marca de atraso | passou da data prevista sem chegar ao `Done`, descontado o tempo em pausa | A conta é a de F5 e F7 (P53, R16). |
-| Marca de pausa | card numa etapa de pausa | Com o motivo, quando houver (P15). |
-| Marca de retrabalho | o card já voltou ao menos uma vez | Com o número de voltas (P39). |
-| Marca de suporte | card do tipo Suporte | Com quem pediu (P52). |
+| Zona | Item | Quando aparece | Regra |
+|---|---|---|---|
+| Borda | Prioridade | sempre | Baixa, Normal, Alta, Urgente, como marca na borda ou no canto do card (P19). |
+| Cabeçalho | Área | quando há área | Como etiqueta (a "tag" do card); uma por card (P18). |
+| Cabeçalho | Tipo | sempre | (P18) |
+| Cabeçalho | Chave e título | sempre | (P16) |
+| Cabeçalho | Card pai | no card filho | A chave do pai, com link para a ficha dele (P57). |
+| Cabeçalho | Menu ⋯ | sempre | *Mover para…* (mesmas regras do arrastar: pausa pede motivo, volta pede origem e motivo, sair do `Backlog` só gestor e Administrador), *Copiar link* (a URL da ficha), *Área*, *Prioridade* e *Abrir ficha*. |
+| Corpo | Capa | quando escolhida | A imagem do anexo escolhido (P59). |
+| Corpo | Horas previstas | quando há horas | Com a marca "reestimativa proposta" quando o dev propôs e o gestor ainda não decidiu (P27). |
+| Rodapé | Pessoas | quando há alguém | Dev, QA e participantes, como avatares com o nome ao passar o mouse; dev e QA destacados. O botão *+* adiciona ou remove participante ali mesmo (P20, P58). |
+| Rodapé | Data prevista | quando calculada | (P28; F5) |
+| Rodapé | Marca de atraso | passou da data prevista sem chegar ao `Done`, descontado o tempo em pausa | A conta é a de F5 e F7 (P53, R16). |
+| Rodapé | Nº de anexos | quando há anexo | Contagem (P24). |
+| Rodapé | Nº de comentários | quando há comentário | Contagem (P24). |
+| Rodapé | Progresso dos filhos | no card pai | "2 · 1 · 3" (a fazer, em andamento, concluídos) e a barra de progresso, pela coluna em que cada filho está; filho arquivado não conta (P57). |
+| Marcas | Pausa | card numa etapa de pausa | Com o motivo, quando houver (P15). |
+| Marcas | Retrabalho | o card já voltou ao menos uma vez | Com o número de voltas (P39). |
+| Marcas | Suporte | card do tipo Suporte | Com quem pediu (P52). |
 
 **O que fica fora do quadro:** os cards arquivados (P26) e, por padrão, os cards em `Done` de sprints já encerradas (ver 10.3). Os dois aparecem pelos filtros da seção 05. Com o filtro *Arquivados*, a lista mostra Chave, Título, Tipo, Arquivado em e Motivo, do mais recente para o mais antigo.
 
@@ -153,6 +167,9 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
 | Editar campos | Qualquer alocado | Título, tipo, área, prioridade, dev, QA, requisição, tarefa de origem (P17 a P20, P25). | Ao definir dev ou QA: "Fulano será avisado no sistema e por e-mail" (P22). Quem se define a si mesmo não recebe aviso. |
+| Definir / limpar o card pai | Qualquer alocado | Aponta o card para um pai do mesmo projeto, ou limpa (P57). Também no quadro, arrastando um card para cima do outro com a tecla Alt (proposta, 11.4). | Card que tem filhos: "SGM-10 já é pai de outros cards; um nível só." Card que já tem pai: "SGM-12 já é filho de SGM-10." |
+| Adicionar / remover participante | Qualquer alocado | Põe ou tira uma pessoa alocada na lista de participantes, na ficha ou pelo *+* do card (P58). | Sem aviso. Dev ou QA do card não entram como participante: já estão no card. |
+| Usar como capa / tirar a capa | Qualquer alocado | Escolhe um anexo de imagem como capa do card, ou limpa (P59). | Só anexo de imagem mostra a opção. |
 | Horas previstas: definir ou reestimar | Gestor do projeto, Administrador | Grava o valor; se a data prevista já existe, recalcula (P27, P28). | "A data prevista vai de DD/MM para DD/MM. Confirmar?" |
 | Horas previstas: propor | Desenvolvedor alocado | Grava a proposta ao lado do valor atual; o card ganha a marca "reestimativa proposta" no quadro e na lista de tarefas da sprint (P27). | |
 | Aprovar ou recusar a proposta | Gestor do projeto, Administrador | Aprovar passa a proposta a valer e recalcula a data prevista; recusar só limpa a proposta. O antes fica no histórico (P27, P28). | |
@@ -177,7 +194,7 @@ As ferramentas chamam a mesma regra da tela e têm exatamente a permissão da pe
 | `escrever_tarefa` | Criar card rápido / completar requisição e critérios | Cria no `Backlog`; não cria card de suporte. Não existe editar card pela IA na fatia 1. |
 | `mover_tarefa` | Arrastar e soltar | Mesmas regras: pausa pede motivo, volta pede origem e motivo; dev não leva para nem tira do `Backlog`. |
 | `comentar_tarefa` | Comentar | O comentário sai com o nome da pessoa; o canal fica no histórico. |
-| `minhas_tarefas` | Filtro *Só os meus* | Cards em que a pessoa é dev ou QA, com filtro por prazo e projeto. |
+| `minhas_tarefas` | Filtro *Só os meus* | Cards em que a pessoa é dev, QA ou participante (P58), com filtro por prazo e projeto. |
 | `status_do_projeto` | Abrir o quadro | Colunas com contagem, cards atrasados e próximas datas previstas. |
 
 `lancar_horas` está em F5. A IA não exclui nem arquiva card (IA8).
@@ -186,7 +203,8 @@ As ferramentas chamam a mesma regra da tela e têm exatamente a permissão da pe
 
 | Onde | Busca | Filtros |
 |---|---|---|
-| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev ou QA); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas); Pacote (para a homologação, F6); marcas: Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta; *Mostrar prontos antigos* (prontos de sprints anteriores à última encerrada, P13); *Arquivados* (troca o quadro pela lista de arquivados); seletor *Ordem: Prioridade | Manual* (P13) |
+| Quadro | chave (ex.: "SGM-17") ou trecho do título | *Só os meus* (sou dev, QA ou participante, P58); Dev; QA; Tipo; Área; Prioridade; Sprint (padrão: todas); Pacote (para a homologação, F6); Card pai (os filhos de um card, P57); marcas: Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta; *Mostrar prontos antigos* (prontos de sprints anteriores à última encerrada, P13); *Arquivados* (troca o quadro pela lista de arquivados); seletor *Ordem: Prioridade | Manual* (P13) |
+| Card pai (na ficha) | chave ou título | só cards do mesmo projeto, sem pai e sem filhos (P57) |
 | Tarefa de origem (na ficha) | chave ou título | só cards do mesmo projeto |
 | Quem pediu (card de suporte) | nome ou e-mail | só contatos ativos do cliente do projeto |
 
@@ -195,7 +213,8 @@ Filtro sem resultado: "Nenhum card com esses filtros".
 ## 06. Indicadores
 
 - **Contagem por coluna:** número de cards em cada coluna, respeitando os filtros (P10).
-- **Marcas no card:** atraso, pausa, retrabalho com o número de voltas e suporte (seção 03).
+- **Marcas no card:** atraso, pausa, retrabalho com o número de voltas, suporte e reestimativa proposta (seção 03).
+- **Progresso do card pai:** filhos a fazer, em andamento e concluídos, pela coluna de cada um, e a barra (P57; seção 03). Só referência: não trava nada.
 
 Tempo por etapa, previsto × realizado, atraso somado e retrabalho por projeto estão em F7 (P53); capacidade da sprint, em F5 (P49).
 
@@ -223,6 +242,7 @@ Não se aplica na fatia 1: nenhuma regra pede exportar o quadro ou o card (P55 f
 | Criar card no `Backlog` | sim | nos projetos dele | nos projetos em que está alocado (P56) |
 | Criar card de suporte | sim | nos projetos dele | não (P52; ver 10.8) |
 | Editar a ficha, critérios, PRs, tarefa de origem | sim | sim | sim (premissa) |
+| Definir card pai, participantes e capa | sim | sim | sim (P57 a P59; é editar a ficha) |
 | Mudar horas previstas | sim | sim | só enquanto o card está no `Backlog` (proposta, 10.4) |
 | Mover a partir do `To do` e do `Support`, pausar, devolver | sim | sim | sim (P13, P52) |
 | Pôr na sprint, levar para o `Backlog` | sim | sim | não (P45) |
@@ -248,6 +268,17 @@ Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, n
 9. **Excluir critério "não testado".** OK: vale o resultado atual.
 10. **Comentário.** OK: o autor edita e exclui o próprio; o antes fica no histórico (P24).
 11. **Anexo.** OK: limite do template; qualquer alocado remove (P24).
+
+## 11. Decisões de 13/10 sobre o card do quadro (versão 1.1)
+
+Lucas Varanda propôs o desenho do card (prioridade fora do card; cabeçalho com tags, título, menu ⋯ e card pai; corpo com esforço e imagem; rodapé com pessoas, previsão, atraso, anexos, comentários, subtasks e barra). Lucas Scholz decidiu em 13/10 (D-GER-32); já aplicado nas seções 01 a 09, na `necessidade.md` (P57 a P59) e no `banco.md` (seção 7, pendente da conferência do Lucas Alencar).
+
+1. **Tags de tipo (várias por card).** Não: a "tag" é a **Área** do projeto, uma por card (P18). O Tipo continua à parte. Tag múltipla pediria tabela N:N e se confundiria com etapa e papel.
+2. **Card pai e subtasks.** **Card pai, um nível** (P57). A subtask é um card normal do quadro, com dev, horas, sprint e histórico; o pai mostra o progresso pela coluna dos filhos. Descartada a subtask dentro do card: seria um segundo checklist ao lado dos `CA_n` (P17).
+3. **Pontuação de esforço.** Não: só **Horas previstas** (P27), que já alimentam a data prevista e a capacidade.
+4. **Usuários no card.** Além de Dev e QA, **participantes** (P58). Premissas decididas aqui, de baixo risco: participante não recebe aviso (P22 segue com dois avisos só), não entra na capacidade nem em indicador por pessoa, e entra no *Só os meus* e em `minhas_tarefas`. Definir o pai arrastando com Alt é proposta de interação, não regra: o front decide se entra no B3.
+5. **Imagem no corpo do card.** **O usuário escolhe** qual anexo é a capa (P59); sem escolha, sem imagem.
+6. **Faltava na proposta** e está no card: chave junto do título (P16), tipo (P18), marcas de pausa (P15), retrabalho com o número de voltas (P39), suporte com quem pediu (P52) e reestimativa proposta (P27).
 12. **Card arquivado.** OK: ficha continua abrindo; só sai do quadro e das contas.
 13. **Quadro de projeto encerrado.** OK: mover, comentar e anexar seguem (P7).
 14. **Tipo do bug de produção.** OK: escolhido à mão na fatia 1.

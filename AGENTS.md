@@ -101,6 +101,9 @@ Completo na `docs/necessidade.md`, seção "Vocabulário". O que mais aparece no
 | Teste cruzado | Teste por outro dev antes do QA (P34) | `tasks.cross_tested_by/at` | validação, parecer |
 | Retrabalho | Volta para desenvolvimento com origem e motivo (P39) | movimento com `rework_origin_id` | bug |
 | Card de suporte | Pedido do cliente registrado pelo gestor (P52) | `task_types.slug = support` | chamado |
+| Card pai, card filho | Tarefa que agrupa outras, um nível; o filho é card normal (P57) | `tasks.parent_task_id`; progresso derivado da etapa dos filhos | épico, subtask |
+| Participante | Quem acompanha a tarefa sem ser dev nem QA (P58) | `task_participants` | responsável, assignee |
+| Capa | Anexo de imagem mostrado no card do quadro (P59) | `tasks.cover_attachment_id` | thumbnail |
 | Arquivar | Tirar do quadro um card com histórico, com motivo (P26) | `tasks.archived_at` + `archive_reason` | excluir |
 | Desativar | Tirar de uso um cadastro com histórico (G2) | `deactivated_at/by` | excluir, inativar por booleano |
 | Conector, conexão de IA | Autorização de um assistente em nome do usuário (IA4) | `ai_authorizations` | integração, API key |
@@ -218,7 +221,7 @@ Pelo perfil de uso (`docs/escopo.md` §10): **arquitetura** sim (`tests/Arch`: A
 
 Além do padrão (inegociável 5):
 
-- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.md`. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
+- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.md`. A diferença de 13/10 (`tasks.parent_task_id`, `tasks.cover_attachment_id`, `task_participants`; seção 7 do `banco.md`) entra no B3 como migração aditiva, só depois da conferência do Lucas Alencar. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
 - **Policy nova ou alterada**, e qualquer mudança em `abilities`.
 - **Exclusão de verdade** (qualquer `delete` de registro de negócio) e a anonimização do contato.
 - **OAuth e MCP:** escopos do Passport, ferramentas MCP, o que a IA pode escrever (`users.ai_write_allowed`, `ai_assistants.write_allowed`), limites do `config/hub.php`.

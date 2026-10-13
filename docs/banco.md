@@ -14,6 +14,9 @@ Escopo desta versão: Núcleo (Platform) e Projetos. CRM (seção 3) é proposta
 Chamados fica fora; a seção 5 mostra o que ele acrescenta sem migração destrutiva.
 Situação: APROVADO (fatia 1). Lucas Alencar aprovou também a diferença da seção 7 (R15, asserção no
 Service, e as 3 colunas aditivas de 06/10) em 06/10/2026. A migração está no PR #1 (B0).
+PENDENTE: a diferença de 13/10 (fim da seção 7, D-GER-32): duas colunas aditivas em tasks
+(parent_task_id, cover_attachment_id) e a tabela task_participants, 27 → 28 tabelas. Aguarda a
+conferência do Lucas Alencar; a migração entra no B3, depois dela.
 Aprovado por: Lucas Alencar  em: 2026-10-06   (41 tabelas) e, no mesmo dia, a fatia 1 de 27 tabelas (seção 7)
 
 ### 0. CONVENÇÕES
@@ -507,6 +510,19 @@ sprint_id             fk sprints            null      restrict  sprint do card (
 package_id            fk packages           null      restrict  pacote, opcional (P41)
 origin_task_id        fk tasks              null      restrict  bug achado em produção aponta a original,
                                                       do mesmo projeto (P25; conferido no Service, R15)
+parent_task_id        fk tasks              null      restrict  card pai, do mesmo projeto, um nível só
+                                                      (P57, 13/10): o Service recusa pai que já tem
+                                                      pai, pai que é filho de alguém e o próprio card
+                                                      (R15). restrict: pai com filhos não se exclui;
+                                                      arquivar o pai não mexe nos filhos. O progresso
+                                                      do pai é derivado (count dos filhos por
+                                                      stage_roles.slug), nunca gravado
+cover_attachment_id   fk task_attachments   null      set null  capa do card (P59, 13/10): um anexo de
+                                                      imagem da própria tarefa (Service confere
+                                                      task_attachments.task_id = id). Apagar o anexo
+                                                      limpa a capa (set null). FK circular com
+                                                      task_attachments.task_id: a FK desta coluna
+                                                      entra numa migração depois da tabela de anexos
 ```
 
 -- Card de suporte (P52), obrigatórios quando o tipo é 'support'
@@ -529,14 +545,14 @@ check: (cross_tested_by is null) = (cross_tested_at is null)
 unique: (project_id, number)
 ```
 
-Mesmo projeto (T7, R15): etapa, sprint, pacote, área, tarefa de origem, dev e QA (alocados em
-project_members) são do projeto da tarefa. Asserção única no Service, coberta por teste, em toda
-gravação; sem FK composta.
+Mesmo projeto (T7, R15): etapa, sprint, pacote, área, tarefa de origem, card pai, dev, QA e
+participantes (alocados em project_members) são do projeto da tarefa; a capa é anexo da própria
+tarefa. Asserção única no Service, coberta por teste, em toda gravação; sem FK composta.
 
 ```text
 índices: project_id, board_stage_id, task_type_id, project_area_id, task_priority_id, developer_id,
-         qa_id, cross_tested_by, sprint_id, package_id, origin_task_id, requester_contact_id,
-         contact_channel_id, due_on, archived_at
+         qa_id, cross_tested_by, sprint_id, package_id, origin_task_id, parent_task_id,
+         cover_attachment_id, requester_contact_id, contact_channel_id, due_on, archived_at
 ```
 
 Regras do Service:
@@ -555,11 +571,21 @@ Regras do Service:
   (P52). Pôr na sprint só preenche sprint_id, sem trocar de etapa;
 - nas demais etapas, qualquer pessoa alocada move (P13). O Service não exige dev, horas, PR nem
   parecer para mover (premissa);
+- card pai (P57): qualquer pessoa alocada define ou limpa parent_task_id; o pai é do mesmo projeto,
+  não tem pai, não é filho de ninguém e não é o próprio card (asserção R15). Mover pai ou filho não
+  olha o outro (premissa). O quadro lê o progresso do pai numa consulta só para todos os cards da
+  tela (contagem dos filhos não arquivados por stage_roles.slug), nunca por linha;
+- participantes (P58): qualquer pessoa alocada adiciona e remove linhas em task_participants, só de
+  gente alocada no projeto (R15); sem aviso (P22). Tirar a pessoa do projeto apaga as participações
+  dela nas tarefas do projeto, na mesma transação em que limpa developer_id e qa_id (P5);
+- capa (P59): qualquer pessoa alocada escolhe um anexo de imagem da própria tarefa
+  (task_attachments.task_id = tasks.id e mime_type image/*) ou limpa; apagar o anexo limpa a capa
+  pela FK (set null);
 - tirar do quadro, só gestor e admin (P26):
     · excluir de verdade só o card nunca usado: nenhum movimento além da criação e nenhuma linha em
       time_entries, task_comments, task_attachments, task_pull_requests ou em tasks com
-      origin_task_id apontando para ele, e cross_tested_at nulo. Conferido com a linha travada (banco.md §4). Os critérios
-      e o movimento de criação saem junto (cascade);
+      origin_task_id ou parent_task_id apontando para ele, e cross_tested_at nulo. Conferido com a linha travada (banco.md §4). Os critérios,
+      as participações e o movimento de criação saem junto (cascade); ter card pai ou capa não é uso;
     · card com histórico: arquivar (archived_at + archive_reason). Sai do quadro e das contas de prazo,
       atraso e capacidade; as horas lançadas continuam nos indicadores de horas (P53). Desarquivar
       limpa os dois, limpa sprint_id e leva à etapa de papel queue (Backlog).
@@ -706,7 +732,23 @@ mime_type                     varchar(120)                 not null  (cabeçalho
 índices: task_id, task_acceptance_criterion_id
 ```
 
-Excluir anexo: o Service apaga o arquivo e a linha juntos (banco.md §4).
+Excluir anexo: o Service apaga o arquivo e a linha juntos (banco.md §4). Se o anexo era a capa do
+card (tasks.cover_attachment_id), a FK limpa a capa (set null, P59).
+
+### task_participants
+
+Pessoas que acompanham a tarefa além do dev e do QA (P58, 13/10): alocadas no projeto (Service, R15).
+Sem aviso (P22), sem capacidade (P48), sem indicador por pessoa (P53). Entra no filtro *Só os meus* e
+em `minhas_tarefas` (IA). Tirar a pessoa do projeto apaga as participações dela nas tarefas do
+projeto (P5). Não conta como uso para excluir o card nunca usado (P26): sai junto (cascade), como os
+critérios.
+
+```text
+task_id               fk tasks      not null  cascade
+user_id               fk users      not null  restrict
+unique: (task_id, user_id)
+índices: user_id
+```
 
 ### time_entries
 
@@ -1068,6 +1110,23 @@ Ficou como aprovado: todo o resto, inclusive as colunas geradas testadas no MySQ
 contador atômico (T4), MySQL nos testes (T6), audit_logs.ip_address (T8) e a semente dos domínios.
 Contagem: 41 − 9 (CRM) − 1 (service_types) − 1 (task_validations) − 1 (sprint_members) − 1
 (package_statuses) − 1 (ai_tool_calls) = 27.
+
+Decisões do Lucas Scholz sobre o card do quadro (13/10, proposta de Lucas Varanda, D-GER-32).
+PENDENTE DE CONFERÊNCIA do Lucas Alencar; a migração entra no B3, só depois. Tudo aditivo:
+- tasks.parent_task_id (fk tasks, null, restrict): card pai, do mesmo projeto, um nível só (P57). A
+  subtask é um card normal do quadro; o progresso do pai é contagem dos filhos por papel da etapa,
+  nunca gravado. Descartada a alternativa "subtask dentro do card" (tabela própria com status): seria
+  um segundo checklist ao lado dos critérios de aceite (P17) e não teria dev, horas nem histórico.
+- tasks.cover_attachment_id (fk task_attachments, null, set null): capa do card, um anexo de imagem
+  da própria tarefa (P59). FK circular com task_attachments.task_id: a FK entra em migração própria,
+  depois da tabela de anexos. Alternativa descartada: boolean is_cover em task_attachments, que
+  precisaria de coluna gerada + unique para garantir uma capa por tarefa.
+- task_participants (task_id cascade, user_id restrict, unique (task_id, user_id)): pessoas além do
+  dev e do QA que acompanham a tarefa (P58); sem aviso, sem capacidade, sem indicador. Sai junto na
+  exclusão do card nunca usado, como os critérios.
+- "Tag" do card = project_areas (P18), já existente; esforço = estimated_hours (P27), já existente.
+  Nada novo para os dois.
+Contagem com a diferença de 13/10: 27 + 1 (task_participants) = 28.
 
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 
