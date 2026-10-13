@@ -4,7 +4,7 @@ namespace App\Platform\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** Domínio fechado: por onde o contato aconteceu (P52; docs/banco.txt, contact_channels). */
+/** Domínio fechado: por onde o contato aconteceu (P52; docs/banco.md, contact_channels). */
 class ContactChannel extends Model
 {
     public const WHATSAPP = 1;

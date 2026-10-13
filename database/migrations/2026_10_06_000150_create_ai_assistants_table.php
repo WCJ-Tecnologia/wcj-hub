@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * ai_assistants — docs/banco.txt, 1. PLATFORM (IA3, IA4, IA11).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * ai_assistants — docs/banco.md, 1. PLATFORM (IA3, IA4, IA11).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado: id fixo, semeado, sem tela. O código compara por slug.
  */
 return new class extends Migration

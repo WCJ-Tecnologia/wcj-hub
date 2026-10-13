@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Toda mudança de etapa (P14; docs/banco.txt, task_stage_movements). Imutável: só created_at.
+ * Toda mudança de etapa (P14; docs/banco.md, task_stage_movements). Imutável: só created_at.
  * Retrabalho = rework_origin_id preenchido, e só isso (P39).
  */
 class TaskStageMovement extends Model

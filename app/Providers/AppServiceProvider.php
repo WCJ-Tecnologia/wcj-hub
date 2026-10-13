@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Passport entra no B0 só com as tabelas (docs/banco.txt, seção 4). As rotas /oauth/*
+        // Passport entra no B0 só com as tabelas (docs/banco.md, seção 4). As rotas /oauth/*
         // ficam desligadas até o B8 (conexões de IA), que as liga com os escopos, o limitador
         // do /oauth/token (B9) e a tela de autorização.
         Passport::ignoreRoutes();
@@ -105,7 +105,7 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Alias de cada Model em audit_logs.auditable_type e notifications.notifiable_type
-     * (docs/banco.txt, audit_logs; ADR-001). enforce: Model fora do mapa falha em vez de
+     * (docs/banco.md, audit_logs; ADR-001). enforce: Model fora do mapa falha em vez de
      * gravar o nome da classe, que muda quando o código muda de pasta. Model novo entra aqui
      * no mesmo commit.
      */

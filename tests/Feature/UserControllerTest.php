@@ -132,7 +132,7 @@ class UserControllerTest extends TestCase
     public function test_a_user_with_history_can_only_be_deactivated(): void
     {
         $admin = User::factory()->admin()->create();
-        // The sign-in lives in audit_logs (banco.txt, seção 9), not in a users column.
+        // The sign-in lives in audit_logs (banco.md, seção 9), not in a users column.
         $signedIn = User::factory()->projectManager()->create();
         AuditLog::query()->create(['user_id' => $signedIn->id, 'action' => 'login', 'outcome' => 'success', 'auditable_type' => 'user', 'auditable_id' => $signedIn->id]);
         $author = User::factory()->projectManager()->create();

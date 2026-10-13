@@ -6,7 +6,7 @@ use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Comentário da tarefa (P24; docs/banco.txt, task_comments). */
+/** Comentário da tarefa (P24; docs/banco.md, task_comments). */
 class TaskComment extends Model
 {
     protected $fillable = ['task_id', 'user_id', 'body'];

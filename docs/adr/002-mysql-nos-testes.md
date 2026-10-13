@@ -2,7 +2,7 @@
 
 **Data:** 2026-10-06
 **Estado:** aprovada
-**Decidido por:** Lucas Scholz (D-GER-22, T6 do `docs/banco.txt`); aplicada no B0
+**Decidido por:** Lucas Scholz (D-GER-22, T6 do `docs/banco.md`); aplicada no B0
 
 ## Contexto
 

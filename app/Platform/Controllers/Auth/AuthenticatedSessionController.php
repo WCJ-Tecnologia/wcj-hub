@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // Sem "lembrar de mim": users não tem remember_token (docs/banco.txt, seção 4).
+        // Sem "lembrar de mim": users não tem remember_token (docs/banco.md, seção 4).
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
         }

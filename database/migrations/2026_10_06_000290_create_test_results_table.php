@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * test_results — docs/banco.txt, 2. PROJETOS (P36, P37).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * test_results — docs/banco.md, 2. PROJETOS (P36, P37).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado: o id 1 (pending) é o default de task_acceptance_criteria.test_result_id.
  */
 return new class extends Migration

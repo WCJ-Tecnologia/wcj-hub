@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** Empresa atendida, inclusive a própria WCJ (N5, N7; docs/banco.txt, clients). */
+/** Empresa atendida, inclusive a própria WCJ (N5, N7; docs/banco.md, clients). */
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
@@ -40,7 +40,7 @@ class Client extends Model
         return $this->country === Paises::BRASIL && $this->document === self::WCJ_CNPJ;
     }
 
-    /** Contato, projeto ou qualquer FK apontando para o cliente (banco.txt, seção 0). */
+    /** Contato, projeto ou qualquer FK apontando para o cliente (banco.md, seção 0). */
     public function hasHistory(): bool
     {
         return $this->isReferenced();

@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * task_priorities — docs/banco.txt, 2. PROJETOS (P19).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * task_priorities — docs/banco.md, 2. PROJETOS (P19).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado: id fixo, semeado, sem tela. O código compara por slug.
  */
 return new class extends Migration

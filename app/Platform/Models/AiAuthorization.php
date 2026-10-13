@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * O "conector" de IA do usuário (IA4, IA6; docs/banco.txt, ai_authorizations). Uma ativa por
+ * O "conector" de IA do usuário (IA4, IA6; docs/banco.md, ai_authorizations). Uma ativa por
  * usuário e assistente, travada pela coluna gerada active_assistant_id (T1).
  */
 class AiAuthorization extends Model

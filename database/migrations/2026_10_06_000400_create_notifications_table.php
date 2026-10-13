@@ -22,7 +22,7 @@ return new class extends Migration
             $table->morphs('notifiable');
             $table->text('data');
             $table->dateTime('read_at')->nullable();
-            // datetime, nunca TIMESTAMP (banco.md §3; docs/banco.txt, seção 4).
+            // datetime, nunca TIMESTAMP (banco.md §3; docs/banco.md, seção 4).
             $table->datetimes();
         });
     }

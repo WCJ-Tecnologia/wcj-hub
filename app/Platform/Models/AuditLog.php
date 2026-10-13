@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Auditoria única (G3; docs/banco.txt, audit_logs). Imutável: só created_at. O canal é
+ * Auditoria única (G3; docs/banco.md, audit_logs). Imutável: só created_at. O canal é
  * ai_authorization_id (null = tela).
  */
 class AuditLog extends Model

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** Sprint (P45–P51; docs/banco.txt, sprints). Aberta = closed_at nulo. */
+/** Sprint (P45–P51; docs/banco.md, sprints). Aberta = closed_at nulo. */
 class Sprint extends Model
 {
     protected $fillable = [

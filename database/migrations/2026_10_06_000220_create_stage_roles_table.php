@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * stage_roles — docs/banco.txt, 2. PROJETOS (P10, P11).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * stage_roles — docs/banco.md, 2. PROJETOS (P10, P11).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado (P11): todo indicador lê o papel, nunca o nome da etapa. Os ids 1 (queue),
  * 2 (sprint) e 8 (support) são lidos por board_stages.single_role_key: fixos na semente.
  */

@@ -61,9 +61,9 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 **Não assuma:**
 
-- **Não há multiempresa.** É single-tenant: sem `enterprise_id`, sem escopo por empresa. O escopo de acesso é papel + alocação no projeto (`project_members`). O template tinha `enterprises`, `scopedEnterpriseIds()` e `canAccessEnterprise()`: saíram no B0 (seção 9 do `banco.txt`).
+- **Não há multiempresa.** É single-tenant: sem `enterprise_id`, sem escopo por empresa. O escopo de acesso é papel + alocação no projeto (`project_members`). O template tinha `enterprises`, `scopedEnterpriseIds()` e `canAccessEnterprise()`: saíram no B0 (seção 9 do `banco.md`).
 - **O kanban não trava.** O sistema nunca recusa mover card, pôr na sprint, encerrar sprint ou montar pacote por falta de dev, horas, PR, parecer ou capacidade. Número de controle (capacidade, data prevista) é referência. Recusa só por permissão, dado inválido e integridade do banco (premissa da `necessidade.md`).
-- **Não há CRM, contrato, chamado, tipo de serviço nem GitHub por webhook** na fatia 1. As tabelas do CRM (seção 3 do `banco.txt`) são proposta da v2: não crie.
+- **Não há CRM, contrato, chamado, tipo de serviço nem GitHub por webhook** na fatia 1. As tabelas do CRM (seção 3 do `banco.md`) são proposta da v2: não crie.
 - **A IA do sistema não existe.** O Hub não chama IA nem guarda chave de provedor (IA2): é a IA do usuário que chama o Hub, pelo MCP.
 - **Dinheiro não existe** na fatia 1.
 - O "Tech Lead" não é papel nem fica no sistema; o "Comercial" existe como papel, sem uso na fatia 1.
@@ -218,7 +218,7 @@ Pelo perfil de uso (`docs/escopo.md` §10): **arquitetura** sim (`tests/Arch`: A
 
 Além do padrão (inegociável 5):
 
-- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.txt`. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
+- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.md`. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
 - **Policy nova ou alterada**, e qualquer mudança em `abilities`.
 - **Exclusão de verdade** (qualquer `delete` de registro de negócio) e a anonimização do contato.
 - **OAuth e MCP:** escopos do Passport, ferramentas MCP, o que a IA pode escrever (`users.ai_write_allowed`, `ai_assistants.write_allowed`), limites do `config/hub.php`.
@@ -256,7 +256,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 
 ## Armadilhas que já custaram tempo
 
-- `datetimes()` do Laravel cria `created_at`/`updated_at` **nulos**; o `banco.txt` pede not null. As migrações do Hub declaram `dateTime('created_at')` e `dateTime('updated_at')` à mão (as do framework e do Passport seguem com `datetimes()`).
+- `datetimes()` do Laravel cria `created_at`/`updated_at` **nulos**; o `banco.md` pede not null. As migrações do Hub declaram `dateTime('created_at')` e `dateTime('updated_at')` à mão (as do framework e do Passport seguem com `datetimes()`).
 - `task_acceptance_criteria.parent_key` é **VIRTUAL**, não STORED: com STORED o MySQL recusa a FK com cascade em `parent_id` (erro 1215). Coluna usada em CHECK não aceita FK com cascade ou set null (erro 3823).
 - Coluna gerada (`single_role_key`, `active_assistant_id`, `parent_key`) nunca entra em `insert`/`update`: o MySQL recusa.
 - `users` não tem `remember_token`: `Auth::attempt` sem "lembrar"; `$rememberTokenName = ''` no `User`.
@@ -274,7 +274,7 @@ Dúvida de regra: Lucas Scholz, antes da spec. Branch `feat/b<n>-<nome>` a parti
 | Funcional por bloco | `docs/funcional/` |
 | Escopo (blocos B0 a B10) | `docs/escopo.md` |
 | Plano, rito do PR, trilhos | `docs/plano-de-desenvolvimento.md` |
-| Banco | `docs/banco.txt` |
+| Banco | `docs/banco.md` |
 | Marca | `docs/brand/README.md` |
 | Deploy | `docs/DEPLOY.md` |
 | Decisões | `docs/adr/` e `.specs/STATE.md` |

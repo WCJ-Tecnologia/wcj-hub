@@ -1,6 +1,6 @@
 # Documentos funcionais: WCJ Hub, fatia 1
 
-Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, listagem, ações, filtros, indicadores, avisos e permissões. É o que Lucas Scholz aprova antes de a equipe desenvolver (D-GER-28, D-GER-31). Criados em 06/10/2026, depois da aprovação do `banco.txt` por Lucas Alencar (D-GER-23) e da decisão de fatiar a v1 (D-GER-24).
+Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, listagem, ações, filtros, indicadores, avisos e permissões. É o que Lucas Scholz aprova antes de a equipe desenvolver (D-GER-28, D-GER-31). Criados em 06/10/2026, depois da aprovação do `banco.md` por Lucas Alencar (D-GER-23) e da decisão de fatiar a v1 (D-GER-24).
 
 **Escopo desta pasta:** a **fatia 1** = Núcleo mínimo + Projetos + conexões de IA com 6 ferramentas. CRM e GPT "WCJ Hub" são a v2 e terão os próprios funcionais quando a hora chegar.
 
@@ -9,21 +9,21 @@ Um documento por bloco, em linguagem de quem usa, descrevendo tela, campos, list
 | Documento | Para quem | O que traz |
 |---|---|---|
 | `docs/necessidade.md` | WCJ e IA | As regras (G, N, P, IA), a premissa e as decisões. Fonte única das regras. |
-| `docs/banco.txt` | Pessoa técnica | Todas as tabelas e colunas, aprovadas (etapa 2). |
+| `docs/banco.md` | Pessoa técnica | Todas as tabelas e colunas, aprovadas (etapa 2). |
 | **`docs/funcional/Fn-*.md`** | Lucas Scholz (aprova), Rafael (feedback e elaboração de Projetos), Cauã e Vitinho | Como cada bloco funciona na tela, campo a campo. Aprovado antes do código. |
 | `docs/escopo.md` | IA e devs | Os mesmos blocos em forma técnica: tabelas, rotas, Policies, ordem (etapa 4). Aponta para o funcional de cada bloco. |
 | `docs/plano-de-desenvolvimento.md` | Cauã, Vitinho e Lucas Scholz | Quem faz o quê, em que ordem, com que trilho, e como o PR anda até o merge. |
 | `.specs/features/<bloco>/` | IA e Verifier | A spec em EARS de cada bloco, gerada pela skill `tlc-spec-driven` a partir do funcional aprovado. |
 
-Um funcional aprovado vira uma feature na skill. Nada que não esteja no funcional entra na spec; nada que não esteja no `banco.txt` entra no funcional.
+Um funcional aprovado vira uma feature na skill. Nada que não esteja no funcional entra na spec; nada que não esteja no `banco.md` entra no funcional.
 
-**Situação em 06/10/2026:** F1 a F8 aprovados por Lucas Scholz (v1.0), com os "pontos a validar" respondidos e aplicados nos próprios documentos, na `necessidade.md`, no `banco.txt` e no `escopo.md`. Rafael Garcia participou com feedback e elaboração e valida Projetos no uso (bugbash); a aprovação é do Lucas Scholz (D-GER-31).
+**Situação em 06/10/2026:** F1 a F8 aprovados por Lucas Scholz (v1.0), com os "pontos a validar" respondidos e aplicados nos próprios documentos, na `necessidade.md`, no `banco.md` e no `escopo.md`. Rafael Garcia participou com feedback e elaboração e valida Projetos no uso (bugbash); a aprovação é do Lucas Scholz (D-GER-31).
 
 ## Fluxo de aprovação
 
 | Passo | Quem | O quê |
 |---|---|---|
-| 1 | WCJ (Lucas Scholz, com IA) | Escreve o funcional a partir da `necessidade.md` e do `banco.txt`. |
+| 1 | WCJ (Lucas Scholz, com IA) | Escreve o funcional a partir da `necessidade.md` e do `banco.md`. |
 | 2 | Lucas Scholz, com o feedback do Rafael Garcia em Projetos | Lê, aprova ou devolve com correções. Os "pontos a validar" (seção 10) são respondidos aqui (D-GER-31). |
 | 3 | Cauã ou Vitinho, com IA | Spec na skill (aprovada por Lucas Scholz), código, testes, PR. |
 | 4 | Lucas Scholz | Revisa o PR contra o funcional e a spec; QA cruzado entre os dois devs. |
@@ -46,7 +46,7 @@ Mesmo modelo dos funcionais do Gestor PTA e do Projeto Oficinas. Seção que nã
 | 09 | Permissionamento | Quem vê e quem faz, por papel: Administrador, Gestor de projetos, Desenvolvedor. O Comercial não entra em Projetos (C14). A IA do usuário tem exatamente o que ele tem (G4). |
 | 10 | Pontos a validar | Perguntas que surgiram ao escrever e que Lucas Scholz responde na aprovação (em Projetos, com o feedback do Rafael). Não alteram o escopo. |
 
-Cada frase que vem de uma regra termina com o código dela entre parênteses, por exemplo "(P45)". Em todos os funcionais, **"gestor do projeto"** = o gestor responsável do projeto ou qualquer pessoa com papel Gestor de projetos alocada nele (P1, P5; pode haver mais de um). Cada funcional começa com um cabeçalho fixo: objetivo, regras que alimentam, tabelas do `banco.txt`, depende de, quem aprova.
+Cada frase que vem de uma regra termina com o código dela entre parênteses, por exemplo "(P45)". Em todos os funcionais, **"gestor do projeto"** = o gestor responsável do projeto ou qualquer pessoa com papel Gestor de projetos alocada nele (P1, P5; pode haver mais de um). Cada funcional começa com um cabeçalho fixo: objetivo, regras que alimentam, tabelas do `banco.md`, depende de, quem aprova.
 
 ## Os blocos
 

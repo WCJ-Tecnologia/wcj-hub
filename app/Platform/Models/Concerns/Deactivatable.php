@@ -31,7 +31,7 @@ trait Deactivatable
     private static array $referencesCache = [];
 
     /**
-     * "Já usado" (docs/banco.txt, seção 0): some foreign key points to this row. Read from the
+     * "Já usado" (docs/banco.md, seção 0): some foreign key points to this row. Read from the
      * catalog, so a table added later is covered without touching the model. A self-reference
      * from the row to itself (deactivated_by = own id) does not count.
      *

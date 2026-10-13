@@ -4,7 +4,7 @@ namespace App\Domains\Projetos\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** Domínio fechado: origens de retrabalho (P39, P43; docs/banco.txt, validation_types). */
+/** Domínio fechado: origens de retrabalho (P39, P43; docs/banco.md, validation_types). */
 class ValidationType extends Model
 {
     public const CODE_REVIEW = 1;

@@ -71,7 +71,7 @@ Outra stack, sem guia em `.ai/stacks/`: onde ficam rotas, telas, acesso a banco 
 |---|---|
 | Entrada e ordem de leitura | `docs/00-COMECE-AQUI.md` |
 | Escopo | `docs/escopo.md` |
-| Banco | `docs/banco.txt` |
+| Banco | `docs/banco.md` |
 | Deploy | `docs/DEPLOY.md` |
 | Decisões | `docs/adr/` e `.specs/STATE.md` |
 | Specs das features, retomada e lições | `.specs/` (`.ai/core/especificacao.md`) |

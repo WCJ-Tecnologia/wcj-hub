@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Mostrar ao gestor e à equipe o que aconteceu com cada card e quanto tempo levou: a linha do tempo do card, o tempo por etapa, as horas previstas × realizadas, a data prevista e o atraso, por projeto e por pessoa. Nada aqui se digita: tudo sai do que o quadro e o lançamento de horas já gravam. |
 | **Regras que alimentam** | P11, P14, P15, P25, P26, P53 a P55 (`docs/necessidade.md`), com R14, R16 e R17 da revisão de 01/10. Usa a data prevista e as horas de [F5](f5-sprint-e-horas.md) (P27 a P30) e o retrabalho de [F3](f3-quadro-e-card.md) (P39). |
-| **Tabelas do `banco.txt`** | Só leitura: `task_stage_movements`, `time_entries`, `tasks` (data prevista, arquivamento, tarefa de origem), `stage_roles`, `board_stages`, `users` (carga diária), `validation_types` e `rework_reasons` (origem e motivo do retrabalho). |
+| **Tabelas do `banco.md`** | Só leitura: `task_stage_movements`, `time_entries`, `tasks` (data prevista, arquivamento, tarefa de origem), `stage_roles`, `board_stages`, `users` (carga diária), `validation_types` e `rework_reasons` (origem e motivo do retrabalho). |
 | **Depende de** | F3 (movimentos do card e botão *Histórico*), F5 (horas previstas, horas lançadas, data prevista, sprint). |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 

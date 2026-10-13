@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * task_acceptance_criteria — docs/banco.txt, 2. PROJETOS (P17, P36, P37, T9).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * task_acceptance_criteria — docs/banco.md, 2. PROJETOS (P17, P36, P37, T9).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  */
 return new class extends Migration
 {

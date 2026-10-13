@@ -8,7 +8,7 @@
 **Ciclos anteriores:** [Ciclo 1](pr-6-code-review-ciclo-1.md) (rodado do lado do Vitinho, 09/10, sobre `fa9c126`)
 **Escopo deste ciclo:** o código é o mesmo do ciclo 1 (`fa9c126`; o 2º commit só acrescenta o relatório). O que mudou foi a **base**: desde o ciclo 1 entraram na `main` o B1 (#5), o CR-1-01 do B1 (#7) e o front atômico (#8). Este ciclo reverifica os 5 achados do ciclo 1 contra a `main` atual, mede o que o rebase vai exigir e revisa o que o ciclo 1 não cobriu (hooks de lista, trilho leve, contrato `ClientManagement`, N+1 na Policy).
 
-**Como este ciclo verificou:** CI do PR verde em `783a99b` (PHP, JS, e2e, secrets), mas sobre a `main` antiga; `git merge-tree --write-tree main HEAD` para os conflitos; leitura integral dos 27 arquivos; `rg` de segredo no diff (nenhum); F2 (`docs/funcional/f2-projeto-e-configuracao.md`), escopo B2 e `banco.txt` (`projects`, `project_members`, `board_stages`) como régua.
+**Como este ciclo verificou:** CI do PR verde em `783a99b` (PHP, JS, e2e, secrets), mas sobre a `main` antiga; `git merge-tree --write-tree main HEAD` para os conflitos; leitura integral dos 27 arquivos; `rg` de segredo no diff (nenhum); F2 (`docs/funcional/f2-projeto-e-configuracao.md`), escopo B2 e `banco.md` (`projects`, `project_members`, `board_stages`) como régua.
 
 ---
 
@@ -232,7 +232,7 @@ Só visual; o filtro e a pill já distinguem.
 ## Registrado sem achado (não é FP: o Lucas não foi consultado)
 
 - Rotas em português (`/projetos`, `/encerrar`, `/reabrir`) com nomes `projects.*` em inglês: é o que o escopo B2 define, diferente do `/admin/*` em inglês do B1 (D4). Não apontar.
-- `ProjectPolicy::manages` lê o papel **global** do alocado (`isProjectManager()`): `project_members` não tem coluna de papel, como o `banco.txt` diz. Correto.
+- `ProjectPolicy::manages` lê o papel **global** do alocado (`isProjectManager()`): `project_members` não tem coluna de papel, como o `banco.md` diz. Correto.
 - "Nunca usado" de projeto = sem tarefa, sprint e pacote (G2, F2 §04), não o `isReferenced()` genérico do `Deactivatable`: `board_stages`, `project_areas` e `project_members` sempre referenciam e saem em cascade. Correto.
 - `guardPrefix` envolve a transação inteira (CR-1-03): hoje o único unique de `projects` é o do prefixo; o achado é de convenção, não de bug ativo (anotado pelo ciclo 1).
 - Encerrar o já encerrado responde "encerrado" sem gravar nada (`setFinished` curto-circuita): coerente com o Trello (fluxo aberto). Não apontar.

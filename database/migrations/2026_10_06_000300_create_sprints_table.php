@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * sprints — docs/banco.txt, 2. PROJETOS (P45–P51, R5, R9).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * sprints — docs/banco.md, 2. PROJETOS (P45–P51, R5, R9).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  */
 return new class extends Migration
 {
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->unique(['project_id', 'name']);
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement('ALTER TABLE sprints ADD CONSTRAINT sprints_dates_check CHECK (ends_on >= starts_on)');
     }
 

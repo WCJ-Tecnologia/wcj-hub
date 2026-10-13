@@ -6,7 +6,7 @@ use App\Domains\Projetos\Models\Project;
 use App\Domains\Projetos\Models\StageRole;
 
 /**
- * Etapas do quadro (P10–P12; docs/banco.txt, board_stages). O quadro padrão mora só aqui: o
+ * Etapas do quadro (P10–P12; docs/banco.md, board_stages). O quadro padrão mora só aqui: o
  * ProjectService e o ExemploSeeder o criam por este Service, para a ordem não morar em dois
  * lugares (PR #4).
  */

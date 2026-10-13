@@ -3,7 +3,7 @@
 namespace App\Platform\Enums;
 
 /**
- * Os 4 papéis fixos da v1 (N2; docs/banco.txt, roles). Os ids são os da semente: o código
+ * Os 4 papéis fixos da v1 (N2; docs/banco.md, roles). Os ids são os da semente: o código
  * compara pelo id ou pelo slug, nunca pelo rótulo.
  */
 enum RoleEnum: int

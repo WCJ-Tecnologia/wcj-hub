@@ -264,7 +264,7 @@ class UserService
 
         foreach ($active as $authorization) {
             $authorization->forceFill(['revoked_at' => now()])->save();
-            // banco.txt (ai_authorizations): quem revogou fica na auditoria.
+            // banco.md (ai_authorizations): quem revogou fica na auditoria.
             $this->audit->log(AuditActionEnum::UPDATED, $authorization, ['revoked_at' => null], [
                 'revoked_at' => $authorization->revoked_at->toDateTimeString(),
             ], $actor->id);

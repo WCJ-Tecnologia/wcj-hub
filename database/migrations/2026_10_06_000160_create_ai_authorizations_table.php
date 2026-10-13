@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * ai_authorizations — docs/banco.txt, 1. PLATFORM (IA4, IA6, T1).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * ai_authorizations — docs/banco.md, 1. PLATFORM (IA4, IA6, T1).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  */
 return new class extends Migration
 {
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->foreignId('ai_assistant_id')->constrained('ai_assistants')->restrictOnDelete();
-            // oauth_clients.id do Passport (uuid). Sem FK, como no banco.txt.
+            // oauth_clients.id do Passport (uuid). Sem FK, como no banco.md.
             $table->char('oauth_client_id', 36);
             $table->dateTime('revoked_at')->nullable();
             // Uma conexão ativa por usuário e assistente, travada no banco (T1); as revogadas não colidem.

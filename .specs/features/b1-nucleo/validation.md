@@ -990,7 +990,7 @@ Lidos: `.claude/skills/tlc-spec-driven/references/validate.md`, `.ai/core/especi
 - a migração aditiva e idempotente `database/migrations/2026_10_07_000010_add_slug_to_rework_reasons_table.php` (`slug` nulo e único, só o "Outro" com `other`), com `ReworkReason::OTHER` e o `ReworkReasonSeeder` gravando o slug. Tabela de Projetos, fora do B1;
 - o `ExemploSeeder` com a etapa Paused em 4º (P10), dado de exemplo de Projetos;
 - `tests/Feature/SementesEExemploTest.php` (+1 asserção do slug, a ordem das 8 etapas no lugar da contagem);
-- documentos (`AGENTS.md`, `docs/adr/001-codigo-por-dominio.md`, `docs/banco.txt`, `docs/escopo.md`, `docs/necessidade.md`, `docs/funcional/f8-conexoes-de-ia.md`, `docs/00-COMECE-AQUI.md`, `docs/atas/2026-10-06-poc-mcp.md`) e a `spec.md`.
+- documentos (`AGENTS.md`, `docs/adr/001-codigo-por-dominio.md`, `docs/banco.md`, `docs/escopo.md`, `docs/necessidade.md`, `docs/funcional/f8-conexoes-de-ia.md`, `docs/00-COMECE-AQUI.md`, `docs/atas/2026-10-06-poc-mcp.md`) e a `spec.md`.
 
 Nenhum arquivo de `app/Platform`, de rota, de tela ou de teste do Núcleo vem dos merges. O `ListService` citado no `4c25668` não existia nesta branch (o diff não o mostra).
 

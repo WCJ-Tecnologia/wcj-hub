@@ -115,7 +115,7 @@ class ArquiteturaTest extends TestCase
     /**
      * A9 (ADR-001): domínio não lê nem grava tabela de outro. A7 já barra o Model de outro
      * domínio; aqui vão (a) o Platform usando qualquer coisa de App\Domains (o Núcleo não
-     * conhece módulo: as FKs vão só de Domains para Platform, banco.txt 6.2) e (b) o nome de uma
+     * conhece módulo: as FKs vão só de Domains para Platform, banco.md 6.2) e (b) o nome de uma
      * tabela de outro domínio escrito à mão (DB::table('tasks'), join, SQL cru). Um domínio
      * pode ler as tabelas do Platform, na direção das FKs; o Platform não lê as dos domínios.
      * O dono de cada tabela sai dos Models de app/Platform/Models e app/Domains/<X>/Models.

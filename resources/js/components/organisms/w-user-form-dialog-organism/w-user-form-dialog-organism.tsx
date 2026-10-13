@@ -9,7 +9,7 @@ import { Label } from '@/components/shadcn/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { Switch } from '@/components/shadcn/switch';
 
-/** Espelha App\Platform\Enums\RoleEnum (docs/banco.txt, roles). */
+/** Espelha App\Platform\Enums\RoleEnum (docs/banco.md, roles). */
 export const ROLE = { ADMIN: 1, PROJECT_MANAGER: 2, DEVELOPER: 3, SALES: 4 } as const;
 
 export interface UserFormData {

@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * roles — docs/banco.txt, 1. PLATFORM (N2).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * roles — docs/banco.md, 1. PLATFORM (N2).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado (N2): 4 papéis fixos, ids da semente. O código compara por slug.
  * Seção 9: substitui a user_types do template.
  */

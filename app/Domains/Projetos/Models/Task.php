@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * O card (P13–P28, P34, P52; docs/banco.txt, tasks). number vem do contador do projeto (T4) e
+ * O card (P13–P28, P34, P52; docs/banco.md, tasks). number vem do contador do projeto (T4) e
  * a chave "SGM-17" se deduz (T10). "Tudo da tarefa é do mesmo projeto" é asserção no Service
  * (R15), sem FK composta.
  */
