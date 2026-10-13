@@ -6,7 +6,8 @@ A parte onde erro dói mais, porque dado perdido não volta.
 
 **O banco é desenhado por uma pessoa técnica, inteiro, antes de qualquer prompt de código.** A IA não modela sistema novo sozinha.
 
-- O artefato é `docs/banco.txt`: todas as tabelas, todas as colunas e os valores de domínio (exemplo: `user_types`: 1 admin, 2 supervisor, 3 operador).
+- O artefato é `docs/banco.md`: todas as tabelas, todas as colunas e os valores de domínio (exemplo: `user_types`: 1 admin, 2 supervisor, 3 operador).
+- O arquivo é Markdown, no molde de `templates/banco.md`: uma seção por tabela, uma tabela Markdown com as colunas (nome, tipo, nulo, motivo), índices e únicos em linha, tabelas de domínio com os valores, e as seções **Decisões** e **Perguntas para quem aprova** no fim. Cada coluna cita a regra de negócio, a decisão ou a regra da casa que a pede; sem motivo, não entra.
 - A IA pode apoiar em módulo pontual: "preciso de um modelo de logs, quais tabelas você recomenda?". A pessoa técnica decide o que entra.
 - Mudança no meio do projeto é normal. Ela passa pela mesma pessoa e vira migração nova.
 - Quem ainda não modela sozinho aciona a equipe técnica nesta etapa.

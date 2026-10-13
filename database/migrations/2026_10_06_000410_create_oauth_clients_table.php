@@ -25,7 +25,7 @@ return new class extends Migration
             $table->text('redirect_uris');
             $table->text('grant_types');
             $table->boolean('revoked');
-            // datetime, nunca TIMESTAMP (banco.md §3; docs/banco.txt, seção 4).
+            // datetime, nunca TIMESTAMP (banco.md §3; docs/banco.md, seção 4).
             $table->datetimes();
         });
     }

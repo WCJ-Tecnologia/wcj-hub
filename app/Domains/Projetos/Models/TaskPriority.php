@@ -4,7 +4,7 @@ namespace App\Domains\Projetos\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** Domínio fechado (P19; docs/banco.txt, task_priorities). */
+/** Domínio fechado (P19; docs/banco.md, task_priorities). */
 class TaskPriority extends Model
 {
     public const LOW = 1;

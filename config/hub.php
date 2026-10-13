@@ -1,7 +1,7 @@
 <?php
 
 /*
-| Parâmetros do WCJ Hub (docs/banco.txt, T5): padrão aqui, override pelo .env. Não há tabela
+| Parâmetros do WCJ Hub (docs/banco.md, T5): padrão aqui, override pelo .env. Não há tabela
 | de configurações (escopo §6). Quem lê: o limitador e o log das chamadas da IA (B8).
 */
 

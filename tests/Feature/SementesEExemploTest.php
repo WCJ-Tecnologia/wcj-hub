@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/** Sementes do banco.txt e o dado de exemplo marcado, com o comando que o apaga. */
+/** Sementes do banco.md e o dado de exemplo marcado, com o comando que o apaga. */
 class SementesEExemploTest extends TestCase
 {
     use RefreshDatabase;

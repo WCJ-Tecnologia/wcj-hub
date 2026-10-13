@@ -1,6 +1,6 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 
-/** Mirror of App\\Platform\\Enums\\RoleEnum (docs/banco.txt, roles). */
+/** Mirror of App\\Platform\\Enums\\RoleEnum (docs/banco.md, roles). */
 export type RoleSlug = 'admin' | 'project_manager' | 'developer' | 'sales';
 
 /**

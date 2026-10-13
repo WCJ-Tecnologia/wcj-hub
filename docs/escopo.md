@@ -1,6 +1,6 @@
 # Escopo: WCJ Hub, fatia 1
 
-Etapa 4 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Gerado com apoio de IA em 06/10/2026 a partir de `necessidade.md`, `banco.txt` (aprovado por Lucas Alencar em 06/10, D-GER-23) e dos documentos funcionais de `docs/funcional/`. Depois de validado inteiro por uma pessoa (etapa 5), é a referência: a IA não desenvolve o que não está aqui, e nada aqui contraria o funcional do bloco.
+Etapa 4 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Gerado com apoio de IA em 06/10/2026 a partir de `necessidade.md`, `banco.md` (aprovado por Lucas Alencar em 06/10, D-GER-23) e dos documentos funcionais de `docs/funcional/`. Depois de validado inteiro por uma pessoa (etapa 5), é a referência: a IA não desenvolve o que não está aqui, e nada aqui contraria o funcional do bloco.
 
 Validado por: **Lucas Scholz em 2026-10-06** (etapa 5), com uma mudança: na seção 7, ele é o responsável por todas as travas.
 
@@ -10,9 +10,9 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 Restrições estruturais que governam tudo:
 
-- **Single-tenant** (`banco.txt` 6.1): não há `enterprise_id`. O escopo de acesso é papel + vínculo (alocação no projeto).
+- **Single-tenant** (`banco.md` 6.1): não há `enterprise_id`. O escopo de acesso é papel + vínculo (alocação no projeto).
 - **Kanban sem trava** (premissa da `necessidade.md`): o sistema nunca recusa mover card, pôr na sprint ou montar pacote por falta de dev, horas, PR ou parecer. Número de controle é referência. Recusa só por permissão, dado inválido e integridade do banco.
-- **Banco enxuto** (D-GER-20): só as 27 tabelas do `banco.txt`. Campo novo exige regra que o leia e nova revisão.
+- **Banco enxuto** (D-GER-20): só as 27 tabelas do `banco.md`. Campo novo exige regra que o leia e nova revisão.
 - **Código por domínio desde o primeiro commit** (D-GER-15): `app/Platform/` e `app/Domains/Projetos/`, cada domínio com `Controllers`, `Models`, `Policies`, `Requests`, `Services` e `Mcp`.
 - **Tela e IA chamam o mesmo Service** (IA5, `core/mcp.md`). Não existe regra só na tela nem só no MCP.
 - **Auditoria em tabela única** com o canal (tela ou qual IA) em toda escrita e toda negação (G3, IA11).
@@ -22,7 +22,7 @@ Restrições estruturais que governam tudo:
 
 O template `ai-systems` 0.6.0 fornece e **não se reescreve**: autenticação com guard `web`, senha provisória e troca no primeiro acesso, limitador de login, papéis em tabela com objeto `abilities` compartilhado pelo Inertia, Policies com `authorize()` em todo método e o teste de arquitetura `RotasAutorizadasTest`, shell de navegação, gabarito de CRUD (`stacks/ui.md`), trait `Deactivatable` (desativar, reativar, `hasHistory`), `LocalTime`, auditoria base, headers de segurança, `DateTimeConventionsTest`, suíte e2e de smoke, CI, `composer setup`, skill `tlc-spec-driven` e o `AGENTS.md` padrão.
 
-O que muda do template está na seção 9 do `banco.txt`: `user_types` vira `roles`; saem `enterprises` e `user_has_enterprises` (single-tenant), e com elas o escopo por empresa (`scopedEnterpriseIds`, `canAccessEnterprise`) e a tela de empresas, que serve de base para a de clientes; `audit_logs` ganha `ai_authorization_id`, `outcome` e `changes`; testes passam de SQLite para MySQL 8. Essa adaptação é o bloco B0.
+O que muda do template está na seção 9 do `banco.md`: `user_types` vira `roles`; saem `enterprises` e `user_has_enterprises` (single-tenant), e com elas o escopo por empresa (`scopedEnterpriseIds`, `canAccessEnterprise`) e a tela de empresas, que serve de base para a de clientes; `audit_logs` ganha `ai_authorization_id`, `outcome` e `changes`; testes passam de SQLite para MySQL 8. Essa adaptação é o bloco B0.
 
 ## 3. Regras que valem para tudo
 
@@ -54,11 +54,11 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Objetivo.** Repositório com o template 0.6.0 adaptado ao Hub, as 27 tabelas migradas e semeadas, CI em MySQL 8, subindo do zero em até 3 minutos.
 
-**Dados.** Todas as tabelas do `banco.txt` (seções 1, 2 e 4), numa migração por tabela, na ordem das dependências; Passport e `notifications` publicados e ajustados para `datetime`. Sementes: `roles` (4), `stage_roles` (8), `task_priorities` (4), `test_results` (3), `validation_types` (4), `task_types` (4, com `improvement` e `support`), `rework_reasons` (5), `ai_assistants` (4), `contact_channels` (5), o cliente WCJ (N7, CNPJ 38.614.817/0001-22, não desativável) e o primeiro Administrador (`app:create-admin`). Dado de exemplo marcado como exemplo, com comando de limpeza.
+**Dados.** Todas as tabelas do `banco.md` (seções 1, 2 e 4), numa migração por tabela, na ordem das dependências; Passport e `notifications` publicados e ajustados para `datetime`. Sementes: `roles` (4), `stage_roles` (8), `task_priorities` (4), `test_results` (3), `validation_types` (4), `task_types` (4, com `improvement` e `support`), `rework_reasons` (5), `ai_assistants` (4), `contact_channels` (5), o cliente WCJ (N7, CNPJ 38.614.817/0001-22, não desativável) e o primeiro Administrador (`app:create-admin`). Dado de exemplo marcado como exemplo, com comando de limpeza.
 
 **Telas.** Nenhuma nova. A tela de empresas do template sai; usuários passam a mostrar papel e carga diária (ajuste mínimo; a tela completa é B1).
 
-**Regras.** Seção 9 do `banco.txt` (o que muda do template); T4 (contador atômico, ainda sem uso); T6 (MySQL nos testes: `phpunit.xml` e CI com serviço MySQL 8); as colunas geradas de T1 e T9 criadas exatamente como no `banco.txt` (`VIRTUAL` em `parent_key`).
+**Regras.** Seção 9 do `banco.md` (o que muda do template); T4 (contador atômico, ainda sem uso); T6 (MySQL nos testes: `phpunit.xml` e CI com serviço MySQL 8); as colunas geradas de T1 e T9 criadas exatamente como no `banco.md` (`VIRTUAL` em `parent_key`).
 
 **Permissão.** Não se aplica.
 
@@ -190,7 +190,7 @@ Copiado e ampliado de `necessidade.md`:
 
 - Trava no fluxo de Projetos: exigir dev, horas, PR, parecer ou capacidade para mover card, pôr na sprint, encerrar sprint ou montar pacote (premissa, P49).
 - O dev excluir ou arquivar card, ou mexer em sprint, pacote e configuração (P26, P45). Criar card ele pode (P56).
-- Coluna ou tabela fora do `banco.txt`: nada de `deleted_at`, `created_by`, cache de status, `enterprise_id`, `key` gravada, `project_id` em `task_stage_movements`, FK composta, tabelas de CRM, `task_validations`, `sprint_members`, `package_statuses`, `ai_tool_calls`, `settings` (parâmetros em `config/hub.php` + `.env`).
+- Coluna ou tabela fora do `banco.md`: nada de `deleted_at`, `created_by`, cache de status, `enterprise_id`, `key` gravada, `project_id` em `task_stage_movements`, FK composta, tabelas de CRM, `task_validations`, `sprint_members`, `package_statuses`, `ai_tool_calls`, `settings` (parâmetros em `config/hub.php` + `.env`).
 - Editar ou apagar `audit_logs`, exceto a anonimização do contato (G3, N12).
 - Ferramenta de IA que exclua, altere em lote ou execute consulta livre (IA8); ferramenta além das 6 da fatia 1 (IA14); IA chamada pelo próprio sistema ou chave de provedor guardada (IA2); conexão por chave colada (IA4).
 - E-mail além dos dois da P22; convite `.ics` e resumo diário são da v2.
@@ -206,11 +206,11 @@ O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Sch
 | Trava | Com quem | Bloqueia |
 |---|---|---|
 | ~~Funcionais~~ F1 a F8 aprovados por Lucas Scholz em 06/10, pontos a validar respondidos (D-GER-28, D-GER-31). Rafael Garcia participou com feedback e elaboração e valida Projetos no bugbash. | Lucas Scholz | Nada: as specs podem começar. |
-| ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira (`banco.txt` §7, R15 e as 3 colunas de 06/10) em 06/10. | Lucas Alencar | Nada. |
+| ~~Banco~~ Lucas Alencar aprovou a fatia 1 inteira (`banco.md` §7, R15 e as 3 colunas de 06/10) em 06/10. | Lucas Alencar | Nada. |
 | Prova de conceito do MCP (D-GER-17): OAuth com Claude app, Claude Code, Codex, ChatGPT Pro; identificação de cada cliente; Claude app e Claude Code na mesma conexão. | ele mesmo | B8 |
 | Credenciais do SMTP Zoho da WCJ (as mesmas do sistema de obras). | ele mesmo | O canal `mail` do B3 (o `database` não espera). |
 | Acesso à VPS do DaaS, capacidade e separação do banco; DNS do subdomínio. | Alaor Rodrigues | B10 e a homologação pública do B8. |
-| Diferenças do template 0.6.0 em relação à seção 9 do `banco.txt` (escrita sobre a 0.4.0). | ele mesmo, no B0 | B0: conferir e anotar no ADR. |
+| Diferenças do template 0.6.0 em relação à seção 9 do `banco.md` (escrita sobre a 0.4.0). | ele mesmo, no B0 | B0: conferir e anotar no ADR. |
 
 ## 8. Ordem de execução
 
@@ -230,7 +230,7 @@ Em paralelo às ondas, **Lucas Varanda** cuida do front: tema da marca e fontes 
 
 ## 9. Fora deste escopo
 
-- **v2:** CRM inteiro (seção 3 da `necessidade.md` e do `banco.txt`), `service_types`, GPT "WCJ Hub" com Actions, convite `.ics`, resumo diário, as ferramentas de IA de CRM. Terá a própria rodada de necessidade, banco e funcional.
+- **v2:** CRM inteiro (seção 3 da `necessidade.md` e do `banco.md`), `service_types`, GPT "WCJ Hub" com Actions, convite `.ics`, resumo diário, as ferramentas de IA de CRM. Terá a própria rodada de necessidade, banco e funcional.
 - **Depois da fatia 1, com os dados já gravados:** as 9 ferramentas de IA de Projetos e Núcleo que ficaram para depois (IA14), painel de produtividade e retrabalho (P54), histórico de desenvolvimento em PDF, relatório de fechamento, notas de versão e documento de requisição gerado (P55), tela das chamadas da IA (IA12), time da sprint com férias e folga (P47, P48), feriados (P29).
 - **Chamados** (D-GER-12, D-CHM-01) e contrato (N10).
 - Integração com o GitHub (D-GER-13), importação do Trello, DaaS consultando contratos (D-CRM-04).

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Anexo da tarefa ou evidência do QA (P24, P36; docs/banco.txt, task_attachments). Excluir passa
+ * Anexo da tarefa ou evidência do QA (P24, P36; docs/banco.md, task_attachments). Excluir passa
  * pelo Service, que apaga o arquivo e a linha juntos (banco.md §4).
  */
 class TaskAttachment extends Model

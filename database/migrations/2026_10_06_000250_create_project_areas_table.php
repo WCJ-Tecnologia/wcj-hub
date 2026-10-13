@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * project_areas — docs/banco.txt, 2. PROJETOS (P18, G7).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * project_areas — docs/banco.md, 2. PROJETOS (P18, G7).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Cadastrável por projeto: nasce vazia, o gestor edita (G7).
  */
 return new class extends Migration

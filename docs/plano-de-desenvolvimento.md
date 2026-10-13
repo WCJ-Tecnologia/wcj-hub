@@ -1,6 +1,6 @@
 # Plano de desenvolvimento: WCJ Hub, fatia 1
 
-Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz, que supervisiona (D-GER-25). Diz quem faz o quê, em que ordem, por qual trilho e como um PR anda até o merge. O **que** construir está no [`escopo.md`](escopo.md) (blocos B0 a B10) e nos [funcionais](funcional/README.md) (F1 a F8); as regras, na [`necessidade.md`](necessidade.md); o banco, no [`banco.txt`](banco.txt).
+Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz, que supervisiona (D-GER-25). Diz quem faz o quê, em que ordem, por qual trilho e como um PR anda até o merge. O **que** construir está no [`escopo.md`](escopo.md) (blocos B0 a B10) e nos [funcionais](funcional/README.md) (F1 a F8); as regras, na [`necessidade.md`](necessidade.md); o banco, no [`banco.md`](banco.md).
 
 ## 1. Quem faz o quê
 
@@ -11,7 +11,7 @@ Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz
 | **Lucas Varanda** | Front-end. Tema da marca e fontes no template (`docs/brand/`), shell e os componentes que o Hub pede e o template não tem (kanban, ficha do card, roteiro de QA, linha do tempo), propostos antes de B3 e B5. Revisa o front dos PRs dos blocos (D-GER-29). |
 | **Lucas Scholz** | Dono do produto. Aprova os funcionais (F1 a F8, D-GER-31), a spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. |
 | **Rafael Garcia** | Gestor de projetos. Participou dos funcionais F2 a F7 com feedback e elaboração (a aprovação é do Lucas Scholz, D-GER-31); faz o bugbash no quadro Wpay; homologa. |
-| **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.txt` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
+| **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.md` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
 | **Alaor Rodrigues** | VPS, banco de produção, DNS, backup (B10). |
 
 **Ponto de contato único:** Cauã, Vitinho e Lucas Varanda acionam só o Lucas Scholz, para qualquer dúvida ou trava (`escopo.md` §7). Ele decide ou chama Lucas Alencar e Alaor Rodrigues quando precisar.
@@ -37,12 +37,12 @@ Tamanho estimado de cada bloco, para combinar prazo na primeira reunião (estima
 
 ## 3. O rito de um bloco, do começo ao merge
 
-1. **Ler, nesta ordem:** `docs/00-COMECE-AQUI.md`, o `AGENTS.md` do projeto, o funcional do bloco, o bloco no `escopo.md`, as regras citadas na `necessidade.md` e as tabelas do bloco no `banco.txt` (com as "Regras do Service"). Dúvida de regra: pergunta ao Lucas Scholz **antes** de escrever a spec, no PR ou no grupo. Nunca decidir regra de negócio sozinho; premissa de baixo risco (ex.: ordem de uma lista) pode ser decidida e dita no PR.
+1. **Ler, nesta ordem:** `docs/00-COMECE-AQUI.md`, o `AGENTS.md` do projeto, o funcional do bloco, o bloco no `escopo.md`, as regras citadas na `necessidade.md` e as tabelas do bloco no `banco.md` (com as "Regras do Service"). Dúvida de regra: pergunta ao Lucas Scholz **antes** de escrever a spec, no PR ou no grupo. Nunca decidir regra de negócio sozinho; premissa de baixo risco (ex.: ordem de uma lista) pode ser decidida e dita no PR.
 2. **Classificar o trilho** (seção 5). Na dúvida, completo.
 3. **Branch** `feat/b<n>-<nome>` a partir de `origin/main` atualizada (`git fetch` antes). Um bloco, uma branch, um PR. Bloco grande (B3) pode sair em 2 ou 3 PRs, na ordem do funcional (quadro e card rápido → ficha completa → arquivar, suporte e avisos), cada um usável sozinho.
 4. **Spec.** Trilho completo: a skill `tlc-spec-driven` (`.ai/core/especificacao.md`) em `.specs/features/b<n>-<nome>/`, com os critérios em EARS, os critérios de piso (§6) e a varredura de dimensões implícitas; `validate_spec.py` verde; **Lucas Scholz aprova a spec antes do código** (comentário no PR em rascunho ou no grupo). Trilho leve: a spec curta vai na descrição do PR (modelo na seção 6), e o código pode começar junto.
-5. **Código**, com IA, no padrão: FormRequest → `authorize()` → Service; auditoria em toda escrita; a asserção "mesmo projeto" em todo Service de Projetos; migração nenhuma (todas vieram no B0; se o bloco precisar de coluna que não está no `banco.txt`, para e pergunta).
-6. **Testes** em MySQL 8: um teste de feature por critério da spec; teste de Policy (quem não pode, 403 e nada muda); teste do Service para cada regra do `banco.txt`; teste de concorrência onde há contador ou "um só aberto" (T1, T4, P45); função pura com teste para cada cálculo (data prevista, capacidade, indicadores).
+5. **Código**, com IA, no padrão: FormRequest → `authorize()` → Service; auditoria em toda escrita; a asserção "mesmo projeto" em todo Service de Projetos; migração nenhuma (todas vieram no B0; se o bloco precisar de coluna que não está no `banco.md`, para e pergunta).
+6. **Testes** em MySQL 8: um teste de feature por critério da spec; teste de Policy (quem não pode, 403 e nada muda); teste do Service para cada regra do `banco.md`; teste de concorrência onde há contador ou "um só aberto" (T1, T4, P45); função pura com teste para cada cálculo (data prevista, capacidade, indicadores).
 7. **Escada local** (`core/testes.md` §1): `composer lint`, `php artisan test`, `npm run typecheck && npm run lint && npm run build`, testes de arquitetura, e2e de smoke, `npm run test:guard`. Tudo verde antes do push.
 8. **Uso no navegador:** a tela nova usada de ponta a ponta com os papéis que a tocam (admin, gestor, dev); estados vazio, erro e carregando conferidos; **print ou vídeo curto no PR**.
 9. **PR** pronto, com a descrição da seção 6. CI verde.
@@ -104,7 +104,7 @@ P13, P14, P15 (motivo da pausa), ... Onde: Projetos\Services\TaskService::move.
 ## 7. Definição de pronto de um bloco
 
 - [ ] Tudo o que o funcional descreve nas seções 01 a 09 existe e foi usado no navegador pelos papéis que o tocam.
-- [ ] Nenhum campo, tela ou regra além do funcional e do `banco.txt`.
+- [ ] Nenhum campo, tela ou regra além do funcional e do `banco.md`.
 - [ ] Policies com teste (quem não pode: 403 e nada muda); auditoria gravada em toda escrita e negação; canal (tela ou IA) certo.
 - [ ] Testes em MySQL 8 verdes no CI; função pura com teste para cada cálculo.
 - [ ] Trilho completo: `validation.md` em PASS pelo Verifier; `conferir-specs.mjs` verde.
@@ -115,7 +115,7 @@ P13, P14, P15 (motivo da pausa), ... Onde: Projetos\Services\TaskService::move.
 ## 8. Antes de começar: checklist do Lucas Scholz
 
 - [x] Funcionais F2 a F7 aprovados por Lucas Scholz em 06/10, com o feedback do Rafael (D-GER-31). O PDF para o Rafael sai quando for útil no bugbash.
-- [ ] Mandar o `banco.txt` §7 para o Lucas Alencar (a R15 em especial).
+- [ ] Mandar o `banco.md` §7 para o Lucas Alencar (a R15 em especial).
 - [ ] Rodar o B0 (prompt pronto no `00-COMECE-AQUI.md`) e publicar o repositório com o template; conferir `composer setup` em máquina limpa.
 - [ ] Prova de conceito do MCP (D-GER-17): servidor mínimo, OAuth, uma ferramenta de leitura e uma de escrita, em Claude app, Claude Code, Codex e ChatGPT Pro. Registrar o resultado em `docs/atas/` e fechar os "Em aberto" da `necessidade.md`.
 - [ ] Credenciais do SMTP Zoho num cofre (não no repo) para o B3.
@@ -130,7 +130,7 @@ P13, P14, P15 (motivo da pausa), ... Onde: Projetos\Services\TaskService::move.
 |---|---|
 | ~~Funcional do Rafael demora e trava a onda 1~~ | Caiu: os funcionais foram aprovados pelo Lucas Scholz em 06/10 (D-GER-31). O que resta do Rafael é o bugbash. |
 | Dois PRs em paralelo conflitam (`AGENTS.md`, rotas, `types/index.d.ts`) | Quem entra depois faz `git merge origin/main` na branch, roda a escada e empurra. Nunca `rebase` em branch já compartilhada. |
-| IA inventa campo ou trava | O escopo §6 lista o que não pode; o revisor confere tabela a tabela contra o `banco.txt`; teste de arquitetura recusa `timestamps()` e migração fora do padrão. |
+| IA inventa campo ou trava | O escopo §6 lista o que não pode; o revisor confere tabela a tabela contra o `banco.md`; teste de arquitetura recusa `timestamps()` e migração fora do padrão. |
 | MCP não funciona como o esperado em algum assistente | A prova de conceito vem antes do B8; o produto não depende do B8 para substituir o Trello. |
-| Template 0.6.0 difere do que a seção 9 do `banco.txt` descreve | O B0 confere e registra no ADR-001; o `sync-standards` do padrão é rodado no B0 e a cada versão nova do `ai-systems`. |
+| Template 0.6.0 difere do que a seção 9 do `banco.md` descreve | O B0 confere e registra no ADR-001; o `sync-standards` do padrão é rodado no B0 e a cada versão nova do `ai-systems`. |
 | Equipe volta ao Trello por fricção na tela | R4 e R5 existem para isso: card com título + Enter e sprint sem cerimônia. Bugbash com o Rafael antes de desligar o Trello. |

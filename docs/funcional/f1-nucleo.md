@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Dar ao Administrador o cadastro das pessoas que usam o sistema, das empresas atendidas e das pessoas dessas empresas, e uma tela para ver tudo o que foi alterado, por quem e por onde. |
 | **Regras que alimentam** | G1 a G5, G7, N1 a N9, N11, N12 (`docs/necessidade.md`). |
-| **Tabelas do `banco.txt`** | `roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`. |
+| **Tabelas do `banco.md`** | `roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`. |
 | **Depende de** | Template `ai-systems`: login, senha provisória, troca de senha, shell de navegação. |
 | **Quem aprova** | Lucas Scholz (dono do Núcleo, D-GER-07). |
 

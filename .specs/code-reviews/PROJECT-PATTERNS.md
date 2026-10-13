@@ -78,7 +78,7 @@
 ### CV-13 — Quadro padrão (P10) mora só em `BoardStageService::DEFAULT_BOARD`; "gere" de projeto é papel global + vínculo; "nunca usado" de projeto = sem tarefa, sprint e pacote
 - **Escopo:** `app/Domains/Projetos/Services/BoardStageService.php`, `ProjectPolicy::manages`, `Project::scopeVisibleTo`, `ProjectService::delete`
 - **Evidência:** PR-6 `BoardStageService.php:17-26` (`ProjectService`, `ExemploSeeder` e `ProjectFactory::withBoard()` o chamam); `ProjectPolicy.php:51-58`; `Project.php:116-128`; `ProjectService.php:88-103`
-- **Visto em:** pr-6 ciclos 1 e 2. `project_members` **não tem coluna de papel**: "alocado com papel gestor" = papel global do usuário (`isProjectManager()`) + vínculo, como o `banco.txt` diz; a lista (`scopeVisibleTo`) espelha a Policy `view`. "Nunca usado" de projeto não é o `isReferenced()` genérico (`board_stages`, `project_areas` e `project_members` sempre referenciam e saem por cascade). Lista de 8 etapas copiada em outro lugar é desvio
+- **Visto em:** pr-6 ciclos 1 e 2. `project_members` **não tem coluna de papel**: "alocado com papel gestor" = papel global do usuário (`isProjectManager()`) + vínculo, como o `banco.md` diz; a lista (`scopeVisibleTo`) espelha a Policy `view`. "Nunca usado" de projeto não é o `isReferenced()` genérico (`board_stages`, `project_areas` e `project_members` sempre referenciam e saem por cascade). Lista de 8 etapas copiada em outro lugar é desvio
 
 ## Anti-padrões recorrentes
 

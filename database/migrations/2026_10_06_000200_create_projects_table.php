@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * projects — docs/banco.txt, 2. PROJETOS (P1–P3, P7–P9, P15, P16, P46, T4).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * projects — docs/banco.md, 2. PROJETOS (P1–P3, P7–P9, P15, P16, P46, T4).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  */
 return new class extends Migration
 {
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->index('manager_id');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement('ALTER TABLE projects ADD CONSTRAINT projects_due_on_check CHECK (due_on IS NULL OR due_on >= starts_on)');
         DB::statement('ALTER TABLE projects ADD CONSTRAINT projects_sprint_days_check CHECK (sprint_days > 0)');
     }

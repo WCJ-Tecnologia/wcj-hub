@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * O banco do B0 é o do docs/banco.txt: as 27 tabelas, as travas que o banco segura sozinho
+ * O banco do B0 é o do docs/banco.md: as 27 tabelas, as travas que o banco segura sozinho
  * (colunas geradas + unique, CHECK) e created_at/updated_at not null. Só prova no MySQL 8
  * (ADR-002): no SQLite metade disto nem existe.
  */

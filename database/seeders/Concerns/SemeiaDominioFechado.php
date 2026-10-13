@@ -5,7 +5,7 @@ namespace Database\Seeders\Concerns;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Domínio fechado (docs/banco.txt, seção 0): ids fixos, semeados, sem tela. Idempotente:
+ * Domínio fechado (docs/banco.md, seção 0): ids fixos, semeados, sem tela. Idempotente:
  * rodar de novo só confirma os valores.
  */
 trait SemeiaDominioFechado

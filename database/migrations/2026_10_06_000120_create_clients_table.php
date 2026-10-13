@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * clients — docs/banco.txt, 1. PLATFORM (N5, N7, N11).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * clients — docs/banco.md, 1. PLATFORM (N5, N7, N11).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  */
 return new class extends Migration
 {
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->index('deactivated_at');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement("ALTER TABLE clients ADD CONSTRAINT clients_document_br_check CHECK (country <> 'BR' OR document IS NOT NULL)");
     }
 

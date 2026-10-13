@@ -6,7 +6,7 @@ use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Alocação (P5; docs/banco.txt, project_members). Vínculo: removido de verdade. */
+/** Alocação (P5; docs/banco.md, project_members). Vínculo: removido de verdade. */
 class ProjectMember extends Model
 {
     protected $fillable = ['project_id', 'user_id'];

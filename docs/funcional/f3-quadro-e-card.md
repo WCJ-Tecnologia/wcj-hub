@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Dar ao gestor e aos devs o quadro kanban de cada projeto, no lugar do Trello: criar o card em segundos, escrever nele o que for preciso, arrastar entre as colunas sem trava e guardar quem moveu, quando e por quê. |
 | **Regras que alimentam** | Premissa de Projetos, P13 a P26, P39, P40, P52, P56; citadas: P7, P14, P16, P17, P45 (`docs/necessidade.md`). |
-| **Tabelas do `banco.txt`** | `tasks`, `task_stage_movements`, `task_priorities`, `task_types`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` (origem do retrabalho), `rework_reasons`, `contacts` e `contact_channels` (card de suporte). |
+| **Tabelas do `banco.md`** | `tasks`, `task_stage_movements`, `task_priorities`, `task_types`, `task_acceptance_criteria`, `task_pull_requests`, `task_comments`, `task_attachments`, `validation_types` (origem do retrabalho), `rework_reasons`, `contacts` e `contact_channels` (card de suporte). |
 | **Depende de** | [F1](f1-nucleo.md) (usuários, contatos) e [F2](f2-projeto-e-configuracao.md) (projeto, pessoas alocadas, colunas, áreas, tipos, motivos de retrabalho). |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
@@ -235,7 +235,7 @@ Não se aplica na fatia 1: nenhuma regra pede exportar o quadro ou o card (P55 f
 
 ## 10. Pontos a validar
 
-Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P13, P24, P27, P39) e no `banco.txt` (duas colunas aditivas em `tasks`: posição manual e reestimativa proposta).
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P13, P24, P27, P39) e no `banco.md` (duas colunas aditivas em `tasks`: posição manual e reestimativa proposta).
 
 1. **Ordem dos cards na coluna.** Padrão por prioridade; **ordem manual quando a pessoa quiser** (seletor no quadro, posição guardada; P13).
 2. **Soltar do `Backlog` direto em `Doing`.** OK: entra na sprint e segue para a coluna escolhida, com os dois movimentos no histórico.

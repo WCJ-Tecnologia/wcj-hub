@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * task_stage_movements — docs/banco.txt, 2. PROJETOS (P14, P15, P39, P40, R14).
- * Log imutável: só created_at, datetime not null (banco.txt, seção 0).
+ * task_stage_movements — docs/banco.md, 2. PROJETOS (P14, P15, P39, P40, R14).
+ * Log imutável: só created_at, datetime not null (banco.md, seção 0).
  * Fonte dos indicadores. Imutável. As duas etapas são do projeto da tarefa: asserção no Service (R15).
  */
 return new class extends Migration
@@ -44,7 +44,7 @@ return new class extends Migration
             $table->index('rework_reason_id');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement('ALTER TABLE task_stage_movements ADD CONSTRAINT task_stage_movements_rework_check CHECK ((rework_origin_id IS NULL) = (rework_reason_id IS NULL))');
     }
 

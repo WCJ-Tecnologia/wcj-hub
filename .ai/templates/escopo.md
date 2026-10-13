@@ -1,6 +1,6 @@
 # Escopo: <Nome do sistema>
 
-Etapa 4 do `playbooks/aplicacao-nova.md`. Gerado com apoio de IA a partir de `necessidade.md` e `banco.txt`, e **validado inteiro por uma pessoa** (etapa 5). Depois de aprovado, é a referência: a IA não desenvolve o que não está aqui.
+Etapa 4 do `playbooks/aplicacao-nova.md`. Gerado com apoio de IA a partir de `necessidade.md` e `banco.md`, e **validado inteiro por uma pessoa** (etapa 5). Depois de aprovado, é a referência: a IA não desenvolve o que não está aqui.
 
 Validado por: <nome> em <AAAA-MM-DD>.
 
@@ -32,7 +32,7 @@ Um bloco = uma feature na skill `tlc-spec-driven` (`.ai/core/especificacao.md`).
 
 **Objetivo.** <uma frase>
 
-**Dados.** Tabelas de `banco.txt`: `<x>`, `<y>`. Campos novos, se houver, com justificativa.
+**Dados.** Tabelas de `banco.md`: `<x>`, `<y>`. Campos novos, se houver, com justificativa.
 
 **Telas.**
 - `/admin/<recurso>`: listagem com busca por <campo>, filtros <a, b>, colunas <...>. Ações: <criar, editar, desativar>.

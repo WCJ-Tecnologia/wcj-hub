@@ -194,7 +194,7 @@ Nenhuma tabela nem coluna nova. Os Models existentes ganham:
 | D2 Caminhos das rotas | Inglês (`/admin/clients`), como o template | `stacks/laravel-inertia.md` §6; aprovado por Lucas Scholz em 07/10 (D4 da review), e o `escopo.md` B1 passou a citar os caminhos em inglês |
 | D3 Desativar | Ação própria na linha, com a confirmação do F1 §04, em vez da caixa "ativo" no formulário | O funcional manda na tela e pede confirmação com texto próprio ("Fulano perde o acesso imediatamente"); a auditoria registra `deactivated`/`reactivated`, como a spec pede |
 | D4 Reenviar convite | A rota `reset-password` do template, renomeada na tela | Premissa confirmada na spec |
-| D5 Situação "Anonimizado" | Derivada da linha `anonymized` na auditoria; o contato anonimizado também é desativado | Sem coluna nova (`banco.txt`); desativar tira o contato das listas de escolha |
+| D5 Situação "Anonimizado" | Derivada da linha `anonymized` na auditoria; o contato anonimizado também é desativado | Sem coluna nova (`banco.md`); desativar tira o contato das listas de escolha |
 | D6 Listas de escolha (P2) | Métodos de Service + `viewChoiceList` nas Policies, sem rota JSON | "Sem fetch direto: tudo via Inertia"; o B2 entrega as listas como props da página dele |
 | D7 Ficha do cliente | Página `clients/show.tsx` | O escopo B1 lista `/admin/clientes/{id}` com a aba de contatos; `stacks/ui.md` pede ADR para página de ficha: ADR-004 |
 

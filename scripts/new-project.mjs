@@ -7,7 +7,7 @@
  * Roda dentro do clone, depois de trocar o origin (ver .ai/stacks/laravel-inertia.md, seção 9).
  *   - troca o nome em .env.example, package.json e composer.json
  *   - substitui AGENTS.md pelo bloco padrão + modelo do projeto para preencher
- *   - cria docs/00-COMECE-AQUI.md, docs/DEPLOY.md, docs/necessidade.md, docs/banco.txt a partir dos templates
+ *   - cria docs/00-COMECE-AQUI.md, docs/DEPLOY.md, docs/necessidade.md, docs/banco.md a partir dos templates
  *   - zera o CHANGELOG.md do template
  * Não commita.
  */
@@ -52,7 +52,7 @@ for (const [tpl, dest] of [
     ['00-COMECE-AQUI.md', 'docs/00-COMECE-AQUI.md'],
     ['DEPLOY.md', 'docs/DEPLOY.md'],
     ['necessidade.md', 'docs/necessidade.md'],
-    ['banco.txt', 'docs/banco.txt'],
+    ['banco.md', 'docs/banco.md'],
 ]) {
     const s = readFileSync(join(ai, 'templates', tpl), 'utf8').replace(/<Nome do sistema>/g, nome);
     writeFileSync(join(root, dest), s);

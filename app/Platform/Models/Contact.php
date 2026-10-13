@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-/** Pessoa de um cliente (N8) e "quem pediu" no card de suporte (P52; docs/banco.txt, contacts). */
+/** Pessoa de um cliente (N8) e "quem pediu" no card de suporte (P52; docs/banco.md, contacts). */
 class Contact extends Model
 {
     /** @use HasFactory<ContactFactory> */
@@ -44,7 +44,7 @@ class Contact extends Model
     }
 
     /**
-     * D5: "Anonimizado" não tem coluna (banco.txt); é a linha anonymized na auditoria do contato.
+     * D5: "Anonimizado" não tem coluna (banco.md); é a linha anonymized na auditoria do contato.
      * Lista carrega com withAnonymized() para não consultar uma vez por linha.
      */
     public function isAnonymized(): bool

@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  * (App\Support\Exemplo: nome começa com "[Exemplo] ", e-mail em exemplo.wcj.test) e apagado por
  * `php artisan app:limpar-exemplo`. Nunca em produção.
  *
- * Grava direto nas tabelas, mas dentro das regras do banco.txt; o quadro vem do BoardStageService
+ * Grava direto nas tabelas, mas dentro das regras do banco.md; o quadro vem do BoardStageService
  * (B2), o mesmo da tela: projeto com as 8 etapas padrão (P10), pessoas alocadas (P5), cards no Backlog
  * com tipo 'improvement' e prioridade normal (P17, R4), número pelo contador (P16) e o movimento
  * de criação (P14).

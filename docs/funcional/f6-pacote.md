@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Trocar as listas "Produção 1.0.9 10/07/2026" do Trello por um pacote de verdade: o gestor junta as tarefas que sobem juntas, acompanha a homologação, marca a entrada em produção, e a reprovação na homologação vira retrabalho contado. |
 | **Regras que alimentam** | P41, P42, P43, P44, P39 (origem do retrabalho) e a premissa de Projetos (`docs/necessidade.md`). |
-| **Tabelas do `banco.txt`** | `packages`, `tasks` (pacote), `task_stage_movements` (o movimento de retrabalho); lê `rework_reasons` e `validation_types` (a origem Homologação). |
+| **Tabelas do `banco.md`** | `packages`, `tasks` (pacote), `task_stage_movements` (o movimento de retrabalho); lê `rework_reasons` e `validation_types` (a origem Homologação). |
 | **Depende de** | [F3](f3-quadro-e-card.md): quadro, card e volta para desenvolvimento. [F2](f2-projeto-e-configuracao.md): etapas e motivos de retrabalho. |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 

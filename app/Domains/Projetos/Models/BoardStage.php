@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Etapa do quadro por projeto (P8, P10–P12; docs/banco.txt, board_stages). single_role_key é
+ * Etapa do quadro por projeto (P8, P10–P12; docs/banco.md, board_stages). single_role_key é
  * coluna gerada (STORED): nunca se grava.
  */
 class BoardStage extends Model

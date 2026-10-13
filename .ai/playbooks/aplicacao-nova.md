@@ -26,7 +26,7 @@ Nos dois casos, a etapa 2 termina com uma pessoa técnica aprovando o banco.
 | # | Etapa | Artefato | Quem | Parada |
 |---|---|---|---|---|
 | 1 | Entender a necessidade | `docs/necessidade.md`: para que serve, quem usa, o que fica de fora | Humano, IA ajuda a perguntar | |
-| 2 | Modelar o banco | `docs/banco.txt`: todas as tabelas, colunas e valores de domínio | Pessoa técnica; IA só apoia em módulo pontual | **Sim** |
+| 2 | Modelar o banco | `docs/banco.md`: todas as tabelas, colunas e valores de domínio | Pessoa técnica; IA só apoia em módulo pontual | **Sim** |
 | 3 | Criar o repositório | Clone do template, origin trocado, `AGENTS.md` do projeto preenchido, `.env.example`, primeiro commit | Dev | |
 | 4 | Gerar o prompt mestre | `docs/escopo.md`, gerado por IA de raciocínio a partir de banco, regras, níveis de acesso e autenticação. Descreve o sistema em blocos e inclui a lista do que **não** pode | IA | |
 | 5 | Validar o escopo | Escopo lido inteiro, corrigido e aprovado | Humano | **Sim** |
@@ -59,7 +59,7 @@ Nos dois casos, a etapa 2 termina com uma pessoa técnica aprovando o banco.
 
 Entrada para a IA:
 
-- `docs/banco.txt`;
+- `docs/banco.md`;
 - regras de negócio de `docs/necessidade.md`;
 - papéis, o que cada um acessa e como se autentica;
 - a stack (do template) e o layout que já existe, para a IA reutilizar e não inventar componente;
@@ -72,7 +72,7 @@ O critério de aceite não mora no escopo. Ele nasce na spec de cada bloco, em E
 ### Etapa 5: validar
 
 - Alguém lê o escopo inteiro. É longo e não tem atalho.
-- Confira tabela a tabela contra o `banco.txt`. Campo que a IA acrescentou sem pedido sai.
+- Confira tabela a tabela contra o `banco.md`. Campo que a IA acrescentou sem pedido sai.
 - Todo bloco tem objetivo, dados, telas, regras e permissão. Bloco vago ("tela de relatórios", "o financeiro") volta para reescrita.
 - Escopo aprovado é a referência. A IA não desenvolve nada que não esteja nele.
 
@@ -110,7 +110,7 @@ Etapas 2, 5 e 8; em cada bloco, a spec aprovada, e o design e as tarefas quando 
 
 ## Definição de pronto
 
-- [ ] `docs/necessidade.md`, `docs/banco.txt`, `docs/escopo.md`, `docs/DEPLOY.md` e `.specs/` versionados.
+- [ ] `docs/necessidade.md`, `docs/banco.md`, `docs/escopo.md`, `docs/DEPLOY.md` e `.specs/` versionados.
 - [ ] `AGENTS.md` do projeto preenchido, inclusive vocabulário e armadilhas.
 - [ ] Escada de verificação verde, com a saída lida.
 - [ ] Todo bloco com `validation.md` em PASS, e o `node .ai/skills/conferir-specs.mjs` verde.

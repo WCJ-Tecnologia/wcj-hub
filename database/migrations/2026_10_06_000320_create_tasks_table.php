@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * tasks — docs/banco.txt, 2. PROJETOS (P13–P28, P34, P39, P41, P45, P52, R8, R15).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * tasks — docs/banco.md, 2. PROJETOS (P13–P28, P34, P39, P41, P45, P52, R8, R15).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * "Tudo da tarefa é do mesmo projeto" (etapa, sprint, pacote, área, origem, dev e QA) é asserção
  * no Service, sem FK composta (R15, T7).
  */
@@ -77,7 +77,7 @@ return new class extends Migration
             $table->index('archived_at');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_estimated_hours_check CHECK (estimated_hours IS NULL OR estimated_hours > 0)');
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_proposed_hours_check CHECK (proposed_hours IS NULL OR proposed_hours > 0)');
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_archive_check CHECK ((archived_at IS NULL) = (archive_reason IS NULL))');

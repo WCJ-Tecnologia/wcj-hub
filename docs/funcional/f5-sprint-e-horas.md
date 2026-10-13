@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Organizar o trabalho do projeto em sprints, registrar as horas previstas e as realizadas de cada tarefa, calcular a data prevista e mostrar ao gestor a capacidade de cada dev na sprint, sempre como referência, nunca como trava. |
 | **Regras que alimentam** | N3, P27 a P31, P45, P46, P48 a P51 (`docs/necessidade.md`), com R5 e R9 da revisão de 01/10. A P47 saiu (R9). |
-| **Tabelas do `banco.txt`** | `sprints`, `tasks` (`sprint_id`, `estimated_hours`, `due_on`, `developer_id`), `time_entries`, `users` (`daily_hours`), `projects` (`sprint_days`). Leitura de `task_stage_movements` e `board_stages` (primeira entrada em desenvolvimento, etapa de pronto). |
+| **Tabelas do `banco.md`** | `sprints`, `tasks` (`sprint_id`, `estimated_hours`, `due_on`, `developer_id`), `time_entries`, `users` (`daily_hours`), `projects` (`sprint_days`). Leitura de `task_stage_movements` e `board_stages` (primeira entrada em desenvolvimento, etapa de pronto). |
 | **Depende de** | [F1](f1-nucleo.md) (carga diária), [F2](f2-projeto-e-configuracao.md) (duração padrão da sprint, etapas do quadro) e [F3](f3-quadro-e-card.md) (quadro, card, mover). |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 
@@ -175,7 +175,7 @@ A IA de cada pessoa tem exatamente estas permissões, nem mais nem menos (G4). O
 
 ## 10. Pontos a validar
 
-Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P27, P46, P50) e no `banco.txt`.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P27, P46, P50) e no `banco.md`.
 
 1. **Fim da sprint.** Confirmado: o gestor informa o início e o sistema calcula o fim, 10 dias úteis contando o início como o 1º (P46). Editável.
 2. **Nome "Sprint N".** OK.

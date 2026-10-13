@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Projeto (P1–P3, P7–P9; docs/banco.txt, projects). last_task_number é o contador da chave
+ * Projeto (P1–P3, P7–P9; docs/banco.md, projects). last_task_number é o contador da chave
  * (T4): só o Service o incrementa, por SQL atômico, e por isso não é preenchível.
  */
 class Project extends Model

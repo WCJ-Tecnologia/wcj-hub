@@ -6,7 +6,7 @@ use App\Platform\Models\Concerns\Deactivatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Cadastrável por projeto (P18, G7; docs/banco.txt, project_areas). */
+/** Cadastrável por projeto (P18, G7; docs/banco.md, project_areas). */
 class ProjectArea extends Model
 {
     use Deactivatable;

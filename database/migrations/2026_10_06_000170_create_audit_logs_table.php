@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * audit_logs — docs/banco.txt, 1. PLATFORM (G3, IA11, T8, T10).
- * Log imutável: só created_at, datetime not null (banco.txt, seção 0).
+ * audit_logs — docs/banco.md, 1. PLATFORM (G3, IA11, T8, T10).
+ * Log imutável: só created_at, datetime not null (banco.md, seção 0).
  * Tabela única, imutável: nenhuma rota edita nem exclui (G3). Única exceção: a anonimização do
  * contato limpa os dados pessoais dele em changes (N12). Seção 9: before_data/after_data viram
  * changes; entram ai_authorization_id e outcome; sai user_agent.
@@ -44,7 +44,7 @@ return new class extends Migration
             $table->index('ai_authorization_id');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement("ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_outcome_check CHECK (outcome IN ('success', 'denied'))");
     }
 

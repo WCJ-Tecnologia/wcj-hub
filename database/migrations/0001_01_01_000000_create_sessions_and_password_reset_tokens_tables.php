@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Tabelas do framework que o template criava junto com users (docs/banco.txt, seção 4 e 9:
+ * Tabelas do framework que o template criava junto com users (docs/banco.md, seção 4 e 9:
  * "ficam como estão"). users e roles têm migração própria, uma por tabela.
  */
 return new class extends Migration

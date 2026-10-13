@@ -1,6 +1,6 @@
 # B1 Núcleo: usuários, clientes, contatos e auditoria — Specification
 
-Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.2 (aprovado em 06/10/2026; v1.1 de 08/10 e v1.2 de 09/10 com as decisões das reviews), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.txt`](../../../docs/banco.txt) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
+Feature `b1-nucleo` · trilho completo (D-GER-25) · fonte: [`docs/funcional/f1-nucleo.md`](../../../docs/funcional/f1-nucleo.md) v1.2 (aprovado em 06/10/2026; v1.1 de 08/10 e v1.2 de 09/10 com as decisões das reviews), [`docs/escopo.md`](../../../docs/escopo.md) B1, [`docs/necessidade.md`](../../../docs/necessidade.md) (G1–G5, G7, N1–N9, N11, N12, IA4, IA6), [`docs/banco.md`](../../../docs/banco.md) (`roles`, `users`, `clients`, `contacts`, `contact_channels`, `audit_logs`, `ai_authorizations`).
 
 **Approved by**: Lucas Scholz, 2026-10-09
 
@@ -29,7 +29,7 @@ O Hub nasce com o template: login, usuários (nome, e-mail, papel, carga, "IA po
 | Papel Comercial com uso | Sem uso na fatia 1 (C14). Só existe na lista de papéis |
 | Exportar auditoria ou qualquer lista | Nenhuma regra pede (G5, G3) |
 | Editar ou apagar auditoria | Proibido (G3), exceto a limpeza da anonimização (N12) |
-| Convite por outro canal, "lembrar de mim", e-mail verificado, telefone do usuário | Fora do `banco.txt` (seção 9) |
+| Convite por outro canal, "lembrar de mim", e-mail verificado, telefone do usuário | Fora do `banco.md` (seção 9) |
 | Painel (dashboard) com contagens novas | O template já tem; nada no funcional pede número no Núcleo (F1 §06) |
 | Ordenação e paginação diferentes do gabarito do template | `stacks/ui.md` manda |
 
@@ -43,19 +43,19 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 |---|---|---|---|
 | Convite por e-mail reaproveita o fluxo do template | `TemporaryPasswordService::issue` + `TemporaryPasswordMail`, com assunto e texto do Hub ("Seu acesso ao WCJ Hub"), sem mostrar a senha na tela | O template já testa "creating a user emails a temporary password"; só o texto e o reenvio mudam (F1 §10.1) | y |
 | *Reenviar convite* = o `resetPassword` do template renomeado na tela | Gera senha nova, invalida a anterior, manda o mesmo e-mail; auditado como `password_reset` | Mesmo comportamento que o F1 descreve; evita duas rotas para a mesma coisa | y |
-| "Já usado" para excluir usuário | `hasHistory()` do template: alguma FK aponta para a linha ou há `audit_logs` de login dela | É a definição do `banco.txt` §0 e do template | y |
+| "Já usado" para excluir usuário | `hasHistory()` do template: alguma FK aponta para a linha ou há `audit_logs` de login dela | É a definição do `banco.md` §0 e do template | y |
 | "Já usado" para excluir cliente | Existe `contacts.client_id` ou `projects.client_id` apontando | F1 §04: "só cliente sem projeto e sem contato"; `isReferenced()` já cobre | y |
 | "Já usado" para excluir contato | Existe `tasks.requester_contact_id` apontando | F1 §04: "só contato nunca citado em card de suporte" | y |
 | Gestor "dos projetos do cliente" antes de o B2 existir | `ContactPolicy` e `ClientPolicy::update` perguntam ao contrato `Platform\Contracts\ClientManagement` (`manages(User $user, Client $client): bool` e `managedClientIds(User $user): array`). O B1 entrega o contrato e a implementação vazia `Platform\Services\NoClientManagement` (ninguém gere cliente algum), ligada no `AppServiceProvider`; os testes das Policies usam um dublê do contrato. O B2 entrega `Projetos\Services\ProjectClientManagement` (`projects.manager_id` ou gestor alocado em `project_members`, P1/P5) e troca a ligação | O Platform não lê `projects` (teste A9, ADR-001): a regra é a do F1 §09, mas o dado é de Projetos. Revisão do Vitinho em 07/10, aceita por Lucas Scholz | y |
 | Desativar usuário derruba conexões de IA | Marca `revoked_at` em todas as `ai_authorizations` ativas da pessoa, na mesma transação; os tokens do Passport são revogados pelo B8, que passa a chamar o mesmo ponto | N4, IA6; o B8 não existe ainda, então a revogação é só na tabela do Hub | y |
 | Trocar papel ou "IA pode escrever" derruba conexões | Mesmo mecanismo da desativação | IA6, IA4 (06/10) | y |
 | Canal na auditoria do B1 | Sempre "Tela" (`ai_authorization_id` nulo); o label "IA: Claude/Codex/ChatGPT" aparece quando a coluna estiver preenchida (B8) | IA11; a tela já nasce pronta para o canal | y |
-| "Último acesso" na lista de usuários | Última linha de `audit_logs` com `action = login` da pessoa | `banco.txt` seção 9: o login mora na auditoria | y |
+| "Último acesso" na lista de usuários | Última linha de `audit_logs` com `action = login` da pessoa | `banco.md` seção 9: o login mora na auditoria | y |
 | Aviso de e-mail repetido no contato | Mensagem na tela depois do envio, sem recusar; a resposta do servidor inclui `warning` quando existe outro contato ativo com o mesmo e-mail. Nome e cliente do outro contato só para o Administrador; quem não é Administrador recebe "Já existe um contato com este e-mail" (D2, 07/10) | N8 "avisa, sem recusar"; F1 §09 (o gestor não vê contato de cliente que não é dele) | y |
 | CNPJ alfanumérico | 14 caracteres, letras maiúsculas e números, com os dois últimos dígitos verificadores calculados pela regra do CNPJ alfanumérico (Receita, jul/2026); gravado sem máscara; comparado sem caixa pela colation do banco | N5; evita aceitar lixo e evita recusar o CNPJ novo | y |
 | País | Lista ISO 3166-1 alfa-2, rótulo em português; padrão `BR` | `clients.country char(2)` | y |
 | Cliente WCJ não desativável nem excluível | `ClientPolicy::deactivate` e `ClientPolicy::delete` recusam o cliente semeado (documento `38614817000122`) com 403, e `ClientService::deactivate` e `::delete` recusam com `DomainException` quem chama o Service direto (D14, 09/10); `ClientService::update` recusa trocar o país ou o documento dela com "O CNPJ e o país da WCJ não podem ser alterados" (o nome continua editável) | F1 §10.3 (06/10); A2 da review de 07/10: sem isso, editar o CNPJ tirava a proteção | y |
-| Anonimizar limpa `audit_logs.changes` | Numa transação: `name`, `email`, `phone` da linha e os mesmos campos dentro de `changes` de toda linha de `audit_logs` cujo `auditable` é o contato; grava `anonymized` sem dados | N12 e `banco.txt` (contacts) | y |
+| Anonimizar limpa `audit_logs.changes` | Numa transação: `name`, `email`, `phone` da linha e os mesmos campos dentro de `changes` de toda linha de `audit_logs` cujo `auditable` é o contato; grava `anonymized` sem dados | N12 e `banco.md` (contacts) | y |
 | Página de 50 na auditoria, período padrão 7 dias | Como o F1 §03 e §05 | Decisão do funcional | y |
 | Mensagens de recusa em português, na linguagem do usuário | Textos do F1 §04 e §07 | `especificacao.md` §6 | y |
 | Autorização antes da validação | Nos formulários (criar e editar usuário, cliente e contato; anonimizar), a Policy é consultada antes da validação do payload: quem não pode recebe 403 e a negação é auditada, mesmo com payload inválido | A1 da review de 07/10: validar antes revelava e-mail existente e a tentativa não virava `denied` | y |
@@ -79,7 +79,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 2. The sistema SHALL nunca exibir a senha provisória na tela nem gravá-la em `audit_logs.changes` (N1, G3).
 3. WHEN o Administrador clica em *Reenviar convite* THEN o sistema SHALL gerar uma senha provisória nova, invalidar a anterior e enviar o mesmo e-mail (F1 §04).
 4. IF o papel enviado é Desenvolvedor e a carga diária está vazia THEN o sistema SHALL recusar com "Carga diária é obrigatória para Desenvolvedor" e não criar nem alterar o usuário (N3).
-5. IF a carga diária é menor ou igual a 0 ou maior que 24 THEN o sistema SHALL recusar com erro de validação no campo (N3, `banco.txt`).
+5. IF a carga diária é menor ou igual a 0 ou maior que 24 THEN o sistema SHALL recusar com erro de validação no campo (N3, `banco.md`).
 6. WHEN o Administrador troca o papel de um usuário THEN o sistema SHALL gravar o novo papel e marcar `revoked_at` em todas as autorizações de IA ativas desse usuário, na mesma transação (N2, IA6).
 7. WHEN o Administrador troca a marca "IA pode escrever" de um usuário THEN o sistema SHALL gravar a marca e marcar `revoked_at` em todas as autorizações de IA ativas desse usuário (IA4, IA6).
 8. WHEN o Administrador desativa um usuário THEN o sistema SHALL gravar `deactivated_at` e `deactivated_by`, encerrar todas as sessões dele e marcar `revoked_at` nas autorizações de IA ativas, na mesma transação (N4, N11, IA6).
@@ -210,7 +210,7 @@ Todas as dúvidas do funcional foram respondidas por Lucas Scholz em 06/10/2026 
 - IF o Administrador desativa a si mesmo e é o último Administrador ativo THEN o sistema SHALL recusar com a mensagem do template (template).
 - IF a anonimização falha no meio THEN o sistema SHALL desfazer tudo (transação) e manter o contato como estava (N12).
 - WHEN a lista de auditoria recebe um filtro de período maior que 1 ano THEN o sistema SHALL aceitar e paginar; não há limite de retenção (G3).
-- IF `auditable_id` da negação é desconhecido (registro não encontrado antes da Policy) THEN o sistema SHALL gravar a negação com `auditable_id` nulo (`banco.txt`).
+- IF `auditable_id` da negação é desconhecido (registro não encontrado antes da Policy) THEN o sistema SHALL gravar a negação com `auditable_id` nulo (`banco.md`).
 
 ---
 

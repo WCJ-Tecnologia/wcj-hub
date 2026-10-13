@@ -252,7 +252,7 @@ class UserServiceTest extends TestCase
         $this->assertSame('2026-01-02 03:04:05', $old->fresh()->revoked_at->toDateTimeString());
         $this->assertNull($othersClaude->fresh()->revoked_at);
         $this->assertAudited($dev, 'updated', ['role_id' => [RoleEnum::DEVELOPER->value, RoleEnum::PROJECT_MANAGER->value]]);
-        // banco.txt (ai_authorizations): quem revogou fica na auditoria.
+        // banco.md (ai_authorizations): quem revogou fica na auditoria.
         $this->assertSame(2, AuditLog::query()->where('auditable_type', 'ai_authorization')->where('user_id', $this->admin->id)->count());
     }
 

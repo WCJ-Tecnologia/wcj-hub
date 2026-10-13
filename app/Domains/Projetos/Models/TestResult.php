@@ -4,7 +4,7 @@ namespace App\Domains\Projetos\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** Domínio fechado (P36, P37; docs/banco.txt, test_results). */
+/** Domínio fechado (P36, P37; docs/banco.md, test_results). */
 class TestResult extends Model
 {
     public const PENDING = 1;

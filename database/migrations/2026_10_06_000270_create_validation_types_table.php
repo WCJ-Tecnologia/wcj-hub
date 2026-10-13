@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * validation_types — docs/banco.txt, 2. PROJETOS (P39, P43).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * validation_types — docs/banco.md, 2. PROJETOS (P39, P43).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado: as origens de retrabalho (na tela, "origem do retrabalho").
  */
 return new class extends Migration

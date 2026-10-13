@@ -6,7 +6,7 @@ use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Horas realizadas, por dia, em decimais (P30; docs/banco.txt, time_entries). */
+/** Horas realizadas, por dia, em decimais (P30; docs/banco.md, time_entries). */
 class TimeEntry extends Model
 {
     protected $fillable = ['task_id', 'user_id', 'worked_on', 'hours'];

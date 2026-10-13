@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Critério de aceite = item do roteiro de QA (P17, P36; docs/banco.txt, task_acceptance_criteria).
+ * Critério de aceite = item do roteiro de QA (P17, P36; docs/banco.md, task_acceptance_criteria).
  * number é estável (T9); parent_key é coluna gerada (VIRTUAL): nunca se grava.
  */
 class TaskAcceptanceCriterion extends Model

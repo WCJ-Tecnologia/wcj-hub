@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * contact_channels — docs/banco.txt, 1. PLATFORM (P52).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * contact_channels — docs/banco.md, 1. PLATFORM (P52).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Domínio fechado: id fixo, semeado, sem tela. O código compara por slug.
  */
 return new class extends Migration

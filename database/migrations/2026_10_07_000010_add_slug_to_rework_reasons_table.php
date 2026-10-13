@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * rework_reasons.slug — docs/banco.txt, 2. PROJETOS (P40) e seção 7 (07/10).
+ * rework_reasons.slug — docs/banco.md, 2. PROJETOS (P40) e seção 7 (07/10).
  * O "Outro" existe sempre (não se desativa, não se exclui, sempre pede texto) e o código precisa
  * achá-lo sem depender do nome, que o Administrador renomeia: mesmo padrão de task_types
  * ('improvement', 'support'). Só o Outro tem slug; os outros itens nascem nulos.

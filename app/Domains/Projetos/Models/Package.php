@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** Pacote = versão (P41–P44; docs/banco.txt, packages). Estado derivado das duas datas (R10). */
+/** Pacote = versão (P41–P44; docs/banco.md, packages). Estado derivado das duas datas (R10). */
 class Package extends Model
 {
     protected $fillable = [

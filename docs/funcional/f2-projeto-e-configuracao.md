@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Dar ao gestor o cadastro do projeto, as pessoas que trabalham nele e a configuração do quadro (etapas, áreas e padrões); dar ao Administrador as duas listas gerais que todo projeto usa: tipos de tarefa e motivos de retrabalho. |
 | **Regras que alimentam** | G1, G7, P1, P2, P3, P5, P7, P8, P10, P11, P12, P15, P18, P40, P46 e a premissa de Projetos (`docs/necessidade.md`). |
-| **Tabelas do `banco.txt`** | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons`. |
+| **Tabelas do `banco.md`** | `projects`, `project_members`, `stage_roles`, `board_stages`, `project_areas`, `task_types`, `rework_reasons`. |
 | **Depende de** | [F1](f1-nucleo.md): usuários (gestor, pessoas alocadas, carga diária) e clientes. |
 | **Quem aprova** | Lucas Scholz (D-GER-31). Rafael Garcia, gestor de projetos (D-GER-02), participou com feedback e elaboração e valida o uso no bugbash. |
 | **Fora daqui** | O quadro em uso e o card ([F3](f3-quadro-e-card.md)), teste e QA ([F4](f4-teste-e-qualidade.md)), sprint e horas ([F5](f5-sprint-e-horas.md)), pacote ([F6](f6-pacote.md)) e indicadores ([F7](f7-indicadores.md)). |
@@ -207,7 +207,7 @@ Não se aplica na fatia 1: nenhuma regra pede exportação de projeto ou de conf
 
 ## 10. Pontos a validar
 
-Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P1, P5) e no `banco.txt`.
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, na `necessidade.md` (P1, P5) e no `banco.md`.
 
 1. **Quem pode ser gestor.** Sim: qualquer usuário ativo com papel Gestor de projetos ou Administrador, sócios inclusive.
 2. **Formato do prefixo.** OK: até 10 letras, números e hífen, sem espaço, em maiúsculas; repetido é recusado sem olhar a caixa.

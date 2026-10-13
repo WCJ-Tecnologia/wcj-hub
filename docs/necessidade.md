@@ -1,10 +1,10 @@
 # Necessidade: WCJ Hub
 
-Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Serve de entrada para o modelo de banco (etapa 2, `docs/banco.txt`) e para o escopo (etapa 4).
+Etapa 1 do `playbooks/aplicacao-nova.md` (padrão `ai-systems` 0.6.0). Serve de entrada para o modelo de banco (etapa 2, `docs/banco.md`) e para o escopo (etapa 4).
 
 **Situação:** as regras são as aprovadas por Lucas Scholz na revisão das regras de 24/09/2026 (revisão 4), reescritas aqui na Sessão C. As lacunas fechadas pela premissa nessa reescrita e a exclusão pelo padrão 0.4.0 foram confirmadas por ele no mesmo dia. Na revisão do banco (Sessão D, 24/09), ele tirou a P4 e a P6 e completou N5, P11, P25 e P42. O documento aguarda o Comitê de IA. Chamados continua em rascunho (D-GER-12). **[LEVANTAR]** marca o que depende do dono do módulo. **[DECIDIR]** marca o que depende do comitê ou de quem estiver indicado.
 
-**06/10/2026:** o `banco.txt` foi aprovado por Lucas Alencar (D-GER-23) e Lucas Scholz aceitou a revisão de 01/10 por inteiro (R1 a R17, D-GER-24 a D-GER-27). A primeira entrega é a **fatia 1: Núcleo + Projetos + MCP com 6 ferramentas**; o CRM e o GPT do Wilson são a **v2** e têm a própria rodada de necessidade e banco antes de construir. As regras de CRM (seção 3) ficam aqui como escritas em 24/09, sem valer como requisito da fatia 1. O que cada bloco faz na tela está nos documentos funcionais (`docs/funcional/`); o lado técnico, no `docs/escopo.md`; quem faz o quê e em que ordem, no `docs/plano-de-desenvolvimento.md`.
+**06/10/2026:** o `banco.md` foi aprovado por Lucas Alencar (D-GER-23) e Lucas Scholz aceitou a revisão de 01/10 por inteiro (R1 a R17, D-GER-24 a D-GER-27). A primeira entrega é a **fatia 1: Núcleo + Projetos + MCP com 6 ferramentas**; o CRM e o GPT do Wilson são a **v2** e têm a própria rodada de necessidade e banco antes de construir. As regras de CRM (seção 3) ficam aqui como escritas em 24/09, sem valer como requisito da fatia 1. O que cada bloco faz na tela está nos documentos funcionais (`docs/funcional/`); o lado técnico, no `docs/escopo.md`; quem faz o quê e em que ordem, no `docs/plano-de-desenvolvimento.md`.
 
 **Porta de entrada do playbook:** "cliente só com conversa". Não existe sistema anterior com modelo de dados aproveitável (o Trello é ferramenta genérica). A ordem é: regras e fluxo primeiro; depois a IA propõe o modelo de dados; por fim a pessoa técnica valida, na etapa 2.
 
@@ -40,14 +40,14 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-13 | 24/09/2026 | Integração com o GitHub (webhooks de PR) **fora da v1, em avaliação** por Lucas Scholz. |
 | D-GER-14 | 24/09/2026 | Hospedagem: **na mesma VPS do sistema de auditoria (DaaS)**, com subdomínio próprio e HTTPS. |
 | D-GER-15 | 24/09/2026 | Código **organizado por domínio desde o início** (`stacks/laravel-inertia.md`, "Quando o projeto cresce: por domínio"), sem esperar chegar a 5 módulos. Registrar em ADR na etapa 3. |
-| D-GER-16 | 24/09/2026 | Etapa 2 (banco): a IA propõe o `banco.txt` a partir deste documento, Lucas Alencar revisa e aprova, e a validação final é no Comitê. Trilha de auditoria em **tabela única** para todos os módulos. O rascunho do `core/mcp.md` para o `ai-systems` é feito pela IA e revisado por Lucas Alencar (publicado na 0.3.0). |
+| D-GER-16 | 24/09/2026 | Etapa 2 (banco): a IA propõe o `banco.md` a partir deste documento, Lucas Alencar revisa e aprova, e a validação final é no Comitê. Trilha de auditoria em **tabela única** para todos os módulos. O rascunho do `core/mcp.md` para o `ai-systems` é feito pela IA e revisado por Lucas Alencar (publicado na 0.3.0). |
 | D-GER-17 | 24/09/2026 | **Execução:** Lucas Scholz e Cauã, com Claude. O WCJ Hub é um projeto **100% IA** (D-GER-02, D-GER-09): o padrão `ai-systems` vale por inteiro. Lucas Scholz faz também o **teste técnico da IA**. |
 | D-GER-18 | 24/09/2026 | Validações técnicas aprovadas por Lucas Scholz, revisáveis se precisar: estrutura por domínio (D-GER-15), limite de 60/20 por minuto e `laravel/mcp` + Passport (D-IA-07). |
 | D-GER-19 | 24/09/2026 | Capacidade da VPS e separação do banco do Hub: definir com **Alaor Rodrigues** na hora de subir o ambiente de teste. |
-| D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.txt` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo (G5). Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
+| D-GER-20 | 24/09/2026 | **Banco enxuto:** toda tabela e coluna do `banco.md` existe porque uma regra deste documento lê ou grava o dado. Campo sem regra não entra; volta quando alguém pedir, com o motivo (G5). Quem fez e quando fica na auditoria (D-GER-16), não em colunas `*_by`. |
 | D-GER-21 | 24/09/2026 | Banco de dados: **MySQL 8**, o mesmo do template da casa. |
-| D-GER-22 | 24/09/2026 | **Testes também em MySQL 8**, local e no CI; nada de SQLite, embora o template use SQLite nos testes. O teste roda o mesmo banco da produção (T6 do `banco.txt`). |
-| D-GER-23 | 06/10/2026 | **`banco.txt` aprovado por Lucas Alencar** (41 tabelas, D-GER-01). Os cortes da fatia 1 (D-GER-27) foram aplicados depois da aprovação; ele confere só a diferença, listada na seção 7 do `banco.txt`. |
+| D-GER-22 | 24/09/2026 | **Testes também em MySQL 8**, local e no CI; nada de SQLite, embora o template use SQLite nos testes. O teste roda o mesmo banco da produção (T6 do `banco.md`). |
+| D-GER-23 | 06/10/2026 | **`banco.md` aprovado por Lucas Alencar** (41 tabelas, D-GER-01). Os cortes da fatia 1 (D-GER-27) foram aplicados depois da aprovação; ele confere só a diferença, listada na seção 7 do `banco.md`. |
 | D-GER-24 | 06/10/2026 | **v1 fatiada** (R1). Fatia 1 = Núcleo mínimo (usuários, papéis, clientes, contatos), Projetos inteiro e o servidor MCP com 6 ferramentas (R12). CRM e GPT "WCJ Hub" = **v2**, com rodada própria de necessidade e banco. O funil do DaaS continua no ar até lá: a D-GER-03 muda só no prazo. |
 | D-GER-25 | 06/10/2026 | **Execução:** Cauã e Vitinho desenvolvem, com IA (por inteiro ou em parte); Lucas Scholz supervisiona, aprova funcional, spec e PR, e faz o teste técnico do MCP. Substitui a execução da D-GER-17. O padrão `ai-systems` (0.6.0, skill `tlc-spec-driven`) continua valendo, no **trilho leve** (R6): trilho completo só em autenticação e papéis, Policies, OAuth e MCP, auditoria, desativação e exclusão; o resto com spec no PR, teste e uso no navegador. |
 | D-GER-26 | 06/10/2026 | Regras de uso revertidas (R2 a R5): qualquer pessoa alocada cria card no `Backlog` (P56); e-mail ao definir dev ou QA e ao devolver para desenvolvimento (P22); o card nasce só com título (P17); arrastar do `Backlog` para o `To do` põe na sprint aberta, sem cerimônia, e o objetivo da sprint é opcional (P45). |
@@ -416,7 +416,7 @@ A levantar em Chamados:
 **Como funciona**
 - O sistema publica um **servidor MCP remoto** (HTTP). Os assistentes homologados suportam conector MCP remoto.
 - O usuário conecta o assistente pela tela de perfil, por **OAuth 2.1** (obrigatório no padrão da casa, `core/mcp.md`): faz login no sistema e autoriza o assistente. Não há chave colada à mão (IA4).
-- Cada autorização gera um token **por usuário e por assistente**, com escopos por módulo, de leitura ou de escrita (IA4). Os escopos ficam no Passport (definidos no código e gravados em cada token); os nomes técnicos estão no `banco.txt`, em `ai_authorizations`.
+- Cada autorização gera um token **por usuário e por assistente**, com escopos por módulo, de leitura ou de escrita (IA4). Os escopos ficam no Passport (definidos no código e gravados em cada token); os nomes técnicos estão no `banco.md`, em `ai_authorizations`.
 - As ferramentas MCP chamam **a mesma camada de serviço** que as telas. Não existe regra de negócio só no MCP nem só na tela.
 - Os assistentes chamam o servidor **a partir da nuvem deles**, não da máquina do usuário. O servidor precisa estar na internet pública com HTTPS, inclusive na homologação: o dev local testa por túnel ou por ambiente de homologação publicado.
 
@@ -543,9 +543,9 @@ Consequência para a v1 (IA3):
 ## Em aberto
 
 - [ ] **[DECIDIR]** Comitê: D-CHM-01, quando Chamados entrar na fila. Demais pontos de Chamados na seção do módulo.
-- [x] Lucas Scholz revisou o `banco.txt` (Sessão D, 24/09).
-- [x] Lucas Alencar aprovou o `banco.txt` em 06/10 (D-GER-23).
-- [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.txt`, R15 e colunas de 06/10) em 06/10.
+- [x] Lucas Scholz revisou o `banco.md` (Sessão D, 24/09).
+- [x] Lucas Alencar aprovou o `banco.md` em 06/10 (D-GER-23).
+- [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.md`, R15 e colunas de 06/10) em 06/10.
 - [x] Funcionais F1 a F8 aprovados por Lucas Scholz em 06/10 (D-GER-28, D-GER-31); o Rafael participou de Projetos com feedback e elaboração e valida no bugbash.
 - [x] Prova de conceito, parte 1 (06/10): Claude app e Claude Code pelo terminal são conexões distintas e uma derruba a outra; `claude_code` virou assistente separado (D-GER-30). Codex CLI × Codex no app fica para a parte 2.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
@@ -564,9 +564,9 @@ Consequência para a v1 (IA3):
 - 24/09/2026: fluxo de desenvolvimento e colunas do quadro enviados por Lucas Alencar → `levantamento/fluxo-desenvolvimento.md`.
 - 24/09/2026: documentos de requisição SGM-13/17/22 e "Histórico de Desenvolvimento" Tecsolution → `levantamento/modelos-rafael.md` (originais fora do git).
 - 24/09/2026: revisão das regras com Lucas Scholz, em `docs/regras-para-revisao.md` (revisões 1 a 4, commits `3f8080a`, `0e1125f`, `b53d9d2`, `20aaa4c` e `da44c03`). O arquivo foi incorporado a este documento na Sessão C e apagado; o git guarda.
-- 24/09/2026: revisão do `banco.txt` por Lucas Scholz, tabela por tabela (Sessão D). O que mudou está no `banco.txt`, seção 7, "Sessão D".
+- 24/09/2026: revisão do `banco.md` por Lucas Scholz, tabela por tabela (Sessão D). O que mudou está no `banco.md`, seção 7, "Sessão D".
 - Preparação das reuniões: `docs/pautas/` (histórico, não é requisito).
 - Funil de prospecção e CRM pós-auditoria do DaaS: repositório `wcj-ui` (referência de funcionalidade; dados não migrados, C15).
 - 01/10/2026: revisão independente (R1 a R17) em `docs/revisoes/2026-10-01-revisao-fable.md`, aceita por inteiro por Lucas Scholz em 06/10.
-- 06/10/2026: aprovação do `banco.txt` por Lucas Alencar e decisões D-GER-23 a D-GER-28 (Lucas Scholz).
+- 06/10/2026: aprovação do `banco.md` por Lucas Alencar e decisões D-GER-23 a D-GER-28 (Lucas Scholz).
 - Atas do Comitê de IA: `docs/atas/`.

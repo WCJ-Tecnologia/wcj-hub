@@ -41,7 +41,7 @@ resources/js/
 resources/css/app.css        tokens (gerado; ver stacks/ui.md)
 routes/web.php               tudo do app; routes/api.php só health-check
 e2e/                         Playwright
-docs/                        00-COMECE-AQUI, DEPLOY, necessidade, banco.txt, escopo, adr/, incidentes/
+docs/                        00-COMECE-AQUI, DEPLOY, necessidade, banco.md, escopo, adr/, incidentes/
 .ai/                         o padrão (gerado pelo sync; não editar)
 ```
 

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Gravação única da auditoria (G3; docs/banco.txt, audit_logs). Por ora só a tela grava
+ * Gravação única da auditoria (G3; docs/banco.md, audit_logs). Por ora só a tela grava
  * (ai_authorization_id nulo); o canal da IA entra com o B8.
  */
 class AuditService

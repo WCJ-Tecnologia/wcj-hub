@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * users — docs/banco.txt, 1. PLATFORM (N1–N4, IA4).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * users — docs/banco.md, 1. PLATFORM (N1–N4, IA4).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Seção 9: saem document, phone, email_verified_at, last_login_at e remember_token do template;
  * email e password not null (N1: o admin convida).
  */
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->index('deactivated_at');
         });
 
-        // CHECK do banco.txt (o Blueprint do Laravel 12 não tem check()).
+        // CHECK do banco.md (o Blueprint do Laravel 12 não tem check()).
         DB::statement('ALTER TABLE users ADD CONSTRAINT users_daily_hours_check CHECK (daily_hours IS NULL OR (daily_hours > 0 AND daily_hours <= 24))');
     }
 

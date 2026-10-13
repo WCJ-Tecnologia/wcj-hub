@@ -6,7 +6,7 @@
 |---|---|
 | **Objetivo** | Deixar cada pessoa conectar o próprio assistente de IA (Claude, Codex ou ChatGPT) ao Hub, ver e desligar essa conexão, e usar pela conversa seis ferramentas que fazem o mesmo que a tela, com as mesmas permissões. Dar ao Administrador a visão e o corte de todas as conexões. |
 | **Regras que alimentam** | G3, G4, N4, IA1 a IA14 (`docs/necessidade.md`). As ferramentas repetem regras de Projetos: P7, P13, P15, P17, P24, P30, P39, P45, P52, P53 e P56. |
-| **Tabelas do `banco.txt`** | `ai_assistants`, `ai_authorizations`, `audit_logs`, tabelas do Passport (`oauth_clients`, `oauth_access_tokens`, `oauth_refresh_tokens`, `oauth_auth_codes`). As ferramentas leem e gravam pelas tabelas de F3, F5 e F7. |
+| **Tabelas do `banco.md`** | `ai_assistants`, `ai_authorizations`, `audit_logs`, tabelas do Passport (`oauth_clients`, `oauth_access_tokens`, `oauth_refresh_tokens`, `oauth_auth_codes`). As ferramentas leem e gravam pelas tabelas de F3, F5 e F7. |
 | **Depende de** | [F1](f1-nucleo.md) (usuários, papéis, auditoria), [F3](f3-quadro-e-card.md) (card, movimento, comentário), [F5](f5-sprint-e-horas.md) (horas), [F7](f7-indicadores.md) (situação do projeto) e a prova de conceito do MCP (D-GER-17). |
 | **Quem aprova** | Lucas Scholz (dono da Interface de IA, D-GER-07). |
 
@@ -227,7 +227,7 @@ No ChatGPT, qualquer papel só lê (IA3). O Comercial conecta, só com Núcleo p
 
 ## 10. Pontos a validar
 
-Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, no F1, na `necessidade.md` (IA4) e no `banco.txt` (coluna aditiva em `users`).
+Respondidos por Lucas Scholz em 06/10/2026 e já aplicados nas seções acima, no F1, na `necessidade.md` (IA4) e no `banco.md` (coluna aditiva em `users`).
 
 1. **Claude app e Claude Code dividem a conexão?** Respondido pela prova de conceito em 06/10 (D-GER-30): **não**, quando o Claude Code entra pelo terminal. O Claude Code é o quarto cartão. O conector do claude.ai aparece sozinho no Claude Code da mesma conta e aí divide a conexão do app; isso continua valendo e não precisa de cartão.
 2. **Como cada assistente se identifica.** OK: depende da prova de conceito; assistente não reconhecido é recusado como "não homologado".

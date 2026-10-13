@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * rework_reasons — docs/banco.txt, 2. PROJETOS (P40, R11).
- * created_at/updated_at: datetime not null (banco.txt, seção 0); datetimes() do Laravel os faria nulos.
+ * rework_reasons — docs/banco.md, 2. PROJETOS (P40, R11).
+ * created_at/updated_at: datetime not null (banco.md, seção 0); datetimes() do Laravel os faria nulos.
  * Cadastrável, lista geral do Administrador (G7, R11).
  */
 return new class extends Migration
