@@ -55,6 +55,7 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-30 | 06/10/2026 | **Prova de conceito do MCP, parte 1** (`docs/atas/2026-10-06-poc-mcp.md`): o Claude Code conectado pelo terminal é outro cliente OAuth e derruba a conexão do Claude app (uma por assistente, IA6). **O Claude Code vira o quarto assistente** (`claude_code`, canal `ia:claude_code`), com cartão próprio. Identificação na fatia 1 pelo `redirect_uri` (`claude.ai` = app; `localhost` = Claude Code) mais o nome do cliente. Nenhum assistente pediu confirmação antes de escrever: a IA9 vale como está, e toda escrita pela IA é reversível e auditada. ChatGPT condicional à parte 2; se der trabalho, v2. |
 | D-GER-29 | 06/10/2026 | **Lucas Varanda** (front-end) adapta o template à marca WCJ e desenha os componentes que o Hub pede e o template não tem. A marca entra no Hub inteira, só por `docs/brand/` e `design/tokens.json`; no mestre da marca (`wcj-master-brand-brain/marca/`) é que se muda. |
 | D-GER-31 | 09/10/2026 | **Quem aprova os funcionais é Lucas Scholz**, todos os blocos. Rafael Garcia participou de Projetos com feedback e elaboração (reunião de 24/09, modelos e pontos a validar) e valida o uso no bugbash; não assina aprovação. Corrige a D-GER-28. |
+| D-GER-32 | 13/10/2026 | **Card do quadro** (proposta de Lucas Varanda, decidida por Lucas Scholz): a "tag" do card é a **Área** do projeto (uma por card, P18; sem tags múltiplas); **card pai**, um nível, com a subtask como card normal do quadro e o progresso calculado pela etapa dos filhos (P57; descartada a subtask dentro do card, que seria um segundo checklist ao lado dos `CA_n`); esforço é só **Horas previstas** (P27; sem pontos); **participantes** além de Dev e QA (P58); **capa** escolhida entre os anexos (P59). No `banco.md`: `tasks.parent_task_id`, `tasks.cover_attachment_id` e a tabela `task_participants` (seção 7), a aprovar por Lucas Alencar antes do B3. |
 | D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado antes da spec (dono por bloco revisto na D-GER-31). O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
@@ -211,7 +212,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
   - **produto contínuo** (ex.: Wpay): só tem data de início e fica em melhoria contínua. O prazo é o de cada sprint.
 - **P3** Cada projeto tem um prefixo (ex.: `SGM`), único no sistema, que não muda depois da primeira tarefa.
 - ~~**P4**~~ Saiu na revisão do banco (Sessão D): a modalidade (tradicional ou 100% IA) não fica no sistema; a equipe combina e o gestor acompanha.
-- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere e os em que está alocado; o Administrador, todos. Gestor alocado num projeto tem ali a visão e os poderes de gestor (P1) e também pode ser dev ou QA de tarefa: alocado quer dizer que vai executar. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA.
+- **P5** O dev vê só os projetos em que está alocado; o gestor, os que gere e os em que está alocado; o Administrador, todos. Gestor alocado num projeto tem ali a visão e os poderes de gestor (P1) e também pode ser dev ou QA de tarefa: alocado quer dizer que vai executar. O gestor põe e tira pessoas do projeto a qualquer momento. As tarefas de quem saiu ficam sem dev e, se a pessoa era o QA, sem QA; a pessoa também sai da lista de participantes das tarefas do projeto (P58).
 - ~~**P6**~~ Saiu na revisão do banco (Sessão D): o Tech Lead não fica no sistema; a equipe define no dia a dia e o gestor acompanha. P33 e P38 descrevem a prática, sem registro.
 - **P7** O gestor encerra o projeto quando quiser, mesmo com tarefa aberta. Projeto encerrado não recebe tarefa nova; o gestor ou o Administrador reabre.
 - **P8** Mudar a configuração do projeto vale dali para a frente e nunca apaga o que já foi registrado.
@@ -234,16 +235,19 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 - **P19** Prioridade: baixa, normal, alta ou urgente.
 - **P20** A tarefa tem **um dev** e **um QA**. Os dois podem ficar vazios, como as horas (P27).
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).
-- **P22** Quem é definido como dev ou QA da tarefa recebe aviso **no sistema e por e-mail**; quando a tarefa volta para desenvolvimento (P39), o dev dela também recebe os dois (R3). São os únicos avisos de Projetos na v1.
+- **P22** Quem é definido como dev ou QA da tarefa recebe aviso **no sistema e por e-mail**; quando a tarefa volta para desenvolvimento (P39), o dev dela também recebe os dois (R3). São os únicos avisos de Projetos na v1. Entrar como participante (P58) não gera aviso.
 - **P23** A tarefa aceita nenhum, um ou vários PRs, colados como link.
 - **P24** A tarefa tem anexos e comentários. O autor edita e exclui o próprio comentário, com o antes no histórico; qualquer alocado remove anexo; tamanho e tipos de anexo são os do template (decisão de 06/10).
 - **P25** Bug achado em produção vira tarefa nova, ligada à original, do mesmo projeto. Conta como indicador de qualidade do projeto, não como retrabalho do dev.
 - **P26** O gestor e o Administrador tiram qualquer card do quadro, a qualquer momento:
-  - o card **nunca usado** (não saiu do `Backlog` e não tem horas, comentários, anexos nem PRs) pode ser **excluído** de verdade;
+  - o card **nunca usado** (não saiu do `Backlog` e não tem horas, comentários, anexos nem PRs) pode ser **excluído** de verdade. Ter participantes (P58) ou card pai (P57) não conta como uso; ter cards filhos conta;
   - o card com histórico é **arquivado**, com motivo. Sai do quadro e das contas de prazo, atraso e capacidade; as horas lançadas nele continuam nos indicadores de horas. Desarquivar devolve ao `Backlog`.
 
   O dev não exclui nem arquiva. Tudo fica na auditoria (G3).
 - **P56** Qualquer pessoa alocada no projeto cria card, que nasce no `Backlog` (revertida em 06/10, R2). Pôr na sprint (P45), excluir e arquivar (P26) continuam só do gestor e do Administrador. Vale também pela IA (G4).
+- **P57** **Card pai** (decisão de 13/10, D-GER-32). Um card pode apontar para um card pai do mesmo projeto, um nível só: o filho não tem filhos, e o card não é pai de si mesmo. O filho é um card como qualquer outro (dev, horas, sprint, histórico, movimento), e pai e filhos se movem independentes: nada trava o pai por causa dos filhos nem os filhos por causa do pai (premissa). O pai mostra o progresso dos filhos, calculado pelo papel da etapa em que cada um está: a fazer (fila, sprint), em andamento (desenvolvimento, code review, teste, pausa) e concluído (pronto); filho arquivado sai da conta. Arquivar ou excluir o pai não mexe nos filhos: eles ficam no quadro, sem pai. Não é a tarefa de origem (P25), que liga um bug de produção à tarefa original.
+- **P58** **Participantes** (decisão de 13/10, D-GER-32). Além do dev e do QA (P20), a tarefa aceita outras pessoas alocadas no projeto, para quem precisa acompanhar o card (gestor de outra frente, dev que vai pegar o filho, QA de apoio). Qualquer alocado adiciona e remove participante, inclusive a si mesmo. Participante não recebe aviso (P22), não entra na capacidade (P48) nem em indicador por pessoa (P53); aparece no card e no filtro *Só os meus*.
+- **P59** **Capa do card** (decisão de 13/10, D-GER-32). Qualquer alocado escolhe um anexo de imagem da própria tarefa como capa, que aparece no corpo do card no quadro; sem escolha, o card não tem imagem. Remover o anexo escolhido tira a capa.
 
 #### 2.4 Horas e prazo
 
@@ -492,6 +496,9 @@ Consequência para a v1 (IA3):
 | Chave | Identificador da tarefa no projeto: prefixo + número (`SGM-17`) (P16) |
 | Critério de aceite (`CA_n`) | Item verificável do documento de requisição; é também o item do roteiro de teste (P17, P36) |
 | Card de suporte | Tarefa do tipo suporte que o gestor registra quando o cliente aciona a WCJ direto (P52) |
+| Card pai / card filho | Tarefa que agrupa outras do mesmo projeto, um nível só; o filho é um card normal do quadro, e o pai mostra o progresso dos filhos (P57) |
+| Participante | Pessoa alocada no projeto que acompanha a tarefa sem ser o dev nem o QA dela (P58) |
+| Capa | Anexo de imagem escolhido para aparecer no corpo do card no quadro (P59) |
 | Backlog | Coluna dos cards fora da sprint (P45) |
 | To do / Esteira | Coluna dos cards da sprint que ainda não começaram (`Esteira` era o nome no Trello) |
 | Sprint | Período do projeto, com início e fim, que agrupa tarefas. No Histórico de Desenvolvimento aparece como "Fase" (P51) |
@@ -546,6 +553,7 @@ Consequência para a v1 (IA3):
 - [x] Lucas Scholz revisou o `banco.md` (Sessão D, 24/09).
 - [x] Lucas Alencar aprovou o `banco.md` em 06/10 (D-GER-23).
 - [x] Lucas Alencar conferiu e aprovou a diferença da fatia 1 (seção 7 do `banco.md`, R15 e colunas de 06/10) em 06/10.
+- [ ] Lucas Alencar conferir a diferença de 13/10 (seção 7 do `banco.md`: `tasks.parent_task_id`, `tasks.cover_attachment_id` e `task_participants`, D-GER-32), antes do B3.
 - [x] Funcionais F1 a F8 aprovados por Lucas Scholz em 06/10 (D-GER-28, D-GER-31); o Rafael participou de Projetos com feedback e elaboração e valida no bugbash.
 - [x] Prova de conceito, parte 1 (06/10): Claude app e Claude Code pelo terminal são conexões distintas e uma derruba a outra; `claude_code` virou assistente separado (D-GER-30). Codex CLI × Codex no app fica para a parte 2.
 - [ ] Prova de conceito: ver **como cada assistente se identifica** no OAuth (URL de metadados do cliente, pré-cadastro ou registro dinâmico). No registro dinâmico, o nome é declarado pelo próprio cliente. Nesse caso, o canal `ia:claude`/`ia:chatgpt` (IA11) e o token só de leitura do ChatGPT Pro viram conveniência, e a garantia fica no escopo pelo papel (IA5). Ver `core/mcp.md`, seção 3.
