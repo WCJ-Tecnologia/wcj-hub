@@ -195,3 +195,223 @@ export interface BoardFilters {
     /** *Arquivados*: troca o quadro pela lista de arquivados (P26). */
     archived: boolean;
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * Ficha do card (F3 §02 "Card (ficha)", §03 "Dentro da ficha", §04 "Na ficha"; F5 §02 "Horas e data
+ * prevista"). O que o `TaskPresenter::detail()` do B3 manda para `/projetos/{id}/cards/{chave}`.
+ * Kit da ficha, sem backend: o Cauã confirma as formas e as rotas (topo de `w-task-detail-page.tsx`).
+ * ---------------------------------------------------------------------------------------------- */
+
+/** Espelho de `test_results.slug` (P36): o resultado do critério, marcado pelo QA em F4. */
+export type CriterionResult = 'pending' | 'approved' | 'failed';
+
+/**
+ * Critério de aceite `CA_n`, com os subitens `CA_n.m` logo abaixo (um nível, P17, T9).
+ * `number` já vem montado pelo servidor ("CA_3", "CA_4.1"); excluir não renumera.
+ */
+export interface AcceptanceCriterion {
+    id: number;
+    /** "CA_3" no critério, "CA_4.1" no subitem. */
+    number: string;
+    description: string;
+    result: CriterionResult;
+    /** Só no critério; o subitem vem com `[]`. */
+    children: AcceptanceCriterion[];
+}
+
+/** Link de PR colado no card (P23). */
+export interface TaskPullRequest {
+    id: number;
+    url: string;
+    added_by: PersonRef;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    added_at: string;
+}
+
+/** Comentário (P24): só o autor edita e exclui o próprio (F3 §10.10); o servidor decide pelo `can`. */
+export interface TaskComment {
+    id: number;
+    author: PersonRef;
+    body: string;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    created_at: string;
+    /** Quando foi editado, ou null (o antes fica na auditoria). */
+    edited_at: string | null;
+    can: { update: boolean; delete: boolean };
+}
+
+/** Anexo (P24): download com o nome original; só imagem pode ser a capa (P59). */
+export interface TaskAttachment {
+    id: number;
+    /** `original_name`: o nome no download. */
+    name: string;
+    /** Tamanho em bytes, para a tela mostrar "1,2 MB". */
+    size: number;
+    /** `mime_type` começa com `image/`: mostra *Usar como capa* / *Tirar a capa*. */
+    is_image: boolean;
+    /** URL de download (e de miniatura, quando imagem). */
+    url: string;
+    uploaded_by: PersonRef;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    uploaded_at: string;
+    /** Evidência do QA ligada a um critério (F4); null = anexo comum. */
+    criterion_id: number | null;
+}
+
+/** Outro card do mesmo projeto, como link: tarefa de origem, bug de produção ligado, card pai. */
+export interface TaskRef {
+    id: number;
+    key: string;
+    title: string;
+    url: string;
+}
+
+/**
+ * Um card do projeto como opção das buscas da ficha (card pai e tarefa de origem, F3 §05):
+ * a lista inteira vem em `options`, leve, e a tela filtra. Card arquivado não vem.
+ */
+export interface TaskPickRef extends TaskRef {
+    /** Já é filho de alguém: não pode ser pai (P57). `parent_key` = a chave do pai, para a mensagem. */
+    parent_key: string | null;
+    /** Já tem filhos: não pode ser filho (P57). */
+    has_children: boolean;
+}
+
+/** Card filho na ficha do pai (F3 §02): chave, título, coluna e dev; arquivado não vem (P57). */
+export interface ChildCard extends TaskRef {
+    stage: BoardStage;
+    developer: PersonRef | null;
+}
+
+/** Card de suporte: o pedido do cliente (P52). */
+export interface SupportRequest {
+    /** Nome do contato; anonimizado vem como "removido a pedido do titular" (N12). */
+    requester: string;
+    channel: string;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    requested_at: string;
+}
+
+/** Decidido pela `TaskPolicy`/`ProjectPolicy` no servidor; a ficha só esconde botão (inegociável 9). */
+export interface TaskAbilities {
+    /** Alocado (F3 §09): título, tipo, área, prioridade, dev, QA, requisição, critérios, PRs, origem, pai, participantes, capa. */
+    update: boolean;
+    /** Alocado: comentar e anexar (P24). */
+    comment: boolean;
+    attach: boolean;
+    /** Gestor do projeto e Administrador: definir ou reestimar as horas direto (P27). */
+    set_hours: boolean;
+    /** Desenvolvedor alocado: propor um valor novo (P27). */
+    propose_hours: boolean;
+    /** Gestor do projeto e Administrador: aprovar ou recusar a proposta (P27). */
+    decide_hours: boolean;
+    /** Alocado: *Mover para…* (P13); sair do Backlog ou voltar a ele precisa de `manage_sprint`. */
+    move: boolean;
+    manage_sprint: boolean;
+    /** Gestor do projeto e Administrador: arquivar e desarquivar (P26). */
+    archive: boolean;
+    /** Gestor do projeto e Administrador, e só o card nunca usado (P26): com histórico o servidor manda false. */
+    delete: boolean;
+}
+
+/** A ficha inteira (F3 §02). Tudo que é "quando há" vem null ou `[]`. */
+export interface TaskDetail {
+    id: number;
+    key: string;
+    title: string;
+    type: TaskTypeRef;
+    area: AreaRef | null;
+    priority: PrioritySlug;
+    /** A etapa atual, com o papel: decide a marca de pausa e sai do *Mover para…* (P11). */
+    stage: BoardStage;
+    developer: PersonRef | null;
+    qa: PersonRef | null;
+    participants: PersonRef[];
+    /** Documento de requisição (P17): Sendo / Quero / Para / Informações adicionais, as colunas de `tasks`. */
+    requisition: {
+        story_as: string | null;
+        story_want: string | null;
+        story_so_that: string | null;
+        description: string | null;
+    };
+    /** Na ordem `CA_1, CA_2…`, subitens dentro do pai (F3 §03). */
+    criteria: AcceptanceCriterion[];
+    /** Na ordem em que entraram. */
+    pull_requests: TaskPullRequest[];
+    /** Do mais antigo para o mais novo. */
+    comments: TaskComment[];
+    /** Na ordem em que entraram. */
+    attachments: TaskAttachment[];
+    /** `tasks.cover_attachment_id` (P59); null = sem capa. */
+    cover_attachment_id: number | null;
+    /** Bug de produção: a tarefa original (P25). */
+    origin_task: TaskRef | null;
+    /** No card original: os bugs de produção que apontam para ele (F3 §03). */
+    production_bugs: TaskRef[];
+    parent: ParentRef | null;
+    /** Só no card pai; vazio no resto (P57). */
+    children: ChildCard[];
+    /** Horas previstas, total dev + QA (P27). */
+    estimated_hours: number | null;
+    /** Reestimativa proposta pelo dev (P27), com quem propôs. */
+    proposed_hours: number | null;
+    proposed_by: PersonRef | null;
+    /** Soma dos lançamentos de qualquer pessoa (P30; F5 §02). */
+    logged_hours: number;
+    /** Carga diária do dev (`users.daily_hours`, N3): a prévia da data prevista ao reestimar (P28). null sem dev ou sem carga. */
+    developer_daily_hours: number | null;
+    /** Dia da 1ª entrada em etapa de desenvolvimento, `AAAA-MM-DD` (P28); null = nunca entrou em Doing. */
+    development_started_on: string | null;
+    /** Data prevista `AAAA-MM-DD` (P28); null quando não calculada. */
+    due_on: string | null;
+    /** Passou da data prevista sem chegar ao Pronto (P53, R16): conta do servidor. */
+    late: boolean;
+    /** Nome da sprint, ou null = "Fora de sprint" (P45). */
+    sprint: { id: number; name: string } | null;
+    /** Nome da versão, ou null (P41; F6). */
+    package: { id: number; name: string } | null;
+    /** "Testado por Fulano em DD/MM/AAAA" (P34); null = sem teste cruzado. `at` em `AAAA-MM-DD`. */
+    cross_tested: { by: PersonRef; at: string } | null;
+    /** Arquivado (P26): quando (`AAAA-MM-DD`), motivo e quem; null = Ativo. */
+    archived: { at: string; reason: string; by: PersonRef } | null;
+    /** Só quando a etapa é de pausa: o motivo do último movimento (P15). */
+    pause_reason: string | null;
+    rework_count: number;
+    /** Card de suporte (P52); null nos demais. */
+    support: SupportRequest | null;
+    /** Quem criou e quando (`AAAA-MM-DD HH:MM`). */
+    created_by: PersonRef;
+    created_at: string;
+    /** URL da ficha (*Copiar link*). */
+    url: string;
+    /** URL da linha do tempo (F7, B7); null até o B7 existir: o botão fica desabilitado. */
+    history_url: string | null;
+    abilities: TaskAbilities;
+}
+
+/** Opções que a ficha usa além das do quadro (`BoardOptions`). */
+export interface TaskDetailOptions extends Pick<BoardOptions, 'areas' | 'types' | 'members' | 'rework_origins' | 'rework_reasons'> {
+    /** Etapas ativas do projeto, na ordem: o *Mover para…* (P13). */
+    stages: BoardStage[];
+    /** Os cards do projeto, para as buscas de card pai e tarefa de origem (F3 §05); sem os arquivados e sem este card. */
+    cards: TaskPickRef[];
+}
+
+/** O que a ficha manda no `PATCH /projetos/{id}/cards/{chave}` (proposta do kit): só os campos tocados. */
+export interface TaskPatchPayload {
+    title?: string;
+    type_id?: number;
+    area_id?: number | null;
+    priority?: PrioritySlug;
+    developer_id?: number | null;
+    qa_id?: number | null;
+    story_as?: string | null;
+    story_want?: string | null;
+    story_so_that?: string | null;
+    description?: string | null;
+    origin_task_id?: number | null;
+    parent_task_id?: number | null;
+    cover_attachment_id?: number | null;
+    /** Só gestor e Administrador (P27); o dev propõe por outra rota. */
+    estimated_hours?: number | null;
+}
