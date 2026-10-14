@@ -6,7 +6,7 @@ Tela · `pages/w-project-board-page/w-project-board-page.tsx` · Inertia `projec
 
 O quadro do projeto em `/projetos/{id}/quadro` (F3 §01, §03 a §05), como o controller do B3 vai montar (**proposta do kit; o Cauã ajusta**):
 
-- `WAppLayoutTemplate` largo, eyebrow "Projetos", título = nome do projeto, subtítulo "SGM · Sprint 3 aberta" ou "SGM · sem sprint aberta"; à direita, _Sprints_ e _Configuração_ desabilitados com a dica "Em breve (B5)" / "Em breve (B2)";
+- `WAppLayoutTemplate` em largura `full` (sem máximo: o quadro corta na borda da janela, 14/10), eyebrow "Projetos", título = nome do projeto, subtítulo "SGM · Sprint 3 aberta" ou "SGM · sem sprint aberta"; à direita, _Sprints_ e _Configuração_ desabilitados com a dica "Em breve (B5)" / "Em breve (B2)";
 - `WBoardFiltersOrganism`, `WKanbanBoardOrganism` e, com _Arquivados_ ligado, o vazio "Nenhum card arquivado" no lugar do quadro;
 - os diálogos do movimento pelo `useBoardMove` (`move.dialogs`) e o `WSupportCardDialogOrganism`;
 - recusa do movimento (`onDenied`) em `toast.error(motivo)`.

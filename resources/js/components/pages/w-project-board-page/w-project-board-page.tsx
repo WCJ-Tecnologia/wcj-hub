@@ -345,7 +345,7 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             eyebrow="Projetos"
             title={project.name}
             subtitle={`${project.key_prefix} · ${project.open_sprint ? `${project.open_sprint.name} aberta` : 'sem sprint aberta'}`}
-            width="wide"
+            width="full"
             actions={
                 <>
                     <SoonAction icon={<CalendarRange aria-hidden />} label="Sprints" hint="Em breve (B5)" />

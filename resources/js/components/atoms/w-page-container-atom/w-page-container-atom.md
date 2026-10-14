@@ -21,3 +21,5 @@ Normalmente você **não usa direto**: o `WAppLayoutTemplate` recebe `width` e r
 | `width`     | `'narrow' \| 'default' \| 'wide'` | `'default'` | não         |
 | `className` | `string`                          |             | não         |
 | `children`  | `ReactNode`                       |             | sim         |
+
+`full` (14/10): sem largura máxima, para a tela que rola na horizontal (o quadro kanban); o gutter continua, e o quadro o desfaz com margem negativa para cortar na borda da janela.
