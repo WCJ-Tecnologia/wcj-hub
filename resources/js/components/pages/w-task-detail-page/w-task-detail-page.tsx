@@ -197,7 +197,7 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
             }),
     });
     const card = detailToBoardCard(task);
-    const startMove = (to: BoardStage) => move.start({ card, from: task.stage, to, index: null });
+    const startMove = (to: BoardStage) => move.start({ card, from: task.stage, to, index: null, sequence: null });
 
     const archive = (payload: ArchivePayload) => post('/arquivar', { ...payload }, 'archive', { onSuccess: () => setArchiving(false) });
 
