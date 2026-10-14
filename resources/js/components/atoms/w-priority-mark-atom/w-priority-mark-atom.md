@@ -6,7 +6,7 @@
 
 A prioridade do card (P19: Baixa, Normal, Alta, Urgente), em dois formatos:
 
-- `bar` (padrão): a faixa de 4 px na borda esquerda do card do quadro (F3 §03, zona Borda). Posição `absolute`, do topo ao pé do pai. Leva um `span.sr-only` "Prioridade: Alta" e o mesmo texto no `title`: a cor nunca é a única pista.
+- `bar` (padrão): a faixa de 4 px na borda superior do card do quadro (F3 §03, zona Borda; decisão de Lucas Scholz em 14/10, no lugar da lateral esquerda). Posição `absolute`, de ponta a ponta do pai. Leva um `span.sr-only` "Prioridade: Alta" e o mesmo texto no `title`: a cor nunca é a única pista.
 - `chip`: ícone + rótulo em linha, para o submenu _Prioridade_ do card e para os filtros.
 
 | Prioridade | Faixa                    | Ícone (chip)                 |

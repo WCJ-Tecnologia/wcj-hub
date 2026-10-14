@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, useSortable, verticalListSortingStrategy, type SortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Info, LifeBuoy } from 'lucide-react';
 import { useId } from 'react';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { cn } from '@/lib/utils';
-import type { AreaRef, BoardAbilities, BoardCard, BoardOrder, BoardStage, PersonRef } from '@/types/quadro';
+import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef } from '@/types/quadro';
 
 /** Id do card no dnd-kit (`card-17`); o da coluna é `stage-3`. O quadro lê os dois no `onDragEnd`. */
 export const cardDndId = (card: Pick<BoardCard, 'id'>) => `card-${card.id}`;
@@ -18,9 +18,6 @@ export const stageDndId = (stage: Pick<BoardStage, 'id'>) => `stage-${stage.id}`
 
 /** O que o quadro lê de `active.data` e `over.data` no `onDragEnd`. */
 export type BoardDndData = { type: 'card'; card: BoardCard; stage_id: number } | { type: 'stage'; stage_id: number };
-
-/** Na ordem por prioridade, arrastar dentro da coluna não reordena (F3 §04): nada se desloca. */
-const noReorder: SortingStrategy = () => null;
 
 /** Os callbacks que a coluna repassa a cada card. */
 export type ColumnCardCallbacks = Pick<
@@ -33,7 +30,6 @@ export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
     /** Os cards desta coluna, já ordenados (`sortCards`). */
     cards: BoardCard[];
     /** Só muda o que acontece ao arrastar dentro da coluna (P13). */
-    order: BoardOrder;
     abilities: BoardAbilities;
     /** As etapas do projeto, para o *Mover para…* do card. */
     stages: BoardStage[];
@@ -57,7 +53,6 @@ export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
 export function WKanbanColumnOrganism({
     stage,
     cards,
-    order,
     abilities,
     stages,
     areas,
@@ -129,7 +124,8 @@ export function WKanbanColumnOrganism({
                 <SortableContext
                     id={stageDndId(stage)}
                     items={cards.map(cardDndId)}
-                    strategy={order === 'manual' ? verticalListSortingStrategy : noReorder}
+                    // Em qualquer ordem os vizinhos abrem espaço: o card cai onde for solto (F3 §04, 14/10).
+                    strategy={verticalListSortingStrategy}
                 >
                     <ul className="grid gap-2">
                         {cards.map((card) => (

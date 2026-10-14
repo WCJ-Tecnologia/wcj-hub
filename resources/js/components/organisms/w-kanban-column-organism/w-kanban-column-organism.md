@@ -15,7 +15,7 @@ Uma coluna do quadro (F3 §03), na largura fixa de 18 rem (`w-72`) e na altura d
 | Corpo          | Os cards (`WTaskCardOrganism`) numa lista, cada um arrastável                                                                 | sempre                                                               |
 | Corpo          | Área tracejada para soltar; só a contagem 0 fala da coluna vazia (F3 §03)                                                     | sem card                                                             |
 
-Arrastar e soltar (dnd-kit): o corpo inteiro é área de soltar (`useDroppable`, id `stage-<id>`, `data = { type: 'stage', stage_id }`), para receber card mesmo vazia. Os cards ficam num `SortableContext` (id `card-<id>`, `data = { type: 'card', card, stage_id }`). Na ordem por prioridade a estratégia de ordenação não desloca nada (o arraste vertical não faz nada, F3 §04); na manual, `verticalListSortingStrategy`.
+Arrastar e soltar (dnd-kit): o corpo inteiro é área de soltar (`useDroppable`, id `stage-<id>`, `data = { type: 'stage', stage_id }`), para receber card mesmo vazia. Os cards ficam num `SortableContext` (id `card-<id>`, `data = { type: 'card', card, stage_id }`). Em qualquer ordem os vizinhos abrem espaço (`verticalListSortingStrategy`): o card cai onde for solto (F3 §04, 14/10).
 
 ## Props
 
@@ -23,7 +23,6 @@ Arrastar e soltar (dnd-kit): o corpo inteiro é área de soltar (`useDroppable`,
 | ----------------------------------------------------------------------------- | ------------------------- | ------- | ----------- | ------------------------------------------------------------------------- |
 | `stage`                                                                       | `BoardStage`              |         | sim         | A etapa                                                                   |
 | `cards`                                                                       | `BoardCard[]`             |         | sim         | Os cards desta coluna, **já ordenados** (`sortCards`)                     |
-| `order`                                                                       | `BoardOrder`              |         | sim         | Só muda o arraste dentro da coluna                                        |
 | `abilities`                                                                   | `BoardAbilities`          |         | sim         | `create_card`, `create_support`; `move` liga o arrastar e o _Mover para…_ |
 | `stages`, `areas`, `members`                                                  |                           |         | sim         | Repassados ao card (menu ⋯ e _+_ de participante)                         |
 | `highlighted`                                                                 | `boolean`                 | `false` | não         | O card arrastado está sobre esta coluna: borda e fundo azuis              |
@@ -41,7 +40,6 @@ Dentro do `DndContext` do `WKanbanBoardOrganism` (fora dele, envolva num `DndCon
 <WKanbanColumnOrganism
     stage={stage}
     cards={sortCards(cardsOfStage, order)}
-    order={order}
     abilities={abilities}
     stages={stages}
     areas={options.areas}

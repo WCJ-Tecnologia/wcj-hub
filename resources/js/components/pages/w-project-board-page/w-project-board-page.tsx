@@ -107,18 +107,17 @@ function nowInSaoPaulo(): { date: string; time: string } {
     return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour}:${parts.minute}` };
 }
 
-/** O card muda de coluna (e de posição, na ordem manual) na hora; volta se o servidor recusar. */
+/**
+ * O card muda de coluna, e de posição, na hora; volta se o servidor recusar. Com `sequence`
+ * (arrastar), a coluna de destino é renumerada na ordem em que ficou na tela (P13).
+ */
 function moveLocally(cards: BoardCard[], card: BoardCard, payload: MovePayload): BoardCard[] {
     const moved = { ...card, stage_id: payload.stage_id };
     const others = cards.filter((item) => item.id !== card.id);
-    if (payload.position === undefined) return [...others, moved];
+    if (!payload.sequence) return [...others, moved];
 
-    const column = others.filter((item) => item.stage_id === payload.stage_id).sort((a, b) => a.position - b.position);
-    column.splice(payload.position, 0, moved);
-    const positions = new Map(column.map((item, index) => [item.id, index + 1]));
-    return [...others.filter((item) => item.stage_id !== payload.stage_id), ...column].map((item) =>
-        positions.has(item.id) ? { ...item, position: positions.get(item.id)! } : item,
-    );
+    const positions = new Map(payload.sequence.map((id, index) => [id, index + 1]));
+    return [...others, moved].map((item) => (positions.has(item.id) ? { ...item, position: positions.get(item.id)! } : item));
 }
 
 /** Link do cabeçalho que ainda não existe: focável, com a dica, sem navegar. */
@@ -343,6 +342,7 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                         options={options}
                         filtered={hasActiveFilters(current) && local.length > 0}
                         onMove={move.start}
+                        onOrderChange={changeOrder}
                         onCreate={createCard}
                         creating={creating}
                         createError={createError}

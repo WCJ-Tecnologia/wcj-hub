@@ -13,6 +13,10 @@ O percentual vem de `childProgressPercent()` (`lib/quadro.ts`): concluídos ÷ t
 
 ## Props
 
+| Prop     | Tipo                  | Padrão      | Para quê                                                                                                                                                                                                                                                            |
+| -------- | --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout` | `'stacked' \| 'edge'` | `'stacked'` | `edge`: a contagem fica em linha e a barra vira uma linha fina de 4 px rente à borda inferior do card (o que o card do quadro usa, pedido de Lucas Scholz em 14/10: barra minimalista embaixo). O pai precisa de `relative`, `overflow-hidden` e um respiro embaixo |
+
 | Prop        | Tipo                    | Padrão | Obrigatória | Para quê                                                 |
 | ----------- | ----------------------- | ------ | ----------- | -------------------------------------------------------- |
 | `progress`  | `ChildProgress \| null` |        | sim         | `card.children`; null (card que não é pai) não renderiza |

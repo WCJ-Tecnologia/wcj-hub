@@ -40,11 +40,16 @@ export interface WKanbanBoardOrganismProps extends Omit<ColumnCardCallbacks, 'on
     abilities: BoardAbilities;
     options: Pick<BoardOptions, 'areas' | 'members'>;
     /**
-     * Pedido de movimento: do arrastar (`index` = posição de destino na coluna, só na ordem manual)
-     * e do *Mover para…* do card (`index: null`). O quadro não abre diálogo nem decide regra: a
-     * página passa ao `useBoardMove`.
+     * Pedido de movimento: do arrastar (`index` e `sequence` = onde o card foi solto e a coluna na
+     * ordem que ficou, como no Trello) e do *Mover para…* do card (os dois nulos). O quadro não abre
+     * diálogo nem decide regra: a página passa ao `useBoardMove`.
      */
     onMove: (intent: MoveIntent) => void;
+    /**
+     * Soltar numa posição com a ordem em *Prioridade* troca o seletor para *Manual* (senão a
+     * prioridade desfaria o que a pessoa acabou de arrastar). A página guarda a escolha.
+     */
+    onOrderChange?: (order: BoardOrder) => void;
     /** Há filtro ligado: sem card, a mensagem é a do filtro, não a do projeto vazio (F3 §05). */
     filtered?: boolean;
     onCreate?: (title: string) => void;
@@ -72,8 +77,8 @@ const screenReaderInstructions: ScreenReaderInstructions = {
 
 /**
  * O quadro kanban (F3 §01, §03, §04): uma coluna por etapa, com rolagem horizontal, arrastar e
- * soltar (dnd-kit) entre colunas e, na ordem manual, dentro da coluna. Cada soltar vira um
- * `MoveIntent` em `onMove`; a página decide o resto.
+ * soltar (dnd-kit) entre colunas e dentro da coluna, com o card caindo onde foi solto, como no
+ * Trello. Cada soltar vira um `MoveIntent` em `onMove`; a página decide o resto.
  */
 export function WKanbanBoardOrganism({
     stages,
@@ -83,6 +88,7 @@ export function WKanbanBoardOrganism({
     abilities,
     options,
     onMove,
+    onOrderChange,
     filtered = false,
     onCreate,
     creating,
@@ -149,26 +155,27 @@ export function WKanbanBoardOrganism({
         const to = stageById(target.stage_id);
         if (!from || !to) return;
 
-        const column = columns.get(to.id) ?? [];
+        // A coluna como está na tela, sem o card que anda; o card entra onde foi solto (sobre um card =
+        // no lugar dele; no vazio da coluna = no fim). É a ordem que a pessoa viu, não a gravada.
+        const column = (columns.get(to.id) ?? []).filter((item) => item.id !== card.id);
         const overIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : -1;
+        const index = overIndex === -1 ? column.length : overIndex;
 
         if (from.id === to.id) {
-            // Na ordem por prioridade o arraste vertical não faz nada (F3 §04).
-            if (order !== 'manual') return;
-            const current = column.findIndex((item) => item.id === card.id);
-            const index = overIndex === -1 ? column.length - 1 : overIndex;
+            const current = (columns.get(to.id) ?? []).findIndex((item) => item.id === card.id);
             if (index === current) return;
-            onMove({ card, from, to, index });
-            return;
         }
 
-        onMove({ card, from, to, index: order === 'manual' ? (overIndex === -1 ? column.length : overIndex) : null });
+        const sequence = [...column.slice(0, index).map((item) => item.id), card.id, ...column.slice(index).map((item) => item.id)];
+        // Em *Prioridade* a coluna se reordenaria sozinha e desfaria o soltar: vira *Manual* (14/10).
+        if (order !== 'manual') onOrderChange?.('manual');
+        onMove({ card, from, to, index, sequence });
     };
 
     // *Mover para…* do menu: o mesmo pedido do arrastar, sem posição.
     const menuMove = (card: BoardCard, to: BoardStage) => {
         const from = stageById(card.stage_id);
-        if (from) onMove({ card, from, to, index: null });
+        if (from) onMove({ card, from, to, index: null, sequence: null });
     };
 
     const empty = cards.length === 0;
@@ -219,7 +226,6 @@ export function WKanbanBoardOrganism({
                             key={stage.id}
                             stage={stage}
                             cards={columns.get(stage.id) ?? []}
-                            order={order}
                             abilities={abilities}
                             stages={stages}
                             areas={options.areas}

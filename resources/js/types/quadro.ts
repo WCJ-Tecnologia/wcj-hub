@@ -147,19 +147,27 @@ export interface BoardOptions {
     channels: { id: number; label: string }[];
 }
 
-/** A intenção de mover, antes de qualquer diálogo. `index` é a posição de destino na coluna (ordem manual), ou null. */
+/**
+ * A intenção de mover, antes de qualquer diálogo. Do arrastar, `index` é a posição em que o card foi
+ * solto na coluna de destino e `sequence` os ids da coluna na ordem que ficou na tela (como no
+ * Trello: o card cai onde foi solto, P13; decisão de Lucas Scholz em 14/10). Do *Mover para…*, os dois
+ * vêm nulos e o card entra no fim.
+ */
 export interface MoveIntent {
     card: BoardCard;
     from: BoardStage;
     to: BoardStage;
     index: number | null;
+    sequence: number[] | null;
 }
 
 /** O que a tela manda ao servidor depois dos diálogos (`POST /projetos/{id}/cards/{chave}/mover`, proposta do kit). */
 export interface MovePayload {
     stage_id: number;
-    /** Só na ordem manual. */
+    /** Posição em que o card foi solto (índice a partir de 0); vem junto de `sequence`. */
     position?: number;
+    /** Ids dos cards da coluna de destino na ordem final: o servidor renumera `position` 1..n nessa ordem (P13). */
+    sequence?: number[];
     pause_reason?: string;
     /** Retrabalho (P39, P40). `mistake` = "foi engano": grava o movimento sem origem nem motivo. */
     mistake?: boolean;

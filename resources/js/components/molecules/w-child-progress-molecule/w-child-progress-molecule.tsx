@@ -8,6 +8,12 @@ import type { ChildProgress } from '@/types/quadro';
 export interface WChildProgressMoleculeProps {
     /** `card.children`: só o card pai tem; null não renderiza nada (P57). */
     progress: ChildProgress | null;
+    /**
+     * `stacked`: contagem e barra em bloco. `edge`: a contagem fica em linha e a barra vira uma
+     * linha fina rente à borda inferior do card (o card precisa de `relative`, `overflow-hidden` e
+     * um respiro embaixo).
+     */
+    layout?: 'stacked' | 'edge';
     className?: string;
 }
 
@@ -15,14 +21,15 @@ export interface WChildProgressMoleculeProps {
  * Progresso dos cards filhos no card pai (F3 §03, P57): "2 · 1 · 3" (a fazer · em andamento ·
  * concluídos) e a barra pelo percentual concluído.
  */
-export function WChildProgressMolecule({ progress, className }: WChildProgressMoleculeProps) {
+export function WChildProgressMolecule({ progress, layout = 'stacked', className }: WChildProgressMoleculeProps) {
     if (!progress) return null;
+    const edge = layout === 'edge';
 
     const percent = childProgressPercent(progress);
     const detail = `${progress.todo} a fazer · ${progress.doing} em andamento · ${progress.done} ${progress.done === 1 ? 'concluído' : 'concluídos'}`;
 
     return (
-        <div data-slot="w-child-progress-molecule" className={cn('grid gap-1', className)}>
+        <div data-slot="w-child-progress-molecule" data-layout={layout} className={cn(edge ? 'contents' : 'grid gap-1', className)}>
             <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -47,9 +54,9 @@ export function WChildProgressMolecule({ progress, className }: WChildProgressMo
                 aria-valuemax={100}
                 aria-valuenow={percent}
                 aria-valuetext={`${percent}% concluído`}
-                className="h-1.5 overflow-hidden rounded-full bg-muted"
+                className={cn('overflow-hidden bg-muted', edge ? 'absolute inset-x-0 bottom-0 h-1' : 'h-1.5 rounded-full')}
             >
-                <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${percent}%` }} />
+                <div className={cn('h-full bg-primary transition-[width]', !edge && 'rounded-full')} style={{ width: `${percent}%` }} />
             </div>
         </div>
     );

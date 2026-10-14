@@ -59,7 +59,7 @@ export interface WTaskCardOrganismProps extends Omit<HTMLAttributes<HTMLDivEleme
 }
 
 /**
- * O card do quadro (F3 §03): faixa de prioridade na borda; cabeçalho com área, tipo e menu ⋯;
+ * O card do quadro (F3 §03): faixa de prioridade na borda de cima; cabeçalho com área, tipo e menu ⋯;
  * chave, título e card pai; marcas; capa e horas; rodapé com pessoas, contadores e progresso dos
  * filhos. Recebe o card pronto e devolve intenção por callback: quem grava é a página.
  */
@@ -122,8 +122,10 @@ export function WTaskCardOrganism({
             data-key={card.key}
             data-dragging={dragging || undefined}
             className={cn(
-                'relative w-full gap-2 overflow-hidden rounded-md py-2.5 pr-2 pl-4 text-sm shadow-xs transition-[box-shadow,transform] hover:shadow-md',
-                compact && 'py-1.5',
+                'relative w-full gap-2 overflow-hidden rounded-md px-3 pt-3 pb-2.5 text-sm shadow-xs transition-[box-shadow,transform] hover:shadow-md',
+                compact && 'pt-2.5 pb-1.5',
+                // A barra dos filhos mora na borda de baixo: um respiro a mais para a contagem não encostar nela.
+                card.children && !compact && 'pb-4',
                 dragging && 'rotate-2 cursor-grabbing shadow-xl ring-1 ring-primary/40',
                 className,
             )}
@@ -219,7 +221,8 @@ export function WTaskCardOrganism({
                             />
                         </div>
                     )}
-                    <WChildProgressMolecule progress={card.children} className="pr-2" />
+                    {/* Progresso dos filhos: contagem discreta no rodapé e a barra fina rente à borda de baixo. */}
+                    <WChildProgressMolecule progress={card.children} layout="edge" className="pr-2" />
                 </>
             )}
         </Card>

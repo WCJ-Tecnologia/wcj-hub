@@ -15,7 +15,7 @@ const TONE: Record<PrioritySlug, { bar: string; icon: string; Icon: LucideIcon }
 export interface WPriorityMarkAtomProps {
     priority: PrioritySlug;
     /**
-     * `bar`: a faixa na borda esquerda do card (o pai precisa de `relative`).
+     * `bar`: a faixa na borda superior do card (o pai precisa de `relative`).
      * `chip`: ícone + rótulo em linha, para menu e filtros.
      */
     variant?: 'bar' | 'chip';
@@ -42,7 +42,7 @@ export function WPriorityMarkAtom({ priority, variant = 'bar', className }: WPri
             data-slot="w-priority-mark-atom"
             data-priority={priority}
             title={text}
-            className={cn('absolute inset-y-0 left-0 w-1', tone.bar, className)}
+            className={cn('absolute inset-x-0 top-0 h-1', tone.bar, className)}
         >
             <span className="sr-only">{text}</span>
         </span>

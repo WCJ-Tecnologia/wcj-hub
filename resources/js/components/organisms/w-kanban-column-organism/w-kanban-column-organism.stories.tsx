@@ -21,7 +21,6 @@ const meta = {
     argTypes: {
         stage: { control: 'object' },
         cards: { control: 'object' },
-        order: { control: 'inline-radio', options: ['priority', 'manual'] },
         abilities: { control: 'object' },
         highlighted: { control: 'boolean' },
         creating: { control: 'boolean' },
@@ -40,7 +39,6 @@ const meta = {
     args: {
         stage: BACKLOG,
         cards: inStage(BACKLOG.id),
-        order: 'priority',
         abilities: ABILITIES_GESTOR,
         stages: STAGES,
         areas: BOARD_OPTIONS.areas,

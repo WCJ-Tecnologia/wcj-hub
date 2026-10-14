@@ -17,13 +17,13 @@ Arrastar e soltar com o dnd-kit:
 
 **O que vira `onMove(intent)`:**
 
-| Gesto                                           | `MoveIntent`                                                             |
-| ----------------------------------------------- | ------------------------------------------------------------------------ |
-| Soltar em outra coluna (sobre card ou no vazio) | `from`, `to`; `index` = posição de destino na ordem manual, senão `null` |
-| Soltar na mesma coluna, ordem manual            | `from === to`, `index` = nova posição (só se mudou)                      |
-| Soltar na mesma coluna, ordem por prioridade    | nada (F3 §04)                                                            |
-| Soltar fora das colunas, Esc                    | nada                                                                     |
-| _Mover para…_ do menu ⋯ do card                 | `from` = etapa atual, `to` = a escolhida, `index: null`                  |
+| Gesto                                           | `MoveIntent`                                                                           |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Soltar em outra coluna (sobre card ou no vazio) | `from`, `to`; `index` = onde caiu; `sequence` = a coluna de destino na ordem que ficou |
+| Soltar na mesma coluna (qualquer ordem)         | `from === to`, `index` e `sequence` (só se a posição mudou)                            |
+| Soltar com a ordem em _Prioridade_              | o mesmo, e antes `onOrderChange('manual')`: a prioridade desfaria o soltar (14/10)     |
+| Soltar fora das colunas, Esc                    | nada                                                                                   |
+| _Mover para…_ do menu ⋯ do card                 | `from` = etapa atual, `to` = a escolhida, `index` e `sequence` nulos (entra no fim)    |
 
 **O quadro não abre diálogo nem decide regra.** Ele só emite o `MoveIntent`; a página passa ao `useBoardMove` (`start`), que recusa (toast), abre os diálogos ou manda ao servidor.
 

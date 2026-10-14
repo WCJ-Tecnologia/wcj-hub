@@ -74,11 +74,23 @@ function BoardMoveFlowDemo(props: DemoProps) {
     const dev = useFlow(BOARD_PROJECT, ABILITIES_DEV, props, setLast, setDenied);
 
     const moves = [
-        { label: 'Backlog → To do (sem sprint)', run: () => gestor.start({ card: SGM_21, from: BACKLOG, to: TODO, index: null }) },
-        { label: 'Doing → Paused', run: () => gestor.start({ card: CARD_COMPLETO, from: DOING, to: PAUSED, index: null }) },
-        { label: 'In test → Doing (retrabalho)', run: () => gestor.start({ card: SGM_14, from: IN_TEST, to: DOING, index: 0 }) },
-        { label: 'In test → Done (aviso)', run: () => gestor.start({ card: SGM_14, from: IN_TEST, to: DONE, index: null }) },
-        { label: 'Backlog → To do como dev (negado)', run: () => dev.start({ card: SGM_21, from: BACKLOG, to: TODO, index: null }) },
+        {
+            label: 'Backlog → To do (sem sprint)',
+            run: () => gestor.start({ card: SGM_21, from: BACKLOG, to: TODO, index: null, sequence: null }),
+        },
+        { label: 'Doing → Paused', run: () => gestor.start({ card: CARD_COMPLETO, from: DOING, to: PAUSED, index: null, sequence: null }) },
+        {
+            label: 'In test → Doing (retrabalho)',
+            run: () => gestor.start({ card: SGM_14, from: IN_TEST, to: DOING, index: 0, sequence: null }),
+        },
+        {
+            label: 'In test → Done (aviso)',
+            run: () => gestor.start({ card: SGM_14, from: IN_TEST, to: DONE, index: null, sequence: null }),
+        },
+        {
+            label: 'Backlog → To do como dev (negado)',
+            run: () => dev.start({ card: SGM_21, from: BACKLOG, to: TODO, index: null, sequence: null }),
+        },
     ];
 
     return (
