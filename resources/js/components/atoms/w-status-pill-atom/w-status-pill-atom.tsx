@@ -50,7 +50,14 @@ const PROJECT: Record<string, Entry> = {
     inactive: { tone: 'neutral', icon: XCircle, label: 'Encerrado' },
 };
 
-const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT, project: PROJECT };
+// F3 §02: o resultado do critério de aceite, marcado pelo QA em F4 (P36).
+const CRITERION: Record<string, Entry> = {
+    pending: { tone: 'pending', icon: Circle, label: 'A testar' },
+    approved: { tone: 'approved', icon: CheckCircle2, label: 'Aprovado' },
+    failed: { tone: 'rejected', icon: XCircle, label: 'Reprovado' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT, project: PROJECT, criterion: CRITERION };
 
 export type WStatusPillKind = keyof typeof SETS;
 
