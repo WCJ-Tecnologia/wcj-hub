@@ -27,6 +27,8 @@ const config: StorybookConfig = {
         '../resources/js/components/organisms/**/*.stories.@(ts|tsx)',
         '../resources/js/components/templates/**/*.stories.@(ts|tsx)',
         '../resources/js/components/pages/**/*.stories.@(ts|tsx)',
+        // Hooks que montam interface (ex.: use-board-move, o fluxo de diálogos do quadro).
+        '../resources/js/hooks/**/*.stories.@(ts|tsx)',
     ],
     addons: [
         getAbsolutePath('@storybook/addon-docs'),
