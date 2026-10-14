@@ -2,7 +2,7 @@
  * Dados de exemplo do quadro (F3) para as stories: o mesmo formato que o TaskPresenter do B3 manda
  * (`resources/js/types/quadro.ts`). Projeto e nomes no padrão do ExemploSeeder.
  */
-import type { BoardAbilities, BoardCard, BoardOptions, BoardProject, BoardStage, PersonRef } from '@/types/quadro';
+import type { BoardAbilities, BoardCard, BoardFilters, BoardOptions, BoardProject, BoardStage, PersonRef } from '@/types/quadro';
 
 export const BOARD_PROJECT: BoardProject = {
     id: 1,
@@ -38,7 +38,13 @@ export const DIEGO: PersonRef = { id: 5, name: 'Diego Prado' };
 
 export const MEMBERS: PersonRef[] = [ANA, RAFAEL, BRUNO, CARLA, DIEGO];
 
+const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria' };
+const BUG = { id: 2, slug: null, label: 'Correção de bug' };
+const SUPORTE = { id: 3, slug: 'support', label: 'Suporte' };
+const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)' };
+
 export const BOARD_OPTIONS: BoardOptions = {
+    types: [MELHORIA, BUG, SUPORTE, GMUD],
     areas: [
         { id: 1, name: 'Cadastro' },
         { id: 2, name: 'Financeiro' },
@@ -75,11 +81,6 @@ export const ABILITIES_GESTOR: BoardAbilities = { create_card: true, create_supp
 export const ABILITIES_DEV: BoardAbilities = { create_card: true, create_support: false, manage_sprint: false, move: true, archive: false };
 /** Projeto encerrado: ninguém cria card; mover segue (P7). */
 export const ABILITIES_ENCERRADO: BoardAbilities = { ...ABILITIES_GESTOR, create_card: false, create_support: false };
-
-const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria' };
-const BUG = { id: 2, slug: null, label: 'Correção de bug' };
-const SUPORTE = { id: 3, slug: 'support', label: 'Suporte' };
-const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)' };
 
 /** Card mínimo: só o que o criar rápido preenche (P17, R4). */
 export function card(partial: Partial<BoardCard> & Pick<BoardCard, 'id' | 'key' | 'title' | 'stage_id'>): BoardCard {
@@ -263,3 +264,17 @@ export const CARDS: BoardCard[] = [
 
 /** O quadro de um projeto novo: nenhum card (F3 §03, estado vazio). */
 export const CARDS_VAZIO: BoardCard[] = [];
+
+/** Quadro sem filtro nenhum: o que o controller manda na primeira visita (F3 §05). */
+export const BOARD_FILTERS_VAZIO: BoardFilters = {
+    search: '',
+    mine: false,
+    developer_id: null,
+    qa_id: null,
+    type_id: null,
+    area_id: null,
+    priority: null,
+    marks: [],
+    old_done: false,
+    archived: false,
+};

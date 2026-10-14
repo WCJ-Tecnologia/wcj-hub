@@ -133,6 +133,8 @@ export interface BoardProject {
 /** Opções das listas que o quadro e os diálogos usam. */
 export interface BoardOptions {
     areas: AreaRef[];
+    /** Tipos de card ativos, lista geral (P18): opções do filtro *Tipo* do quadro (F3 §05). */
+    types: TaskTypeRef[];
     /** Pessoas alocadas e ativas (P20, P58). */
     members: PersonRef[];
     /** Motivos de retrabalho ativos, lista geral (P40); `slug === 'other'` pede texto. */
@@ -166,4 +168,30 @@ export interface MovePayload {
     rework_reason_text?: string;
     /** Sem sprint aberta: a sprint proposta, criada na mesma transação (R5). */
     new_sprint?: { name: string; goal: string; starts_on: string; ends_on: string };
+}
+
+/** As marcas do card que o filtro do quadro conhece (F3 §05); os ids são os do `WTaskMarksMolecule`. */
+export type BoardMark = 'late' | 'pause' | 'rework' | 'support' | 'proposed';
+
+/**
+ * Filtros do quadro (F3 §05), como o controller do B3 lê da URL e devolve em `filters`.
+ * `null`, `''`, `[]` e `false` = sem filtro. A filtragem é do servidor; a tela repete no
+ * cliente só para o retorno instantâneo (`applyFilters`, lib/quadro.ts).
+ */
+export interface BoardFilters {
+    /** Chave (`SGM-17`) ou trecho do título. */
+    search: string;
+    /** *Só os meus*: sou dev, QA ou participante (P58). */
+    mine: boolean;
+    developer_id: number | null;
+    qa_id: number | null;
+    type_id: number | null;
+    area_id: number | null;
+    priority: PrioritySlug | null;
+    /** Cards com qualquer uma das marcas escolhidas. */
+    marks: BoardMark[];
+    /** *Mostrar prontos antigos*: prontos de sprints anteriores à última encerrada (P13). Só o servidor sabe. */
+    old_done: boolean;
+    /** *Arquivados*: troca o quadro pela lista de arquivados (P26). */
+    archived: boolean;
 }

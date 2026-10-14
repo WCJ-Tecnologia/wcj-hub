@@ -21,7 +21,16 @@ export const SHARED_PROPS: SharedProps = {
             role: 'admin',
             role_label: 'Administrador',
             must_change_password: false,
-            abilities: { manage_users: true, delete_records: true, view_audit_logs: true, reset_passwords: true, view_clients: true, view_contacts: true, view_projects: true, manage_projects: true },
+            abilities: {
+                manage_users: true,
+                delete_records: true,
+                view_audit_logs: true,
+                reset_passwords: true,
+                view_clients: true,
+                view_contacts: true,
+                view_projects: true,
+                manage_projects: true,
+            },
         },
     },
     flash: {},
@@ -45,15 +54,39 @@ export function usePage<T = SharedProps>() {
 
 const log = (name: string) => action(`router.${name}`);
 
+interface VisitCallbacks {
+    onStart?: () => void;
+    onSuccess?: () => void;
+    onFinish?: () => void;
+}
+
+/**
+ * Escrita (post/put/patch/delete) simula uma visita que deu certo, como o `submit` do useForm abaixo:
+ * `onStart` na hora e, depois de um instante (para o spinner aparecer), `onSuccess` e `onFinish`.
+ * Sem isso, a tela que espera o `onFinish` (trava de clique duplo, diálogo que fecha no sucesso) ficaria presa.
+ */
+const write = (name: string, optionsAt: number) => {
+    const logged = log(name);
+    return (...args: unknown[]) => {
+        logged(...args);
+        const options = (args[optionsAt] ?? {}) as VisitCallbacks;
+        options.onStart?.();
+        setTimeout(() => {
+            options.onSuccess?.();
+            options.onFinish?.();
+        }, 400);
+    };
+};
+
 export const router = {
     get: (...args: unknown[]) => log('get')(...args),
-    post: (...args: unknown[]) => log('post')(...args),
-    put: (...args: unknown[]) => log('put')(...args),
-    patch: (...args: unknown[]) => log('patch')(...args),
-    delete: (...args: unknown[]) => log('delete')(...args),
+    post: write('post', 2),
+    put: write('put', 2),
+    patch: write('patch', 2),
+    delete: write('delete', 1),
     visit: (...args: unknown[]) => log('visit')(...args),
     reload: (...args: unknown[]) => log('reload')(...args),
-    // Real visit options call onStart/onFinish; nothing happens here.
+    // GET e visit só aparecem no Actions; o router.on real avisa das visitas, aqui não há visita.
     on: () => () => undefined,
 };
 

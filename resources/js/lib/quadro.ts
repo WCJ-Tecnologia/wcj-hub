@@ -1,10 +1,13 @@
 import type {
     BoardAbilities,
     BoardCard,
+    BoardFilters,
+    BoardMark,
     BoardOrder,
     BoardProject,
     ChildProgress,
     MoveIntent,
+    BoardStage,
     PrioritySlug,
     StageRoleSlug,
 } from '@/types/quadro';
@@ -88,4 +91,80 @@ export function doneWarningText(summary: NonNullable<BoardCard['qa_summary']>): 
 /** Horas com decimais no padrão da tela: 12 → "12 h", 1.5 → "1,5 h". */
 export function hours(value: number): string {
     return `${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} h`;
+}
+
+/** Rótulo de cada marca no filtro do quadro (F3 §05), na ordem em que aparecem. */
+export const BOARD_MARK_LABEL: Record<BoardMark, string> = {
+    late: 'Atrasado',
+    pause: 'Em pausa',
+    rework: 'Com retrabalho',
+    support: 'Suporte',
+    proposed: 'Reestimativa proposta',
+};
+
+/** Algum filtro que esconde card está ligado (busca, pessoas, listas, marcas). Prontos antigos e Arquivados mostram mais, não menos. */
+export function hasActiveFilters(filters: BoardFilters): boolean {
+    return Boolean(
+        filters.search.trim() ||
+        filters.mine ||
+        filters.developer_id ||
+        filters.qa_id ||
+        filters.type_id ||
+        filters.area_id ||
+        filters.priority ||
+        filters.marks.length > 0,
+    );
+}
+
+/** Minúsculas e sem acento: "Integração" acha por "integracao". */
+const fold = (text: string) =>
+    text
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLocaleLowerCase('pt-BR');
+
+function hasMark(card: BoardCard, mark: BoardMark, stageRole: StageRoleSlug | undefined): boolean {
+    switch (mark) {
+        case 'late':
+            return card.late;
+        case 'pause':
+            return stageRole === 'paused';
+        case 'rework':
+            return card.rework_count > 0;
+        case 'support':
+            return card.type.slug === 'support';
+        case 'proposed':
+            return card.proposed_hours !== null;
+    }
+}
+
+/**
+ * Filtra os cards do quadro no navegador (F3 §05). **Só para o Storybook e para o filtro
+ * instantâneo; o servidor é a fonte**: o controller do B3 devolve os cards já filtrados, e aplicar
+ * de novo aqui não muda nada. *Mostrar prontos antigos* e *Arquivados* dependem de dado que o
+ * quadro não tem (sprint do pronto, cards arquivados) e ficam só com o servidor.
+ *
+ * - Busca: chave (`SGM-17`, `sgm-17`) ou trecho do título, sem diferença de acento nem maiúscula.
+ * - *Só os meus*: `currentUserId` é dev, QA ou participante (P58).
+ * - Dev, QA, Tipo, Área, Prioridade: igualdade.
+ * - Marcas: o card tem **qualquer uma** das marcas escolhidas; a pausa é estar numa etapa de papel `paused` (P15).
+ */
+export function applyFilters(cards: BoardCard[], filters: BoardFilters, currentUserId: number | null, stages: BoardStage[]): BoardCard[] {
+    const term = fold(filters.search.trim());
+    const roleOf = new Map(stages.map((stage) => [stage.id, stage.role]));
+
+    return cards.filter((card) => {
+        if (term && !fold(card.key).includes(term) && !fold(card.title).includes(term)) return false;
+        if (filters.mine) {
+            const people = [card.developer, card.qa, ...card.participants];
+            if (currentUserId === null || !people.some((person) => person?.id === currentUserId)) return false;
+        }
+        if (filters.developer_id && card.developer?.id !== filters.developer_id) return false;
+        if (filters.qa_id && card.qa?.id !== filters.qa_id) return false;
+        if (filters.type_id && card.type.id !== filters.type_id) return false;
+        if (filters.area_id && card.area?.id !== filters.area_id) return false;
+        if (filters.priority && card.priority !== filters.priority) return false;
+        if (filters.marks.length > 0 && !filters.marks.some((mark) => hasMark(card, mark, roleOf.get(card.stage_id)))) return false;
+        return true;
+    });
 }
