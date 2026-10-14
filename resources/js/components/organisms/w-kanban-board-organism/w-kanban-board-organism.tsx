@@ -1,4 +1,5 @@
 import {
+    AutoScrollActivator,
     closestCorners,
     DndContext,
     DragOverlay,
@@ -207,6 +208,10 @@ export function WKanbanBoardOrganism({
             <DndContext
                 sensors={sensors}
                 collisionDetection={collision}
+                // Rolagem automática ao encostar na borda: pelo ponteiro (o card arrastado tem quase a largura de um
+                // celular e entraria na zona da borda o tempo todo), zona de 12 % e 6 px a cada 10 ms (600 px/s, cerca de
+                // uma coluna a cada meio segundo). O padrão (10 px a cada 5 ms pelo retângulo do card) passava de todas as colunas.
+                autoScroll={{ activator: AutoScrollActivator.Pointer, acceleration: 6, interval: 10, threshold: { x: 0.12, y: 0.2 } }}
                 accessibility={{ announcements, screenReaderInstructions }}
                 onDragStart={handleStart}
                 onDragOver={handleOver}
@@ -219,7 +224,12 @@ export function WKanbanBoardOrganism({
                     // Focável: no teclado, as setas rolam as colunas (scrollable-region-focusable). `relative` prende os
                     // `sr-only` (absolutos) das colunas aqui dentro; sem ele, a página inteira ganhava rolagem horizontal.
                     tabIndex={0}
-                    className="relative flex h-[calc(100dvh-14rem)] min-h-96 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain rounded-md pb-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:snap-none"
+                    className={cn(
+                        'relative flex h-[calc(100dvh-14rem)] min-h-96 gap-3 overflow-x-auto overscroll-x-contain rounded-md pb-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                        // No celular as colunas encaixam ao rolar com o dedo; arrastando um card o encaixe sai, senão cada
+                        // passo da rolagem automática pula para a coluna seguinte inteira.
+                        active ? 'snap-none' : 'snap-x snap-mandatory md:snap-none',
+                    )}
                 >
                     {stages.map((stage) => (
                         <WKanbanColumnOrganism
