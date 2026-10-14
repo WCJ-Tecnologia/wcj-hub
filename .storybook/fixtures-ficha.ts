@@ -5,6 +5,7 @@
  */
 import type {
     AcceptanceCriterion,
+    BoardStage,
     ChildCard,
     TaskAbilities,
     TaskAttachment,
@@ -28,6 +29,8 @@ export const ABILITIES_FICHA_GESTOR: TaskAbilities = {
     manage_sprint: true,
     archive: true,
     delete: false,
+    manage_types: true,
+    manage_areas: true,
 };
 
 export const ABILITIES_FICHA_DEV: TaskAbilities = {
@@ -41,6 +44,8 @@ export const ABILITIES_FICHA_DEV: TaskAbilities = {
     manage_sprint: false,
     archive: false,
     delete: false,
+    manage_types: false,
+    manage_areas: false,
 };
 
 /** Gestor num card nunca usado: *Excluir* aparece (P26). */
@@ -58,10 +63,16 @@ export const ABILITIES_FICHA_LEITURA: TaskAbilities = {
     manage_sprint: false,
     archive: false,
     delete: false,
+    manage_types: false,
+    manage_areas: false,
 };
 
-const [BACKLOG, TODO, DOING, PAUSED, CODE_REVIEW, IN_TEST, DONE, SUPPORT] = STAGES;
-void [PAUSED, CODE_REVIEW, IN_TEST, SUPPORT];
+const stage = (role: BoardStage['role']) => STAGES.find((item) => item.role === role)!;
+const BACKLOG = stage('queue');
+const TODO = stage('sprint');
+const DOING = stage('development');
+const PAUSED = stage('paused');
+const DONE = stage('done');
 
 /** Os cards do projeto para as buscas de card pai e tarefa de origem (sem o próprio card nem arquivados). */
 export const PICK_CARDS: TaskPickRef[] = [

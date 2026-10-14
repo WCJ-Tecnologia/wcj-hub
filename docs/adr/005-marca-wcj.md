@@ -21,7 +21,7 @@ O Hub é sistema interno da WCJ, então a marca entra inteira (`docs/brand/READM
 1. **Dois azuis.**
    - `brand.primary` é o da marca: `#1A6CF3` no claro, com texto branco (4,68:1), e `#4D90FF` no escuro. É usado em fundo de botão, foco, seleção e checkbox.
    - Token novo `brand.primaryText`, que gera `--primary-text` e a classe `text-primary-text`: `#0F4FC4` no claro (6,67:1 sobre `#F5F7FB`) e `#4D90FF` no escuro. É o azul de **texto** (link, eyebrow, número de indicador), como manda a regra de contraste do Brand Board.
-2. **Cantos de 5 px.** `radius` é `0.3125rem`, e a escala do `build-theme.mjs` fica `sm` 3 px, `md` e `lg` 5 px, `xl` 8 px e `2xl` 10 px. Botão e campo ficam em 5 px; cartão e modal, um pouco mais.
+2. **Cantos de 8 px** (revisto por Lucas Scholz em 14/10/2026, ao ver o quadro no Storybook: os 5 px do Brand Board deixavam tudo "muito reto" em tela de produto). `radius` é `0.5rem`, e a escala do `build-theme.mjs` fica `sm` 6 px, `md` 8 px, `lg` 10 px, `xl` 12 px e `2xl` 16 px. Botão e campo ficam em 8 px; cartão e modal, um pouco mais. O card do quadro usa `md` no corpo e `xl` na aba da prioridade. Até 14/10 valia 5 px (`0.3125rem`; `sm` 3, `md`/`lg` 5, `xl` 8, `2xl` 10).
 3. **Logo pelos arquivos oficiais, sem configuração.**
    - Os SVG de `docs/brand/logo/` são copiados sem alteração para `public/brand/` e escolhidos pelo `WBrandLogoAtom` (`variant`: full, horizontal ou symbol; `surface`: light, dark ou auto).
    - Sai o `APP_BRAND_LOGO` / `app.brand.logo` do template, porque o Hub é só da WCJ.

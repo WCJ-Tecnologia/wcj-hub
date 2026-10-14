@@ -113,6 +113,12 @@ function flatten(mode, name) {
         out[`--tag-${key}-bg`] = require_(pair, 'bg', `${p}.tags.${key}`);
     }
 
+    // Cores da faixa de prioridade do card (P19, decisão de 14/10): vivas, com texto em primary-foreground (AA conferido).
+    const priority = require_(mode, 'priority', p);
+    for (const key of ['urgent', 'high', 'normal', 'low']) {
+        out[`--priority-${key}`] = require_(priority, key, `${p}.priority`);
+    }
+
     const sb = require_(mode, 'sidebar', p);
     out['--sidebar'] = require_(sb, 'background', `${p}.sidebar`);
     for (const key of ['foreground', 'primary', 'primaryForeground', 'accent', 'accentForeground', 'border', 'ring']) {
@@ -176,9 +182,9 @@ ${block(dark, 'dark')}
     /* Escala do Hub (ADR-005): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
     --radius-sm: calc(var(--radius) - 2px);
     --radius-md: var(--radius);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 3px);
-    --radius-2xl: calc(var(--radius) + 5px);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
 
     /* Tamanho abaixo de xs para rótulos e eyebrows; nada de text-[Npx] em componente. */
     --text-2xs: 0.6875rem;

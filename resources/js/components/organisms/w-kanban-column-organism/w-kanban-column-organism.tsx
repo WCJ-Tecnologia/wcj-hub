@@ -10,7 +10,7 @@ import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { cn } from '@/lib/utils';
-import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef } from '@/types/quadro';
+import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef, TaskTypeRef } from '@/types/quadro';
 
 /** Id do card no dnd-kit (`card-17`); o da coluna é `stage-3`. O quadro lê os dois no `onDragEnd`. */
 export const cardDndId = (card: Pick<BoardCard, 'id'>) => `card-${card.id}`;
@@ -22,7 +22,16 @@ export type BoardDndData = { type: 'card'; card: BoardCard; stage_id: number } |
 /** Os callbacks que a coluna repassa a cada card. */
 export type ColumnCardCallbacks = Pick<
     WTaskCardOrganismProps,
-    'onMove' | 'onChangePriority' | 'onChangeArea' | 'onToggleParticipant' | 'onOpen'
+    | 'onMove'
+    | 'onChangePriority'
+    | 'onChangeArea'
+    | 'onToggleParticipant'
+    | 'onChangeType'
+    | 'onCreateType'
+    | 'onUpdateType'
+    | 'onCreateArea'
+    | 'onUpdateArea'
+    | 'onOpen'
 >;
 
 export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
@@ -34,6 +43,8 @@ export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
     /** As etapas do projeto, para o *Mover para…* do card. */
     stages: BoardStage[];
     areas: AreaRef[];
+    /** Tipos do projeto (P18): opções do popover do tipo (14/10). */
+    types?: TaskTypeRef[];
     members: PersonRef[];
     /** O card arrastado está sobre esta coluna: destaca a área de soltar. */
     highlighted?: boolean;
@@ -56,6 +67,7 @@ export function WKanbanColumnOrganism({
     abilities,
     stages,
     areas,
+    types = [],
     members,
     highlighted = false,
     onCreate,
@@ -136,6 +148,7 @@ export function WKanbanColumnOrganism({
                                 stage={stage}
                                 stages={stages}
                                 areas={areas}
+                                types={types}
                                 members={members}
                                 draggable={abilities.move}
                                 {...callbacks}
@@ -155,6 +168,7 @@ interface SortableCardProps extends ColumnCardCallbacks {
     stage: BoardStage;
     stages: BoardStage[];
     areas: AreaRef[];
+    types: TaskTypeRef[];
     members: PersonRef[];
     /** Sem `abilities.move` o card não arrasta (e o *Mover para…* não aparece). */
     draggable: boolean;
@@ -166,7 +180,7 @@ interface SortableCardProps extends ColumnCardCallbacks {
  * focável (`tabIndex`) para o teclado do dnd-kit, e só ele ativa o arrastar por teclado
  * (`setActivatorNodeRef`): Enter no título abre a ficha, não pega o card.
  */
-function SortableCard({ card, stage, stages, areas, members, draggable, onMove, ...callbacks }: SortableCardProps) {
+function SortableCard({ card, stage, stages, areas, types, members, draggable, onMove, ...callbacks }: SortableCardProps) {
     const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
         id: cardDndId(card),
         data: { type: 'card', card, stage_id: card.stage_id } satisfies BoardDndData,
@@ -198,6 +212,7 @@ function SortableCard({ card, stage, stages, areas, members, draggable, onMove, 
                 stage={stage}
                 stages={stages}
                 areas={areas}
+                types={types}
                 members={members}
                 onMove={draggable ? onMove : undefined}
                 {...callbacks}

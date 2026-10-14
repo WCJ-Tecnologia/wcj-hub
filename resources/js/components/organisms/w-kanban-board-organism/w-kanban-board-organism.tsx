@@ -39,7 +39,7 @@ export interface WKanbanBoardOrganismProps extends Omit<ColumnCardCallbacks, 'on
     order: BoardOrder;
     project: BoardProject;
     abilities: BoardAbilities;
-    options: Pick<BoardOptions, 'areas' | 'members'>;
+    options: Pick<BoardOptions, 'areas' | 'types' | 'members'>;
     /**
      * Pedido de movimento: do arrastar (`index` e `sequence` = onde o card foi solto e a coluna na
      * ordem que ficou, como no Trello) e do *Mover para…* do card (os dois nulos). O quadro não abre
@@ -253,6 +253,7 @@ export function WKanbanBoardOrganism({
                             abilities={abilities}
                             stages={stages}
                             areas={options.areas}
+                            types={options.types}
                             members={options.members}
                             highlighted={active !== null && overStage === stage.id && active.stage_id !== stage.id}
                             onCreate={onCreate}
@@ -272,6 +273,7 @@ export function WKanbanBoardOrganism({
                             card={active}
                             stage={stageById(active.stage_id) ?? stages[0]}
                             areas={options.areas}
+                            types={options.types}
                             members={options.members}
                             dragging
                             className="w-68"

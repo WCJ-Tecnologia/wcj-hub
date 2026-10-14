@@ -7,7 +7,7 @@ Organismo · `organisms/w-board-filters-organism/w-board-filters-organism.tsx` �
 A barra acima do quadro (F3 §05), controlada (`filters` + `onChange`):
 
 - **linha 1:** busca por chave (`SGM-17`) ou trecho do título, com o _Limpar busca_; _Só os meus_ (Switch: sou dev, QA ou participante, P58); à direita, o `WBoardOrderToggleMolecule`;
-- **linha 2:** Selects Dev, QA, Tipo, Área e Prioridade (com o chip do `WPriorityMarkAtom`, Urgente primeiro); _Marcas_ num Popover com checkboxes (Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta) e o número de marcas escolhidas no botão; _Mostrar prontos antigos_ e _Arquivados_ (Switches); _Limpar filtros_ quando algum filtro que esconde card está ligado.
+- **linha 2:** Selects Tipo, Área, Prioridade (com o chip do `WPriorityMarkAtom`, Urgente primeiro), Dev e QA, nessa ordem (decisão de 14/10); _Marcas_ num Popover com checkboxes (Atrasado, Em pausa, Com retrabalho, Suporte, Reestimativa proposta) e o número de marcas escolhidas no botão; _Mostrar prontos antigos_ e _Arquivados_ (Switches); _Limpar filtros_ quando algum filtro que esconde card está ligado.
 
 Também exporta `clearBoardFilters(filters)` (zera tudo menos _Mostrar prontos antigos_ e _Arquivados_).
 

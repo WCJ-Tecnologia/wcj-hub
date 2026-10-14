@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { WTagAtom } from '@/components/atoms/w-tag-atom/w-tag-atom';
 import { WTaskKeyAtom } from '@/components/atoms/w-task-key-atom/w-task-key-atom';
 import { WTaskMarksMolecule } from '@/components/molecules/w-task-marks-molecule/w-task-marks-molecule';
+import { type TagPayload, WTagPopoverOrganism } from '@/components/organisms/w-tag-popover-organism/w-tag-popover-organism';
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
 import {
@@ -33,7 +34,7 @@ import { Input } from '@/components/shadcn/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { coverOf, crossTestedText, detailToBoardCard, HISTORY_SOON_TEXT, situationText } from '@/lib/ficha';
 import { cn, dateBr } from '@/lib/utils';
-import type { BoardStage, TaskDetail } from '@/types/quadro';
+import type { AreaRef, BoardStage, TaskDetail, TaskTypeRef } from '@/types/quadro';
 
 /** Limite do título (F3 §02, P17), o mesmo do criar rápido. */
 export const TITLE_MAX = 200;
@@ -52,6 +53,19 @@ export interface WTaskDetailHeaderOrganismProps {
     onArchive: () => void;
     onUnarchive: () => void;
     onDelete: () => void;
+    /** Tipos e áreas ativas do projeto (`options.types`, `options.areas`): as listas dos popovers das etiquetas (14/10). */
+    types?: TaskTypeRef[];
+    areas?: AreaRef[];
+    /** Com ele (e `abilities.update`), a etiqueta do tipo abre a lista para trocar. */
+    onChangeType?: (type: TaskTypeRef) => void;
+    /** Com eles (e `abilities.manage_types`), o popover do tipo ganha *Novo tipo* e o lápis (só neste projeto). */
+    onCreateType?: (payload: TagPayload) => void;
+    onUpdateType?: (type: TaskTypeRef, payload: TagPayload) => void;
+    /** Com ele (e `abilities.update`), a etiqueta da área (ou "+ Área") abre a lista para trocar (14/10). */
+    onChangeArea?: (area: AreaRef | null) => void;
+    /** Com eles (e `abilities.manage_areas`), o popover ganha *Nova área* e o lápis de editar nome e cor. */
+    onCreateArea?: (payload: TagPayload) => void;
+    onUpdateArea?: (area: AreaRef, payload: TagPayload) => void;
     className?: string;
 }
 
@@ -71,6 +85,14 @@ export function WTaskDetailHeaderOrganism({
     onArchive,
     onUnarchive,
     onDelete,
+    types = [],
+    areas = [],
+    onChangeType,
+    onCreateType,
+    onUpdateType,
+    onChangeArea,
+    onCreateArea,
+    onUpdateArea,
     className,
 }: WTaskDetailHeaderOrganismProps) {
     const { abilities } = detail;
@@ -94,8 +116,44 @@ export function WTaskDetailHeaderOrganism({
                 <div className="grid min-w-0 flex-1 gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                         <WTaskKeyAtom taskKey={detail.key} />
-                        <WTagAtom label={detail.type.label} color={detail.type.color} kind="type" />
-                        {detail.area && <WTagAtom label={detail.area.name} color={detail.area.color} kind="area" />}
+                        {onChangeType && abilities.update ? (
+                            <WTagPopoverOrganism
+                                kind="type"
+                                options={types.map((type) => ({ id: type.id, name: type.label, color: type.color }))}
+                                value={{ id: detail.type.id, name: detail.type.label, color: detail.type.color }}
+                                busy={busy}
+                                errors={errors}
+                                onChange={(option) => {
+                                    const type = option && types.find((item) => item.id === option.id);
+                                    if (type) onChangeType(type);
+                                }}
+                                onCreate={abilities.manage_types ? onCreateType : undefined}
+                                onUpdate={
+                                    abilities.manage_types && onUpdateType
+                                        ? (option, payload) => {
+                                              const type = types.find((item) => item.id === option.id);
+                                              if (type) onUpdateType(type, payload);
+                                          }
+                                        : undefined
+                                }
+                            />
+                        ) : (
+                            <WTagAtom label={detail.type.label} color={detail.type.color} kind="type" />
+                        )}
+                        {onChangeArea && abilities.update ? (
+                            <WTagPopoverOrganism
+                                kind="area"
+                                options={areas}
+                                value={detail.area}
+                                busy={busy}
+                                errors={errors}
+                                onChange={(option) => onChangeArea(option && (areas.find((item) => item.id === option.id) ?? option))}
+                                onCreate={abilities.manage_areas ? onCreateArea : undefined}
+                                onUpdate={abilities.manage_areas ? onUpdateArea : undefined}
+                            />
+                        ) : (
+                            detail.area && <WTagAtom label={detail.area.name} color={detail.area.color} kind="area" />
+                        )}
                         {detail.parent && (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <CornerDownRight className="size-3.5" aria-hidden />

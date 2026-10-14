@@ -221,7 +221,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 #### 2.2 Quadro e etapas
 
-- **P10** Cada projeto tem o próprio quadro. Padrão: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` e `Support`, em inglês. **Padrão.**
+- **P10** Cada projeto tem o próprio quadro. Padrão: `Support`, `Backlog`, `To do`, `Paused`, `Doing`, `Code-review`, `In test` e `Done`, em inglês (ordem decidida por Lucas Scholz em 14/10: suporte antes do backlog e a pausa logo depois do To do). **Padrão.**
 - **P11** O gestor renomeia, cria, remove e reordena etapas. Toda etapa tem um papel (fila, sprint, desenvolvimento, code review, teste, pronto, pausa ou suporte); os indicadores leem o papel, não o nome. As etapas de fila (`Backlog`), sprint (`To do`) e suporte (`Support`) existem sempre, uma de cada, porque o sistema leva o card para elas sozinho: o gestor renomeia e reordena, mas não remove nem duplica. Também existe sempre pelo menos uma etapa de desenvolvimento (`Doing`), para onde a reprovação na homologação devolve o card (P43).
 - **P12** Para remover uma etapa que tem tarefas, é preciso dizer para onde elas vão.
 - **P13** Qualquer pessoa alocada move o card entre as etapas, a partir do `To do`. Pôr e tirar da sprint é do gestor e do Administrador (P45). Dentro da coluna, a ordem padrão é por prioridade e, na mesma prioridade, a chave mais antiga primeiro; quem quiser troca o quadro para **ordem manual** e arrasta o card para cima e para baixo (decisão de 06/10). Na coluna de pronto, o quadro mostra só os cards da sprint aberta e da última encerrada; os mais antigos aparecem só se a pessoa pedir (decisão de 06/10).
@@ -232,7 +232,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 
 - **P16** Chave `<prefixo>-<número>` (ex.: `SGM-17`), sequencial por projeto, nunca reaproveitada.
 - **P17** Criar o card pede só o título: ele nasce no `Backlog` com tipo Melhoria e prioridade Normal, e o resto fica recolhido e opcional (R4). A tarefa de projeto de cliente é escrita, quando houver, no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
-- **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD; lista geral editável, G7) e área (lista do projeto, que nasce vazia). Melhoria e Suporte se renomeiam, mas não se desativam: o sistema depende deles (P17, P52).
+- **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD; lista geral editável, G7) e área (lista do projeto, que nasce vazia). Melhoria e Suporte se renomeiam, mas não se desativam: o sistema depende deles (P17, P52). **Decisão de 14/10 (Lucas Scholz):** tipo e área são do projeto e têm cor (paleta fechada de 10); todo projeto nasce com os tipos padrão (Melhoria, Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e sem área; o gestor cria e edita nome e cor dos dois pelo próprio quadro, clicando na etiqueta, sem propagar a outros projetos.
 - **P19** Prioridade: baixa, normal, alta ou urgente.
 - **P20** A tarefa tem **um dev** e **um QA**. Os dois podem ficar vazios, como as horas (P27).
 - ~~**P21**~~ Saiu: a tarefa sem dev pode entrar na sprint (premissa).

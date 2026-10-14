@@ -1133,8 +1133,15 @@ PENDENTE DE CONFERÊNCIA do Lucas Alencar; migração aditiva no B3, só depois:
 - task_types.color (varchar(10), null) e project_areas.color (varchar(10), null): a cor da etiqueta de
   tipo e de área no card, como no Trello. Paleta fechada de 10 nomes (gray, blue, sky, green, lime,
   yellow, orange, red, pink, purple; `TagColor` em `resources/js/types/quadro.ts`, tokens em
-  `design/tokens.json`), escolhida no cadastro da lista geral (F1, Administrador) e das áreas do
-  projeto (F2, gestor); null = etiqueta cinza. No card e na ficha, tipo sempre antes da área (F3 §03).
+  `design/tokens.json`); null = etiqueta cinza. No card e na ficha, tipo sempre antes da área (F3 §03).
+- task_types passa a ser DO PROJETO (decisão de 14/10, mais tarde): ganha project_id (fk projects, not
+  null, cascade); o unique de slug vira (project_id, slug) e o de label vira (project_id, label). Ao
+  criar o projeto, o Service semeia os 5 padrão: improvement Melhoria, — Correção de bug, support
+  Suporte, — Mudança (GMUD), development Desenvolvimento (novo: funcionalidade do zero). O gestor cria
+  tipos e edita nome e cor dos seus pelo próprio quadro (clicando na etiqueta), sem propagar a outros
+  projetos; o mesmo para project_areas (criar e editar nome e cor pelo quadro). O código continua
+  achando support e improvement pelo slug, agora dentro do projeto. A lista geral de tipos sai de F2
+  (ficam só os motivos de retrabalho); a tela de configuração do projeto ganha a aba Tipos (como Áreas).
 
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 

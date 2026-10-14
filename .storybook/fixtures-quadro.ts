@@ -18,16 +18,16 @@ export const BOARD_PROJECT: BoardProject = {
 /** O mesmo projeto sem sprint aberta: arrastar para o To do abre o diálogo Nova sprint (R5). */
 export const BOARD_PROJECT_SEM_SPRINT: BoardProject = { ...BOARD_PROJECT, open_sprint: null };
 
-/** As 8 etapas padrão, na ordem da P10 (Paused em 4º). */
+/** As 8 etapas padrão, na ordem da P10 (decisão de 14/10): Support primeiro, Paused logo depois do To do. */
 export const STAGES: BoardStage[] = [
-    { id: 1, name: 'Backlog', role: 'queue', position: 1 },
-    { id: 2, name: 'To do', role: 'sprint', position: 2 },
-    { id: 3, name: 'Doing', role: 'development', position: 3 },
+    { id: 8, name: 'Support', role: 'support', position: 1 },
+    { id: 1, name: 'Backlog', role: 'queue', position: 2 },
+    { id: 2, name: 'To do', role: 'sprint', position: 3 },
     { id: 4, name: 'Paused', role: 'paused', position: 4 },
-    { id: 5, name: 'Code-review', role: 'code_review', position: 5 },
-    { id: 6, name: 'In test', role: 'test', position: 6 },
-    { id: 7, name: 'Done', role: 'done', position: 7 },
-    { id: 8, name: 'Support', role: 'support', position: 8 },
+    { id: 3, name: 'Doing', role: 'development', position: 5 },
+    { id: 5, name: 'Code-review', role: 'code_review', position: 6 },
+    { id: 6, name: 'In test', role: 'test', position: 7 },
+    { id: 7, name: 'Done', role: 'done', position: 8 },
 ];
 
 export const ANA: PersonRef = { id: 1, name: 'Ana Souza' };
@@ -42,9 +42,12 @@ const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria', color: 'blue' 
 const BUG = { id: 2, slug: null, label: 'Correção de bug', color: 'red' as const };
 const SUPORTE = { id: 3, slug: 'support', label: 'Suporte', color: 'orange' as const };
 const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)', color: 'purple' as const };
+/** Funcionalidade do zero, sem nada feito ainda (decisão de 14/10). */
+const DESENVOLVIMENTO = { id: 5, slug: 'development', label: 'Desenvolvimento', color: 'green' as const };
 
 export const BOARD_OPTIONS: BoardOptions = {
-    types: [MELHORIA, BUG, SUPORTE, GMUD],
+    // Os 5 tipos padrão com que todo projeto nasce (14/10); o projeto cria os seus a partir daqui.
+    types: [MELHORIA, BUG, SUPORTE, GMUD, DESENVOLVIMENTO],
     areas: [
         { id: 1, name: 'Cadastro', color: 'lime' },
         { id: 2, name: 'Financeiro', color: 'green' },
@@ -78,8 +81,24 @@ export const BOARD_OPTIONS: BoardOptions = {
     ],
 };
 
-export const ABILITIES_GESTOR: BoardAbilities = { create_card: true, create_support: true, manage_sprint: true, move: true, archive: true };
-export const ABILITIES_DEV: BoardAbilities = { create_card: true, create_support: false, manage_sprint: false, move: true, archive: false };
+export const ABILITIES_GESTOR: BoardAbilities = {
+    create_card: true,
+    create_support: true,
+    manage_sprint: true,
+    move: true,
+    archive: true,
+    manage_types: true,
+    manage_areas: true,
+};
+export const ABILITIES_DEV: BoardAbilities = {
+    create_card: true,
+    create_support: false,
+    manage_sprint: false,
+    move: true,
+    archive: false,
+    manage_types: false,
+    manage_areas: false,
+};
 /** Projeto encerrado: ninguém cria card; mover segue (P7). */
 export const ABILITIES_ENCERRADO: BoardAbilities = { ...ABILITIES_GESTOR, create_card: false, create_support: false };
 
@@ -157,7 +176,7 @@ export const CARDS: BoardCard[] = [
         title: 'Login com gov.br',
         stage_id: 1,
         priority: 'urgent',
-        type: GMUD,
+        type: DESENVOLVIMENTO,
         area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     }),
     // To do

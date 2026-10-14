@@ -46,6 +46,6 @@ import { WPriorityMarkAtom } from '@/components/atoms/w-priority-mark-atom/w-pri
 - `bar` precisa de um pai com `relative` (e `overflow-hidden`, para a faixa seguir o canto arredondado).
 - Prioridade é só ordem (F3 §03): nada aqui sugere trava.
 
-## Variante `badge` (14/10)
+## A faixa com o nome (14/10)
 
-A pílula com fundo, ícone e nome, no canto inferior direito do card do quadro, como no Trello (decisão de Lucas Scholz em 14/10): `WPriorityMarkAtom priority={card.priority} variant="badge"`. Tons por token: Baixa em contorno neutro, Normal em `status-neutral`, Alta em `status-pending`, Urgente em `status-rejected`. "Prioridade: " fica em `sr-only`.
+A variante `bar` é a faixa colorida no topo do card **com o nome da prioridade** (Space Mono maiúsculo, `text-primary-foreground`, que contrasta nos dois temas): as cores são os tokens `priority-urgent` (vermelho), `priority-high` (laranja vivo; o âmbar de status parecia marrom), `priority-normal` (azul) e `priority-low` (verde) de `design/tokens.json`. Decisão de Lucas Scholz em 14/10, pela referência visual que ele mandou: a faixa é o rótulo, e a pílula do canto inferior direito saiu. O card precisa de `relative`, `overflow-hidden` e `pt-8`.

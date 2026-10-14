@@ -44,7 +44,11 @@ export interface AreaRef {
     color: TagColor | null;
 }
 
-/** Tipo do card (P18): `slug` só nos itens que o código conhece (`improvement`, `support`). */
+/**
+ * Tipo do card (P18): **do projeto** (decisão de 14/10): todo projeto nasce com os padrão (Melhoria,
+ * Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e cria ou edita os seus sem propagar.
+ * `slug` só nos itens que o código conhece (`improvement`, `support`, `development`), um por projeto.
+ */
 export interface TaskTypeRef {
     id: number;
     slug: string | null;
@@ -121,6 +125,10 @@ export interface BoardAbilities {
     move: boolean;
     /** Gestor do projeto e Administrador: arquivar e excluir (P26). */
     archive: boolean;
+    /** Gestor do projeto e Administrador: criar tipo e editar nome e cor pela etiqueta do card, só neste projeto (14/10). */
+    manage_types: boolean;
+    /** Gestor do projeto e Administrador: criar área e editar nome e cor pela etiqueta do card, ao estilo Trello (14/10). */
+    manage_areas: boolean;
 }
 
 /** O projeto, como o quadro precisa dele. */
@@ -143,7 +151,7 @@ export interface BoardProject {
 /** Opções das listas que o quadro e os diálogos usam. */
 export interface BoardOptions {
     areas: AreaRef[];
-    /** Tipos de card ativos, lista geral (P18): opções do filtro *Tipo* do quadro (F3 §05). */
+    /** Tipos de card ativos do projeto (P18, 14/10): filtro *Tipo* e o popover da etiqueta. */
     types: TaskTypeRef[];
     /** Pessoas alocadas e ativas (P20, P58). */
     members: PersonRef[];
@@ -330,6 +338,10 @@ export interface TaskAbilities {
     archive: boolean;
     /** Gestor do projeto e Administrador, e só o card nunca usado (P26): com histórico o servidor manda false. */
     delete: boolean;
+    /** Gestor do projeto e Administrador: criar tipo e editar nome e cor pela etiqueta da ficha (14/10). */
+    manage_types: boolean;
+    /** Gestor do projeto e Administrador: criar área e editar nome e cor pela etiqueta da ficha (14/10). */
+    manage_areas: boolean;
 }
 
 /** A ficha inteira (F3 §02). Tudo que é "quando há" vem null ou `[]`. */

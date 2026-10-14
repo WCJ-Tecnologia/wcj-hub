@@ -63,14 +63,14 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
                 : filters.marks.filter((item) => item !== mark),
         });
 
-    const selects: {
+    type FilterSelect = {
         key: 'developer_id' | 'qa_id' | 'type_id' | 'area_id';
         label: string;
         all: string;
         items: { id: number; name: string; color?: TagColor | null }[];
-    }[] = [
-        { key: 'developer_id', label: 'Dev', all: 'Todos os devs', items: options.members },
-        { key: 'qa_id', label: 'QA', all: 'Todos os QAs', items: options.members },
+    };
+    // Ordem dos filtros (decisão de 14/10): Tipo, Área, Prioridade, Dev, QA, Marcas.
+    const tagSelects: FilterSelect[] = [
         {
             key: 'type_id',
             label: 'Tipo',
@@ -79,6 +79,28 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
         },
         { key: 'area_id', label: 'Área', all: 'Todas as áreas', items: options.areas },
     ];
+    const peopleSelects: FilterSelect[] = [
+        { key: 'developer_id', label: 'Dev', all: 'Todos os devs', items: options.members },
+        { key: 'qa_id', label: 'QA', all: 'Todos os QAs', items: options.members },
+    ];
+    const renderSelect = (select: FilterSelect) => (
+        <Select key={select.key} value={toSelect(filters[select.key])} onValueChange={(value) => set({ [select.key]: fromSelect(value) })}>
+            <SelectTrigger aria-label={select.label} size="sm" className="w-40">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value={ALL}>{select.all}</SelectItem>
+                {select.items.map((item) => (
+                    <SelectItem key={item.id} value={String(item.id)}>
+                        {item.color !== undefined && (
+                            <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
+                        )}
+                        {item.name}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
 
     return (
         <div data-slot="w-board-filters-organism" className={cn('grid gap-3', className)}>
@@ -120,28 +142,7 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-                {selects.map((select) => (
-                    <Select
-                        key={select.key}
-                        value={toSelect(filters[select.key])}
-                        onValueChange={(value) => set({ [select.key]: fromSelect(value) })}
-                    >
-                        <SelectTrigger aria-label={select.label} size="sm" className="w-40">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value={ALL}>{select.all}</SelectItem>
-                            {select.items.map((item) => (
-                                <SelectItem key={item.id} value={String(item.id)}>
-                                    {item.color !== undefined && (
-                                        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
-                                    )}
-                                    {item.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                ))}
+                {tagSelects.map(renderSelect)}
                 <Select
                     value={filters.priority ?? ALL}
                     onValueChange={(value) => set({ priority: value === ALL ? null : (value as PrioritySlug) })}
@@ -158,6 +159,7 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
                         ))}
                     </SelectContent>
                 </Select>
+                {peopleSelects.map(renderSelect)}
 
                 <Popover>
                     <PopoverTrigger asChild>

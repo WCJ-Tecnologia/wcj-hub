@@ -7,6 +7,9 @@
  * - `POST  /projetos/{id}/cards/{chave}/mover`                    `MovePayload` (P13, P15, P39, P45, R5)
  * - `PATCH /projetos/{id}/cards/{chave}`                          `{ priority }` ou `{ area_id }` (P18, P19)
  * - `POST  /projetos/{id}/cards/{chave}/participantes`            `{ user_id, add }` (P58)
+ * - `PATCH /projetos/{id}/cards/{chave}`                          `{ type_id }` ao trocar o tipo pela etiqueta (14/10)
+ * - `POST  /projetos/{id}/tipos`, `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
+ * - `POST  /projetos/{id}/areas`, `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  */
 import { Head, router, usePage } from '@inertiajs/react';
 import { Archive, CalendarRange, Settings } from 'lucide-react';
@@ -14,6 +17,7 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 're
 import { toast } from 'sonner';
 
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
+import type { TagPayload } from '@/components/organisms/w-tag-popover-organism/w-tag-popover-organism';
 import { WBoardFiltersOrganism } from '@/components/organisms/w-board-filters-organism/w-board-filters-organism';
 import { WKanbanBoardOrganism } from '@/components/organisms/w-kanban-board-organism/w-kanban-board-organism';
 import {
@@ -39,6 +43,7 @@ import type {
     MovePayload,
     PersonRef,
     PrioritySlug,
+    TaskTypeRef,
 } from '@/types/quadro';
 
 export interface WProjectBoardPageProps {
@@ -289,6 +294,40 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
 
     const changePriority = (card: BoardCard, priority: PrioritySlug) => update(card, { priority }, { priority });
     const changeArea = (card: BoardCard, area: AreaRef | null) => update(card, { area }, { area_id: area?.id ?? null });
+    const changeType = (card: BoardCard, type: TaskTypeRef) => update(card, { type }, { type_id: type.id });
+    // Criar e editar tipo e área pelo quadro (14/10): o servidor devolve `options` e os cards de novo; só o nome e a cor da
+    // etiqueta editada mudam na hora nos cards, e voltam se o servidor recusar.
+    const createTag = (path: string, payload: TagPayload, what: string) =>
+        router.post(
+            `${base}/${path}`,
+            { ...payload },
+            { preserveScroll: true, onError: (errors) => toast.error(Object.values(errors)[0] ?? `Não foi possível criar ${what}`) },
+        );
+    const updateTag = (path: string, payload: TagPayload, what: string, apply: (card: BoardCard) => BoardCard) => {
+        const before = local;
+        setLocal((list) => list.map(apply));
+        router.patch(
+            `${base}/${path}`,
+            { ...payload },
+            {
+                preserveScroll: true,
+                onError: (errors) => {
+                    setLocal(before);
+                    toast.error(Object.values(errors)[0] ?? `Não foi possível salvar ${what}`);
+                },
+            },
+        );
+    };
+    const createType = (payload: TagPayload) => createTag('tipos', payload, 'o tipo');
+    const updateType = (type: TaskTypeRef, payload: TagPayload) =>
+        updateTag(`tipos/${type.id}`, payload, `o tipo ${type.label}`, (item) =>
+            item.type.id === type.id ? { ...item, type: { ...item.type, label: payload.name, color: payload.color } } : item,
+        );
+    const createArea = (payload: TagPayload) => createTag('areas', payload, 'a área');
+    const updateArea = (area: AreaRef, payload: TagPayload) =>
+        updateTag(`areas/${area.id}`, payload, `a área ${area.name}`, (item) =>
+            item.area?.id === area.id ? { ...item, area: { ...item.area, ...payload } } : item,
+        );
     const toggleParticipant = (card: BoardCard, person: PersonRef, add: boolean) =>
         update(
             card,
@@ -350,6 +389,11 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                         onChangePriority={changePriority}
                         onChangeArea={changeArea}
                         onToggleParticipant={toggleParticipant}
+                        onChangeType={changeType}
+                        onCreateType={abilities.manage_types ? createType : undefined}
+                        onUpdateType={abilities.manage_types ? updateType : undefined}
+                        onCreateArea={abilities.manage_areas ? createArea : undefined}
+                        onUpdateArea={abilities.manage_areas ? updateArea : undefined}
                     />
                 )}
             </div>

@@ -24,6 +24,8 @@
  * - `POST   /projetos/{id}/cards/{chave}/arquivar`              `{ archive_reason }` (P26)
  * - `POST   /projetos/{id}/cards/{chave}/desarquivar`           (P26)
  * - `DELETE /projetos/{id}/cards/{chave}`                       só o nunca usado (P26); o servidor redireciona ao quadro
+ * - `POST   /projetos/{id}/tipos` e `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pela etiqueta (gestor; 14/10)
+ * - `POST   /projetos/{id}/areas` e `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pela etiqueta (gestor; 14/10)
  */
 import { Head, router, usePage } from '@inertiajs/react';
 import { type ReactNode, useState } from 'react';
@@ -179,6 +181,8 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
         manage_sprint: task.abilities.manage_sprint,
         move: task.abilities.move,
         archive: task.abilities.archive,
+        manage_types: task.abilities.manage_types,
+        manage_areas: task.abilities.manage_areas,
     };
     const move = useBoardMove({
         project,
@@ -233,6 +237,18 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
                     onArchive={() => setArchiving(true)}
                     onUnarchive={() => post('/desarquivar', {}, 'unarchive')}
                     onDelete={() => setDeleting(true)}
+                    types={options.types}
+                    areas={options.areas}
+                    onChangeType={(type) => patch({ type_id: type.id }, 'attributes')}
+                    onCreateType={(payload) => router.post(`/projetos/${project.id}/tipos`, { ...payload }, visit('type'))}
+                    onUpdateType={(type, payload) =>
+                        router.patch(`/projetos/${project.id}/tipos/${type.id}`, { ...payload }, visit('type'))
+                    }
+                    onChangeArea={(area) => patch({ area_id: area?.id ?? null }, 'attributes')}
+                    onCreateArea={(payload) => router.post(`/projetos/${project.id}/areas`, { ...payload }, visit('area'))}
+                    onUpdateArea={(area, payload) =>
+                        router.patch(`/projetos/${project.id}/areas/${area.id}`, { ...payload }, visit('area'))
+                    }
                 />
 
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">

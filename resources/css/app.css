@@ -10,7 +10,7 @@
 
 /* Tema claro. Cada valor vem de design/tokens.json (HEX ao lado, em comentário). */
 :root {
-    --radius: 0.3125rem;
+    --radius: 0.5rem;
 
     --primary: oklch(0.5679 0.2167 260.5); /* #1A6CF3 */
     --primary-foreground: oklch(1 0 0); /* #FFFFFF */
@@ -60,6 +60,10 @@
     --tag-pink-bg: oklch(0.9482 0.0276 342.26); /* #FCE7F3 */
     --tag-purple: oklch(0.4907 0.2412 292.58); /* #6D28D9 */
     --tag-purple-bg: oklch(0.9433 0.0284 294.59); /* #EDE9FE */
+    --priority-urgent: oklch(0.5593 0.204 31.03); /* #D12B15 */
+    --priority-high: oklch(0.5866 0.1829 38.99); /* #D1480C */
+    --priority-normal: oklch(0.469 0.1929 261.55); /* #0F4FC4 */
+    --priority-low: oklch(0.5324 0.1158 157.35); /* #1C8051 */
     --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
     --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
@@ -125,6 +129,10 @@
     --tag-pink-bg: oklch(0.2451 0.0565 346.19); /* #331426 */
     --tag-purple: oklch(0.8112 0.1013 293.57); /* #C4B5FD */
     --tag-purple-bg: oklch(0.2465 0.0596 294.59); /* #231A3A */
+    --priority-urgent: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
+    --priority-high: oklch(0.7576 0.159 55.93); /* #FB923C */
+    --priority-normal: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --priority-low: oklch(0.7577 0.1666 157.29); /* #30CF85 */
     --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
     --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
@@ -150,9 +158,9 @@
     /* Escala do Hub (ADR-005): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
     --radius-sm: calc(var(--radius) - 2px);
     --radius-md: var(--radius);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 3px);
-    --radius-2xl: calc(var(--radius) + 5px);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
 
     /* Tamanho abaixo de xs para rótulos e eyebrows; nada de text-[Npx] em componente. */
     --text-2xs: 0.6875rem;
@@ -206,6 +214,10 @@
     --color-tag-pink-bg: var(--tag-pink-bg);
     --color-tag-purple: var(--tag-purple);
     --color-tag-purple-bg: var(--tag-purple-bg);
+    --color-priority-urgent: var(--priority-urgent);
+    --color-priority-high: var(--priority-high);
+    --color-priority-normal: var(--priority-normal);
+    --color-priority-low: var(--priority-low);
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);

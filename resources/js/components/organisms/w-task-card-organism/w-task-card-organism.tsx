@@ -10,6 +10,7 @@ import { WCardCountersMolecule } from '@/components/molecules/w-card-counters-mo
 import { WChildProgressMolecule } from '@/components/molecules/w-child-progress-molecule/w-child-progress-molecule';
 import { WPeopleAvatarsMolecule } from '@/components/molecules/w-people-avatars-molecule/w-people-avatars-molecule';
 import { WTaskMarksMolecule } from '@/components/molecules/w-task-marks-molecule/w-task-marks-molecule';
+import { type TagPayload, WTagPopoverOrganism } from '@/components/organisms/w-tag-popover-organism/w-tag-popover-organism';
 import { Button } from '@/components/shadcn/button';
 import { Card } from '@/components/shadcn/card';
 import {
@@ -28,7 +29,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/too
 import { PRIORITIES, hours } from '@/lib/quadro';
 import { tagDotClasses } from '@/lib/tags';
 import { cn } from '@/lib/utils';
-import type { AreaRef, BoardCard, BoardStage, PersonRef, PrioritySlug } from '@/types/quadro';
+import type { AreaRef, BoardCard, BoardStage, PersonRef, PrioritySlug, TaskTypeRef } from '@/types/quadro';
 
 /** Urgente no topo do submenu, como na ordem do quadro (F3 §03). */
 const PRIORITY_MENU: PrioritySlug[] = [...PRIORITIES].reverse();
@@ -49,6 +50,16 @@ export interface WTaskCardOrganismProps extends Omit<HTMLAttributes<HTMLDivEleme
     onChangePriority?: (card: BoardCard, priority: PrioritySlug) => void;
     onChangeArea?: (card: BoardCard, area: AreaRef | null) => void;
     onToggleParticipant?: (card: BoardCard, person: PersonRef, checked: boolean) => void;
+    /** Tipos do projeto (P18): a lista do popover do tipo (14/10). */
+    types?: TaskTypeRef[];
+    /** Com ele, a etiqueta do tipo abre a lista para trocar (qualquer alocado). */
+    onChangeType?: (card: BoardCard, type: TaskTypeRef) => void;
+    /** Com eles (gestor e Administrador, `manage_types`), o popover do tipo ganha *Novo tipo* e o lápis (nome e cor, só neste projeto). */
+    onCreateType?: (payload: TagPayload) => void;
+    onUpdateType?: (type: TaskTypeRef, payload: TagPayload) => void;
+    /** Com eles (gestor e Administrador, `manage_areas`), o popover da área ganha *Nova área* e o lápis de editar nome e cor. */
+    onCreateArea?: (payload: TagPayload) => void;
+    onUpdateArea?: (area: AreaRef, payload: TagPayload) => void;
     /** Abre a ficha sem navegar (ex.: num Sheet); sem ele, o título e *Abrir ficha* vão para `card.url`. */
     onOpen?: (card: BoardCard) => void;
     /** Visual de "sendo arrastado" (sombra maior, leve rotação). O arrastar é do quadro. */
@@ -74,6 +85,12 @@ export function WTaskCardOrganism({
     onChangePriority,
     onChangeArea,
     onToggleParticipant,
+    types = [],
+    onChangeType,
+    onCreateType,
+    onUpdateType,
+    onCreateArea,
+    onUpdateArea,
     onOpen,
     dragging = false,
     compact = false,
@@ -119,99 +136,142 @@ export function WTaskCardOrganism({
             data-dragging={dragging || undefined}
             className={cn(
                 // Profundidade: sombra de verdade (a coluna é o "poço", bg-muted) e uma subida de 1 px no hover; no escuro a sombra some, então o card é mais claro que a coluna.
-                'relative w-full gap-2 overflow-hidden rounded-md border-border/80 px-3 pt-3 pb-2.5 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
-                compact && 'pt-2.5 pb-1.5',
-                // A barra dos filhos mora na borda de baixo: um respiro a mais para a contagem não encostar nela.
-                card.children && !compact && 'pb-4',
+                // Pasta suspensa (14/10): a faixa da prioridade é a aba; o corpo é um painel com cantos próprios que entra por cima dela.
+                'relative w-full gap-0 overflow-hidden rounded-md rounded-t-xl border-border/80 p-0 pt-6 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
                 dragging && 'rotate-2 cursor-grabbing shadow-xl ring-1 ring-primary/40',
                 className,
             )}
             {...rest}
         >
             <WPriorityMarkAtom priority={card.priority} />
-
-            {compact ? (
-                <div className="flex items-center gap-2">
-                    <WTaskKeyAtom taskKey={card.key} size="sm" />
-                    <h3 className="min-w-0 flex-1 truncate font-medium">{title}</h3>
-                    {menu}
-                </div>
-            ) : (
-                <>
-                    {/* Cabeçalho: as etiquetas, sempre tipo primeiro e área depois (decisão de 14/10), e o menu ⋯. */}
-                    <div className="flex items-start gap-2">
-                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 pt-1">
-                            <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
-                            {card.area && <WTagAtom label={card.area.name} color={card.area.color} kind="area" size="sm" />}
-                        </div>
+            {/* O painel: `relative` o põe por cima da aba; encostado nas laterais e com o canto de cima bem arredondado, a cor só aparece nas orelhas, afinando até sumir. */}
+            <div
+                className={cn(
+                    'relative grid gap-2 overflow-hidden rounded-t-xl bg-card px-3 pt-3 pb-2.5',
+                    compact && 'pt-1.5 pb-1.5',
+                    card.children && !compact && 'pb-4',
+                )}
+            >
+                {compact ? (
+                    <div className="flex items-center gap-2">
+                        <WTaskKeyAtom taskKey={card.key} size="sm" />
+                        <h3 className="min-w-0 flex-1 truncate font-medium">{title}</h3>
                         {menu}
                     </div>
+                ) : (
+                    <>
+                        {/* Cabeçalho: as etiquetas, sempre tipo primeiro e área depois (decisão de 14/10), e o menu ⋯. */}
+                        <div className="flex items-start gap-2">
+                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 pt-1">
+                                {/* As etiquetas ao estilo Trello (14/10): clicar abre a lista do projeto para escolher, criar e editar. */}
+                                {onChangeType ? (
+                                    <WTagPopoverOrganism
+                                        kind="type"
+                                        options={types.map((type) => ({ id: type.id, name: type.label, color: type.color }))}
+                                        value={{ id: card.type.id, name: card.type.label, color: card.type.color }}
+                                        size="sm"
+                                        onChange={(option) => {
+                                            const type = option && types.find((item) => item.id === option.id);
+                                            if (type) onChangeType(card, type);
+                                        }}
+                                        onCreate={onCreateType}
+                                        onUpdate={
+                                            onUpdateType &&
+                                            ((option, payload) => {
+                                                const type = types.find((item) => item.id === option.id);
+                                                if (type) onUpdateType(type, payload);
+                                            })
+                                        }
+                                    />
+                                ) : (
+                                    <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
+                                )}
+                                {/* A área ao estilo Trello: a etiqueta (ou o "+ Área") abre a lista para escolher, criar e editar. */}
+                                {onChangeArea ? (
+                                    <WTagPopoverOrganism
+                                        kind="area"
+                                        options={areas}
+                                        value={card.area}
+                                        size="sm"
+                                        onChange={(option) =>
+                                            onChangeArea(card, option && (areas.find((item) => item.id === option.id) ?? option))
+                                        }
+                                        onCreate={onCreateArea}
+                                        onUpdate={onUpdateArea}
+                                    />
+                                ) : (
+                                    card.area && <WTagAtom label={card.area.name} color={card.area.color} kind="area" size="sm" />
+                                )}
+                            </div>
+                            {menu}
+                        </div>
 
-                    {/* Chave, título (o link principal) e o card pai. */}
-                    <div className="grid gap-0.5 pr-2">
-                        <WTaskKeyAtom taskKey={card.key} size="sm" />
-                        <h3 className="line-clamp-2 leading-snug font-medium break-words">{title}</h3>
-                        {card.parent && (
-                            <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <CornerDownRight className="size-3.5 shrink-0" aria-hidden />
-                                <span className="sr-only">Card pai:</span>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-flex">
-                                            <WTaskKeyAtom taskKey={card.parent.key} href={card.parent.url} size="sm" />
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-64">{card.parent.title}</TooltipContent>
-                                </Tooltip>
+                        {/* Chave, título (o link principal) e o card pai. */}
+                        <div className="grid gap-0.5 pr-2">
+                            <WTaskKeyAtom taskKey={card.key} size="sm" />
+                            <h3 className="line-clamp-2 leading-snug font-medium break-words">{title}</h3>
+                            {card.parent && (
+                                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <CornerDownRight className="size-3.5 shrink-0" aria-hidden />
+                                    <span className="sr-only">Card pai:</span>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="inline-flex">
+                                                <WTaskKeyAtom taskKey={card.parent.key} href={card.parent.url} size="sm" />
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-64">{card.parent.title}</TooltipContent>
+                                    </Tooltip>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Marcas logo abaixo do título: o que pede atenção fica perto do nome do card. */}
+                        <WTaskMarksMolecule card={card} inPausedStage={stage.role === 'paused'} className="pr-2" />
+
+                        {/* Corpo: capa e horas previstas. */}
+                        {card.cover_url && (
+                            <img
+                                src={card.cover_url}
+                                alt=""
+                                loading="lazy"
+                                draggable={false}
+                                className="h-28 w-full rounded-md border border-border object-cover"
+                            />
+                        )}
+                        {card.estimated_hours !== null && (
+                            <p className="flex items-center gap-1 text-xs text-muted-foreground" title="Horas previstas">
+                                <Clock className="size-3.5" aria-hidden />
+                                <span className="sr-only">Horas previstas:</span>
+                                <span className="font-mono tabular-nums">{hours(card.estimated_hours)}</span>
                             </p>
                         )}
-                    </div>
 
-                    {/* Marcas logo abaixo do título: o que pede atenção fica perto do nome do card. */}
-                    <WTaskMarksMolecule card={card} inPausedStage={stage.role === 'paused'} className="pr-2" />
-
-                    {/* Corpo: capa e horas previstas. */}
-                    {card.cover_url && (
-                        <img
-                            src={card.cover_url}
-                            alt=""
-                            loading="lazy"
-                            draggable={false}
-                            className="h-28 w-full rounded-md border border-border object-cover"
-                        />
-                    )}
-                    {card.estimated_hours !== null && (
-                        <p className="flex items-center gap-1 text-xs text-muted-foreground" title="Horas previstas">
-                            <Clock className="size-3.5" aria-hidden />
-                            <span className="sr-only">Horas previstas:</span>
-                            <span className="font-mono tabular-nums">{hours(card.estimated_hours)}</span>
-                        </p>
-                    )}
-
-                    {/* Rodapé: pessoas à esquerda; contadores e a prioridade no canto inferior direito, como no Trello (14/10). */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pr-2">
-                        <WPeopleAvatarsMolecule
-                            developer={card.developer}
-                            qa={card.qa}
-                            participants={card.participants}
-                            members={members}
-                            onToggleParticipant={onToggleParticipant && ((person, checked) => onToggleParticipant(card, person, checked))}
-                            size="sm"
-                        />
-                        <span className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                        {/* Rodapé: pessoas à esquerda, contadores à direita. A prioridade é a faixa do topo (14/10). */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pr-2">
+                            <WPeopleAvatarsMolecule
+                                developer={card.developer}
+                                qa={card.qa}
+                                participants={card.participants}
+                                members={members}
+                                onToggleParticipant={
+                                    onToggleParticipant && ((person, checked) => onToggleParticipant(card, person, checked))
+                                }
+                                size="sm"
+                            />
                             <WCardCountersMolecule
                                 dueOn={card.due_on}
                                 attachmentsCount={card.attachments_count}
                                 commentsCount={card.comments_count}
                                 late={card.late}
+                                className="ml-auto"
                             />
-                            <WPriorityMarkAtom priority={card.priority} variant="badge" />
-                        </span>
-                    </div>
-                    {/* Progresso dos filhos: contagem discreta no rodapé e a barra fina rente à borda de baixo. */}
-                    <WChildProgressMolecule progress={card.children} layout="edge" className="pr-2" />
-                </>
-            )}
+                        </div>
+                        {/* Progresso dos filhos: contagem discreta no rodapé e a barra fina rente à borda de baixo. */}
+                        <WChildProgressMolecule progress={card.children} layout="edge" className="pr-2" />
+                    </>
+                )}
+            </div>
         </Card>
     );
 }
