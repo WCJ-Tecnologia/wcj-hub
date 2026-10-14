@@ -72,15 +72,23 @@ Regras da story:
 
 Os componentes do quadro kanban entraram antes do B3, como kit: o Cauã liga o backend neles. O contrato está em três arquivos, e nenhum componente inventa forma própria:
 
-| Arquivo | O que é |
-| --- | --- |
-| `resources/js/types/quadro.ts` | O que o `TaskPresenter` do B3 manda (`BoardCard`, `BoardStage`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`) e o que a tela devolve (`MoveIntent`, `MovePayload`) |
-| `resources/js/lib/quadro.ts` | Ordenar por prioridade ou manual (P13), `classifyMove` (qual diálogo abrir e qual recusa mostrar: P15, P39, P45, R5, P38), `hours()`, `applyFilters()` (só para o filtro instantâneo; o servidor é a fonte) |
-| `.storybook/fixtures-quadro.ts` | Projeto, 8 etapas, cards com todas as zonas e marcas, opções e abilities de gestor e de dev |
+| Arquivo                         | O que é                                                                                                                                                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resources/js/types/quadro.ts`  | O que o `TaskPresenter` do B3 manda (`BoardCard`, `BoardStage`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`) e o que a tela devolve (`MoveIntent`, `MovePayload`)                      |
+| `resources/js/lib/quadro.ts`    | Ordenar por prioridade ou manual (P13), `classifyMove` (qual diálogo abrir e qual recusa mostrar: P15, P39, P45, R5, P38), `hours()`, `applyFilters()` (só para o filtro instantâneo; o servidor é a fonte) |
+| `.storybook/fixtures-quadro.ts` | Projeto, 8 etapas, cards com todas as zonas e marcas, opções e abilities de gestor e de dev                                                                                                                 |
 
-Como se encaixam: `pages/w-project-board-page` monta `organisms/w-board-filters-organism` + `organisms/w-kanban-board-organism` (dnd-kit) e liga o `hooks/use-board-move.tsx`, que recebe o `MoveIntent` do arrastar (ou do *Mover para…* do card) e abre, na ordem, os diálogos que o movimento pede (`w-new-sprint-dialog`, `w-pause-reason-dialog`, `w-rework-dialog`, o aviso do Done pelo `WConfirmDialogMolecule`), devolvendo um `MovePayload` para o `router.post`. A coluna (`w-kanban-column-organism`) traz o criar rápido no Backlog e o *Novo card de suporte* no Support; o card (`w-task-card-organism`) é só apresentação e callbacks. As rotas que a página chama são proposta do kit, marcadas no topo do arquivo; o B3 confirma ou ajusta.
+Como se encaixam: `pages/w-project-board-page` monta `organisms/w-board-filters-organism` + `organisms/w-kanban-board-organism` (dnd-kit) e liga o `hooks/use-board-move.tsx`, que recebe o `MoveIntent` do arrastar (ou do _Mover para…_ do card) e abre, na ordem, os diálogos que o movimento pede (`w-new-sprint-dialog`, `w-pause-reason-dialog`, `w-rework-dialog`, o aviso do Done pelo `WConfirmDialogMolecule`), devolvendo um `MovePayload` para o `router.post`. A coluna (`w-kanban-column-organism`) traz o criar rápido no Backlog e o _Novo card de suporte_ no Support; o card (`w-task-card-organism`) é só apresentação e callbacks. As rotas que a página chama são proposta do kit, marcadas no topo do arquivo; o B3 confirma ou ajusta.
 
 Regra do kit: o quadro e o card nunca decidem regra nem recusam movimento. `classifyMove` só escolhe o diálogo; quem recusa é o servidor, e a tela mostra o erro que vier.
+
+## Kit da ficha do card e do sino (F3), sem backend
+
+O segundo kit do B3: a ficha do card (`/projetos/{id}/cards/{chave}`, F3 §02 a §04, F5 §02) e o sino de avisos do shell (F3 §07). O contrato continua em `types/quadro.ts` (bloco "Ficha do card": `TaskDetail`, `TaskAbilities`, `AcceptanceCriterion`, `TaskComment`, `TaskAttachment`, `TaskPickRef`, `ChildCard`, `TaskDetailOptions`, `TaskPatchPayload`) e em `types/index.d.ts` (`HubNotification`, `NotificationsPayload`, `SharedProps.notifications`, opcional até o B3 mandar). As regras de tela estão em `lib/ficha.ts` (textos do F3 §04, `previewDueOn` e `dueChangeText` da reestimativa, `criterionDeletable`, `hasPullRequest`, `childProgressOf`, exclusões da busca de card pai, `detailToBoardCard`); as fixtures, em `.storybook/fixtures-ficha.ts`.
+
+Como se encaixam: `pages/w-task-detail-page` monta o `organisms/w-task-detail-header-organism` (chave, título editável, marcas, capa, fatos só leitura, _Histórico_, menu ⋯) e dez seções, cada uma um organismo `w-task-<nome>-section-organism` dentro de um `molecules/w-collapsible-section-molecule` (recolhido por padrão, R4, com a função `<nome>Summary()` do organismo no cabeçalho): requisição, critérios de aceite, PRs, comentários, anexos, atributos (tipo, área, prioridade, pedido do cliente), pessoas, horas previstas, card pai e filhos, tarefa de origem. A busca de card pai e de tarefa de origem é a `molecules/w-task-picker-molecule`, sobre `options.cards`. _Mover para…_ reusa o `useBoardMove` e o `w-archive-dialog-organism` do kit do quadro pela `detailToBoardCard()`. O sino é o `organisms/w-notifications-bell-organism`, ligado no `w-app-topbar-organism`.
+
+Regra do kit, a mesma do quadro: os organismos só devolvem intenção por callback e recebem `busy` e `errors`; quem grava é a página, uma escrita por vez, e o erro do servidor abre a seção do campo (`FIELD_SECTION`). As rotas estão no topo de `w-task-detail-page.tsx` e de `w-notifications-bell-organism.tsx`, como proposta; o B3 confirma.
 
 ## Storybook e Inertia
 

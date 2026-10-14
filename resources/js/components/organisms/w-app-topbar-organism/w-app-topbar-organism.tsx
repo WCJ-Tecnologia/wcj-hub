@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { LogOut, Moon, Sun, UserRound } from 'lucide-react';
 
 import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-logo-atom';
+import { WNotificationsBellOrganism } from '@/components/organisms/w-notifications-bell-organism/w-notifications-bell-organism';
 import { Avatar, AvatarFallback } from '@/components/shadcn/avatar';
 import { Button } from '@/components/shadcn/button';
 import {
@@ -18,8 +19,8 @@ import { cn, initials } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 /**
- * Barra do shell: botão do menu lateral, logo (celular), troca de tema e menu
- * do usuário. O título e as ações da página ficam no WPageHeaderMolecule.
+ * Barra do shell: botão do menu lateral, logo (celular), troca de tema, sino de
+ * avisos e menu do usuário. O título e as ações da página ficam no WPageHeaderMolecule.
  * Precisa estar dentro de um SidebarProvider (o WAppLayoutTemplate monta).
  */
 export function WAppTopbarOrganism() {
@@ -44,6 +45,8 @@ export function WAppTopbarOrganism() {
                 <Sun className={cn('size-4', theme === 'dark' && 'hidden')} aria-hidden />
                 <Moon className={cn('size-4', theme !== 'dark' && 'hidden')} aria-hidden />
             </Button>
+
+            <WNotificationsBellOrganism />
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

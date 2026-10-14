@@ -74,9 +74,30 @@ export interface AppInfo {
     brand: AppBrand;
 }
 
+/** Um aviso da tabela `notifications` do Laravel (P22, R3), como o `HandleInertiaRequests` vai compartilhar. */
+export interface HubNotification {
+    /** UUID da notificação. */
+    id: string;
+    /** O texto do F3 §07: "Você é o dev de SGM-17 — <título> (projeto <nome>), definido por Fulano." */
+    text: string;
+    /** URL da ficha do card; null quando o card foi excluído. */
+    url: string | null;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    created_at: string;
+    read_at: string | null;
+}
+
+export interface NotificationsPayload {
+    unread_count: number;
+    /** Os 10 mais recentes, não lidos primeiro. */
+    items: HubNotification[];
+}
+
 export interface SharedProps extends InertiaPageProps {
     app: AppInfo;
     auth: { user: AuthUser | null };
     flash: FlashMessages;
+    /** Avisos da pessoa (F3 §07). Proposta do kit: o backend ainda não manda; o sino renderiza vazio sem ela. */
+    notifications?: NotificationsPayload;
     [key: string]: unknown;
 }
