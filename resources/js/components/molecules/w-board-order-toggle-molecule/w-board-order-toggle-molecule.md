@@ -23,4 +23,4 @@ O seletor _Ordem: Prioridade | Manual_ do quadro (F3 §03, P13): o rótulo "Orde
 ## Cuidados
 
 - **Não guarda nada.** A escolha é de cada pessoa, lembrada no navegador (P13): quem grava é a página, no `localStorage` com a chave `hub.quadro.ordem`, dentro de `try/catch` (aba anônima ou bloqueio não quebram a tela).
-- Na ordem por prioridade o arraste vertical dentro da coluna não faz nada (F3 §04); quem respeita isso é o `WKanbanBoardOrganism`.
+- Soltar um card com a ordem em _Prioridade_ troca o seletor para _Manual_ (o `WKanbanBoardOrganism` chama `onOrderChange('manual')`): o card fica onde caiu, como no Trello (F3 §04, 14/10).

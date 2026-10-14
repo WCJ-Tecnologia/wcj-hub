@@ -58,8 +58,8 @@ interface Flow {
  *   *Devolver* → aviso do Done), juntando as respostas no `MovePayload`, e no último chama
  *   `onCommit(intent, payload)`.
  *
- * O payload sempre leva `stage_id` (destino) e, quando o `intent.index` vem preenchido
- * (ordem manual, P13), `position`. A *Nova sprint* entra como `new_sprint` (R5); o retrabalho,
+ * O payload sempre leva `stage_id` (destino) e, quando o card foi solto numa posição (arrastar,
+ * P13), `position` e `sequence` (a coluna na ordem final). A *Nova sprint* entra como `new_sprint` (R5); o retrabalho,
  * como `mistake` ou `rework_origin_id`/`rework_reason_id`/`rework_reason_text` (P39, P40).
  *
  * Cancelar ou fechar qualquer diálogo encerra o fluxo sem chamar nada: o card fica onde
@@ -96,7 +96,11 @@ export function useBoardMove({ project, abilities, options, today, onCommit, onD
             onDenied(decision.reason);
             return;
         }
-        const payload: MovePayload = { stage_id: intent.to.id, ...(intent.index === null ? {} : { position: intent.index }) };
+        const payload: MovePayload = {
+            stage_id: intent.to.id,
+            ...(intent.index === null ? {} : { position: intent.index }),
+            ...(intent.sequence === null ? {} : { sequence: intent.sequence }),
+        };
         if (decision.steps.length === 0) {
             onCommit(intent, payload);
             return;

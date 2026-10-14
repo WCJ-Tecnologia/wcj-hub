@@ -17,6 +17,8 @@ export default tseslint.config(
             'test-results/**',
             '.harness/**',
             'storybook-static/**',
+            // Worktrees abertos dentro do repo (.claude/worktrees) têm tsconfig próprio e confundem o parser.
+            '.claude/**',
         ],
     },
     js.configs.recommended,

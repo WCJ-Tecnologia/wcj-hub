@@ -4,7 +4,7 @@ import { action } from 'storybook/actions';
 import { fn } from 'storybook/test';
 
 import { Toaster } from '@/components/shadcn/sonner';
-import type { BoardCard } from '@/types/quadro';
+import type { BoardCard, BoardOrder } from '@/types/quadro';
 
 import {
     ABILITIES_DEV,
@@ -19,27 +19,34 @@ import {
 import { WKanbanBoardOrganism, type WKanbanBoardOrganismProps } from './w-kanban-board-organism';
 
 /**
- * O quadro com estado local: cada `onMove` aparece no painel Actions e o card muda de coluna (e de
- * posição, na ordem manual) na hora, sem diálogos. Os diálogos e as recusas estão na story da página.
+ * O quadro com estado local: cada `onMove` aparece no painel Actions e o card cai onde foi solto na
+ * hora, sem diálogos; soltar com a ordem em Prioridade troca para Manual (`onOrderChange`). Os
+ * diálogos e as recusas estão na story da página.
  */
 function KanbanBoardDemo(props: WKanbanBoardOrganismProps) {
     const [cards, setCards] = useState<BoardCard[]>(props.cards);
+    const [order, setOrder] = useState<BoardOrder>(props.order);
 
     return (
         <>
             <WKanbanBoardOrganism
                 {...props}
                 cards={cards}
+                order={order}
+                onOrderChange={(next) => {
+                    action('onOrderChange')(next);
+                    setOrder(next);
+                }}
                 onMove={(intent) => {
                     props.onMove(intent);
                     setCards((list) => {
                         const moved = { ...intent.card, stage_id: intent.to.id };
                         const others = list.filter((item) => item.id !== intent.card.id);
-                        if (intent.index === null) return [...others, moved];
-                        const column = others.filter((item) => item.stage_id === intent.to.id).sort((a, b) => a.position - b.position);
-                        column.splice(intent.index, 0, moved);
-                        const rest = others.filter((item) => item.stage_id !== intent.to.id);
-                        return [...rest, ...column.map((item, index) => ({ ...item, position: index + 1 }))];
+                        if (!intent.sequence) return [...others, moved];
+                        const positions = new Map(intent.sequence.map((id, index) => [id, index + 1]));
+                        return [...others, moved].map((item) =>
+                            positions.has(item.id) ? { ...item, position: positions.get(item.id)! } : item,
+                        );
                     });
                 }}
                 onChangePriority={(card, priority) => {
@@ -67,6 +74,7 @@ const meta = {
         stages: { control: false },
         options: { control: false },
         onMove: { control: false },
+        onOrderChange: { control: false },
         onCreate: { control: false },
         onCreateSupport: { control: false },
         onChangePriority: { control: false },
@@ -98,7 +106,7 @@ type Story = StoryObj<typeof meta>;
 export const Padrao: Story = {};
 /** Dev: cria no Backlog, não tem *Novo card de suporte*; o quadro não recusa nada, quem recusa é a página (`classifyMove`). */
 export const ComoDev: Story = { args: { abilities: ABILITIES_DEV } };
-/** Ordem manual: o arraste vertical reordena, e o `onMove` leva o `index` (P13). */
+/** Já em ordem manual: o arraste reordena sem trocar o seletor; o `onMove` leva `index` e `sequence` (P13). */
 export const OrdemManual: Story = { args: { order: 'manual' } };
 export const Vazio: Story = { args: { cards: CARDS_VAZIO } };
 export const FiltroSemResultado: Story = { args: { cards: [], filtered: true } };
