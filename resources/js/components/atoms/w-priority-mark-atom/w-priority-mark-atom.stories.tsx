@@ -35,7 +35,7 @@ export const Chip: Story = { args: { variant: 'chip' } };
 /** As quatro, em faixa e em chip. */
 export const Todas: Story = {
     args: { variant: 'chip' },
-    argTypes: { priority: { control: false }, variant: { control: false } },
+    argTypes: { priority: { control: false }, variant: { control: 'radio', options: ['bar', 'chip', 'badge'] } },
     render: () => <TodasDemo />,
 };
 
@@ -49,6 +49,7 @@ function TodasDemo() {
                         Faixa
                     </div>
                     <WPriorityMarkAtom priority={priority} variant="chip" className="text-sm" />
+                    <WPriorityMarkAtom priority={priority} variant="badge" />
                 </div>
             ))}
         </div>

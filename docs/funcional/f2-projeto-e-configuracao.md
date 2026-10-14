@@ -70,6 +70,7 @@ Ao remover etapa com tarefas, o diálogo pede **Mover as tarefas para**: lista d
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
 | Nome | texto, até 60, único no projeto | sim | | Ex.: "Admin", "Âncora", "Fornecedores". Repetido no mesmo projeto é recusado, sem diferença de acento e caixa: acaba o "ANCORA" e "ÂNCORA" do Trello (P18). |
+| Cor | uma das 10 cores da paleta, ou nenhuma | não | nenhuma | A cor da etiqueta da área no card e na ficha (F3 §03; decisão de 14/10). Sem cor, a etiqueta é cinza. |
 | Situação | só leitura: Ativa / Desativada em DD/MM/AAAA por Fulano | | Ativa | |
 
 ### Padrões do projeto (aba *Padrões*)
@@ -155,8 +156,8 @@ Estado vazio: Projetos, "Nenhum projeto ainda. *Novo projeto*" (para o dev, sem 
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Novo | Administrador | Cria o item na lista geral (G7). | Nome repetido: recusa. |
-| Editar | Administrador | Renomeia; no motivo, liga ou desliga o "pede texto" (menos no "Outro", P40). Cards e movimentos antigos passam a mostrar o nome novo. | |
+| Novo | Administrador | Cria o item na lista geral (G7). No tipo de tarefa, com a cor da etiqueta (uma das 10 da paleta, ou nenhuma; decisão de 14/10, F3 §03). | Nome repetido: recusa. |
+| Editar | Administrador | Renomeia; no tipo, troca a cor da etiqueta; no motivo, liga ou desliga o "pede texto" (menos no "Outro", P40). Cards e movimentos antigos passam a mostrar o nome e a cor novos. | |
 | Desativar / Reativar | Administrador | Sai da lista de escolha; o que já usa continua (P8). Melhoria, Suporte e Outro não têm o botão. | |
 | Excluir | Administrador | Só o que nunca foi usado (G2). Melhoria, Suporte e Outro não têm o botão. | "Excluir de verdade. Não dá para desfazer." |
 

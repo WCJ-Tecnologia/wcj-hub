@@ -45,3 +45,7 @@ import { WPriorityMarkAtom } from '@/components/atoms/w-priority-mark-atom/w-pri
 
 - `bar` precisa de um pai com `relative` (e `overflow-hidden`, para a faixa seguir o canto arredondado).
 - Prioridade é só ordem (F3 §03): nada aqui sugere trava.
+
+## Variante `badge` (14/10)
+
+A pílula com fundo, ícone e nome, no canto inferior direito do card do quadro, como no Trello (decisão de Lucas Scholz em 14/10): `WPriorityMarkAtom priority={card.priority} variant="badge"`. Tons por token: Baixa em contorno neutro, Normal em `status-neutral`, Alta em `status-pending`, Urgente em `status-rejected`. "Prioridade: " fica em `sr-only`.

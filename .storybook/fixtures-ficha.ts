@@ -321,7 +321,7 @@ export const TASK_COMPLETO: TaskDetail = detail({
     key: 'SGM-17',
     title: 'Emitir a guia de IPTU com o código de barras no portal do cidadão',
     type: BOARD_OPTIONS.types[0],
-    area: { id: 3, name: 'Portal do cidadão' },
+    area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     priority: 'high',
     stage: DOING,
     developer: BRUNO,
@@ -367,7 +367,7 @@ export const TASK_PAI: TaskDetail = detail({
     id: 10,
     key: 'SGM-10',
     title: 'Portal do cidadão: 2ª via de tributos',
-    area: { id: 3, name: 'Portal do cidadão' },
+    area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     stage: DONE,
     developer: RAFAEL,
     requisition: {

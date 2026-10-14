@@ -38,17 +38,18 @@ export const DIEGO: PersonRef = { id: 5, name: 'Diego Prado' };
 
 export const MEMBERS: PersonRef[] = [ANA, RAFAEL, BRUNO, CARLA, DIEGO];
 
-const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria' };
-const BUG = { id: 2, slug: null, label: 'Correção de bug' };
-const SUPORTE = { id: 3, slug: 'support', label: 'Suporte' };
-const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)' };
+const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria', color: 'blue' as const };
+const BUG = { id: 2, slug: null, label: 'Correção de bug', color: 'red' as const };
+const SUPORTE = { id: 3, slug: 'support', label: 'Suporte', color: 'orange' as const };
+const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)', color: 'purple' as const };
 
 export const BOARD_OPTIONS: BoardOptions = {
     types: [MELHORIA, BUG, SUPORTE, GMUD],
     areas: [
-        { id: 1, name: 'Cadastro' },
-        { id: 2, name: 'Financeiro' },
-        { id: 3, name: 'Portal do cidadão' },
+        { id: 1, name: 'Cadastro', color: 'lime' },
+        { id: 2, name: 'Financeiro', color: 'green' },
+        { id: 3, name: 'Portal do cidadão', color: 'sky' },
+        { id: 4, name: 'Relatórios', color: null },
     ],
     members: MEMBERS,
     rework_reasons: [
@@ -125,7 +126,7 @@ export const CARD_COMPLETO: BoardCard = card({
     stage_id: 3,
     priority: 'high',
     type: MELHORIA,
-    area: { id: 3, name: 'Portal do cidadão' },
+    area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     parent: { id: 10, key: 'SGM-10', title: 'Portal do cidadão: 2ª via de tributos', url: '/projetos/1/cards/SGM-10' },
     cover_url: COVER_URL,
     estimated_hours: 16,
@@ -142,7 +143,13 @@ export const CARD_COMPLETO: BoardCard = card({
 
 export const CARDS: BoardCard[] = [
     // Backlog
-    card({ id: 21, key: 'SGM-21', title: 'Relatório de inadimplência por bairro', stage_id: 1, area: { id: 2, name: 'Financeiro' } }),
+    card({
+        id: 21,
+        key: 'SGM-21',
+        title: 'Relatório de inadimplência por bairro',
+        stage_id: 1,
+        area: { id: 2, name: 'Financeiro', color: 'green' },
+    }),
     card({ id: 22, key: 'SGM-22', title: 'Exportar cadastro de contribuintes em CSV', stage_id: 1, priority: 'low' }),
     card({
         id: 23,
@@ -151,7 +158,7 @@ export const CARDS: BoardCard[] = [
         stage_id: 1,
         priority: 'urgent',
         type: GMUD,
-        area: { id: 3, name: 'Portal do cidadão' },
+        area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     }),
     // To do
     card({
@@ -159,7 +166,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-18',
         title: 'Parcelamento da dívida ativa em até 12 vezes',
         stage_id: 2,
-        area: { id: 2, name: 'Financeiro' },
+        area: { id: 2, name: 'Financeiro', color: 'green' },
         estimated_hours: 8,
         developer: ANA,
         attachments_count: 1,
@@ -194,7 +201,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-15',
         title: 'Integração com o banco para baixa automática',
         stage_id: 4,
-        area: { id: 2, name: 'Financeiro' },
+        area: { id: 2, name: 'Financeiro', color: 'green' },
         developer: DIEGO,
         estimated_hours: 40,
         due_on: '2026-10-15',
@@ -218,7 +225,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-14',
         title: 'Cadastro de imóvel com geolocalização',
         stage_id: 6,
-        area: { id: 1, name: 'Cadastro' },
+        area: { id: 1, name: 'Cadastro', color: 'lime' },
         developer: ANA,
         qa: DIEGO,
         estimated_hours: 20,
@@ -233,7 +240,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-10',
         title: 'Portal do cidadão: 2ª via de tributos',
         stage_id: 7,
-        area: { id: 3, name: 'Portal do cidadão' },
+        area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
         developer: RAFAEL,
         estimated_hours: 4,
         children: { todo: 2, doing: 1, done: 3 },

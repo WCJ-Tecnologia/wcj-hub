@@ -75,7 +75,18 @@ function flatten(mode, name) {
     out['--primary-text'] = require_(brand, 'primaryText', `${p}.brand`);
 
     const n = require_(mode, 'neutrals', p);
-    for (const key of ['background', 'foreground', 'card', 'muted', 'mutedForeground', 'border', 'input', 'accent', 'destructive', 'ring']) {
+    for (const key of [
+        'background',
+        'foreground',
+        'card',
+        'muted',
+        'mutedForeground',
+        'border',
+        'input',
+        'accent',
+        'destructive',
+        'ring',
+    ]) {
         out[`--${kebab(key)}`] = require_(n, key, `${p}.neutrals`);
     }
     // Opcionais, derivados quando ausentes.
@@ -92,6 +103,14 @@ function flatten(mode, name) {
         const pair = require_(status, key, `${p}.status`);
         out[`--status-${key}`] = require_(pair, 'fg', `${p}.status.${key}`);
         out[`--status-${key}-bg`] = require_(pair, 'bg', `${p}.status.${key}`);
+    }
+
+    // Cores das etiquetas de tipo e área do card (F3 §03, decisão de 14/10): paleta fixa de 10, como no Trello.
+    const tags = require_(mode, 'tags', p);
+    for (const key of ['gray', 'blue', 'sky', 'green', 'lime', 'yellow', 'orange', 'red', 'pink', 'purple']) {
+        const pair = require_(tags, key, `${p}.tags`);
+        out[`--tag-${key}`] = require_(pair, 'fg', `${p}.tags.${key}`);
+        out[`--tag-${key}-bg`] = require_(pair, 'bg', `${p}.tags.${key}`);
     }
 
     const sb = require_(mode, 'sidebar', p);

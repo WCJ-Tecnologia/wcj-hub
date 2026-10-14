@@ -9,11 +9,12 @@ import { Checkbox } from '@/components/shadcn/checkbox';
 import { Input } from '@/components/shadcn/input';
 import { Label } from '@/components/shadcn/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn/popover';
+import { tagDotClasses } from '@/lib/tags';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { Switch } from '@/components/shadcn/switch';
 import { BOARD_MARK_LABEL, PRIORITIES, hasActiveFilters } from '@/lib/quadro';
 import { cn } from '@/lib/utils';
-import type { BoardFilters, BoardMark, BoardOptions, BoardOrder, PrioritySlug } from '@/types/quadro';
+import type { BoardFilters, BoardMark, BoardOptions, BoardOrder, PrioritySlug, TagColor } from '@/types/quadro';
 
 /** O Radix Select não aceita item com valor vazio: "todos" usa este valor e vira `null` no filtro. */
 const ALL = 'all';
@@ -66,11 +67,16 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
         key: 'developer_id' | 'qa_id' | 'type_id' | 'area_id';
         label: string;
         all: string;
-        items: { id: number; name: string }[];
+        items: { id: number; name: string; color?: TagColor | null }[];
     }[] = [
         { key: 'developer_id', label: 'Dev', all: 'Todos os devs', items: options.members },
         { key: 'qa_id', label: 'QA', all: 'Todos os QAs', items: options.members },
-        { key: 'type_id', label: 'Tipo', all: 'Todos os tipos', items: options.types.map((type) => ({ id: type.id, name: type.label })) },
+        {
+            key: 'type_id',
+            label: 'Tipo',
+            all: 'Todos os tipos',
+            items: options.types.map((type) => ({ id: type.id, name: type.label, color: type.color })),
+        },
         { key: 'area_id', label: 'Área', all: 'Todas as áreas', items: options.areas },
     ];
 
@@ -127,6 +133,9 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
                             <SelectItem value={ALL}>{select.all}</SelectItem>
                             {select.items.map((item) => (
                                 <SelectItem key={item.id} value={String(item.id)}>
+                                    {item.color !== undefined && (
+                                        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
+                                    )}
                                     {item.name}
                                 </SelectItem>
                             ))}

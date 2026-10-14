@@ -2,6 +2,7 @@ import { type ReactNode, useId } from 'react';
 
 import { WPriorityMarkAtom } from '@/components/atoms/w-priority-mark-atom/w-priority-mark-atom';
 import { WFormFieldMolecule } from '@/components/molecules/w-form-field-molecule/w-form-field-molecule';
+import { tagDotClasses } from '@/lib/tags';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { dateTimeBr } from '@/lib/ficha';
 import { PRIORITIES, PRIORITY_LABEL } from '@/lib/quadro';
@@ -81,6 +82,7 @@ export function WTaskAttributesSectionOrganism({
                             <SelectContent>
                                 {typeOptions.map((item) => (
                                     <SelectItem key={item.id} value={String(item.id)}>
+                                        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
                                         {item.label}
                                     </SelectItem>
                                 ))}
@@ -108,6 +110,7 @@ export function WTaskAttributesSectionOrganism({
                                 <SelectItem value={NO_AREA}>Nenhuma</SelectItem>
                                 {areaOptions.map((item) => (
                                     <SelectItem key={item.id} value={String(item.id)}>
+                                        <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
                                         {item.name}
                                     </SelectItem>
                                 ))}

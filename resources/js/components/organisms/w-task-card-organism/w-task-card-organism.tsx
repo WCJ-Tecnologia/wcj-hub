@@ -4,12 +4,12 @@ import type { HTMLAttributes, MouseEvent, Ref } from 'react';
 import { toast } from 'sonner';
 
 import { WPriorityMarkAtom } from '@/components/atoms/w-priority-mark-atom/w-priority-mark-atom';
+import { WTagAtom } from '@/components/atoms/w-tag-atom/w-tag-atom';
 import { WTaskKeyAtom } from '@/components/atoms/w-task-key-atom/w-task-key-atom';
 import { WCardCountersMolecule } from '@/components/molecules/w-card-counters-molecule/w-card-counters-molecule';
 import { WChildProgressMolecule } from '@/components/molecules/w-child-progress-molecule/w-child-progress-molecule';
 import { WPeopleAvatarsMolecule } from '@/components/molecules/w-people-avatars-molecule/w-people-avatars-molecule';
 import { WTaskMarksMolecule } from '@/components/molecules/w-task-marks-molecule/w-task-marks-molecule';
-import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
 import { Card } from '@/components/shadcn/card';
 import {
@@ -26,6 +26,7 @@ import {
 } from '@/components/shadcn/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { PRIORITIES, hours } from '@/lib/quadro';
+import { tagDotClasses } from '@/lib/tags';
 import { cn } from '@/lib/utils';
 import type { AreaRef, BoardCard, BoardStage, PersonRef, PrioritySlug } from '@/types/quadro';
 
@@ -110,11 +111,6 @@ export function WTaskCardOrganism({
         />
     );
 
-    // Sem ninguém no card, o rodapé não nasce só para o *+*: o card do criar rápido fica baixo, e o
-    // primeiro participante entra pela ficha (ou aqui, assim que o card tiver dev, QA ou contador).
-    const hasPeople = Boolean(card.developer || card.qa || card.participants.length > 0);
-    const hasCounters = Boolean(card.due_on || card.attachments_count > 0 || card.comments_count > 0);
-
     return (
         <Card
             ref={ref}
@@ -142,19 +138,11 @@ export function WTaskCardOrganism({
                 </div>
             ) : (
                 <>
-                    {/* Cabeçalho: área (a "etiqueta"), tipo e o menu ⋯. */}
+                    {/* Cabeçalho: as etiquetas, sempre tipo primeiro e área depois (decisão de 14/10), e o menu ⋯. */}
                     <div className="flex items-start gap-2">
-                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-                            {card.area && (
-                                <Badge variant="info" className="max-w-full">
-                                    <span className="sr-only">Área: </span>
-                                    <span className="truncate">{card.area.name}</span>
-                                </Badge>
-                            )}
-                            <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
-                                <span className="sr-only">Tipo: </span>
-                                {card.type.label}
-                            </span>
+                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 pt-1">
+                            <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
+                            {card.area && <WTagAtom label={card.area.name} color={card.area.color} kind="area" size="sm" />}
                         </div>
                         {menu}
                     </div>
@@ -200,28 +188,26 @@ export function WTaskCardOrganism({
                         </p>
                     )}
 
-                    {/* Rodapé: pessoas, contadores e progresso dos filhos. */}
-                    {(hasPeople || hasCounters) && (
-                        <div className="flex flex-wrap items-center justify-between gap-2 pr-2">
-                            <WPeopleAvatarsMolecule
-                                developer={card.developer}
-                                qa={card.qa}
-                                participants={card.participants}
-                                members={members}
-                                onToggleParticipant={
-                                    onToggleParticipant && ((person, checked) => onToggleParticipant(card, person, checked))
-                                }
-                                size="sm"
-                            />
+                    {/* Rodapé: pessoas à esquerda; contadores e a prioridade no canto inferior direito, como no Trello (14/10). */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pr-2">
+                        <WPeopleAvatarsMolecule
+                            developer={card.developer}
+                            qa={card.qa}
+                            participants={card.participants}
+                            members={members}
+                            onToggleParticipant={onToggleParticipant && ((person, checked) => onToggleParticipant(card, person, checked))}
+                            size="sm"
+                        />
+                        <span className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
                             <WCardCountersMolecule
                                 dueOn={card.due_on}
                                 attachmentsCount={card.attachments_count}
                                 commentsCount={card.comments_count}
                                 late={card.late}
-                                className="ml-auto"
                             />
-                        </div>
-                    )}
+                            <WPriorityMarkAtom priority={card.priority} variant="badge" />
+                        </span>
+                    </div>
                     {/* Progresso dos filhos: contagem discreta no rodapé e a barra fina rente à borda de baixo. */}
                     <WChildProgressMolecule progress={card.children} layout="edge" className="pr-2" />
                 </>
@@ -337,6 +323,7 @@ function TaskCardMenu({ card, stage, stages, areas, onMove, onChangePriority, on
                                 >
                                     {areas.map((area) => (
                                         <DropdownMenuRadioItem key={area.id} value={String(area.id)}>
+                                            <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(area.color))} />
                                             {area.name}
                                         </DropdownMenuRadioItem>
                                     ))}

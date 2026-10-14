@@ -1128,6 +1128,14 @@ PENDENTE DE CONFERÊNCIA do Lucas Alencar; a migração entra no B3, só depois.
   Nada novo para os dois.
 Contagem com a diferença de 13/10: 27 + 1 (task_participants) = 28.
 
+Decisão do Lucas Scholz sobre as etiquetas do card (14/10, ao ver o kit do quadro no Storybook).
+PENDENTE DE CONFERÊNCIA do Lucas Alencar; migração aditiva no B3, só depois:
+- task_types.color (varchar(10), null) e project_areas.color (varchar(10), null): a cor da etiqueta de
+  tipo e de área no card, como no Trello. Paleta fechada de 10 nomes (gray, blue, sky, green, lime,
+  yellow, orange, red, pink, purple; `TagColor` em `resources/js/types/quadro.ts`, tokens em
+  `design/tokens.json`), escolhida no cadastro da lista geral (F1, Administrador) e das áreas do
+  projeto (F2, gestor); null = etiqueta cinza. No card e na ficha, tipo sempre antes da área (F3 §03).
+
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 
 T1–T5 decididas para seguir; T6–T10 eram perguntas para o Lucas Alencar e foram respondidas pelo Lucas Scholz. O Lucas Alencar corrige na revisão geral se discordar.

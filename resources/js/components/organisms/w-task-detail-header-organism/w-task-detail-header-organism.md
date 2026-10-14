@@ -8,7 +8,7 @@ O topo da ficha do card (F3 §02): o que fica sempre visível, acima das seçõe
 
 | Zona      | O que mostra                                                                                                                                                           | Regra                   |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| Linha 1   | Chave (`WTaskKeyAtom`), Tipo em Space Mono, Área como etiqueta, "↳ SGM-10" com link quando é card filho                                                                | P16, P18, P57           |
+| Linha 1   | Chave (`WTaskKeyAtom`), Tipo e Área como etiquetas coloridas (`WTagAtom`, tipo primeiro), "↳ SGM-10" com link quando é card filho                                      | P16, P18, P57           |
 | Título    | h2 com o lápis _Editar título_ → campo com Salvar/Cancelar (Enter salva, Esc cancela); vazio é recusado na tela                                                        | P17                     |
 | Marcas    | `WTaskMarksMolecule`: atraso, pausa com motivo, voltas, suporte, reestimativa proposta                                                                                 | P15, P27, P39…          |
 | Capa      | A imagem do anexo escolhido, quando há                                                                                                                                 | P59                     |

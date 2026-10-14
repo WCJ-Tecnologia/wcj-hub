@@ -29,10 +29,19 @@ export interface PersonRef {
     name: string;
 }
 
+/**
+ * Cor da etiqueta de tipo e de área (decisão de Lucas Scholz em 14/10, como no Trello): paleta fixa
+ * de 10, escolhida no cadastro da lista geral (tipos) e na configuração do projeto (áreas). Espelho das
+ * colunas `task_types.color` e `project_areas.color` (varchar(10), null; pendente da conferência do
+ * Lucas Alencar). null = etiqueta sem cor (cinza neutro).
+ */
+export type TagColor = 'gray' | 'blue' | 'sky' | 'green' | 'lime' | 'yellow' | 'orange' | 'red' | 'pink' | 'purple';
+
 /** Área do projeto (P18): a "etiqueta" do card, uma por card. */
 export interface AreaRef {
     id: number;
     name: string;
+    color: TagColor | null;
 }
 
 /** Tipo do card (P18): `slug` só nos itens que o código conhece (`improvement`, `support`). */
@@ -40,6 +49,7 @@ export interface TaskTypeRef {
     id: number;
     slug: string | null;
     label: string;
+    color: TagColor | null;
 }
 
 /** Card pai (P57), um nível. */

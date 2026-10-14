@@ -87,7 +87,7 @@ export const Suporte: Story = {
 /** Projeto sem área cadastrada (P18): o campo diz "Nenhuma área no projeto", desabilitado. */
 export const SemAreaNoProjeto: Story = { args: { area: TASK_MINIMO.area, priority: TASK_MINIMO.priority, areas: [] } };
 /** Tipo desativado na lista geral (G7): continua no card, marcado "(desativado)". */
-export const TipoDesativado: Story = { args: { type: { id: 99, slug: null, label: 'Treinamento' } } };
+export const TipoDesativado: Story = { args: { type: { id: 99, slug: null, label: 'Treinamento', color: null } } };
 export const SoLeitura: Story = { args: { canEdit: false } };
 export const Gravando: Story = { args: { busy: true } };
 export const ComErro: Story = {

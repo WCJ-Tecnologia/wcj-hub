@@ -46,8 +46,8 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 |---|---|---|---|---|
 | Chave | só leitura: prefixo-número, ex.: `SGM-17` | | gerada ao criar | Sequencial por projeto; número de card excluído nunca é reaproveitado (P16). |
 | Título | texto, até 200 | sim | | Único campo pedido ao criar (P17). |
-| Tipo | lista geral: Melhoria, Correção de bug, Suporte, Mudança (GMUD) e o que o Administrador cadastrar | sim | Melhoria | Item desativado some da escolha e continua nos cards que já o usam (P18, G7). Escolher Suporte pede os campos do pedido (ver "Card de suporte" abaixo). |
-| Área | lista do projeto | não | nenhuma | A lista nasce vazia e é do gestor (F2). Lista vazia: o campo diz "Nenhuma área no projeto" (P18). |
+| Tipo | lista geral: Melhoria, Correção de bug, Suporte, Mudança (GMUD) e o que o Administrador cadastrar | sim | Melhoria | Item desativado some da escolha e continua nos cards que já o usam (P18, G7). Escolher Suporte pede os campos do pedido (ver "Card de suporte" abaixo). Cada tipo tem a cor da etiqueta, definida na lista geral (decisão de 14/10, seção 11). |
+| Área | lista do projeto | não | nenhuma | A lista nasce vazia e é do gestor (F2). Lista vazia: o campo diz "Nenhuma área no projeto" (P18). Cada área tem a cor da etiqueta, definida em F2 (decisão de 14/10, seção 11). |
 | Prioridade | lista fixa: Baixa, Normal, Alta, Urgente | sim | Normal | (P19) |
 | Dev | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só. Pode ficar vazio em qualquer coluna. Definir avisa a pessoa (P20, P22). Quem sai do projeto deixa o card sem dev (P5). |
 | QA | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só, opcional. Definir avisa a pessoa (P20, P22). |
@@ -122,9 +122,9 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 | Zona | Item | Quando aparece | Regra |
 |---|---|---|---|
-| Borda | Prioridade | sempre | Baixa, Normal, Alta, Urgente, como marca na borda ou no canto do card (P19). |
-| Cabeçalho | Área | quando há área | Como etiqueta (a "tag" do card); uma por card (P18). |
-| Cabeçalho | Tipo | sempre | (P18) |
+| Borda e rodapé | Prioridade | sempre | Baixa, Normal, Alta, Urgente: faixa na borda de cima e a pílula com ícone e nome no canto inferior direito, como no Trello (P19; decisão de 14/10, seção 11). |
+| Cabeçalho | Tipo | sempre | Como etiqueta colorida, sempre a primeira (P18; decisão de 14/10, seção 11). |
+| Cabeçalho | Área | quando há área | Como etiqueta colorida (a "tag" do card), depois do tipo; uma por card (P18). |
 | Cabeçalho | Chave e título | sempre | (P16) |
 | Cabeçalho | Card pai | no card filho | A chave do pai, com link para a ficha dele (P57). |
 | Cabeçalho | Menu ⋯ | sempre | *Mover para…* (mesmas regras do arrastar: pausa pede motivo, volta pede origem e motivo, sair do `Backlog` só gestor e Administrador), *Copiar link* (a URL da ficha), *Área*, *Prioridade* e *Abrir ficha*. |
@@ -279,6 +279,8 @@ Lucas Varanda propôs o desenho do card (prioridade fora do card; cabeçalho com
 4. **Usuários no card.** Além de Dev e QA, **participantes** (P58). Premissas decididas aqui, de baixo risco: participante não recebe aviso (P22 segue com dois avisos só), não entra na capacidade nem em indicador por pessoa, e entra no *Só os meus* e em `minhas_tarefas`. Definir o pai arrastando com Alt é proposta de interação, não regra: o front decide se entra no B3.
 5. **Imagem no corpo do card.** **O usuário escolhe** qual anexo é a capa (P59); sem escolha, sem imagem.
 6. **Faltava na proposta** e está no card: chave junto do título (P16), tipo (P18), marcas de pausa (P15), retrabalho com o número de voltas (P39), suporte com quem pediu (P52) e reestimativa proposta (P27).
+7. **Cor das etiquetas (14/10, ao ver o kit do quadro).** Tipo e área ganham cor, como no Trello: paleta fechada de 10 cores (cinza, azul, azul-claro, verde, verde-limão, amarelo, laranja, vermelho, rosa, roxo), escolhida no cadastro do tipo (lista geral, F1) e da área (F2); sem cor = cinza. No card e na ficha a ordem é sempre tipo primeiro, área depois. Banco: `task_types.color` e `project_areas.color` (`banco.md` seção 7, pendente do Lucas Alencar).
+8. **Prioridade evidente (14/10).** Além da faixa na borda, a prioridade aparece como pílula com ícone e nome no canto inferior direito de todo card, como no Trello; o rodapé passa a existir sempre.
 12. **Card arquivado.** OK: ficha continua abrindo; só sai do quadro e das contas.
 13. **Quadro de projeto encerrado.** OK: mover, comentar e anexar seguem (P7).
 14. **Tipo do bug de produção.** OK: escolhido à mão na fatia 1.

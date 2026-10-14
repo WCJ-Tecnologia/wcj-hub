@@ -14,6 +14,7 @@ import {
 import { type FormEvent, type MouseEvent, useId, useState } from 'react';
 import { toast } from 'sonner';
 
+import { WTagAtom } from '@/components/atoms/w-tag-atom/w-tag-atom';
 import { WTaskKeyAtom } from '@/components/atoms/w-task-key-atom/w-task-key-atom';
 import { WTaskMarksMolecule } from '@/components/molecules/w-task-marks-molecule/w-task-marks-molecule';
 import { Badge } from '@/components/shadcn/badge';
@@ -93,13 +94,8 @@ export function WTaskDetailHeaderOrganism({
                 <div className="grid min-w-0 flex-1 gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                         <WTaskKeyAtom taskKey={detail.key} />
-                        <span className="font-mono text-xs tracking-wide text-muted-foreground uppercase">{detail.type.label}</span>
-                        {detail.area && (
-                            <Badge variant="info">
-                                <span className="sr-only">Área: </span>
-                                {detail.area.name}
-                            </Badge>
-                        )}
+                        <WTagAtom label={detail.type.label} color={detail.type.color} kind="type" />
+                        {detail.area && <WTagAtom label={detail.area.name} color={detail.area.color} kind="area" />}
                         {detail.parent && (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <CornerDownRight className="size-3.5" aria-hidden />
