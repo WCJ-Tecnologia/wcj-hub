@@ -122,7 +122,8 @@ export function WTaskCardOrganism({
             data-key={card.key}
             data-dragging={dragging || undefined}
             className={cn(
-                'relative w-full gap-2 overflow-hidden rounded-md px-3 pt-3 pb-2.5 text-sm shadow-xs transition-[box-shadow,transform] hover:shadow-md',
+                // Profundidade: sombra de verdade (a coluna é o "poço", bg-muted) e uma subida de 1 px no hover; no escuro a sombra some, então o card é mais claro que a coluna.
+                'relative w-full gap-2 overflow-hidden rounded-md border-border/80 px-3 pt-3 pb-2.5 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
                 compact && 'pt-2.5 pb-1.5',
                 // A barra dos filhos mora na borda de baixo: um respiro a mais para a contagem não encostar nela.
                 card.children && !compact && 'pb-4',

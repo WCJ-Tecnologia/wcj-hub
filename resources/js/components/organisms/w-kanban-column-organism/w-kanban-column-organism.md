@@ -55,3 +55,4 @@ Dentro do `DndContext` do `WKanbanBoardOrganism` (fora dele, envolva num `DndCon
 - **Teclado.** O item é focável e é o único que ativa o arrastar por teclado (`setActivatorNodeRef` no próprio `li`): Espaço pega, setas levam a outra coluna, Espaço solta, Esc cancela. Enter no título abre a ficha, não pega o card. O caminho por teclado que recomendamos é o _Mover para…_ do menu ⋯ do card, que passa pelas mesmas regras.
 - O lugar de onde o card saiu fica esmaecido; quem acompanha o ponteiro é o `DragOverlay` do quadro.
 - No toque (celular), o card não arrasta (`touch-action: manipulation`, a rolagem vence): use o _Mover para…_.
+- A coluna é o "poço" dos cards: `bg-muted` no claro e `dark:bg-background/60` no escuro, sempre mais escura que o card, para a sombra (claro) ou o contraste (escuro) dar relevo ao `WTaskCardOrganism`. Clarear a coluna deixa os cards chapados de novo.

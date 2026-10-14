@@ -77,7 +77,8 @@ export function WKanbanColumnOrganism({
             data-over={highlighted || undefined}
             aria-labelledby={titleId}
             className={cn(
-                'flex h-full w-72 shrink-0 snap-start flex-col rounded-lg border border-transparent bg-muted/60 transition-colors',
+                // O "poço" dos cards: no claro, o cinza cheio da marca; no escuro, mais escuro que o card, para ele parecer em relevo.
+                'flex h-full w-72 shrink-0 snap-start flex-col rounded-lg border border-transparent bg-muted transition-colors dark:bg-background/60',
                 highlighted && 'border-primary/50 bg-accent/60',
             )}
         >

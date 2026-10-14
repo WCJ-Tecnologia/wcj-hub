@@ -17,6 +17,8 @@ O card do quadro kanban, nas zonas do F3 §03 (decisão de 13/10, D-GER-32), sob
 | Rodapé    | Pessoas, com o _+_ de participante (P20, P58); data prevista, anexos e comentários (P24, P28)                                | quando há       | `WPeopleAvatarsMolecule`, `WCardCountersMolecule` |
 | Rodapé    | "2 · 1 · 3" e a barra dos filhos (P57)                                                                                       | no card pai     | `WChildProgressMolecule`                          |
 
+**Profundidade.** O card tem sombra de repouso (`shadow-md`) e sobe 1 px com sombra maior no hover; a coluna é o "poço" (`bg-muted`), então o card branco se destaca dela. No escuro a sombra não aparece: a coluna fica mais escura que o card (`dark:bg-background/60` na coluna), e o relevo vem do contraste. Não há componente de sombra no shadcn; é sombra do Tailwind mais contraste de camadas.
+
 **Onde ficam as marcas:** logo abaixo do título, antes da capa. Atraso e pausa são o que mais pede atenção, e ali ficam junto do nome do card, sem se perder entre os contadores do rodapé. A marca de atraso (rodapé no F3 §03) entra nesse grupo pelo mesmo motivo; no rodapé, a data prevista fica no vermelho de status quando o card está atrasado.
 
 **Menu ⋯** (`aria-label="Ações de SGM-17"`):
