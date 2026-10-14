@@ -68,6 +68,20 @@ Regras da story:
 - `tags: ['autodocs']` e `argTypes` para toda prop que faz sentido mexer.
 - Story de componente composto (Select, Dialog, Table) usa um componente `…Demo` com props simples, para os controles funcionarem.
 
+## Kit do quadro (F3), sem backend
+
+Os componentes do quadro kanban entraram antes do B3, como kit: o Cauã liga o backend neles. O contrato está em três arquivos, e nenhum componente inventa forma própria:
+
+| Arquivo | O que é |
+| --- | --- |
+| `resources/js/types/quadro.ts` | O que o `TaskPresenter` do B3 manda (`BoardCard`, `BoardStage`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`) e o que a tela devolve (`MoveIntent`, `MovePayload`) |
+| `resources/js/lib/quadro.ts` | Ordenar por prioridade ou manual (P13), `classifyMove` (qual diálogo abrir e qual recusa mostrar: P15, P39, P45, R5, P38), `hours()`, `applyFilters()` (só para o filtro instantâneo; o servidor é a fonte) |
+| `.storybook/fixtures-quadro.ts` | Projeto, 8 etapas, cards com todas as zonas e marcas, opções e abilities de gestor e de dev |
+
+Como se encaixam: `pages/w-project-board-page` monta `organisms/w-board-filters-organism` + `organisms/w-kanban-board-organism` (dnd-kit) e liga o `hooks/use-board-move.tsx`, que recebe o `MoveIntent` do arrastar (ou do *Mover para…* do card) e abre, na ordem, os diálogos que o movimento pede (`w-new-sprint-dialog`, `w-pause-reason-dialog`, `w-rework-dialog`, o aviso do Done pelo `WConfirmDialogMolecule`), devolvendo um `MovePayload` para o `router.post`. A coluna (`w-kanban-column-organism`) traz o criar rápido no Backlog e o *Novo card de suporte* no Support; o card (`w-task-card-organism`) é só apresentação e callbacks. As rotas que a página chama são proposta do kit, marcadas no topo do arquivo; o B3 confirma ou ajusta.
+
+Regra do kit: o quadro e o card nunca decidem regra nem recusam movimento. `classifyMove` só escolhe o diálogo; quem recusa é o servidor, e a tela mostra o erro que vier.
+
 ## Storybook e Inertia
 
 Não há Laravel atrás do Storybook. Por isso o `@inertiajs/react` é trocado por `.storybook/inertia-mock.tsx`:
