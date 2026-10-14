@@ -231,7 +231,7 @@ Numeradas por módulo: G (todos), N (Núcleo), P (Projetos), C (CRM), IA (Interf
 #### 2.3 Tarefa
 
 - **P16** Chave `<prefixo>-<número>` (ex.: `SGM-17`), sequencial por projeto, nunca reaproveitada.
-- **P17** Criar o card pede só o título: ele nasce no `Backlog` com tipo Melhoria e prioridade Normal, e o resto fica recolhido e opcional (R4). A tarefa de projeto de cliente é escrita, quando houver, no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
+- **P17** Criar o card pede só o título: ele nasce no `Backlog` com tipo Desenvolvimento (decisão de Lucas Scholz em 14/10; até então, Melhoria) e prioridade Normal, e o resto fica recolhido e opcional (R4). A tarefa de projeto de cliente é escrita, quando houver, no modelo de requisição: Sendo / Quero / Para + critérios de aceite `CA_1…CA_n`.
 - **P18** Tipo (melhoria, correção de bug, suporte, mudança/GMUD; lista geral editável, G7) e área (lista do projeto, que nasce vazia). Melhoria e Suporte se renomeiam, mas não se desativam: o sistema depende deles (P17, P52). **Decisão de 14/10 (Lucas Scholz):** tipo e área são do projeto e têm cor (paleta fechada de 10); todo projeto nasce com os tipos padrão (Melhoria, Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e sem área; o gestor cria e edita nome e cor dos dois pelo próprio quadro, clicando na etiqueta, sem propagar a outros projetos.
 - **P19** Prioridade: baixa, normal, alta ou urgente.
 - **P20** A tarefa tem **um dev** e **um QA**. Os dois podem ficar vazios, como as horas (P27).
@@ -369,7 +369,7 @@ As regras abaixo são as de 24/09. Valem como ponto de partida da v2 e serão re
 
 - **Dado** um Comercial, que não tem acesso ao projeto P, **quando** o assistente dele chama `status_do_projeto(P)`, **então** recebe "negado" e a tentativa fica na auditoria (G3, G4).
 - **Dado** um Dev com conexão só de leitura, **quando** o assistente chama `mover_tarefa`, **então** recebe "escopo insuficiente" e nada muda (IA4).
-- **Dado** um Dev alocado no projeto, **quando** o assistente dele chama `escrever_tarefa` só com o título, **então** o card nasce no `Backlog` com tipo Melhoria e prioridade Normal (P56, P17); um Dev não alocado recebe "negado" (G4).
+- **Dado** um Dev alocado no projeto, **quando** o assistente dele chama `escrever_tarefa` só com o título, **então** o card nasce no `Backlog` com tipo Desenvolvimento e prioridade Normal (P56, P17); um Dev não alocado recebe "negado" (G4).
 - **Dado** um usuário desativado agora, **quando** o assistente dele chama qualquer ferramenta, **então** recebe "não autorizado" (N4, IA6).
 - **Dado** um texto de cliente que contém instruções ao assistente (com Chamados, a descrição de um chamado), **quando** o técnico pede um resumo pela IA, **então** o conteúdo volta delimitado como dado do cliente e nenhuma escrita acontece sem pedido do técnico (IA10).
 - **Dado** uma tarefa movida pela IA, **quando** o gestor abre o histórico, **então** vê quem moveu, quando, de onde para onde e o canal `ia:claude` ou `ia:codex` (o ChatGPT só lê, IA3) (P14, IA11).

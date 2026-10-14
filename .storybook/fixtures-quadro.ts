@@ -102,12 +102,12 @@ export const ABILITIES_DEV: BoardAbilities = {
 /** Projeto encerrado: ninguém cria card; mover segue (P7). */
 export const ABILITIES_ENCERRADO: BoardAbilities = { ...ABILITIES_GESTOR, create_card: false, create_support: false };
 
-/** Card mínimo: só o que o criar rápido preenche (P17, R4). */
+/** Card mínimo: só o que o criar rápido preenche (P17, R4): tipo Desenvolvimento (14/10) e prioridade Normal. */
 export function card(partial: Partial<BoardCard> & Pick<BoardCard, 'id' | 'key' | 'title' | 'stage_id'>): BoardCard {
     return {
         position: partial.id,
         priority: 'normal',
-        type: MELHORIA,
+        type: DESENVOLVIMENTO,
         area: null,
         parent: null,
         cover_url: null,

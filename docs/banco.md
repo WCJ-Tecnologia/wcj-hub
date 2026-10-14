@@ -414,8 +414,8 @@ e pelo menos 1 de papel development (destino da reprovação na homologação, P
 ### task_types (cadastrável)
 
 P18. Lista geral: o Administrador edita (G7). O código depende dos slugs 'support' (card de suporte,
-P52) e 'improvement' (tipo padrão do card criado só com o título, P17, R4); os outros itens nascem sem
-slug.
+P52), 'improvement' (Melhoria) e 'development' (Desenvolvimento, o tipo padrão do card criado só com o
+título, P17, R4; decisão de 14/10, antes era 'improvement'); os outros itens nascem sem slug.
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
      improvement   Melhoria
      —             Correção de bug
@@ -557,7 +557,7 @@ tarefa. Asserção única no Service, coberta por teste, em toda gravação; sem
 
 Regras do Service:
 - criar card: qualquer pessoa alocada, também pela IA (P56, R2). Nasce na etapa de papel queue; quando
-  só o título vem, com task_types 'improvement' e task_priorities 'normal' (P17, R4);
+  só o título vem, com task_types 'development' (14/10; antes 'improvement') e task_priorities 'normal' (P17, R4);
 - developer_id e qa_id são pessoas alocadas no projeto (Service, R15); definir um deles gera o aviso
   no sistema e o e-mail (P22, R3), e a volta para desenvolvimento (P39) avisa o dev pelos dois. Tirar a
   pessoa do projeto: o Service limpa developer_id e qa_id antes de apagar a alocação (a FK é
@@ -1140,7 +1140,8 @@ PENDENTE DE CONFERÊNCIA do Lucas Alencar; migração aditiva no B3, só depois:
   Suporte, — Mudança (GMUD), development Desenvolvimento (novo: funcionalidade do zero). O gestor cria
   tipos e edita nome e cor dos seus pelo próprio quadro (clicando na etiqueta), sem propagar a outros
   projetos; o mesmo para project_areas (criar e editar nome e cor pelo quadro). O código continua
-  achando support e improvement pelo slug, agora dentro do projeto. A lista geral de tipos sai de F2
+  achando support, improvement e development pelo slug, agora dentro do projeto; o padrão do card
+  rápido passa a ser development (P17, 14/10). A lista geral de tipos sai de F2
   (ficam só os motivos de retrabalho); a tela de configuração do projeto ganha a aba Tipos (como Áreas).
 
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)

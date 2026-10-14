@@ -47,7 +47,8 @@ export interface AreaRef {
 /**
  * Tipo do card (P18): **do projeto** (decisão de 14/10): todo projeto nasce com os padrão (Melhoria,
  * Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e cria ou edita os seus sem propagar.
- * `slug` só nos itens que o código conhece (`improvement`, `support`, `development`), um por projeto.
+ * `slug` só nos itens que o código conhece (`improvement`, `support`, `development`), um por projeto; o card criado
+ * só com o título nasce `development` (P17, decisão de 14/10).
  */
 export interface TaskTypeRef {
     id: number;

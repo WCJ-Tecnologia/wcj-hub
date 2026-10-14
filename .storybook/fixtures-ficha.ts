@@ -283,7 +283,8 @@ export const CHILDREN: ChildCard[] = [
 /** Card mínimo: só o que o criar rápido preenche (P17, R4). Nunca usado: dá para excluir (P26). */
 export function detail(partial: Partial<TaskDetail> & Pick<TaskDetail, 'id' | 'key' | 'title'>): TaskDetail {
     return {
-        type: BOARD_OPTIONS.types[0],
+        // O criar rápido nasce Desenvolvimento (P17, 14/10): o 5º tipo da lista.
+        type: BOARD_OPTIONS.types[4],
         area: null,
         priority: 'normal',
         stage: BACKLOG,
