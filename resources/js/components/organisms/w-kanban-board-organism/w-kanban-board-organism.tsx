@@ -16,7 +16,7 @@ import {
     type Over,
     type ScreenReaderInstructions,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Info, LayoutGrid, SearchX } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -156,18 +156,32 @@ export function WKanbanBoardOrganism({
         const to = stageById(target.stage_id);
         if (!from || !to) return;
 
-        // A coluna como está na tela, sem o card que anda; o card entra onde foi solto (sobre um card =
-        // no lugar dele; no vazio da coluna = no fim). É a ordem que a pessoa viu, não a gravada.
-        const column = (columns.get(to.id) ?? []).filter((item) => item.id !== card.id);
-        const overIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : -1;
-        const index = overIndex === -1 ? column.length : overIndex;
+        // Solto sobre o próprio card (pegou e largou no lugar): nada mudou.
+        if (target.type === 'card' && target.card.id === card.id) return;
 
+        let index: number;
+        let sequence: number[];
         if (from.id === to.id) {
-            const current = (columns.get(to.id) ?? []).findIndex((item) => item.id === card.id);
-            if (index === current) return;
+            // Na mesma coluna, a posição nova é a do card sobre o qual soltou, como a lista mostrou durante o
+            // arraste (arrayMove, o mesmo do useSortable); no vazio da coluna, o fim. Mesma posição: nada mudou.
+            const column = columns.get(to.id) ?? [];
+            const oldIndex = column.findIndex((item) => item.id === card.id);
+            const newIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : column.length - 1;
+            if (oldIndex === -1 || newIndex === -1 || newIndex === oldIndex) return;
+            index = newIndex;
+            sequence = arrayMove(
+                column.map((item) => item.id),
+                oldIndex,
+                newIndex,
+            );
+        } else {
+            // Em outra coluna, como está na tela: o card entra onde foi solto (sobre um card = no lugar dele;
+            // no vazio da coluna = no fim). É a ordem que a pessoa viu, não a gravada.
+            const column = columns.get(to.id) ?? [];
+            const overIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : -1;
+            index = overIndex === -1 ? column.length : overIndex;
+            sequence = [...column.slice(0, index).map((item) => item.id), card.id, ...column.slice(index).map((item) => item.id)];
         }
-
-        const sequence = [...column.slice(0, index).map((item) => item.id), card.id, ...column.slice(index).map((item) => item.id)];
         // Em *Prioridade* a coluna se reordenaria sozinha e desfaria o soltar: vira *Manual* (14/10).
         if (order !== 'manual') onOrderChange?.('manual');
         onMove({ card, from, to, index, sequence });
