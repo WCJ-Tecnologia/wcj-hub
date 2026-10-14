@@ -4,7 +4,7 @@ Documento de entrada. Quem abre este repositório, pessoa ou IA, lê isto antes 
 
 ## O produto em um parágrafo
 
-Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **Projetos** (substitui o Trello, com controle de tempo, num kanban sem trava no fluxo), **CRM** (leads, tratativas, compromissos; **v2**) e **Chamados** (último, sem demanda ainda). Cada usuário interno conecta a **própria IA** (Claude, Codex; ChatGPT) para consultar e alterar dados com as mesmas permissões da tela. **Fatia 1** (D-GER-24): Núcleo + Projetos + MCP com 6 ferramentas. Desenvolvido por **Cauã e Vitinho, com IA**, supervisão de Lucas Scholz (D-GER-25), no padrão `ai-systems` 0.6.0 em trilho leve.
+Sistema interno da WCJ Tecnologia com três módulos sobre um núcleo comum: **Projetos** (substitui o Trello, com controle de tempo, num kanban sem trava no fluxo), **CRM** (leads, tratativas, compromissos; **v2**) e **Chamados** (último, sem demanda ainda). Cada usuário interno conecta a **própria IA** (Claude, Codex; ChatGPT) para consultar e alterar dados com as mesmas permissões da tela. **Fatia 1** (D-GER-24): Núcleo + Projetos + MCP com 6 ferramentas. Desenvolvido por **Cauã, com IA**, supervisão de Lucas Scholz (D-GER-25; Vitinho e Lucas Varanda saíram em 14/10, D-GER-33), no padrão `ai-systems` 0.6.0 em trilho leve.
 
 ## Estado atual
 
@@ -17,9 +17,9 @@ Atualizado em 2026-10-06.
 | Revisão das regras | **Encerrada.** Incorporada à `necessidade.md` na Sessão C; o arquivo `docs/regras-para-revisao.md` foi apagado (o git guarda as revisões 1 a 4, até o commit `da44c03`) | `docs/necessidade.md` |
 | Funcionais | **Escritos em 06/10**, versão 0.1 para aprovação: F1 a F8 em `docs/funcional/` (D-GER-28). **F1 a F8 APROVADOS por Lucas Scholz em 06/10 (v1.0)**, com todos os pontos a validar respondidos; Rafael Garcia valida Projetos no uso (bugbash). Colunas aditivas decididas na aprovação: `tasks.position`, `tasks.proposed_hours`, `users.ai_write_allowed` (seção 7 do `banco.md`). Cada um tem a seção 10 "Pontos a validar" | `docs/funcional/README.md` |
 | 4. Escopo | **VALIDADO por Lucas Scholz em 06/10 (etapa 5)**: blocos B0 a B10, apontando para os funcionais. Ele é o responsável por todas as travas da seção 7 | `docs/escopo.md` |
-| Marca no template | **`docs/brand/` criada em 06/10**: logo em vetor, ícones, cores, nós, fontes, Brand Board e o rascunho `tokens.wcj.json` para o Lucas Varanda aplicar no template (D-GER-29) | `docs/brand/README.md` |
+| Marca no template | **`docs/brand/` criada em 06/10**: logo em vetor, ícones, cores, nós, fontes, Brand Board e o rascunho `tokens.wcj.json` (D-GER-29). **Aplicado pelo Lucas Varanda no PR #8 (09/10)**: shadcn, Atomic Design, Storybook e marca (ADR-003, ADR-005). Ele saiu em 14/10 (D-GER-33): os componentes que faltam entram como kit por bloco, a começar pelo **kit do quadro** (PR #11) | `docs/brand/README.md`, `resources/js/components/README.md` |
 | Plano de desenvolvimento | **Escrito em 06/10**: ondas, divisão Cauã × Vitinho, rito do PR, trilhos, checklist do Lucas antes de começar | `docs/plano-de-desenvolvimento.md` |
-| 3. Repositório | **B0 MERGEADO em 06/10 (PR #1)**: template `ai-systems` 0.6.0 por domínio, 27 migrações + 3 colunas de 06/10, Passport, sementes, MySQL 8 nos testes e no CI, tema da marca, `AGENTS.md`, ADR-001 e ADR-002. `composer setup` do zero em 32 s. Próximo: onda 1 (B1 ∥ B2) | https://github.com/WCJ-Tecnologia/wcj-hub |
+| 3. Repositório | **B0 MERGEADO em 06/10 (PR #1)**: template `ai-systems` 0.6.0 por domínio, 27 migrações + 3 colunas de 06/10, Passport, sementes, MySQL 8 nos testes e no CI, tema da marca, `AGENTS.md`, ADR-001 e ADR-002. `composer setup` do zero em 32 s. **Na `main` desde 09/10:** B1 Núcleo (PR #5, #7), front atômico (PR #8) e B2 passo 1 (PR #6); docs de 13/10 (PR #9, #10). Próximo: B3 (Cauã) sobre o kit do quadro | https://github.com/WCJ-Tecnologia/wcj-hub |
 | Teste técnico da IA (MCP) | A fazer, por Lucas Scholz (D-GER-17) | `docs/necessidade.md`, "Assistentes de IA" |
 | `core/mcp.md` no padrão | **Publicado** no `ai-systems` 0.3.0 (PR #4) | `~/Documents/Projetos/WCJ/ai-systems/.ai/core/mcp.md` |
 

@@ -70,15 +70,17 @@ Sistema interno da WCJ Tecnologia, para até 14 usuários, que substitui o Trell
 
 ## Estado atual
 
-Atualizado em 2026-10-09.
+Atualizado em 2026-10-14.
 
 | Bloco | Estado |
 |---|---|
 | B0 repositório, 27 migrações, sementes, CI em MySQL 8, tema da marca | na `main` (PR #1) |
-| B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5, 09/10): review de 07/10 aplicada, `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13; CR-1-01 (reenviar convite derruba as sessões) integrado no `UserService::resendInvite` pelo PR #7 |
-| Front: shadcn + Atomic Design + Storybook + marca WCJ (ADR-003, ADR-005) | PR #8 (`chore/marca-wcj`, Lucas Varanda); ADRs aprovados pelo Lucas Scholz em 09/10; `wcj-code-review` ciclo 1 (`.specs/code-reviews/`); rebase sobre o B1 com o porte dos componentes do Núcleo para a estrutura atômica; falta CI verde e o merge |
-| B2 Projeto e configuração, passo 1: lista, cadastro, encerrar, reabrir e excluir projeto; `ProjectClientManagement` | PR #6 (`feat/b2-projeto-e-configuracao`, Vitinho); `wcj-code-review` ciclos 1 e 2 (`.specs/code-reviews/`) corrigidos em 09/10 (rebase sobre o B1 e o front atômico, autorização auditada, `ProjectPresenter`, vínculo em lote); criar/editar por modal na lista (decisão do Lucas Scholz, 09/10); falta CI verde e o merge |
-| B2 passo 2 (Pessoas, Etapas, Áreas, Padrões, listas gerais, "Novo cliente" inline) e B3 a B10 | não começados; ordem e divisão em `docs/plano-de-desenvolvimento.md` |
+| B1 Núcleo: usuários, clientes, contatos, auditoria | na `main` (PR #5 e #7, 09/10): `wcj-code-review` em 6 ciclos (`.specs/features/b1-nucleo/code-reviews/`), Verifier rodadas 9 a 13 |
+| Front: shadcn + Atomic Design + Storybook + marca WCJ (ADR-003, ADR-005) | na `main` (PR #8, 09/10, Lucas Varanda), com o Núcleo portado para a estrutura atômica |
+| B2 passo 1: lista, cadastro, encerrar, reabrir e excluir projeto; `ProjectClientManagement` | na `main` (PR #6, 09/10, Vitinho), com as correções dos ciclos 1 e 2 da `wcj-code-review`; criar/editar por modal |
+| Docs de 13/10: `banco.md` (PR #9) e card do quadro, D-GER-32 (PR #10) | na `main` |
+| **Kit do quadro** (front do B3 sem backend: card, colunas, kanban com arrastar e soltar, diálogos, hook de movimento, página de exemplo; tudo no Storybook) | PR #11 (`feat/front-kit-quadro`, Lucas Scholz com IA): contrato em `resources/js/types/quadro.ts`, regras de tela em `lib/quadro.ts`, fixtures em `.storybook/fixtures-quadro.ts`. O B3 liga o backend nesses componentes |
+| B2 passo 2 (Pessoas, Etapas, Áreas, Padrões, listas gerais, "Novo cliente" inline) e B3 a B10 | não começados; ordem em `docs/plano-de-desenvolvimento.md`. **Lucas Varanda e Vitinho saíram em 14/10 (D-GER-33):** o Cauã segue B3 → B4 → B6 → B8; os blocos do Vitinho estão a redistribuir |
 
 ## Vocabulário do produto
 
@@ -152,6 +154,7 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 | `dateBr()` | `lib/utils.ts` | data de negócio `AAAA-MM-DD` (coluna `date`) para a tela, `DD/MM/AAAA`, sem passar por `Date` (que leria meia-noite UTC e mostraria o dia anterior) |
 | `WStatusPillAtom` `kind="project"` | `components/atoms/w-status-pill-atom/` | Aberto / Encerrado do projeto (P7) |
 | `w-project-filters-organism`, `w-project-form-dialog-organism` | `components/organisms/` | busca e filtros da lista de projetos (F2 §05) e o modal de criar/editar (F2 §02); a tela é `components/pages/w-projects-page/` |
+| **Kit do quadro (F3)** | `types/quadro.ts`, `lib/quadro.ts`, `.storybook/fixtures-quadro.ts`; `atoms/w-{task-key,priority-mark}-atom/`; `molecules/w-{people-avatars,task-marks,child-progress,card-counters,quick-create,board-order-toggle}-molecule/`; `organisms/w-{task-card,kanban-column,kanban-board,board-filters}-organism/`, `organisms/w-{pause-reason,rework,archive,support-card,new-sprint}-dialog-organism/`; `hooks/use-board-move.tsx`; `lib/dias-uteis.ts`; `pages/w-project-board-page/` | o quadro inteiro sem backend (seção "Kit do quadro" do `resources/js/components/README.md`): o B3 liga as rotas na página e manda as formas do `quadro.ts`. `classifyMove` escolhe o diálogo; a recusa é do servidor. `addBusinessDays`/`businessDaysBetween`: dias úteis seg–sex sem feriado (P29) em `AAAA-MM-DD`, sem `new Date()` |
 | Tabelas e formulários do Núcleo | `components/organisms/w-{user,client,contact,audit-log}-table-organism/`, `w-{user,client,contact}-form-dialog-organism/`, `w-anonymize-contact-dialog-organism/`, `w-audit-log-filters-organism/`, `w-audit-log-detail-dialog-organism/` | as colunas do F1 §03 e os modais do F1 §02/§04, um por entidade; a tela (`components/pages/w-*-page/`) só junta |
 
 ## Como rodar
