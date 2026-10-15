@@ -137,7 +137,7 @@ export function WTaskCardOrganism({
             className={cn(
                 // Profundidade: sombra de verdade (a coluna é o "poço", bg-muted) e uma subida de 1 px no hover; no escuro a sombra some, então o card é mais claro que a coluna.
                 // Pasta suspensa (14/10): a faixa da prioridade é a aba; o corpo é um painel com cantos próprios que entra por cima dela.
-                'relative w-full gap-0 overflow-hidden rounded-md rounded-t-xl border-border/80 p-0 pt-6 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
+                'relative w-full gap-0 overflow-hidden rounded-md rounded-t-2xl border-border/80 p-0 pt-6 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
                 dragging && 'rotate-2 cursor-grabbing shadow-xl ring-1 ring-primary/40',
                 className,
             )}

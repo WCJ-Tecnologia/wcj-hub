@@ -14,6 +14,10 @@ export interface WQuickCreateMoleculeProps {
     busy?: boolean;
     /** Erro do servidor (ex.: `errors.title`), abaixo do campo. */
     error?: string;
+    /** Foca o campo ao aparecer (o campo abre pelo "+" da coluna, 14/10). */
+    autoFocus?: boolean;
+    /** Esc com o campo vazio, ou sair dele vazio: a coluna esconde o campo. */
+    onCancel?: () => void;
     className?: string;
 }
 
@@ -21,7 +25,7 @@ export interface WQuickCreateMoleculeProps {
  * O "título + Enter" do topo do Backlog (F3 §01, P17, R4): Enter com texto chama `onCreate`, limpa o
  * campo e deixa o foco nele para o próximo título, como no Trello; Esc limpa.
  */
-export function WQuickCreateMolecule({ onCreate, busy = false, error, className }: WQuickCreateMoleculeProps) {
+export function WQuickCreateMolecule({ onCreate, busy = false, error, autoFocus = false, onCancel, className }: WQuickCreateMoleculeProps) {
     const [title, setTitle] = useState('');
     const input = useRef<HTMLInputElement>(null);
     const errorId = useId();
@@ -59,11 +63,14 @@ export function WQuickCreateMolecule({ onCreate, busy = false, error, className 
                     aria-describedby={error ? errorId : undefined}
                     placeholder="Novo card: título e Enter"
                     autoComplete="off"
+                    autoFocus={autoFocus}
                     enterKeyHint="send"
+                    onBlur={() => title.trim() === '' && !busy && onCancel?.()}
                     className="h-9 bg-card pl-8"
                     onChange={(event) => setTitle(event.target.value)}
                     onKeyDown={(event) => {
                         if (event.key === 'Escape') {
+                            if (title === '') onCancel?.();
                             setTitle('');
                             return;
                         }

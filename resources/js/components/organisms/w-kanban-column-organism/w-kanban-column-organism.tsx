@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Info, LifeBuoy } from 'lucide-react';
-import { useId } from 'react';
+import { Info, Plus } from 'lucide-react';
+import { useId, useState } from 'react';
 
 import { WQuickCreateMolecule } from '@/components/molecules/w-quick-create-molecule/w-quick-create-molecule';
 import { WTaskCardOrganism, type WTaskCardOrganismProps } from '@/components/organisms/w-task-card-organism/w-task-card-organism';
@@ -77,6 +77,8 @@ export function WKanbanColumnOrganism({
     ...callbacks
 }: WKanbanColumnOrganismProps) {
     const titleId = useId();
+    // O campo do criar rápido só aparece pelo "+" do cabeçalho (14/10): sem ele fixo, os cards de todas as colunas alinham.
+    const [composing, setComposing] = useState(false);
     const { setNodeRef } = useDroppable({ id: stageDndId(stage), data: { type: 'stage', stage_id: stage.id } satisfies BoardDndData });
 
     const showQuickCreate = stage.role === 'queue' && abilities.create_card && onCreate;
@@ -102,6 +104,33 @@ export function WKanbanColumnOrganism({
                         <span className="sr-only">{cards.length === 1 ? ' card' : ' cards'}</span>
                     </Badge>
                 </h2>
+                {showQuickCreate && (
+                    <Button
+                        type="button"
+                        variant={composing ? 'secondary' : 'ghost'}
+                        size="icon"
+                        aria-label={composing ? 'Fechar o novo card' : 'Novo card'}
+                        aria-pressed={composing}
+                        title="Novo card: título e Enter"
+                        className="ml-auto size-6 text-muted-foreground"
+                        onClick={() => setComposing((open) => !open)}
+                    >
+                        <Plus aria-hidden />
+                    </Button>
+                )}
+                {showSupport && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Novo card de suporte"
+                        title="Novo card de suporte"
+                        className="ml-auto size-6 text-muted-foreground"
+                        onClick={onCreateSupport}
+                    >
+                        <Plus aria-hidden />
+                    </Button>
+                )}
                 {stage.role === 'done' && (
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -122,14 +151,15 @@ export function WKanbanColumnOrganism({
                 )}
             </header>
 
-            {(showQuickCreate || showSupport) && (
+            {showQuickCreate && composing && (
                 <div className="px-2 pb-2">
-                    {showQuickCreate && <WQuickCreateMolecule onCreate={onCreate} busy={creating} error={createError} />}
-                    {showSupport && (
-                        <Button type="button" variant="outline" size="sm" className="w-full" onClick={onCreateSupport}>
-                            <LifeBuoy aria-hidden /> Novo card de suporte
-                        </Button>
-                    )}
+                    <WQuickCreateMolecule
+                        onCreate={onCreate}
+                        busy={creating}
+                        error={createError}
+                        autoFocus
+                        onCancel={() => setComposing(false)}
+                    />
                 </div>
             )}
 

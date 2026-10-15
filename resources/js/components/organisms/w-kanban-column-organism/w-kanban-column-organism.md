@@ -56,3 +56,4 @@ Dentro do `DndContext` do `WKanbanBoardOrganism` (fora dele, envolva num `DndCon
 - O lugar de onde o card saiu fica esmaecido; quem acompanha o ponteiro é o `DragOverlay` do quadro.
 - No toque (celular), o card não arrasta (`touch-action: manipulation`, a rolagem vence): use o _Mover para…_.
 - A coluna é o "poço" dos cards: `bg-muted` no claro e `dark:bg-background/60` no escuro, sempre mais escura que o card, para a sombra (claro) ou o contraste (escuro) dar relevo ao `WTaskCardOrganism`. Clarear a coluna deixa os cards chapados de novo.
+- **O "+" do cabeçalho (14/10):** o criar rápido do Backlog e o _Novo card de suporte_ do Support saíram de baixo do título e viraram um botão "+" ao lado dele, para os cards de todas as colunas começarem na mesma altura. No Backlog o "+" abre o campo (com foco; Esc ou sair vazio fecha; segue aberto depois de criar, para o próximo título); no Support, abre o diálogo de suporte direto.
