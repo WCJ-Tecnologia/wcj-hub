@@ -284,9 +284,8 @@ class BoardStageService
             throw new DomainException('A etapa não é deste projeto.');
         }
     }
-    /**
-     * @return array<string, mixed>
-     */
+
+    /** @return array<string, mixed> */
     private function snapshot(BoardStage $stage): array
     {
         return [
