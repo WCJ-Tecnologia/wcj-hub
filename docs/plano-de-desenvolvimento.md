@@ -6,10 +6,10 @@ Escrito em 06/10/2026 para Cauã e Vitinho, que desenvolvem, e para Lucas Scholz
 
 | Pessoa | Papel neste projeto |
 |---|---|
-| **Cauã** | Desenvolve blocos (com IA: Claude Code ou Codex, no padrão `ai-systems`). Faz o teste cruzado dos PRs do Vitinho. |
-| **Vitinho** | ~~Desenvolve blocos, do mesmo jeito. Faz o teste cruzado dos PRs do Cauã.~~ **Saiu do projeto em 14/10/2026 (D-GER-33).** Entregou o B2 passo 1 (PR #6). Os blocos dele (B2 passo 2, B5, B7, B9) e o teste cruzado dos PRs do Cauã ficam a redistribuir. |
+| **Cauã** | Desenvolve blocos (com IA: Claude Code ou Codex, no padrão `ai-systems`). Faz o teste cruzado dos PRs do Lucas Scholz (até 14/10, do Vitinho). |
+| **Vitinho** | ~~Desenvolve blocos, do mesmo jeito. Faz o teste cruzado dos PRs do Cauã.~~ **Saiu do projeto em 14/10/2026 (D-GER-33).** Entregou o B2 passo 1 (PR #6). Os blocos dele (B2 passo 2, B5, B7, B9) e o teste cruzado dos PRs do Cauã passaram para Lucas Scholz em 15/10 (D-GER-34). |
 | **Lucas Varanda** | ~~Front-end. Tema da marca e fontes no template (`docs/brand/`), shell e os componentes que o Hub pede e o template não tem (kanban, ficha do card, roteiro de QA, linha do tempo), propostos antes de B3 e B5. Revisa o front dos PRs dos blocos (D-GER-29).~~ **Saiu do projeto em 14/10/2026 (D-GER-33).** Entregou a fundação do front (PR #8: shadcn, Atomic Design, Storybook, marca) e a proposta do card (D-GER-32). O que faltava (kanban, ficha do card, diálogos, depois roteiro de QA e linha do tempo) é entregue por Lucas Scholz com IA, como kit de componentes no Storybook antes de cada bloco. |
-| **Lucas Scholz** | Dono do produto. Aprova os funcionais (F1 a F8, D-GER-31), a spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. |
+| **Lucas Scholz** | Dono do produto. Aprova os funcionais (F1 a F8, D-GER-31), a spec de todo bloco e todo PR; faz o merge; faz o B0 com IA e a prova de conceito do MCP; responde dúvida de regra. **Desde 15/10 (D-GER-34) também desenvolve, com IA, os blocos que eram do Vitinho (B2 passo 2 → B5 → B7 → B9), em paralelo com o Cauã, e faz o teste cruzado dos PRs dele.** |
 | **Rafael Garcia** | Gestor de projetos. Participou dos funcionais F2 a F7 com feedback e elaboração (a aprovação é do Lucas Scholz, D-GER-31); faz o bugbash no quadro Wpay; homologa. |
 | **Lucas Alencar** | Confere a diferença do banco depois da aprovação (`banco.md` §7, R15) e revisa o que tocar em `core/mcp.md`. Não desenvolve. |
 | **Alaor Rodrigues** | VPS, banco de produção, DNS, backup (B10). |
@@ -31,7 +31,7 @@ Dois trilhos em paralelo. Um bloco começa quando o funcional dele está aprovad
 | 4 | **B8** Conexões de IA (trilho completo), com o Lucas | **B9** Segurança + `docs/DEPLOY.md` | Testa o MCP com cada assistente | B8, B9 |
 | 5 | Correções do bugbash | Correções do bugbash | **B10**: homologação pública → bugbash com o Rafael no quadro Wpay → produção | Produção |
 
-**Desde 14/10/2026 (D-GER-33):** a coluna do Vitinho e a linha do Lucas Varanda na tabela acima são história. O Cauã segue a coluna dele (B3 → B4 → B6 → B8); o front que o Varanda entregaria antes de cada bloco vira um PR de kit (componentes + stories, sem backend) feito por Lucas Scholz com IA, a começar pelo kit do quadro (PR #11). Quem fica com B2 passo 2, B5, B7 e B9, e quem faz o teste cruzado do Cauã, é decisão pendente de Lucas Scholz.
+**Desde 14/10/2026 (D-GER-33):** a coluna do Vitinho e a linha do Lucas Varanda na tabela acima são história. O Cauã segue a coluna dele (B3 → B4 → B6 → B8); o front que o Varanda entregaria antes de cada bloco vira um PR de kit (componentes + stories, sem backend) feito por Lucas Scholz com IA, a começar pelo kit do quadro (PR #11). **Desde 15/10/2026 (D-GER-34):** a coluna do Vitinho é do Lucas Scholz, com IA, na mesma ordem (B2 passo 2 → B5 → B7 → B9), em paralelo com o Cauã. Teste cruzado: o Cauã confere os PRs do Lucas Scholz, e Lucas Scholz confere os do Cauã.
 
 Com B0 a B3 em homologação, o Rafael já começa a usar o quadro Wpay para valer; o resto entra por cima. O Hub passa a gerir o próprio desenvolvimento assim que o B3 entrar (projeto "WCJ Hub", cliente WCJ): até lá, o acompanhamento é pelos PRs abertos no GitHub.
 
