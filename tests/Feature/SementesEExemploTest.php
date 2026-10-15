@@ -65,7 +65,7 @@ class SementesEExemploTest extends TestCase
         $this->assertSame(3, DB::table('tasks')->count());
         $this->assertSame(3, (int) DB::table('projects')->where('key_prefix', 'EXE')->value('last_task_number'));
         $this->assertSame(
-            ['Backlog', 'To do', 'Doing', 'Paused', 'Code-review', 'In test', 'Done', 'Support'],
+            ['Support', 'Backlog', 'To do', 'Paused', 'Doing', 'Code-review', 'In test', 'Done'],
             DB::table('board_stages')->orderBy('position')->pluck('name')->all(),
             'as 8 etapas na ordem da P10'
         );

@@ -1,6 +1,11 @@
 <?php
 
+use App\Domains\Projetos\Controllers\BoardStageController;
+use App\Domains\Projetos\Controllers\ProjectAreaController;
 use App\Domains\Projetos\Controllers\ProjectController;
+use App\Domains\Projetos\Controllers\ProjectMemberController;
+use App\Domains\Projetos\Controllers\ProjectSettingsController;
+use App\Domains\Projetos\Controllers\ReworkReasonController;
 use App\Platform\Controllers\Admin\AuditLogController;
 use App\Platform\Controllers\Admin\ClientController;
 use App\Platform\Controllers\Admin\ContactController;
@@ -83,6 +88,14 @@ Route::prefix('admin')
         Route::post('contacts/{contact}/anonymize', [ContactController::class, 'anonymize'])->name('contacts.anonymize');
 
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+        // Listas gerais do módulo Projetos (escopo B2, /admin/listas): só o Administrador (G7).
+        Route::get('listas', [ReworkReasonController::class, 'index'])->name('lists.index');
+        Route::post('rework-reasons', [ReworkReasonController::class, 'store'])->name('rework-reasons.store');
+        Route::put('rework-reasons/{rework_reason}', [ReworkReasonController::class, 'update'])->name('rework-reasons.update');
+        Route::delete('rework-reasons/{rework_reason}', [ReworkReasonController::class, 'destroy'])->name('rework-reasons.destroy');
+        Route::post('rework-reasons/{rework_reason}/deactivate', [ReworkReasonController::class, 'deactivate'])->name('rework-reasons.deactivate');
+        Route::post('rework-reasons/{rework_reason}/reactivate', [ReworkReasonController::class, 'reactivate'])->name('rework-reasons.reactivate');
     });
 
 /*
@@ -101,4 +114,27 @@ Route::prefix('projetos')
         Route::delete('{project}', [ProjectController::class, 'destroy'])->name('destroy');
         Route::post('{project}/encerrar', [ProjectController::class, 'finish'])->name('finish');
         Route::post('{project}/reabrir', [ProjectController::class, 'reopen'])->name('reopen');
+        // "Novo cliente" dentro do formulário do projeto (N6): mesma Policy e Service de /admin/clients.
+        Route::post('clientes', [ProjectController::class, 'storeClient'])->name('clients.store');
+
+        // Configuração do projeto (F2: Pessoas, Etapas, Áreas, Padrões). O filho da rota é
+        // resolvido pela relação do projeto (scopeBindings): etapa ou área de outro projeto é 404.
+        Route::scopeBindings()->group(function () {
+            Route::get('{project}/configuracao', [ProjectSettingsController::class, 'show'])->name('settings');
+            Route::put('{project}/padroes', [ProjectSettingsController::class, 'updateDefaults'])->name('defaults.update');
+
+            Route::post('{project}/pessoas', [ProjectMemberController::class, 'store'])->name('members.store');
+            Route::delete('{project}/pessoas/{user}', [ProjectMemberController::class, 'destroy'])->name('members.destroy');
+
+            Route::post('{project}/etapas', [BoardStageController::class, 'store'])->name('stages.store');
+            Route::put('{project}/etapas/ordem', [BoardStageController::class, 'reorder'])->name('stages.reorder');
+            Route::put('{project}/etapas/{board_stage}', [BoardStageController::class, 'update'])->name('stages.update');
+            Route::delete('{project}/etapas/{board_stage}', [BoardStageController::class, 'destroy'])->name('stages.destroy');
+
+            Route::post('{project}/areas', [ProjectAreaController::class, 'store'])->name('areas.store');
+            Route::put('{project}/areas/{area}', [ProjectAreaController::class, 'update'])->name('areas.update');
+            Route::delete('{project}/areas/{area}', [ProjectAreaController::class, 'destroy'])->name('areas.destroy');
+            Route::post('{project}/areas/{area}/deactivate', [ProjectAreaController::class, 'deactivate'])->name('areas.deactivate');
+            Route::post('{project}/areas/{area}/reactivate', [ProjectAreaController::class, 'reactivate'])->name('areas.reactivate');
+        });
     });

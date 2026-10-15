@@ -60,10 +60,11 @@ class ProjectTest extends TestCase
         $this->assertSame(0, $project->members()->count());
         $this->assertSame(0, $project->areas()->count());
         $this->assertSame(
+            // A ordem da P10 decidida em 14/10: suporte primeiro, pausa logo depois do To do.
             [
-                ['Backlog', StageRole::QUEUE, 1], ['To do', StageRole::SPRINT, 2], ['Doing', StageRole::DEVELOPMENT, 3],
-                ['Paused', StageRole::PAUSED, 4], ['Code-review', StageRole::CODE_REVIEW, 5], ['In test', StageRole::TEST, 6],
-                ['Done', StageRole::DONE, 7], ['Support', StageRole::SUPPORT, 8],
+                ['Support', StageRole::SUPPORT, 1], ['Backlog', StageRole::QUEUE, 2], ['To do', StageRole::SPRINT, 3],
+                ['Paused', StageRole::PAUSED, 4], ['Doing', StageRole::DEVELOPMENT, 5], ['Code-review', StageRole::CODE_REVIEW, 6],
+                ['In test', StageRole::TEST, 7], ['Done', StageRole::DONE, 8],
             ],
             $project->boardStages()->orderBy('position')->get()->map(fn ($s) => [$s->name, $s->stage_role_id, $s->position])->all(),
         );
@@ -71,7 +72,37 @@ class ProjectTest extends TestCase
         $log = AuditLog::query()->where('auditable_type', 'project')->sole();
         $this->assertSame(['created', 'success', $gestor->id], [$log->action, $log->outcome, $log->user_id]);
         $this->assertSame([null, 'SGM'], $log->changes['key_prefix']);
-        $this->assertSame([null, ['Backlog', 'To do', 'Doing', 'Paused', 'Code-review', 'In test', 'Done', 'Support']], $log->changes['board_stages']);
+        $this->assertSame([null, ['Support', 'Backlog', 'To do', 'Paused', 'Doing', 'Code-review', 'In test', 'Done']], $log->changes['board_stages']);
+    }
+
+    /** "Novo cliente" sem sair do formulário do projeto (N6, F2 §02): mesma Policy e Service de Clientes. */
+    public function test_the_manager_creates_a_client_inline_and_gets_its_id_back_to_choose_it(): void
+    {
+        $gestor = User::factory()->projectManager()->create();
+
+        $response = $this->actingAs($gestor)
+            ->from('/projetos')
+            ->post('/projetos/clientes', ['name' => 'Padaria Nova', 'country' => 'BR', 'document' => '11222333000181'])
+            ->assertRedirect('/projetos')
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+
+        $client = Client::query()->where('name', 'Padaria Nova')->sole();
+        $response->assertSessionHas('created_id', $client->id);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'created', 'auditable_type' => 'client', 'auditable_id' => $client->id, 'user_id' => $gestor->id]);
+
+        // A lista de clientes da tela já traz o novo, e o flash compartilhado leva o id.
+        $this->actingAs($gestor)->get('/projetos')->assertInertia(fn ($page) => $page
+            ->where('formOptions.clients', fn ($clients) => collect($clients)->pluck('id')->contains($client->id))
+            ->has('countries'));
+
+        $this->actingAs($gestor)
+            ->post('/projetos/clientes', ['name' => 'Outra', 'country' => 'BR', 'document' => '11222333000181'])
+            ->assertSessionHasErrors('document');
+        $this->actingAs(User::factory()->developer()->create())
+            ->post('/projetos/clientes', ['name' => 'Dev tenta', 'country' => 'BR', 'document' => '11444777000161'])
+            ->assertForbidden();
+        $this->assertSame(1, Client::query()->where('name', '!=', 'WCJ Tecnologia')->count());
     }
 
     public function test_a_repeated_prefix_is_refused_regardless_of_case_naming_the_owner(): void

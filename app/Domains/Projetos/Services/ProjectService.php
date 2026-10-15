@@ -74,6 +74,28 @@ class ProjectService
         }), fn (UniqueConstraintViolationException $e) => $this->prefixTaken($e, $data['key_prefix']));
     }
 
+    /**
+     * Padrões do projeto (F2 §02, aba Padrões; P15, P46). Valem dali para a frente: desligar o
+     * motivo da pausa não apaga os motivos já gravados; mudar a duração não mexe na sprint aberta (P8).
+     *
+     * @param  array{require_pause_reason: bool, sprint_days: int}  $data
+     */
+    public function updateDefaults(Project $project, array $data): Project
+    {
+        return DB::transaction(function () use ($project, $data) {
+            $locked = Project::query()->lockForUpdate()->findOrFail($project->id);
+
+            $before = $this->snapshot($locked);
+            $locked->fill(['require_pause_reason' => $data['require_pause_reason'], 'sprint_days' => $data['sprint_days']])->save();
+
+            if ($locked->wasChanged()) {
+                $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked));
+            }
+
+            return $locked;
+        });
+    }
+
     /** Mesmo com tarefa aberta; tarefas, sprints e pacotes ficam como estão (P7). */
     public function finish(Project $project): Project
     {
@@ -153,6 +175,8 @@ class ProjectService
             'starts_on' => $project->starts_on?->toDateString(),
             'due_on' => $project->due_on?->toDateString(),
             'finished_at' => $project->finished_at?->toIso8601String(),
+            'require_pause_reason' => $project->require_pause_reason,
+            'sprint_days' => $project->sprint_days,
         ];
     }
 }
