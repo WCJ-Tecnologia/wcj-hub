@@ -4,7 +4,7 @@
 
 ## O que faz
 
-Mostra o logo da WCJ a partir dos **arquivos oficiais** em `public/brand/`, copiados sem alteração de `docs/brand/logo/`. Você escolhe a **versão** pelo tamanho e a **superfície** pelo fundo. Por padrão, o logo é um link.
+Mostra o logo do **WCJ Hub** a partir dos **arquivos oficiais** em `public/brand/`, copiados sem alteração de `docs/brand/logo/produtos/wcj-hub/` (completo e horizontal) e de `docs/brand/logo/` (o símbolo, que é o da WCJ). Você escolhe a **versão** pelo tamanho e a **superfície** pelo fundo. Por padrão, o logo é um link.
 
 Nunca use `<img src="/brand/...">` direto nem redesenhe ou recolora o logo (`docs/brand/MARCA.md`, "O que não fazer").
 
@@ -12,11 +12,11 @@ Nunca use `<img src="/brand/...">` direto nem redesenhe ou recolora o logo (`doc
 
 A regra da marca vale pela altura do **desenho**:
 
-| `variant`    | Desenho                        | Quando                                                   |
-| ------------ | ------------------------------ | -------------------------------------------------------- |
-| `full`       | símbolo + "wcj" + "tecnologia" | 40 px de altura ou mais (painel do login)                |
-| `horizontal` | símbolo + "wcj"                | de 16 a 40 px (sidebar aberta, topbar, login no celular) |
-| `symbol`     | só o símbolo                   | menos de 16 px, ou pouco espaço (sidebar recolhida)      |
+| `variant`    | Desenho                         | Quando                                                   |
+| ------------ | ------------------------------- | -------------------------------------------------------- |
+| `full`       | símbolo + "wcj" + "hub" embaixo | 40 px de altura ou mais (painel do login)                |
+| `horizontal` | símbolo + "wcj" + "hub" ao lado | de 16 a 40 px (sidebar aberta, topbar, login no celular) |
+| `symbol`     | só o símbolo da WCJ             | menos de 16 px, ou pouco espaço (sidebar recolhida)      |
 
 Os SVG já trazem a área de proteção (o raio de um nó em volta), então o desenho é menor que a caixa (`size`).
 
@@ -55,7 +55,7 @@ import { WBrandLogoAtom } from '@/components/atoms/w-brand-logo-atom/w-brand-log
 
 ## Cuidados
 
-- O `alt` é "WCJ Tecnologia", então o link nunca fica sem nome (regra `link-name` do axe). Em `auto`, a imagem escondida tem `display: none` e sai da árvore de acessibilidade.
+- O `alt` é "WCJ Hub", então o link nunca fica sem nome (regra `link-name` do axe). Em `auto`, a imagem escondida tem `display: none` e sai da árvore de acessibilidade.
 - Para esconder em algum tamanho de tela, passe a classe em `className` (ex.: `lg:hidden`). Esconder só a imagem deixaria um link vazio.
 - Trocar o logo é trocar o SVG em `public/brand/`, a partir do mestre da marca. A configuração `APP_BRAND_LOGO` deixou de existir (ADR-005).
 - Com `href`, o nome acessível do link é "Início" (`aria-label`), não o alt da imagem: a WCJ também é cliente (N7), e o link da ficha dela se chama "WCJ Tecnologia".

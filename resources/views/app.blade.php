@@ -8,7 +8,7 @@
         <meta name="application-name" content="{{ config('app.name') }}">
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
 
-        {{-- Ícone da marca WCJ (docs/brand/logo/icone). --}}
+        {{-- Ícone do WCJ Hub (docs/brand/logo/produtos/wcj-hub/icone). --}}
         <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
         <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
         <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">

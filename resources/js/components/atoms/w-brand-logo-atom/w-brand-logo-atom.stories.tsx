@@ -17,7 +17,7 @@ const meta = {
         docs: {
             description: {
                 component:
-                    'Logo da WCJ nos arquivos oficiais. Versão pela altura (completo ≥ 40 px, horizontal 16–40 px, símbolo < 16 px); `surface` escolhe a cor para o fundo.',
+                    'Logo do WCJ Hub nos arquivos oficiais (completo e horizontal do produto; símbolo da WCJ). Versão pela altura (completo ≥ 40 px, horizontal 16–40 px, símbolo < 16 px); `surface` escolhe a cor para o fundo.',
             },
         },
     },
