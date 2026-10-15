@@ -1,15 +1,14 @@
 /**
- * Rotas que esta tela chama: proposta do kit do quadro, o B3 confirma (e o Cauã ajusta aqui).
+ * Rotas que esta tela chama (confirmadas no B3, PR 1; `routes/web.php`, grupo do quadro):
  *
  * - `GET   /projetos/{id}/quadro?search=&mine=1&developer_id=…`  esta tela, com os filtros (F3 §05)
  * - `POST  /projetos/{id}/cards`                                  criar rápido `{ title }` (P17, R4)
  * - `POST  /projetos/{id}/cards/suporte`                          card de suporte (P52)
  * - `POST  /projetos/{id}/cards/{chave}/mover`                    `MovePayload` (P13, P15, P39, P45, R5)
- * - `PATCH /projetos/{id}/cards/{chave}`                          `{ priority }` ou `{ area_id }` (P18, P19)
+ * - `PATCH /projetos/{id}/cards/{chave}`                          `{ priority }`, `{ area_id }` ou `{ type_id }` (P18, P19)
  * - `POST  /projetos/{id}/cards/{chave}/participantes`            `{ user_id, add }` (P58)
- * - `PATCH /projetos/{id}/cards/{chave}`                          `{ type_id }` ao trocar o tipo pela etiqueta (14/10)
- * - `POST  /projetos/{id}/tipos`, `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
- * - `POST  /projetos/{id}/areas`, `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
+ * - `POST  /projetos/{id}/tipos`, `PUT /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
+ * - `POST  /projetos/{id}/areas`, `PUT /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, as mesmas rotas da configuração (B2), agora com a cor
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Archive, CalendarRange, Settings } from 'lucide-react';
@@ -306,7 +305,7 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
     const updateTag = (path: string, payload: TagPayload, what: string, apply: (card: BoardCard) => BoardCard) => {
         const before = local;
         setLocal((list) => list.map(apply));
-        router.patch(
+        router.put(
             `${base}/${path}`,
             { ...payload },
             {
