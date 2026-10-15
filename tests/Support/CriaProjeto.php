@@ -14,9 +14,12 @@ use App\Domains\Projetos\Services\TaskTypeService;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use Database\Seeders\ContactChannelSeeder;
 use Database\Seeders\ReworkReasonSeeder;
 use Database\Seeders\StageRoleSeeder;
 use Database\Seeders\TaskPrioritySeeder;
+use Database\Seeders\TestResultSeeder;
+use Database\Seeders\ValidationTypeSeeder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -75,7 +78,11 @@ trait CriaProjeto
 
     protected function semearProjetos(): void
     {
-        $this->seed([StageRoleSeeder::class, TaskPrioritySeeder::class, ReworkReasonSeeder::class]);
+        // Origem do retrabalho, resultado do critério e canal do card de suporte: o quadro (B3) usa os três.
+        $this->seed([
+            StageRoleSeeder::class, TaskPrioritySeeder::class, ReworkReasonSeeder::class,
+            ValidationTypeSeeder::class, TestResultSeeder::class, ContactChannelSeeder::class,
+        ]);
     }
 
     /**

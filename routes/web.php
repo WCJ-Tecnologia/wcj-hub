@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Projetos\Controllers\BoardController;
 use App\Domains\Projetos\Controllers\BoardStageController;
 use App\Domains\Projetos\Controllers\ProjectAreaController;
 use App\Domains\Projetos\Controllers\ProjectController;
@@ -8,6 +9,8 @@ use App\Domains\Projetos\Controllers\ProjectSettingsController;
 use App\Domains\Projetos\Controllers\ReworkReasonController;
 use App\Domains\Projetos\Controllers\SprintController;
 use App\Domains\Projetos\Controllers\SprintTaskController;
+use App\Domains\Projetos\Controllers\TaskController;
+use App\Domains\Projetos\Controllers\TaskTypeController;
 use App\Domains\Projetos\Controllers\TimeEntryController;
 use App\Platform\Controllers\Admin\AuditLogController;
 use App\Platform\Controllers\Admin\ClientController;
@@ -158,6 +161,20 @@ Route::prefix('projetos')
 
             // Lançar horas numa tarefa (P30): de Minhas horas e, no B3, da ficha do card.
             Route::post('{project}/tarefas/{task}/horas', [TimeEntryController::class, 'store'])->name('time-entries.store');
+
+            // Quadro e card (F3, escopo B3). {card} é a chave "SGM-17", procurada só entre os cards
+            // do projeto da rota (Route::bind no AppServiceProvider): de outro projeto é 404.
+            Route::get('{project}/quadro', [BoardController::class, 'show'])->name('board');
+            Route::post('{project}/cards', [TaskController::class, 'store'])->name('cards.store');
+            Route::post('{project}/cards/suporte', [TaskController::class, 'storeSupport'])->name('cards.support');
+            Route::get('{project}/cards/{card}', [TaskController::class, 'show'])->name('cards.show');
+            Route::post('{project}/cards/{card}/mover', [TaskController::class, 'move'])->name('cards.move');
+            Route::patch('{project}/cards/{card}', [TaskController::class, 'update'])->name('cards.update');
+            Route::post('{project}/cards/{card}/participantes', [TaskController::class, 'participant'])->name('cards.participants');
+
+            // Tipos do projeto, criados e editados pela etiqueta do quadro (14/10).
+            Route::post('{project}/tipos', [TaskTypeController::class, 'store'])->name('types.store');
+            Route::put('{project}/tipos/{taskType}', [TaskTypeController::class, 'update'])->name('types.update');
         });
     });
 

@@ -17,14 +17,14 @@ class ProjectAreaController extends Controller
 
     public function store(StoreProjectAreaRequest $request, Project $project): RedirectResponse
     {
-        $area = $this->areas->create($project, $request->name());
+        $area = $this->areas->create($project, $request->name(), $request->color());
 
         return back()->with('success', "Área {$area->name} criada.");
     }
 
     public function update(StoreProjectAreaRequest $request, Project $project, ProjectArea $area): RedirectResponse
     {
-        $this->areas->update($area, $request->name());
+        $this->areas->update($area, $request->name(), $request->color());
 
         return back()->with('success', 'Área atualizada. O nome novo aparece em todos os cards da área.');
     }

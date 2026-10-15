@@ -185,4 +185,16 @@ class Task extends Model
     {
         return $this->hasMany(TimeEntry::class);
     }
+
+    /** A chave "SGM-17" (P16, T10): prefixo do projeto + número, sem coluna gravada. */
+    public function key(): string
+    {
+        return "{$this->project->key_prefix}-{$this->number}";
+    }
+
+    /** O endereço da ficha (`/projetos/{id}/cards/{chave}`): *Abrir ficha*, *Copiar link* e os avisos. */
+    public function url(): string
+    {
+        return url("/projetos/{$this->project_id}/cards/{$this->key()}");
+    }
 }
