@@ -1,5 +1,5 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Archive, ArchiveRestore, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Archive, ArchiveRestore, FolderKanban, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { WStatusPillAtom } from '@/components/atoms/w-status-pill-atom/w-status-pill-atom';
@@ -8,6 +8,12 @@ import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecu
 import { WListBodyMolecule } from '@/components/molecules/w-list-body-molecule/w-list-body-molecule';
 import { WPaginationMolecule } from '@/components/molecules/w-pagination-molecule/w-pagination-molecule';
 import { WRowActionsMolecule } from '@/components/molecules/w-row-actions-molecule/w-row-actions-molecule';
+import {
+    BRASIL,
+    WClientFormDialogOrganism,
+    type ClientFormData,
+    type Country,
+} from '@/components/organisms/w-client-form-dialog-organism/w-client-form-dialog-organism';
 import { WDataTableOrganism, type WColumn } from '@/components/organisms/w-data-table-organism/w-data-table-organism';
 import { WProjectFiltersOrganism, type ProjectFilters } from '@/components/organisms/w-project-filters-organism/w-project-filters-organism';
 import {
@@ -49,6 +55,8 @@ export interface WProjectsPageProps {
     formOptions: { clients: NamedOption[]; managers: NamedOption[] } | null;
     /** Hoje no fuso de São Paulo, o Início padrão (F2 §02). */
     today: string;
+    /** Para o "Novo cliente" do formulário (N6). */
+    countries: Country[];
 }
 
 type ConfirmKind = 'finish' | 'reopen' | 'delete';
@@ -57,7 +65,7 @@ type ConfirmKind = 'finish' | 'reopen' | 'delete';
 const muted = (row: ProjectRow) => cn(row.finished_at !== null && 'text-muted-foreground');
 
 /** Tela Projetos (Inertia: `projects/index`; F2 §03 a §05): lista, criar/editar por modal, encerrar, reabrir e excluir. */
-export function WProjectsPage({ projects, filters, filterOptions, formOptions, today }: WProjectsPageProps) {
+export function WProjectsPage({ projects, filters, filterOptions, formOptions, today, countries }: WProjectsPageProps) {
     const currentUser = usePage<SharedProps>().props.auth.user;
     const canCreate = Boolean(currentUser?.abilities.manage_projects) && formOptions !== null;
     const list = useListVisit();
@@ -78,6 +86,30 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
         due_on: '',
     });
     const form = useForm<ProjectFormData>(empty());
+
+    // "Novo cliente" sem sair do formulário do projeto (N6, F2 §02): ao salvar, o servidor devolve o
+    // id no flash e a lista de clientes já vem com ele; o projeto fica com o cliente escolhido.
+    const EMPTY_CLIENT: ClientFormData = { name: '', country: BRASIL, document: '' };
+    const [clientOpen, setClientOpen] = useState(false);
+    const clientForm = useForm<ClientFormData>(EMPTY_CLIENT);
+    const openNewClient = () => {
+        clientForm.setData(EMPTY_CLIENT);
+        clientForm.clearErrors();
+        setClientOpen(true);
+    };
+    const submitClient = (event: FormEvent) => {
+        event.preventDefault();
+        clientForm.post('/projetos/clientes', {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (page) => {
+                const createdId = (page.props as unknown as SharedProps).flash?.created_id;
+                if (createdId) form.setData('client_id', createdId);
+                form.clearErrors('client_id');
+                setClientOpen(false);
+            },
+        });
+    };
 
     const openCreate = () => {
         form.setData(empty());
@@ -117,7 +149,10 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
     // Ao terminar, a ação da linha fecha a confirmação que a disparou.
     const closeConfirm = { onFinish: () => setConfirm(null) };
 
-    const CONFIRM: Record<ConfirmKind, { title: string; text: (row: ProjectRow) => string; label: string; destructive?: boolean; run: (row: ProjectRow) => void }> = {
+    const CONFIRM: Record<
+        ConfirmKind,
+        { title: string; text: (row: ProjectRow) => string; label: string; destructive?: boolean; run: (row: ProjectRow) => void }
+    > = {
         finish: {
             title: 'Encerrar projeto',
             text: (row) => `O projeto tem ${row.open_cards} cards fora da etapa de papel Pronto. Eles continuam no quadro. Encerrar?`,
@@ -157,6 +192,13 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
             busy={rowAction.isBusy(row)}
             disabled={rowAction.isLocked(row)}
             actions={[
+                // Configurar abre pessoas, etapas, áreas e padrões; quem só vê o projeto abre só leitura (F2 §03, §09).
+                {
+                    label: 'Configurar',
+                    ariaLabel: `Configurar ${row.name}`,
+                    icon: Settings,
+                    onClick: () => router.visit(`/projetos/${row.id}/configuracao`),
+                },
                 { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.manage },
                 {
                     label: 'Encerrar',
@@ -206,9 +248,23 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
         { key: 'name', header: 'Nome', cell: (row) => <span className={cn('font-medium', muted(row))}>{row.name}</span> },
         { key: 'client', header: 'Cliente', className: 'text-muted-foreground', cell: (row) => row.client.name },
         { key: 'manager', header: 'Gestor', className: 'text-muted-foreground', cell: (row) => row.manager.name },
-        { key: 'type', header: 'Tipo', cell: (row) => <span className={muted(row)}>{row.due_on ? 'Projeto de entrega' : 'Produto contínuo'}</span> },
-        { key: 'starts_on', header: 'Início', className: 'tabular-nums', cell: (row) => <span className={muted(row)}>{dateBr(row.starts_on)}</span> },
-        { key: 'due_on', header: 'Entrega', className: 'tabular-nums', cell: (row) => <span className={muted(row)}>{dateBr(row.due_on)}</span> },
+        {
+            key: 'type',
+            header: 'Tipo',
+            cell: (row) => <span className={muted(row)}>{row.due_on ? 'Projeto de entrega' : 'Produto contínuo'}</span>,
+        },
+        {
+            key: 'starts_on',
+            header: 'Início',
+            className: 'tabular-nums',
+            cell: (row) => <span className={muted(row)}>{dateBr(row.starts_on)}</span>,
+        },
+        {
+            key: 'due_on',
+            header: 'Entrega',
+            className: 'tabular-nums',
+            cell: (row) => <span className={muted(row)}>{dateBr(row.due_on)}</span>,
+        },
         { key: 'situation', header: 'Situação', cell: (row) => situation(row) },
         { key: 'actions', header: <span className="sr-only">Ações</span>, className: 'text-right', cell: (row) => rowActions(row) },
     ];
@@ -282,6 +338,18 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
                     clients={formOptions.clients}
                     managers={managerOptions}
                     onSubmit={submit}
+                    onNewClient={openNewClient}
+                />
+            )}
+
+            {formOptions && (
+                <WClientFormDialogOrganism
+                    open={clientOpen}
+                    onOpenChange={setClientOpen}
+                    form={clientForm}
+                    editing={false}
+                    countries={countries}
+                    onSubmit={submitClient}
                 />
             )}
 

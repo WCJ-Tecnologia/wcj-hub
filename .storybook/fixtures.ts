@@ -37,6 +37,7 @@ export const DEVELOPER: AuthUser = {
         view_contacts: false,
         view_projects: true,
         manage_projects: false,
+        manage_lists: false,
     },
 };
 

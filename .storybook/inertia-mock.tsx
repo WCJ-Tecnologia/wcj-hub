@@ -30,6 +30,7 @@ export const SHARED_PROPS: SharedProps = {
                 view_contacts: true,
                 view_projects: true,
                 manage_projects: true,
+                manage_lists: true,
             },
         },
     },

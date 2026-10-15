@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { asUser, CLIENTS, DEVELOPER, onePage, PROJECT_FILTERS, PROJECTS, USERS } from '../../../../../.storybook/fixtures';
+import { asUser, CLIENTS, COUNTRIES, DEVELOPER, onePage, PROJECT_FILTERS, PROJECTS, USERS } from '../../../../../.storybook/fixtures';
 import { WProjectsPage } from './w-projects-page';
 
 const OPTIONS = {
@@ -12,13 +12,19 @@ const meta = {
     title: 'Pages/Projetos',
     component: WProjectsPage,
     tags: ['autodocs'],
-    argTypes: { projects: { control: 'object' }, filters: { control: 'object' }, filterOptions: { control: 'object' }, formOptions: { control: 'object' } },
+    argTypes: {
+        projects: { control: 'object' },
+        filters: { control: 'object' },
+        filterOptions: { control: 'object' },
+        formOptions: { control: 'object' },
+    },
     args: {
         projects: onePage(PROJECTS.filter((project) => project.finished_at === null)),
         filters: PROJECT_FILTERS,
         filterOptions: OPTIONS,
         formOptions: OPTIONS,
         today: '2026-10-09',
+        countries: COUNTRIES,
     },
     parameters: { layout: 'fullscreen', inertia: { url: '/projetos' } },
 } satisfies Meta<typeof WProjectsPage>;

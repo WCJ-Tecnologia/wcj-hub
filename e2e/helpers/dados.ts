@@ -72,3 +72,17 @@ export function deleteClientByDocument(document: string): void {
 export function deleteContactsNamed(name: string): void {
     tinker(`App\\Platform\\Models\\Contact::query()->where('name', ${JSON.stringify(name)})->delete();`);
 }
+
+/** Usuário ativo com o papel (1 admin, 2 gestor, 3 dev), para alocar em projeto (B2 passo 2). Devolve o id. */
+export function createUser(name: string, roleId: 1 | 2 | 3 | 4): number {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '.');
+    return Number(
+        tinker(`
+            $user = App\\Platform\\Models\\User::query()->create([
+                'role_id' => ${roleId}, 'name' => ${JSON.stringify(name)}, 'email' => ${JSON.stringify(`${slug}.${Date.now()}@e2e.test`)},
+                'password' => Illuminate\\Support\\Str::password(32), 'must_change_password' => false, 'daily_hours' => 8,
+            ]);
+            echo $user->id;
+        `),
+    );
+}

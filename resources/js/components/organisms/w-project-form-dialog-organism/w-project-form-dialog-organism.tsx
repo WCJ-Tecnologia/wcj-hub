@@ -1,4 +1,5 @@
 import type { InertiaFormProps } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import type { FormEvent } from 'react';
 
 import { WDatePickerMolecule } from '@/components/molecules/w-date-picker-molecule/w-date-picker-molecule';
@@ -39,6 +40,8 @@ export interface WProjectFormDialogOrganismProps {
     clients: NamedOption[];
     managers: NamedOption[];
     onSubmit: (event: FormEvent) => void;
+    /** "Novo cliente" ao lado do Cliente, só na criação (N6, F2 §02): a tela abre o cadastro sem fechar este. */
+    onNewClient?: () => void;
 }
 
 /** O Radix Select não aceita item com valor vazio; o Root aceita `''` e mostra o placeholder. */
@@ -58,6 +61,7 @@ export function WProjectFormDialogOrganism({
     clients,
     managers,
     onSubmit,
+    onNewClient,
 }: WProjectFormDialogOrganismProps) {
     const setType = (type: ProjectType) => {
         form.setData((data) => ({ ...data, type, due_on: type === 'continuous' ? '' : data.due_on }));
@@ -76,38 +80,47 @@ export function WProjectFormDialogOrganism({
                 </DialogHeader>
                 <DialogBody>
                     <form id="project-form" onSubmit={onSubmit} className="space-y-4">
-                        <WFormFieldMolecule
-                            label="Cliente"
-                            htmlFor="client_id"
-                            required={!editing}
-                            error={form.errors.client_id}
-                            hint={editing ? 'O cliente é definido na criação e não muda.' : undefined}
-                        >
-                            {editing ? (
-                                <Input value={clientName ?? ''} readOnly disabled />
-                            ) : (
-                                <Select
-                                    value={selectValue(form.data.client_id)}
-                                    onValueChange={(value) => form.setData('client_id', value === '' ? '' : Number(value))}
-                                >
-                                    {/* O Root do Radix não é elemento: id e aria vão no trigger, que é o botão focável. */}
-                                    <SelectTrigger
-                                        id="client_id"
-                                        aria-invalid={Boolean(form.errors.client_id)}
-                                        aria-describedby={form.errors.client_id ? 'client_id-error' : undefined}
+                        {/* O botão fica fora do campo: dentro, o WFormFieldMolecule daria ao invólucro o id do Select (dois #client_id). */}
+                        <div className="flex items-start gap-2">
+                            <WFormFieldMolecule
+                                className="min-w-0 flex-1"
+                                label="Cliente"
+                                htmlFor="client_id"
+                                required={!editing}
+                                error={form.errors.client_id}
+                                hint={editing ? 'O cliente é definido na criação e não muda.' : undefined}
+                            >
+                                {editing ? (
+                                    <Input value={clientName ?? ''} readOnly disabled />
+                                ) : (
+                                    <Select
+                                        value={selectValue(form.data.client_id)}
+                                        onValueChange={(value) => form.setData('client_id', value === '' ? '' : Number(value))}
                                     >
-                                        <SelectValue placeholder="Escolha o cliente" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.id} value={String(client.id)}>
-                                                {client.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                        {/* O Root do Radix não é elemento: id e aria vão no trigger, que é o botão focável. */}
+                                        <SelectTrigger
+                                            id="client_id"
+                                            aria-invalid={Boolean(form.errors.client_id)}
+                                            aria-describedby={form.errors.client_id ? 'client_id-error' : undefined}
+                                        >
+                                            <SelectValue placeholder="Escolha o cliente" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {clients.map((client) => (
+                                                <SelectItem key={client.id} value={String(client.id)}>
+                                                    {client.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </WFormFieldMolecule>
+                            {!editing && onNewClient && (
+                                <Button type="button" variant="outline" onClick={onNewClient} className="mt-[1.625rem] shrink-0">
+                                    <Plus className="size-4" aria-hidden /> Novo cliente
+                                </Button>
                             )}
-                        </WFormFieldMolecule>
+                        </div>
 
                         <WFormFieldMolecule label="Gestor responsável" htmlFor="manager_id" required error={form.errors.manager_id}>
                             <Select
@@ -148,7 +161,7 @@ export function WProjectFormDialogOrganism({
                                     onChange={(e) => form.setData('key_prefix', e.target.value.toUpperCase())}
                                 />
                             </WFormFieldMolecule>
-                            <WFormFieldMolecule label="Nome" htmlFor="name" required error={form.errors.name}>
+                            <WFormFieldMolecule label="Nome" htmlFor="project-name" required error={form.errors.name}>
                                 <Input value={form.data.name} maxLength={160} onChange={(e) => form.setData('name', e.target.value)} />
                             </WFormFieldMolecule>
                         </div>
@@ -181,7 +194,10 @@ export function WProjectFormDialogOrganism({
                                     error={form.errors.due_on}
                                     hint="Só informativa: nenhuma conta usa esta data."
                                 >
-                                    <WDatePickerMolecule value={form.data.due_on || null} onChange={(value) => form.setData('due_on', value ?? '')} />
+                                    <WDatePickerMolecule
+                                        value={form.data.due_on || null}
+                                        onChange={(value) => form.setData('due_on', value ?? '')}
+                                    />
                                 </WFormFieldMolecule>
                             )}
                         </div>

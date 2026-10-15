@@ -4,7 +4,7 @@ Organismo · `organisms/w-project-form-dialog-organism/w-project-form-dialog-org
 
 ## O que faz
 
-Modal de criar e editar projeto (F2 §02): Cliente (Select do shadcn, só na criação: na edição aparece só leitura, P1), Gestor responsável, Prefixo (só leitura depois da primeira tarefa, P3), Nome, Tipo (Projeto de entrega / Produto contínuo, que esconde e limpa a Entrega, P2), Início e Entrega (`WDatePickerMolecule`). O `useForm` vive na tela. Exporta `ProjectFormData`, `ProjectType` e `NamedOption`.
+Modal de criar e editar projeto (F2 §02): Cliente (Select do shadcn, só na criação: na edição aparece só leitura, P1), Gestor responsável, Prefixo (só leitura depois da primeira tarefa, P3), Nome, Tipo (Projeto de entrega / Produto contínuo, que esconde e limpa a Entrega, P2), Início e Entrega (`WDatePickerMolecule`). O `useForm` vive na tela. Na criação, com `onNewClient`, o botão **Novo cliente** fica ao lado do Cliente (N6). Exporta `ProjectFormData`, `ProjectType` e `NamedOption`.
 
 ## Props
 
@@ -17,6 +17,7 @@ Modal de criar e editar projeto (F2 §02): Cliente (Select do shadcn, só na cri
 | `prefixLocked` | `boolean` | `row.prefix_locked`: depois da primeira tarefa |
 | `clients`, `managers` | `NamedOption[]` | as listas do servidor (`formOptions`) |
 | `onSubmit` | `(event) => void` | o submit da tela (que confirma a troca de responsável antes) |
+| `onNewClient` | `() => void` | opcional: mostra **Novo cliente** ao lado do Cliente, só na criação (N6); a tela abre o `WClientFormDialogOrganism` por cima |
 
 ## Exemplo
 
@@ -24,4 +25,4 @@ Ver `pages/w-projects-page/w-projects-page.tsx`.
 
 ## Cuidados
 
-O Root do Select do Radix aceita `''` (mostra o placeholder); os itens, não. `id` e `aria-*` vão no gatilho. O tipo não vai ao servidor: é a Entrega preenchida ou vazia (P2).
+O Nome usa o id `project-name`, não `name`: o `WClientFormDialogOrganism` abre por cima e usa `name` (dois ids iguais quebram o rótulo). O Root do Select do Radix aceita `''` (mostra o placeholder); os itens, não. `id` e `aria-*` vão no gatilho. O tipo não vai ao servidor: é a Entrega preenchida ou vazia (P2).

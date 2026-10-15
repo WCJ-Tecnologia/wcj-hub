@@ -92,6 +92,12 @@ Etiquetas (decisões de 14/10, como no Trello): tipo e área são `atoms/w-tag-a
 
 Regra do kit, a mesma do quadro: os organismos só devolvem intenção por callback e recebem `busy` e `errors`; quem grava é a página, uma escrita por vez, e o erro do servidor abre a seção do campo (`FIELD_SECTION`). As rotas estão no topo de `w-task-detail-page.tsx` e de `w-notifications-bell-organism.tsx`, como proposta; o B3 confirma.
 
+## Configuração do projeto e listas gerais (F2)
+
+O B2 passo 2: `/projetos/{id}/configuracao` e `/admin/listas`, já com backend. O contrato é `types/configuracao.ts` (o que o `ProjectSettingsPresenter` manda) e as fixtures, `.storybook/fixtures-configuracao.ts`.
+
+Como se encaixam: `pages/w-project-settings-page` põe as abas (`shadcn/tabs`, aba na URL) e cada aba é um organismo que faz as próprias escritas: `w-project-members-tab-organism` (com o `w-allocate-people-dialog-organism`), `w-board-stages-tab-organism` (lista reordenável por dnd-kit, `w-board-stage-form-dialog-organism`, `w-remove-board-stage-dialog-organism` com o destino dos cards), `w-project-areas-tab-organism` (`w-project-area-form-dialog-organism`) e `w-project-defaults-tab-organism`. `pages/w-lists-page` tem os motivos de retrabalho (`w-rework-reason-form-dialog-organism`). O dev alocado vê Pessoas e Etapas só leitura (`project.can.manage` falso). A cor da área entra com a coluna `project_areas.color` (B3), pelo `w-tag-color-picker-molecule` no formulário da área.
+
 ## Storybook e Inertia
 
 Não há Laravel atrás do Storybook. Por isso o `@inertiajs/react` é trocado por `.storybook/inertia-mock.tsx`:
