@@ -35,7 +35,7 @@ export const Chip: Story = { args: { variant: 'chip' } };
 /** As quatro, em faixa e em chip. */
 export const Todas: Story = {
     args: { variant: 'chip' },
-    argTypes: { priority: { control: false }, variant: { control: false } },
+    argTypes: { priority: { control: false }, variant: { control: 'radio', options: ['bar', 'chip'] } },
     render: () => <TodasDemo />,
 };
 
@@ -44,7 +44,7 @@ function TodasDemo() {
         <div className="grid gap-3">
             {PRIORITIES.map((priority) => (
                 <div key={priority} className="flex items-center gap-4">
-                    <div className="relative w-40 overflow-hidden rounded-md border border-border bg-card py-3 pr-3 pl-4 text-sm">
+                    <div className="relative w-40 overflow-hidden rounded-md border border-border bg-card px-3 pt-8 pb-3 text-sm">
                         <WPriorityMarkAtom priority={priority} />
                         Faixa
                     </div>

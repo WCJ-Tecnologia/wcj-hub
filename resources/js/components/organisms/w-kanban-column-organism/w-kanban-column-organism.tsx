@@ -1,8 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Info, LifeBuoy } from 'lucide-react';
-import { useId } from 'react';
+import { Info, Plus } from 'lucide-react';
+import { useId, useState } from 'react';
 
 import { WQuickCreateMolecule } from '@/components/molecules/w-quick-create-molecule/w-quick-create-molecule';
 import { WTaskCardOrganism, type WTaskCardOrganismProps } from '@/components/organisms/w-task-card-organism/w-task-card-organism';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { cn } from '@/lib/utils';
-import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef } from '@/types/quadro';
+import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef, TaskTypeRef } from '@/types/quadro';
 
 /** Id do card no dnd-kit (`card-17`); o da coluna é `stage-3`. O quadro lê os dois no `onDragEnd`. */
 export const cardDndId = (card: Pick<BoardCard, 'id'>) => `card-${card.id}`;
@@ -22,7 +22,16 @@ export type BoardDndData = { type: 'card'; card: BoardCard; stage_id: number } |
 /** Os callbacks que a coluna repassa a cada card. */
 export type ColumnCardCallbacks = Pick<
     WTaskCardOrganismProps,
-    'onMove' | 'onChangePriority' | 'onChangeArea' | 'onToggleParticipant' | 'onOpen'
+    | 'onMove'
+    | 'onChangePriority'
+    | 'onChangeArea'
+    | 'onToggleParticipant'
+    | 'onChangeType'
+    | 'onCreateType'
+    | 'onUpdateType'
+    | 'onCreateArea'
+    | 'onUpdateArea'
+    | 'onOpen'
 >;
 
 export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
@@ -34,6 +43,8 @@ export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
     /** As etapas do projeto, para o *Mover para…* do card. */
     stages: BoardStage[];
     areas: AreaRef[];
+    /** Tipos do projeto (P18): opções do popover do tipo (14/10). */
+    types?: TaskTypeRef[];
     members: PersonRef[];
     /** O card arrastado está sobre esta coluna: destaca a área de soltar. */
     highlighted?: boolean;
@@ -56,6 +67,7 @@ export function WKanbanColumnOrganism({
     abilities,
     stages,
     areas,
+    types = [],
     members,
     highlighted = false,
     onCreate,
@@ -65,6 +77,8 @@ export function WKanbanColumnOrganism({
     ...callbacks
 }: WKanbanColumnOrganismProps) {
     const titleId = useId();
+    // O campo do criar rápido só aparece pelo "+" do cabeçalho (14/10): sem ele fixo, os cards de todas as colunas alinham.
+    const [composing, setComposing] = useState(false);
     const { setNodeRef } = useDroppable({ id: stageDndId(stage), data: { type: 'stage', stage_id: stage.id } satisfies BoardDndData });
 
     const showQuickCreate = stage.role === 'queue' && abilities.create_card && onCreate;
@@ -77,7 +91,8 @@ export function WKanbanColumnOrganism({
             data-over={highlighted || undefined}
             aria-labelledby={titleId}
             className={cn(
-                'flex h-full w-72 shrink-0 snap-start flex-col rounded-lg border border-transparent bg-muted/60 transition-colors',
+                // O "poço" dos cards: no claro, o cinza cheio da marca; no escuro, mais escuro que o card, para ele parecer em relevo.
+                'flex h-full w-72 shrink-0 snap-start flex-col rounded-lg border border-transparent bg-muted transition-colors dark:bg-background/60',
                 highlighted && 'border-primary/50 bg-accent/60',
             )}
         >
@@ -89,6 +104,33 @@ export function WKanbanColumnOrganism({
                         <span className="sr-only">{cards.length === 1 ? ' card' : ' cards'}</span>
                     </Badge>
                 </h2>
+                {showQuickCreate && (
+                    <Button
+                        type="button"
+                        variant={composing ? 'secondary' : 'ghost'}
+                        size="icon"
+                        aria-label={composing ? 'Fechar o novo card' : 'Novo card'}
+                        aria-pressed={composing}
+                        title="Novo card: título e Enter"
+                        className="ml-auto size-6 text-muted-foreground"
+                        onClick={() => setComposing((open) => !open)}
+                    >
+                        <Plus aria-hidden />
+                    </Button>
+                )}
+                {showSupport && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Novo card de suporte"
+                        title="Novo card de suporte"
+                        className="ml-auto size-6 text-muted-foreground"
+                        onClick={onCreateSupport}
+                    >
+                        <Plus aria-hidden />
+                    </Button>
+                )}
                 {stage.role === 'done' && (
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -109,14 +151,15 @@ export function WKanbanColumnOrganism({
                 )}
             </header>
 
-            {(showQuickCreate || showSupport) && (
+            {showQuickCreate && composing && (
                 <div className="px-2 pb-2">
-                    {showQuickCreate && <WQuickCreateMolecule onCreate={onCreate} busy={creating} error={createError} />}
-                    {showSupport && (
-                        <Button type="button" variant="outline" size="sm" className="w-full" onClick={onCreateSupport}>
-                            <LifeBuoy aria-hidden /> Novo card de suporte
-                        </Button>
-                    )}
+                    <WQuickCreateMolecule
+                        onCreate={onCreate}
+                        busy={creating}
+                        error={createError}
+                        autoFocus
+                        onCancel={() => setComposing(false)}
+                    />
                 </div>
             )}
 
@@ -135,6 +178,7 @@ export function WKanbanColumnOrganism({
                                 stage={stage}
                                 stages={stages}
                                 areas={areas}
+                                types={types}
                                 members={members}
                                 draggable={abilities.move}
                                 {...callbacks}
@@ -154,6 +198,7 @@ interface SortableCardProps extends ColumnCardCallbacks {
     stage: BoardStage;
     stages: BoardStage[];
     areas: AreaRef[];
+    types: TaskTypeRef[];
     members: PersonRef[];
     /** Sem `abilities.move` o card não arrasta (e o *Mover para…* não aparece). */
     draggable: boolean;
@@ -165,7 +210,7 @@ interface SortableCardProps extends ColumnCardCallbacks {
  * focável (`tabIndex`) para o teclado do dnd-kit, e só ele ativa o arrastar por teclado
  * (`setActivatorNodeRef`): Enter no título abre a ficha, não pega o card.
  */
-function SortableCard({ card, stage, stages, areas, members, draggable, onMove, ...callbacks }: SortableCardProps) {
+function SortableCard({ card, stage, stages, areas, types, members, draggable, onMove, ...callbacks }: SortableCardProps) {
     const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
         id: cardDndId(card),
         data: { type: 'card', card, stage_id: card.stage_id } satisfies BoardDndData,
@@ -197,6 +242,7 @@ function SortableCard({ card, stage, stages, areas, members, draggable, onMove, 
                 stage={stage}
                 stages={stages}
                 areas={areas}
+                types={types}
                 members={members}
                 onMove={draggable ? onMove : undefined}
                 {...callbacks}

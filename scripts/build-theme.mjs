@@ -75,7 +75,18 @@ function flatten(mode, name) {
     out['--primary-text'] = require_(brand, 'primaryText', `${p}.brand`);
 
     const n = require_(mode, 'neutrals', p);
-    for (const key of ['background', 'foreground', 'card', 'muted', 'mutedForeground', 'border', 'input', 'accent', 'destructive', 'ring']) {
+    for (const key of [
+        'background',
+        'foreground',
+        'card',
+        'muted',
+        'mutedForeground',
+        'border',
+        'input',
+        'accent',
+        'destructive',
+        'ring',
+    ]) {
         out[`--${kebab(key)}`] = require_(n, key, `${p}.neutrals`);
     }
     // Opcionais, derivados quando ausentes.
@@ -92,6 +103,20 @@ function flatten(mode, name) {
         const pair = require_(status, key, `${p}.status`);
         out[`--status-${key}`] = require_(pair, 'fg', `${p}.status.${key}`);
         out[`--status-${key}-bg`] = require_(pair, 'bg', `${p}.status.${key}`);
+    }
+
+    // Cores das etiquetas de tipo e área do card (F3 §03, decisão de 14/10): paleta fixa de 10, como no Trello.
+    const tags = require_(mode, 'tags', p);
+    for (const key of ['gray', 'blue', 'sky', 'green', 'lime', 'yellow', 'orange', 'red', 'pink', 'purple']) {
+        const pair = require_(tags, key, `${p}.tags`);
+        out[`--tag-${key}`] = require_(pair, 'fg', `${p}.tags.${key}`);
+        out[`--tag-${key}-bg`] = require_(pair, 'bg', `${p}.tags.${key}`);
+    }
+
+    // Cores da faixa de prioridade do card (P19, decisão de 14/10): vivas, com texto em primary-foreground (AA conferido).
+    const priority = require_(mode, 'priority', p);
+    for (const key of ['urgent', 'high', 'normal', 'low']) {
+        out[`--priority-${key}`] = require_(priority, key, `${p}.priority`);
     }
 
     const sb = require_(mode, 'sidebar', p);
@@ -157,9 +182,9 @@ ${block(dark, 'dark')}
     /* Escala do Hub (ADR-005): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
     --radius-sm: calc(var(--radius) - 2px);
     --radius-md: var(--radius);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 3px);
-    --radius-2xl: calc(var(--radius) + 5px);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
 
     /* Tamanho abaixo de xs para rótulos e eyebrows; nada de text-[Npx] em componente. */
     --text-2xs: 0.6875rem;

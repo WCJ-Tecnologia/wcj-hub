@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SidebarProvider } from '@/components/shadcn/sidebar';
 
-import { asUser, DEVELOPER } from '../../../../../.storybook/fixtures';
+import { asUser, DEVELOPER, NOTIFICATIONS } from '../../../../../.storybook/fixtures';
 import { WAppTopbarOrganism } from './w-app-topbar-organism';
 
 const meta = {
@@ -12,7 +12,9 @@ const meta = {
     parameters: {
         layout: 'fullscreen',
         docs: {
-            description: { component: 'Topbar do shell: botão do menu, troca de tema e menu do usuário. Precisa de SidebarProvider.' },
+            description: {
+                component: 'Topbar do shell: botão do menu, troca de tema, sino de avisos e menu do usuário. Precisa de SidebarProvider.',
+            },
         },
     },
     decorators: [
@@ -29,3 +31,4 @@ type Story = StoryObj<typeof meta>;
 
 export const Padrao: Story = {};
 export const OutroUsuario: Story = { parameters: { inertia: { props: asUser(DEVELOPER) } } };
+export const ComAvisos: Story = { parameters: { inertia: { props: { notifications: NOTIFICATIONS } } } };

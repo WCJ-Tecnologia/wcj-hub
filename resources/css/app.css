@@ -10,7 +10,7 @@
 
 /* Tema claro. Cada valor vem de design/tokens.json (HEX ao lado, em comentário). */
 :root {
-    --radius: 0.3125rem;
+    --radius: 0.5rem;
 
     --primary: oklch(0.5679 0.2167 260.5); /* #1A6CF3 */
     --primary-foreground: oklch(1 0 0); /* #FFFFFF */
@@ -40,6 +40,30 @@
     --status-rejected-bg: oklch(0.9574 0.0165 26.65); /* #FCEDEB */
     --status-neutral: oklch(0.4963 0.0285 267.65); /* #5B6273 */
     --status-neutral-bg: oklch(0.9514 0.0116 264.51); /* #EBEFF7 */
+    --tag-gray: oklch(0.4461 0.0263 256.8); /* #4B5563 */
+    --tag-gray-bg: oklch(0.9548 0.0058 264.53); /* #EEF0F4 */
+    --tag-blue: oklch(0.469 0.1929 261.55); /* #0F4FC4 */
+    --tag-blue-bg: oklch(0.9447 0.0262 264.44); /* #E4EDFF */
+    --tag-sky: oklch(0.5029 0.0947 227.45); /* #0B6E8E */
+    --tag-sky-bg: oklch(0.9524 0.0259 217.94); /* #DDF4FB */
+    --tag-green: oklch(0.4688 0.1008 157.94); /* #166B44 */
+    --tag-green-bg: oklch(0.9584 0.0256 161.94); /* #E3F7EC */
+    --tag-lime: oklch(0.4774 0.1286 132.52); /* #3F6B0A */
+    --tag-lime-bg: oklch(0.96 0.0411 123.59); /* #ECF7D9 */
+    --tag-yellow: oklch(0.5519 0.1143 75.64); /* #986706 */
+    --tag-yellow-bg: oklch(0.9748 0.0159 82.79); /* #FCF6EB */
+    --tag-orange: oklch(0.5108 0.1393 45.79); /* #A4460A */
+    --tag-orange-bg: oklch(0.9577 0.0228 61.24); /* #FDEEE2 */
+    --tag-red: oklch(0.5593 0.204 31.03); /* #D12B15 */
+    --tag-red-bg: oklch(0.9574 0.0165 26.65); /* #FCEDEB */
+    --tag-pink: oklch(0.5246 0.199 3.96); /* #BE185D */
+    --tag-pink-bg: oklch(0.9482 0.0276 342.26); /* #FCE7F3 */
+    --tag-purple: oklch(0.4907 0.2412 292.58); /* #6D28D9 */
+    --tag-purple-bg: oklch(0.9433 0.0284 294.59); /* #EDE9FE */
+    --priority-urgent: oklch(0.5593 0.204 31.03); /* #D12B15 */
+    --priority-high: oklch(0.5866 0.1829 38.99); /* #D1480C */
+    --priority-normal: oklch(0.469 0.1929 261.55); /* #0F4FC4 */
+    --priority-low: oklch(0.5324 0.1158 157.35); /* #1C8051 */
     --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
     --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
@@ -85,6 +109,30 @@
     --status-rejected-bg: oklch(0.2366 0.0432 29.84); /* #301612 */
     --status-neutral: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
     --status-neutral-bg: oklch(0.2308 0.0143 266.95); /* #1A1D24 */
+    --tag-gray: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
+    --tag-gray-bg: oklch(0.2849 0.0175 266.34); /* #262A33 */
+    --tag-blue: oklch(0.7548 0.1261 259.64); /* #7FB0FF */
+    --tag-blue-bg: oklch(0.2507 0.0506 263.72); /* #15213A */
+    --tag-sky: oklch(0.8159 0.1098 221.3); /* #67D3F5 */
+    --tag-sky-bg: oklch(0.2685 0.0366 222.63); /* #0F2A33 */
+    --tag-green: oklch(0.7577 0.1666 157.29); /* #30CF85 */
+    --tag-green-bg: oklch(0.2813 0.0447 161.26); /* #123022 */
+    --tag-lime: oklch(0.8493 0.2073 128.85); /* #A3E635 */
+    --tag-lime-bg: oklch(0.2796 0.0515 132.13); /* #1F2E12 */
+    --tag-yellow: oklch(0.8053 0.1581 78.45); /* #F6B128 */
+    --tag-yellow-bg: oklch(0.2746 0.0359 83.52); /* #302612 */
+    --tag-orange: oklch(0.7576 0.159 55.93); /* #FB923C */
+    --tag-orange-bg: oklch(0.2542 0.042 47.74); /* #331C10 */
+    --tag-red: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
+    --tag-red-bg: oklch(0.2366 0.0432 29.84); /* #301612 */
+    --tag-pink: oklch(0.7253 0.1752 349.76); /* #F472B6 */
+    --tag-pink-bg: oklch(0.2451 0.0565 346.19); /* #331426 */
+    --tag-purple: oklch(0.8112 0.1013 293.57); /* #C4B5FD */
+    --tag-purple-bg: oklch(0.2465 0.0596 294.59); /* #231A3A */
+    --priority-urgent: oklch(0.6855 0.2041 30.3); /* #FF5A45 */
+    --priority-high: oklch(0.7576 0.159 55.93); /* #FB923C */
+    --priority-normal: oklch(0.6644 0.1785 259.94); /* #4D90FF */
+    --priority-low: oklch(0.7577 0.1666 157.29); /* #30CF85 */
     --sidebar: oklch(0.164 0.0111 268.01); /* #0C0E13 */
     --sidebar-foreground: oklch(0.775 0.0245 264.42); /* #AEB6C6 */
     --sidebar-primary: oklch(0.6644 0.1785 259.94); /* #4D90FF */
@@ -110,9 +158,9 @@
     /* Escala do Hub (ADR-005): botão e campo (md) e lg no raio da marca; cartão (xl) e modal (2xl) um pouco mais. */
     --radius-sm: calc(var(--radius) - 2px);
     --radius-md: var(--radius);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 3px);
-    --radius-2xl: calc(var(--radius) + 5px);
+    --radius-lg: calc(var(--radius) + 2px);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
 
     /* Tamanho abaixo de xs para rótulos e eyebrows; nada de text-[Npx] em componente. */
     --text-2xs: 0.6875rem;
@@ -146,6 +194,30 @@
     --color-status-rejected-bg: var(--status-rejected-bg);
     --color-status-neutral: var(--status-neutral);
     --color-status-neutral-bg: var(--status-neutral-bg);
+    --color-tag-gray: var(--tag-gray);
+    --color-tag-gray-bg: var(--tag-gray-bg);
+    --color-tag-blue: var(--tag-blue);
+    --color-tag-blue-bg: var(--tag-blue-bg);
+    --color-tag-sky: var(--tag-sky);
+    --color-tag-sky-bg: var(--tag-sky-bg);
+    --color-tag-green: var(--tag-green);
+    --color-tag-green-bg: var(--tag-green-bg);
+    --color-tag-lime: var(--tag-lime);
+    --color-tag-lime-bg: var(--tag-lime-bg);
+    --color-tag-yellow: var(--tag-yellow);
+    --color-tag-yellow-bg: var(--tag-yellow-bg);
+    --color-tag-orange: var(--tag-orange);
+    --color-tag-orange-bg: var(--tag-orange-bg);
+    --color-tag-red: var(--tag-red);
+    --color-tag-red-bg: var(--tag-red-bg);
+    --color-tag-pink: var(--tag-pink);
+    --color-tag-pink-bg: var(--tag-pink-bg);
+    --color-tag-purple: var(--tag-purple);
+    --color-tag-purple-bg: var(--tag-purple-bg);
+    --color-priority-urgent: var(--priority-urgent);
+    --color-priority-high: var(--priority-high);
+    --color-priority-normal: var(--priority-normal);
+    --color-priority-low: var(--priority-low);
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);

@@ -50,18 +50,18 @@ Um campo só, **Pessoas**, obrigatório: lista dos usuários ativos com papel De
 | Papel | lista fixa: Fila, Sprint, Desenvolvimento, Code review, Teste, Pronto, Pausa, Suporte | sim | Desenvolvimento | O que a etapa significa para o sistema e para os indicadores (P11). Na etapa nova, só os papéis que podem se repetir: Desenvolvimento, Code review, Teste, Pronto e Pausa. Fila, Sprint e Suporte existem uma vez só por projeto, sempre só leitura (P11). Nas demais, o papel fica só leitura depois que algum card passou pela etapa (P8, P11). |
 | Posição | ordem no quadro, por arrastar | | no fim | (P11) |
 
-Quadro com que todo projeto nasce (P10), na ordem:
+Quadro com que todo projeto nasce (P10), na ordem (decisão de 14/10: suporte primeiro, pausa logo depois do To do):
 
 | Etapa | Papel | Pode remover? |
 |---|---|---|
+| Support | Suporte | não: é onde nasce o card de suporte (P11, P52) |
 | Backlog | Fila | não: é para onde o card volta ao sair da sprint (P11, P45) |
 | To do | Sprint | não: é para onde o card vai ao entrar na sprint (P11, P45) |
-| Doing | Desenvolvimento | sim |
 | Paused | Pausa | sim |
+| Doing | Desenvolvimento | sim |
 | Code-review | Code review | sim |
 | In test | Teste | sim |
 | Done | Pronto | sim |
-| Support | Suporte | não: é onde nasce o card de suporte (P11, P52) |
 
 Ao remover etapa com tarefas, o diálogo pede **Mover as tarefas para**: lista das outras etapas ativas do projeto, obrigatória (P12).
 
@@ -70,6 +70,7 @@ Ao remover etapa com tarefas, o diálogo pede **Mover as tarefas para**: lista d
 | Campo | Tipo | Obrigatório | Padrão | Regra |
 |---|---|---|---|---|
 | Nome | texto, até 60, único no projeto | sim | | Ex.: "Admin", "Âncora", "Fornecedores". Repetido no mesmo projeto é recusado, sem diferença de acento e caixa: acaba o "ANCORA" e "ÂNCORA" do Trello (P18). |
+| Cor | uma das 10 cores da paleta, ou nenhuma | não | nenhuma | A cor da etiqueta da área no card e na ficha (F3 §03; decisão de 14/10). Sem cor, a etiqueta é cinza. |
 | Situação | só leitura: Ativa / Desativada em DD/MM/AAAA por Fulano | | Ativa | |
 
 ### Padrões do projeto (aba *Padrões*)
@@ -106,7 +107,7 @@ A lista nasce com Ajuste visual, Regra de negócio, Erro / bug, Requisito incomp
 | Pessoas do projeto | Nome, Papel, Carga diária, Situação | Nome | Usuário desativado continua na lista, em cinza: desativar não tira do projeto (N11, F1). |
 | Etapas | Posição, Nome, Papel, Cards na etapa | Posição (a do quadro) | Etapas removidas não aparecem. Cards na etapa = quantos estão nela hoje, para o gestor saber o que vai mover ao remover. |
 | Áreas | Nome, Situação | Nome | Desativadas escondidas; *Mostrar desativadas* as traz, em cinza. |
-| Tipos de tarefa | Nome, Situação | Nome | Idem. |
+| Tipos de tarefa | (saiu da lista geral em 14/10: tipo é do projeto, nasce com os 5 padrão e se cria e edita no quadro, F3 §11 item 9) | | |
 | Motivos de retrabalho | Nome, Pede texto, Situação | Nome, com o "Outro" por último | Idem. |
 
 Estado vazio: Projetos, "Nenhum projeto ainda. *Novo projeto*" (para o dev, sem botão: "Você ainda não está alocado em nenhum projeto"); Pessoas, "Ninguém alocado ainda. *Alocar pessoas*"; Áreas, "Nenhuma área. *Nova área*"; Tipos de tarefa, "Nenhum tipo ativo. *Novo tipo*"; Motivos, "Nenhum motivo ativo. *Novo motivo*". A lista de etapas nunca fica vazia: Fila, Sprint e Suporte existem sempre (P11).
@@ -155,8 +156,8 @@ Estado vazio: Projetos, "Nenhum projeto ainda. *Novo projeto*" (para o dev, sem 
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Novo | Administrador | Cria o item na lista geral (G7). | Nome repetido: recusa. |
-| Editar | Administrador | Renomeia; no motivo, liga ou desliga o "pede texto" (menos no "Outro", P40). Cards e movimentos antigos passam a mostrar o nome novo. | |
+| Novo | Administrador | Cria o item na lista geral (G7). **Tipos de tarefa saíram da lista geral em 14/10: são do projeto** (nascem com os 5 padrão e se criam e editam no próprio quadro, clicando na etiqueta; F3 §11 item 9). Aqui ficam só os motivos de retrabalho. | Nome repetido: recusa. |
+| Editar | Administrador | Renomeia; no motivo, liga ou desliga o "pede texto" (menos no "Outro", P40). Movimentos antigos passam a mostrar o nome novo. | |
 | Desativar / Reativar | Administrador | Sai da lista de escolha; o que já usa continua (P8). Melhoria, Suporte e Outro não têm o botão. | |
 | Excluir | Administrador | Só o que nunca foi usado (G2). Melhoria, Suporte e Outro não têm o botão. | "Excluir de verdade. Não dá para desfazer." |
 

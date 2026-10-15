@@ -18,7 +18,7 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 
 **Abrir o quadro.** A pessoa abre *Projetos*, escolhe o projeto e cai no quadro. As colunas são as etapas do projeto, na ordem configurada em F2; padrão: `Backlog`, `To do`, `Doing`, `Paused`, `Code-review`, `In test`, `Done` e `Support` (P10). O dev só vê os projetos em que está alocado (P5).
 
-**Criar o card.** No topo do `Backlog`, qualquer alocado escreve o título e tecla Enter. O card nasce no `Backlog`, com a próxima chave do projeto (ex.: `SGM-18`), tipo Melhoria e prioridade Normal (P16, P17, P56, R4). O campo fica pronto para o próximo título, como no Trello. Ninguém cria card direto em outra coluna: o dev cria só no `Backlog`, e o gestor também começa por lá (P56). Projeto encerrado não recebe card novo (P7).
+**Criar o card.** No topo do `Backlog`, qualquer alocado escreve o título e tecla Enter. O card nasce no `Backlog`, com a próxima chave do projeto (ex.: `SGM-18`) e **nada mais**: sem tipo, área nem prioridade; quem for editar define dentro do card (P16, P17, P56, R4; decisão de 14/10, seção 11). O campo fica pronto para o próximo título, como no Trello. Ninguém cria card direto em outra coluna: o dev cria só no `Backlog`, e o gestor também começa por lá (P56). Projeto encerrado não recebe card novo (P7).
 
 **Completar a ficha.** Clicar no card abre a ficha. Tudo além do título é opcional e vem recolhido: tipo, área, prioridade, dev, QA, participantes, horas previstas, card pai, capa, documento de requisição (Sendo / Quero / Para e informações adicionais) e critérios de aceite `CA_1…CA_n` (P17 a P20, P27, P57 a P59). No projeto de cliente, o gestor, ou a IA dele, escreve o card no modelo de requisição; no dia a dia do produto, título e duas linhas bastam. Ao ser definida como dev ou QA, a pessoa recebe aviso no sistema e por e-mail (P22).
 
@@ -46,9 +46,9 @@ Fica fora deste bloco, só apontado: configurar colunas, áreas e listas ([F2](f
 |---|---|---|---|---|
 | Chave | só leitura: prefixo-número, ex.: `SGM-17` | | gerada ao criar | Sequencial por projeto; número de card excluído nunca é reaproveitado (P16). |
 | Título | texto, até 200 | sim | | Único campo pedido ao criar (P17). |
-| Tipo | lista geral: Melhoria, Correção de bug, Suporte, Mudança (GMUD) e o que o Administrador cadastrar | sim | Melhoria | Item desativado some da escolha e continua nos cards que já o usam (P18, G7). Escolher Suporte pede os campos do pedido (ver "Card de suporte" abaixo). |
-| Área | lista do projeto | não | nenhuma | A lista nasce vazia e é do gestor (F2). Lista vazia: o campo diz "Nenhuma área no projeto" (P18). |
-| Prioridade | lista fixa: Baixa, Normal, Alta, Urgente | sim | Normal | (P19) |
+| Tipo | lista do projeto: nasce com Melhoria, Correção de bug, Suporte, Mudança (GMUD) e Desenvolvimento, mais o que o gestor criar (decisão de 14/10, seção 11) | não | nenhum | Item desativado some da escolha e continua nos cards que já o usam (P18, G7). Escolher Suporte pede os campos do pedido (ver "Card de suporte" abaixo). Cada tipo tem a cor da etiqueta; nome e cor se editam no quadro, clicando na etiqueta, só neste projeto. |
+| Área | lista do projeto | não | nenhuma | A lista nasce vazia e é do gestor (F2). Lista vazia: o campo diz "Nenhuma área no projeto" (P18). Cada área tem a cor da etiqueta; o gestor cria e edita nome e cor no quadro, clicando na etiqueta ou no "+ Área" do card (decisão de 14/10, seção 11). |
+| Prioridade | lista fixa: Baixa, Normal, Alta, Urgente | não | nenhuma | (P19) Sem prioridade o card fica sem a aba colorida e vai para o fim da ordem por prioridade (14/10). |
 | Dev | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só. Pode ficar vazio em qualquer coluna. Definir avisa a pessoa (P20, P22). Quem sai do projeto deixa o card sem dev (P5). |
 | QA | uma pessoa, entre as alocadas no projeto e ativas | não | vazio | Um só, opcional. Definir avisa a pessoa (P20, P22). |
 | Horas previstas | horas com decimais, maior que 0 | não | vazio | Total da tarefa, Dev + QA (P27). Quem define ou valida é o gestor, na montagem da sprint (F5). Gestor e Administrador mudam direto; o dev **propõe** um valor novo, que fica ao lado como "Proposta: 12 h, aguardando o gestor" até ser aprovado ou recusado (P27). Só a aprovação é reestimar e recalcula a data prevista (P28). |
@@ -122,9 +122,9 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 | Zona | Item | Quando aparece | Regra |
 |---|---|---|---|
-| Borda | Prioridade | sempre | Baixa, Normal, Alta, Urgente, como marca na borda ou no canto do card (P19). |
-| Cabeçalho | Área | quando há área | Como etiqueta (a "tag" do card); uma por card (P18). |
-| Cabeçalho | Tipo | sempre | (P18) |
+| Topo | Prioridade | quando definida | Baixa, Normal, Alta, Urgente: a faixa colorida no topo do card com o nome da prioridade escrito nela (P19; decisão de 14/10, seção 11). Sem prioridade, o card é liso. |
+| Cabeçalho | Tipo | quando definido | Como etiqueta colorida, sempre a primeira (P18; decisão de 14/10, seção 11). Sem tipo, o chip "+ Tipo" abre a lista. |
+| Cabeçalho | Área | quando há área | Como etiqueta colorida (a "tag" do card), depois do tipo; uma por card (P18). |
 | Cabeçalho | Chave e título | sempre | (P16) |
 | Cabeçalho | Card pai | no card filho | A chave do pai, com link para a ficha dele (P57). |
 | Cabeçalho | Menu ⋯ | sempre | *Mover para…* (mesmas regras do arrastar: pausa pede motivo, volta pede origem e motivo, sair do `Backlog` só gestor e Administrador), *Copiar link* (a URL da ficha), *Área*, *Prioridade* e *Abrir ficha*. |
@@ -152,7 +152,7 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
-| Criar card rápido | Qualquer alocado | Título + Enter no topo do `Backlog`: card no `Backlog`, tipo Melhoria, prioridade Normal (P17, P56, R4). Pela IA: `escrever_tarefa`, só com o título ou já com requisição e critérios (IA14). | Projeto encerrado: o campo não aparece, e a IA recebe "Projeto encerrado não recebe card novo" (P7). |
+| Criar card rápido | Qualquer alocado | Título + Enter (o campo abre pelo "+" ao lado do nome da coluna): card no `Backlog` só com o título, sem tipo, área nem prioridade (P17, P56, R4; 14/10). Pela IA: `escrever_tarefa`, só com o título ou já com requisição e critérios (IA14). | Projeto encerrado: o campo não aparece, e a IA recebe "Projeto encerrado não recebe card novo" (P7). |
 | Novo card de suporte | Gestor do projeto, Administrador | Cria na coluna `Support`, tipo Suporte, fora da sprint, com quem pediu, por onde e quando (P52). | Projeto encerrado: mesma recusa (P7). |
 | Arrastar e soltar (mover) | Qualquer alocado, a partir do `To do` e do `Support` | Leva o card para a coluna escolhida e grava o movimento (P13, P14). Na ficha, *Mover para…* faz o mesmo. Pela IA: `mover_tarefa`. | Pausa e retrabalho abrem os diálogos abaixo; o resto move direto. |
 | Pôr na sprint | Gestor do projeto, Administrador | Arrastar do `Backlog` para o `To do`. O diálogo da sprint é F5 (P45). | Dev que tenta: "Só o gestor do projeto e o Administrador põem card na sprint" (P45). |
@@ -279,6 +279,9 @@ Lucas Varanda propôs o desenho do card (prioridade fora do card; cabeçalho com
 4. **Usuários no card.** Além de Dev e QA, **participantes** (P58). Premissas decididas aqui, de baixo risco: participante não recebe aviso (P22 segue com dois avisos só), não entra na capacidade nem em indicador por pessoa, e entra no *Só os meus* e em `minhas_tarefas`. Definir o pai arrastando com Alt é proposta de interação, não regra: o front decide se entra no B3.
 5. **Imagem no corpo do card.** **O usuário escolhe** qual anexo é a capa (P59); sem escolha, sem imagem.
 6. **Faltava na proposta** e está no card: chave junto do título (P16), tipo (P18), marcas de pausa (P15), retrabalho com o número de voltas (P39), suporte com quem pediu (P52) e reestimativa proposta (P27).
+7. **Cor das etiquetas (14/10, ao ver o kit do quadro).** Tipo e área ganham cor, como no Trello: paleta fechada de 10 cores (cinza, azul, azul-claro, verde, verde-limão, amarelo, laranja, vermelho, rosa, roxo), escolhida no cadastro do tipo (lista geral, F1) e da área (F2); sem cor = cinza. No card e na ficha a ordem é sempre tipo primeiro, área depois. Banco: `task_types.color` e `project_areas.color` (`banco.md` seção 7, pendente do Lucas Alencar).
+8. **Prioridade evidente (14/10).** A faixa colorida no topo do card passa a ter o nome da prioridade escrito nela (Urgente em vermelho, Alta em âmbar, Normal em azul, Baixa em verde), pela referência visual que o Lucas mandou; a pílula no canto inferior direito, testada antes no mesmo dia, saiu.
+9. **Etiquetas editadas no quadro, por projeto (14/10, mais tarde).** Como no Trello: clicar na etiqueta de tipo ou de área (ou no "+ Área" do card sem área) abre a lista do projeto para escolher; o gestor e o Administrador editam nome e cor ali (lápis) e criam novos (*Novo tipo* / *Nova área*). Tipo passa a ser **do projeto**: todo projeto nasce com Melhoria, Correção de bug, Suporte, Mudança (GMUD) e **Desenvolvimento** (funcionalidade do zero, sem nada feito ainda); o que se cria ou edita não propaga a outros projetos. Nada é configurado em tela à parte. Banco: `task_types.project_id` (`banco.md` seção 7, pendente do Lucas Alencar); o card rápido nasce **sem tipo, sem área e sem prioridade** (P17; decisão final do Lucas em 14/10, depois de passar por Melhoria e Desenvolvimento): quem for editar define dentro do card. No banco, `task_type_id` e `task_priority_id` passam a aceitar nulo (`banco.md` seção 7).
 12. **Card arquivado.** OK: ficha continua abrindo; só sai do quadro e das contas.
 13. **Quadro de projeto encerrado.** OK: mover, comentar e anexar seguem (P7).
 14. **Tipo do bug de produção.** OK: escolhido à mão na fatia 1.

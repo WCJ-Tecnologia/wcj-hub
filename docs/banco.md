@@ -414,8 +414,8 @@ e pelo menos 1 de papel development (destino da reprovação na homologação, P
 ### task_types (cadastrável)
 
 P18. Lista geral: o Administrador edita (G7). O código depende dos slugs 'support' (card de suporte,
-P52) e 'improvement' (tipo padrão do card criado só com o título, P17, R4); os outros itens nascem sem
-slug.
+P52), 'improvement' (Melhoria) e 'development' (Desenvolvimento, novo em 14/10); os outros itens nascem
+sem slug. O card criado só com o título nasce sem tipo (P17, 14/10).
 slug varchar(20) null unique · label varchar(60) not null unique · deactivated_at/by
      improvement   Melhoria
      —             Correção de bug
@@ -457,9 +457,9 @@ number                int unsigned          not null            sequencial por p
                                                                 "SGM-17" = projects.key_prefix + number,
                                                                 sem coluna gravada (T10)
 board_stage_id        fk board_stages       not null  restrict  (etapa atual)
-task_type_id          fk task_types         not null  restrict  (P18)
+task_type_id          fk task_types         null      restrict  (P18; nulo = sem tipo, 14/10)
 project_area_id       fk project_areas      null      restrict  (P18; null = nenhuma)
-task_priority_id      fk task_priorities    not null  restrict  (P19)
+task_priority_id      fk task_priorities    null      restrict  (P19; nulo = sem prioridade, 14/10)
 developer_id          fk users              null      restrict  o dev da tarefa, um só (P20). Pode ficar
                                                       vazio em qualquer etapa; fica vazio quando o dev
                                                       sai do projeto (P5)
@@ -557,7 +557,8 @@ tarefa. Asserção única no Service, coberta por teste, em toda gravação; sem
 
 Regras do Service:
 - criar card: qualquer pessoa alocada, também pela IA (P56, R2). Nasce na etapa de papel queue; quando
-  só o título vem, com task_types 'improvement' e task_priorities 'normal' (P17, R4);
+  só o título vem, sem tipo, área nem prioridade (P17, R4; decisão de 14/10: task_type_id e
+  task_priority_id ficam nulos até alguém definir);
 - developer_id e qa_id são pessoas alocadas no projeto (Service, R15); definir um deles gera o aviso
   no sistema e o e-mail (P22, R3), e a volta para desenvolvimento (P39) avisa o dev pelos dois. Tirar a
   pessoa do projeto: o Service limpa developer_id e qa_id antes de apagar a alocação (a FK é
@@ -1127,6 +1128,25 @@ PENDENTE DE CONFERÊNCIA do Lucas Alencar; a migração entra no B3, só depois.
 - "Tag" do card = project_areas (P18), já existente; esforço = estimated_hours (P27), já existente.
   Nada novo para os dois.
 Contagem com a diferença de 13/10: 27 + 1 (task_participants) = 28.
+
+Decisão do Lucas Scholz sobre as etiquetas do card (14/10, ao ver o kit do quadro no Storybook).
+PENDENTE DE CONFERÊNCIA do Lucas Alencar; migração aditiva no B3, só depois:
+- task_types.color (varchar(10), null) e project_areas.color (varchar(10), null): a cor da etiqueta de
+  tipo e de área no card, como no Trello. Paleta fechada de 10 nomes (gray, blue, sky, green, lime,
+  yellow, orange, red, pink, purple; `TagColor` em `resources/js/types/quadro.ts`, tokens em
+  `design/tokens.json`); null = etiqueta cinza. No card e na ficha, tipo sempre antes da área (F3 §03).
+- task_types passa a ser DO PROJETO (decisão de 14/10, mais tarde): ganha project_id (fk projects, not
+  null, cascade); o unique de slug vira (project_id, slug) e o de label vira (project_id, label). Ao
+  criar o projeto, o Service semeia os 5 padrão: improvement Melhoria, — Correção de bug, support
+  Suporte, — Mudança (GMUD), development Desenvolvimento (novo: funcionalidade do zero). O gestor cria
+  tipos e edita nome e cor dos seus pelo próprio quadro (clicando na etiqueta), sem propagar a outros
+  projetos; o mesmo para project_areas (criar e editar nome e cor pelo quadro). O código continua
+  achando support, improvement e development pelo slug, agora dentro do projeto.
+- tasks.task_type_id e tasks.task_priority_id passam a aceitar NULO (decisão final de 14/10): o card
+  criado só com o título nasce sem tipo e sem prioridade (P17), e quem edita define na ficha ou pela
+  etiqueta. A ordem por prioridade põe os sem prioridade no fim. O card de suporte continua nascendo
+  com tipo support e prioridade escolhida no diálogo (P52). A lista geral de tipos sai de F2
+  (ficam só os motivos de retrabalho); a tela de configuração do projeto ganha a aba Tipos (como Áreas).
 
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 

@@ -1,4 +1,5 @@
 import {
+    AutoScrollActivator,
     closestCorners,
     DndContext,
     DragOverlay,
@@ -15,9 +16,9 @@ import {
     type Over,
     type ScreenReaderInstructions,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Info, LayoutGrid, SearchX } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
 import {
@@ -38,7 +39,7 @@ export interface WKanbanBoardOrganismProps extends Omit<ColumnCardCallbacks, 'on
     order: BoardOrder;
     project: BoardProject;
     abilities: BoardAbilities;
-    options: Pick<BoardOptions, 'areas' | 'members'>;
+    options: Pick<BoardOptions, 'areas' | 'types' | 'members'>;
     /**
      * Pedido de movimento: do arrastar (`index` e `sequence` = onde o card foi solto e a coluna na
      * ordem que ficou, como no Trello) e do *Mover para…* do card (os dois nulos). O quadro não abre
@@ -100,6 +101,24 @@ export function WKanbanBoardOrganism({
     const [active, setActive] = useState<BoardCard | null>(null);
     const [overStage, setOverStage] = useState<number | null>(null);
 
+    // Há coluna escondida para cada lado? Alimenta o esmaecido das pontas; medido no scroll e quando o tamanho muda.
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [edges, setEdges] = useState({ left: false, right: false });
+    const updateEdges = () => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const left = el.scrollLeft > 2;
+        const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+        setEdges((current) => (current.left === left && current.right === right ? current : { left, right }));
+    };
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver(() => updateEdges());
+        observer.observe(el);
+        return () => observer.disconnect();
+    });
+
     const sensors = useSensors(
         // 5 px antes de pegar: o clique no título (link) e no menu continuam cliques, e o card solto não abre a ficha.
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -155,18 +174,32 @@ export function WKanbanBoardOrganism({
         const to = stageById(target.stage_id);
         if (!from || !to) return;
 
-        // A coluna como está na tela, sem o card que anda; o card entra onde foi solto (sobre um card =
-        // no lugar dele; no vazio da coluna = no fim). É a ordem que a pessoa viu, não a gravada.
-        const column = (columns.get(to.id) ?? []).filter((item) => item.id !== card.id);
-        const overIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : -1;
-        const index = overIndex === -1 ? column.length : overIndex;
+        // Solto sobre o próprio card (pegou e largou no lugar): nada mudou.
+        if (target.type === 'card' && target.card.id === card.id) return;
 
+        let index: number;
+        let sequence: number[];
         if (from.id === to.id) {
-            const current = (columns.get(to.id) ?? []).findIndex((item) => item.id === card.id);
-            if (index === current) return;
+            // Na mesma coluna, a posição nova é a do card sobre o qual soltou, como a lista mostrou durante o
+            // arraste (arrayMove, o mesmo do useSortable); no vazio da coluna, o fim. Mesma posição: nada mudou.
+            const column = columns.get(to.id) ?? [];
+            const oldIndex = column.findIndex((item) => item.id === card.id);
+            const newIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : column.length - 1;
+            if (oldIndex === -1 || newIndex === -1 || newIndex === oldIndex) return;
+            index = newIndex;
+            sequence = arrayMove(
+                column.map((item) => item.id),
+                oldIndex,
+                newIndex,
+            );
+        } else {
+            // Em outra coluna, como está na tela: o card entra onde foi solto (sobre um card = no lugar dele;
+            // no vazio da coluna = no fim). É a ordem que a pessoa viu, não a gravada.
+            const column = columns.get(to.id) ?? [];
+            const overIndex = target.type === 'card' ? column.findIndex((item) => item.id === target.card.id) : -1;
+            index = overIndex === -1 ? column.length : overIndex;
+            sequence = [...column.slice(0, index).map((item) => item.id), card.id, ...column.slice(index).map((item) => item.id)];
         }
-
-        const sequence = [...column.slice(0, index).map((item) => item.id), card.id, ...column.slice(index).map((item) => item.id)];
         // Em *Prioridade* a coluna se reordenaria sozinha e desfaria o soltar: vira *Manual* (14/10).
         if (order !== 'manual') onOrderChange?.('manual');
         onMove({ card, from, to, index, sequence });
@@ -207,38 +240,68 @@ export function WKanbanBoardOrganism({
             <DndContext
                 sensors={sensors}
                 collisionDetection={collision}
+                // Rolagem automática ao encostar na borda: pelo ponteiro (o card arrastado tem quase a largura de um
+                // celular e entraria na zona da borda o tempo todo), zona de 12 % e 6 px a cada 10 ms (600 px/s, cerca de
+                // uma coluna a cada meio segundo). O padrão (10 px a cada 5 ms pelo retângulo do card) passava de todas as colunas.
+                autoScroll={{ activator: AutoScrollActivator.Pointer, acceleration: 6, interval: 10, threshold: { x: 0.12, y: 0.2 } }}
                 accessibility={{ announcements, screenReaderInstructions }}
                 onDragStart={handleStart}
                 onDragOver={handleOver}
                 onDragEnd={handleEnd}
                 onDragCancel={reset}
             >
-                <div
-                    role="region"
-                    aria-label="Colunas do quadro"
-                    // Focável: no teclado, as setas rolam as colunas (scrollable-region-focusable). `relative` prende os
-                    // `sr-only` (absolutos) das colunas aqui dentro; sem ele, a página inteira ganhava rolagem horizontal.
-                    tabIndex={0}
-                    className="relative flex h-[calc(100dvh-14rem)] min-h-96 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain rounded-md pb-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:snap-none"
-                >
-                    {stages.map((stage) => (
-                        <WKanbanColumnOrganism
-                            key={stage.id}
-                            stage={stage}
-                            cards={columns.get(stage.id) ?? []}
-                            abilities={abilities}
-                            stages={stages}
-                            areas={options.areas}
-                            members={options.members}
-                            highlighted={active !== null && overStage === stage.id && active.stage_id !== stage.id}
-                            onCreate={onCreate}
-                            creating={creating}
-                            createError={createError}
-                            onCreateSupport={onCreateSupport}
-                            onMove={menuMove}
-                            {...callbacks}
-                        />
-                    ))}
+                {/* Sangra até a borda da janela (desfaz o gutter do WPageContainerAtom): as colunas cortam na borda, não
+                    numa linha no meio da tela; o esmaecido avisa que há mais coluna para o lado (14/10). */}
+                <div className="relative -mx-4 lg:-mx-8">
+                    <div
+                        ref={scrollRef}
+                        role="region"
+                        aria-label="Colunas do quadro"
+                        // Focável: no teclado, as setas rolam as colunas (scrollable-region-focusable). `relative` prende os
+                        // `sr-only` (absolutos) das colunas aqui dentro; sem ele, a página inteira ganhava rolagem horizontal.
+                        tabIndex={0}
+                        onScroll={updateEdges}
+                        className={cn(
+                            'relative flex h-[calc(100dvh-14rem)] min-h-96 scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:scroll-px-8 lg:px-8',
+                            // No celular as colunas encaixam ao rolar com o dedo; arrastando um card o encaixe sai, senão cada
+                            // passo da rolagem automática pula para a coluna seguinte inteira.
+                            active ? 'snap-none' : 'snap-x snap-mandatory md:snap-none',
+                        )}
+                    >
+                        {stages.map((stage) => (
+                            <WKanbanColumnOrganism
+                                key={stage.id}
+                                stage={stage}
+                                cards={columns.get(stage.id) ?? []}
+                                abilities={abilities}
+                                stages={stages}
+                                areas={options.areas}
+                                types={options.types}
+                                members={options.members}
+                                highlighted={active !== null && overStage === stage.id && active.stage_id !== stage.id}
+                                onCreate={onCreate}
+                                creating={creating}
+                                createError={createError}
+                                onCreateSupport={onCreateSupport}
+                                onMove={menuMove}
+                                {...callbacks}
+                            />
+                        ))}
+                    </div>
+                    <div
+                        aria-hidden
+                        className={cn(
+                            'pointer-events-none absolute inset-y-0 left-0 w-10 bg-linear-to-r from-background to-transparent transition-opacity',
+                            edges.left ? 'opacity-100' : 'opacity-0',
+                        )}
+                    />
+                    <div
+                        aria-hidden
+                        className={cn(
+                            'pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-background to-transparent transition-opacity',
+                            edges.right ? 'opacity-100' : 'opacity-0',
+                        )}
+                    />
                 </div>
 
                 {/* Sem animação de volta: o card só muda de coluna quando a página confirma (diálogos, servidor). */}
@@ -248,6 +311,7 @@ export function WKanbanBoardOrganism({
                             card={active}
                             stage={stageById(active.stage_id) ?? stages[0]}
                             areas={options.areas}
+                            types={options.types}
                             members={options.members}
                             dragging
                             className="w-68"

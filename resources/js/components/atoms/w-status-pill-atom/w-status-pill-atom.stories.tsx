@@ -7,8 +7,8 @@ const meta = {
     component: WStatusPillAtom,
     tags: ['autodocs'],
     argTypes: {
-        status: { control: 'select', options: [true, false, 'active', 'inactive', 'desconhecido', null] },
-        kind: { control: 'inline-radio', options: ['user', 'client'] },
+        status: { control: 'select', options: [true, false, 'active', 'inactive', 'pending', 'approved', 'failed', 'desconhecido', null] },
+        kind: { control: 'inline-radio', options: ['user', 'client', 'contact', 'audit', 'project', 'criterion'] },
         size: { control: 'inline-radio', options: ['default', 'sm'] },
         label: { control: 'text' },
     },
@@ -22,3 +22,6 @@ export const Ativo: Story = {};
 export const Inativo: Story = { args: { status: false } };
 export const Pequeno: Story = { args: { size: 'sm' } };
 export const StatusForaDoDicionario: Story = { args: { status: 'desconhecido', label: 'Em análise' } };
+export const CriterioATestar: Story = { args: { kind: 'criterion', status: 'pending' } };
+export const CriterioAprovado: Story = { args: { kind: 'criterion', status: 'approved' } };
+export const CriterioReprovado: Story = { args: { kind: 'criterion', status: 'failed' } };

@@ -10,7 +10,7 @@ import type { ContactRow } from '@/components/organisms/w-contact-table-organism
 import type { ProjectFilters } from '@/components/organisms/w-project-filters-organism/w-project-filters-organism';
 import type { UserRow } from '@/components/organisms/w-user-table-organism/w-user-table-organism';
 import type { ProjectRow } from '@/components/pages/w-projects-page/w-projects-page';
-import type { AuthUser, Paginated, SharedProps } from '@/types';
+import type { AuthUser, NotificationsPayload, Paginated, SharedProps } from '@/types';
 
 import { SHARED_PROPS } from './inertia-mock';
 
@@ -28,7 +28,16 @@ export const DEVELOPER: AuthUser = {
     role: 'developer',
     role_label: 'Desenvolvedor',
     must_change_password: false,
-    abilities: { manage_users: false, delete_records: false, view_audit_logs: false, reset_passwords: false, view_clients: false, view_contacts: false, view_projects: true, manage_projects: false },
+    abilities: {
+        manage_users: false,
+        delete_records: false,
+        view_audit_logs: false,
+        reset_passwords: false,
+        view_clients: false,
+        view_contacts: false,
+        view_projects: true,
+        manage_projects: false,
+    },
 };
 
 /** Props compartilhadas com outro usuário logado (ex.: ver o menu de quem não é admin). */
@@ -340,5 +349,42 @@ export const PROJECTS: ProjectRow[] = [
 ];
 
 export const PROJECT_FILTERS: ProjectFilters = { search: '', client_id: null, manager_id: null, type: null, finished: false };
+
+/** Avisos da pessoa logada (F3 §07), não lidos primeiro; o 4º é de um card excluído (`url: null`). */
+export const NOTIFICATIONS: NotificationsPayload = {
+    unread_count: 2,
+    items: [
+        {
+            id: '9b1f6c2e-4d7a-4c1e-9f3a-1a2b3c4d5e01',
+            text: 'SGM-17 — Emitir a guia de IPTU com o código de barras no portal do cidadão voltou para To do: origem QA, motivo Ajuste visual, por Carla Mendes.',
+            url: '/projetos/1/cards/SGM-17',
+            created_at: '2026-10-14 16:42',
+            read_at: null,
+        },
+        {
+            id: '9b1f6c2e-4d7a-4c1e-9f3a-1a2b3c4d5e02',
+            text: 'Você é o QA de SGM-20 — Consulta de débitos por CPF (projeto [Exemplo] Sistema de Gestão Municipal), definido por Rafael Garcia.',
+            url: '/projetos/1/cards/SGM-20',
+            created_at: '2026-10-14 10:05',
+            read_at: null,
+        },
+        {
+            id: '9b1f6c2e-4d7a-4c1e-9f3a-1a2b3c4d5e03',
+            text: 'Você é o dev de SGM-17 — Emitir a guia de IPTU com o código de barras no portal do cidadão (projeto [Exemplo] Sistema de Gestão Municipal), definido por Rafael Garcia.',
+            url: '/projetos/1/cards/SGM-17',
+            created_at: '2026-10-13 09:30',
+            read_at: '2026-10-13 09:41',
+        },
+        {
+            id: '9b1f6c2e-4d7a-4c1e-9f3a-1a2b3c4d5e04',
+            text: 'Você é o dev de SGM-9 — Tela de login do portal (projeto [Exemplo] Sistema de Gestão Municipal), definido por Bruno Lima.',
+            url: null,
+            created_at: '2026-10-09 14:12',
+            read_at: '2026-10-09 15:00',
+        },
+    ],
+};
+
+export const NOTIFICATIONS_VAZIO: NotificationsPayload = { unread_count: 0, items: [] };
 
 export { SHARED_PROPS };

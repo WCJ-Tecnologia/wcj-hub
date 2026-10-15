@@ -18,16 +18,16 @@ export const BOARD_PROJECT: BoardProject = {
 /** O mesmo projeto sem sprint aberta: arrastar para o To do abre o diálogo Nova sprint (R5). */
 export const BOARD_PROJECT_SEM_SPRINT: BoardProject = { ...BOARD_PROJECT, open_sprint: null };
 
-/** As 8 etapas padrão, na ordem da P10 (Paused em 4º). */
+/** As 8 etapas padrão, na ordem da P10 (decisão de 14/10): Support primeiro, Paused logo depois do To do. */
 export const STAGES: BoardStage[] = [
-    { id: 1, name: 'Backlog', role: 'queue', position: 1 },
-    { id: 2, name: 'To do', role: 'sprint', position: 2 },
-    { id: 3, name: 'Doing', role: 'development', position: 3 },
+    { id: 8, name: 'Support', role: 'support', position: 1 },
+    { id: 1, name: 'Backlog', role: 'queue', position: 2 },
+    { id: 2, name: 'To do', role: 'sprint', position: 3 },
     { id: 4, name: 'Paused', role: 'paused', position: 4 },
-    { id: 5, name: 'Code-review', role: 'code_review', position: 5 },
-    { id: 6, name: 'In test', role: 'test', position: 6 },
-    { id: 7, name: 'Done', role: 'done', position: 7 },
-    { id: 8, name: 'Support', role: 'support', position: 8 },
+    { id: 3, name: 'Doing', role: 'development', position: 5 },
+    { id: 5, name: 'Code-review', role: 'code_review', position: 6 },
+    { id: 6, name: 'In test', role: 'test', position: 7 },
+    { id: 7, name: 'Done', role: 'done', position: 8 },
 ];
 
 export const ANA: PersonRef = { id: 1, name: 'Ana Souza' };
@@ -38,17 +38,21 @@ export const DIEGO: PersonRef = { id: 5, name: 'Diego Prado' };
 
 export const MEMBERS: PersonRef[] = [ANA, RAFAEL, BRUNO, CARLA, DIEGO];
 
-const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria' };
-const BUG = { id: 2, slug: null, label: 'Correção de bug' };
-const SUPORTE = { id: 3, slug: 'support', label: 'Suporte' };
-const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)' };
+const MELHORIA = { id: 1, slug: 'improvement', label: 'Melhoria', color: 'blue' as const };
+const BUG = { id: 2, slug: null, label: 'Correção de bug', color: 'red' as const };
+const SUPORTE = { id: 3, slug: 'support', label: 'Suporte', color: 'orange' as const };
+const GMUD = { id: 4, slug: null, label: 'Mudança (GMUD)', color: 'purple' as const };
+/** Funcionalidade do zero, sem nada feito ainda (decisão de 14/10). */
+const DESENVOLVIMENTO = { id: 5, slug: 'development', label: 'Desenvolvimento', color: 'green' as const };
 
 export const BOARD_OPTIONS: BoardOptions = {
-    types: [MELHORIA, BUG, SUPORTE, GMUD],
+    // Os 5 tipos padrão com que todo projeto nasce (14/10); o projeto cria os seus a partir daqui.
+    types: [MELHORIA, BUG, SUPORTE, GMUD, DESENVOLVIMENTO],
     areas: [
-        { id: 1, name: 'Cadastro' },
-        { id: 2, name: 'Financeiro' },
-        { id: 3, name: 'Portal do cidadão' },
+        { id: 1, name: 'Cadastro', color: 'lime' },
+        { id: 2, name: 'Financeiro', color: 'green' },
+        { id: 3, name: 'Portal do cidadão', color: 'sky' },
+        { id: 4, name: 'Relatórios', color: null },
     ],
     members: MEMBERS,
     rework_reasons: [
@@ -77,17 +81,33 @@ export const BOARD_OPTIONS: BoardOptions = {
     ],
 };
 
-export const ABILITIES_GESTOR: BoardAbilities = { create_card: true, create_support: true, manage_sprint: true, move: true, archive: true };
-export const ABILITIES_DEV: BoardAbilities = { create_card: true, create_support: false, manage_sprint: false, move: true, archive: false };
+export const ABILITIES_GESTOR: BoardAbilities = {
+    create_card: true,
+    create_support: true,
+    manage_sprint: true,
+    move: true,
+    archive: true,
+    manage_types: true,
+    manage_areas: true,
+};
+export const ABILITIES_DEV: BoardAbilities = {
+    create_card: true,
+    create_support: false,
+    manage_sprint: false,
+    move: true,
+    archive: false,
+    manage_types: false,
+    manage_areas: false,
+};
 /** Projeto encerrado: ninguém cria card; mover segue (P7). */
 export const ABILITIES_ENCERRADO: BoardAbilities = { ...ABILITIES_GESTOR, create_card: false, create_support: false };
 
-/** Card mínimo: só o que o criar rápido preenche (P17, R4). */
+/** Card mínimo: só o que o criar rápido preenche (P17, R4, 14/10): título; sem tipo, área nem prioridade. */
 export function card(partial: Partial<BoardCard> & Pick<BoardCard, 'id' | 'key' | 'title' | 'stage_id'>): BoardCard {
     return {
         position: partial.id,
-        priority: 'normal',
-        type: MELHORIA,
+        priority: null,
+        type: null,
         area: null,
         parent: null,
         cover_url: null,
@@ -125,7 +145,7 @@ export const CARD_COMPLETO: BoardCard = card({
     stage_id: 3,
     priority: 'high',
     type: MELHORIA,
-    area: { id: 3, name: 'Portal do cidadão' },
+    area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     parent: { id: 10, key: 'SGM-10', title: 'Portal do cidadão: 2ª via de tributos', url: '/projetos/1/cards/SGM-10' },
     cover_url: COVER_URL,
     estimated_hours: 16,
@@ -142,16 +162,24 @@ export const CARD_COMPLETO: BoardCard = card({
 
 export const CARDS: BoardCard[] = [
     // Backlog
-    card({ id: 21, key: 'SGM-21', title: 'Relatório de inadimplência por bairro', stage_id: 1, area: { id: 2, name: 'Financeiro' } }),
-    card({ id: 22, key: 'SGM-22', title: 'Exportar cadastro de contribuintes em CSV', stage_id: 1, priority: 'low' }),
+    // SGM-21: como nasce do criar rápido (14/10): só o título, sem tipo, área nem prioridade.
+    card({ id: 21, key: 'SGM-21', title: 'Relatório de inadimplência por bairro', stage_id: 1 }),
+    card({
+        id: 22,
+        key: 'SGM-22',
+        title: 'Exportar cadastro de contribuintes em CSV',
+        stage_id: 1,
+        type: DESENVOLVIMENTO,
+        priority: 'low',
+    }),
     card({
         id: 23,
         key: 'SGM-23',
         title: 'Login com gov.br',
         stage_id: 1,
         priority: 'urgent',
-        type: GMUD,
-        area: { id: 3, name: 'Portal do cidadão' },
+        type: DESENVOLVIMENTO,
+        area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
     }),
     // To do
     card({
@@ -159,7 +187,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-18',
         title: 'Parcelamento da dívida ativa em até 12 vezes',
         stage_id: 2,
-        area: { id: 2, name: 'Financeiro' },
+        area: { id: 2, name: 'Financeiro', color: 'green' },
         estimated_hours: 8,
         developer: ANA,
         attachments_count: 1,
@@ -194,7 +222,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-15',
         title: 'Integração com o banco para baixa automática',
         stage_id: 4,
-        area: { id: 2, name: 'Financeiro' },
+        area: { id: 2, name: 'Financeiro', color: 'green' },
         developer: DIEGO,
         estimated_hours: 40,
         due_on: '2026-10-15',
@@ -218,7 +246,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-14',
         title: 'Cadastro de imóvel com geolocalização',
         stage_id: 6,
-        area: { id: 1, name: 'Cadastro' },
+        area: { id: 1, name: 'Cadastro', color: 'lime' },
         developer: ANA,
         qa: DIEGO,
         estimated_hours: 20,
@@ -233,7 +261,7 @@ export const CARDS: BoardCard[] = [
         key: 'SGM-10',
         title: 'Portal do cidadão: 2ª via de tributos',
         stage_id: 7,
-        area: { id: 3, name: 'Portal do cidadão' },
+        area: { id: 3, name: 'Portal do cidadão', color: 'sky' },
         developer: RAFAEL,
         estimated_hours: 4,
         children: { todo: 2, doing: 1, done: 3 },

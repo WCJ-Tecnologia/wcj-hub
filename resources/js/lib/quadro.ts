@@ -15,6 +15,9 @@ import type {
 /** Ordem por prioridade: Urgente primeiro (F3 §03). */
 export const PRIORITY_RANK: Record<PrioritySlug, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
 
+/** Sem prioridade vai depois da Baixa (o card rápido nasce assim, P17, 14/10). */
+export const priorityRank = (priority: PrioritySlug | null) => (priority ? PRIORITY_RANK[priority] : 4);
+
 export const PRIORITY_LABEL: Record<PrioritySlug, string> = { low: 'Baixa', normal: 'Normal', high: 'Alta', urgent: 'Urgente' };
 
 export const PRIORITIES: PrioritySlug[] = ['low', 'normal', 'high', 'urgent'];
@@ -28,7 +31,7 @@ export function sortCards(cards: BoardCard[], order: BoardOrder): BoardCard[] {
     return [...cards].sort((a, b) =>
         order === 'manual'
             ? a.position - b.position || byNumber(a) - byNumber(b)
-            : PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] || byNumber(a) - byNumber(b),
+            : priorityRank(a.priority) - priorityRank(b.priority) || byNumber(a) - byNumber(b),
     );
 }
 
@@ -132,7 +135,7 @@ function hasMark(card: BoardCard, mark: BoardMark, stageRole: StageRoleSlug | un
         case 'rework':
             return card.rework_count > 0;
         case 'support':
-            return card.type.slug === 'support';
+            return card.type?.slug === 'support';
         case 'proposed':
             return card.proposed_hours !== null;
     }
@@ -161,7 +164,7 @@ export function applyFilters(cards: BoardCard[], filters: BoardFilters, currentU
         }
         if (filters.developer_id && card.developer?.id !== filters.developer_id) return false;
         if (filters.qa_id && card.qa?.id !== filters.qa_id) return false;
-        if (filters.type_id && card.type.id !== filters.type_id) return false;
+        if (filters.type_id && card.type?.id !== filters.type_id) return false;
         if (filters.area_id && card.area?.id !== filters.area_id) return false;
         if (filters.priority && card.priority !== filters.priority) return false;
         if (filters.marks.length > 0 && !filters.marks.some((mark) => hasMark(card, mark, roleOf.get(card.stage_id)))) return false;

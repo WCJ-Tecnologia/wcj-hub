@@ -32,3 +32,7 @@ O "título + Enter" do topo do Backlog (F3 §01, P17, R4). Campo com o placehold
 - **Quem decide se aparece é a coluna**: só no Backlog (`role === 'queue'`) e com `abilities.create_card` (alocado, projeto aberto, P7, P56).
 - `readOnly`, não `disabled`, enquanto cria: campo desabilitado perde o foco e o próximo título não teria onde ir. Se algo tirou o foco durante a criação, ele volta ao campo quando `busy` cai.
 - O campo limpa no Enter, antes da resposta (como no Trello). Se o servidor recusar, o título digitado não volta; a mensagem aparece em `error`.
+
+## `autoFocus` e `onCancel` (14/10)
+
+O campo passou a abrir pelo "+" do cabeçalho da coluna: `autoFocus` foca ao aparecer, e `onCancel` é chamado com Esc no campo vazio ou ao sair dele vazio, para a coluna esconder o campo de novo. Com texto, Esc só limpa, como antes.

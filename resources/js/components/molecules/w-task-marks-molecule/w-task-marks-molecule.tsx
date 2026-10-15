@@ -44,7 +44,7 @@ export function taskMarks(card: BoardCard, inPausedStage: boolean): Mark[] {
             variant: 'outline',
         });
     }
-    if (card.type.slug === 'support') {
+    if (card.type?.slug === 'support') {
         marks.push({
             id: 'support',
             icon: LifeBuoy,
