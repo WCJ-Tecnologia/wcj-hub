@@ -34,7 +34,7 @@
                             <table role="presentation" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td style="padding-right:12px;vertical-align:middle;">
-                                        <img src="{{ asset('brand/wcj-icone-64.png') }}" width="32" height="32" alt="" style="display:block;border:0;">
+                                        <img src="{{ asset('brand/wcj-hub-icone-64.png') }}" width="32" height="32" alt="" style="display:block;border:0;">
                                     </td>
                                     <td style="vertical-align:middle;">
                                         <p style="margin:0;font-family:'Space Grotesk','Hanken Grotesk',Arial,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:-.01em;">

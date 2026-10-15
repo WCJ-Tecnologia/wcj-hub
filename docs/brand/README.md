@@ -13,6 +13,7 @@ O WCJ Hub é sistema interno da WCJ: aqui a marca entra inteira (logo, cores, ti
 | [`cores.json`](cores.json) | As cores aprovadas: 4 azuis, alerta, 4 estados (crítico, alto, médio, bom; claro e escuro), 13 cinzas com o papel de cada um, cores dos nós | Fonte das cores; o `tokens.wcj.json` nasce daqui |
 | [`tokens.wcj.json`](tokens.wcj.json) | **Rascunho** do `design/tokens.json` do template, nas mesmas chaves, já com as cores da marca | Ponto de partida; conferir e copiar para `design/tokens.json` |
 | `logo/*.svg` | O logo em vetor: completo, horizontal, símbolo, ícone; versões fundo claro, fundo escuro, preto, branco | Cabeçalho, sidebar, tela de login, e-mail |
+| `logo/produtos/wcj-hub/` | O logo do produto: o símbolo da WCJ com "Hub" na Nico Moji (a fonte do letreiro do logo) e os ícones ink (ADR-006) | É o que o Hub mostra: sidebar, login, favicon, manifest, e-mail. Ler o `README.md` da pasta |
 | `logo/icone/` | Ícone em PNG de 16 a 512 px, versão quadrada para iOS e Android, `favicon.ico` | `public/` do app: favicon e manifest |
 | `logo/medidas.json` | Tamanho de cada versão e a margem, nas unidades do desenho | Posicionar por código |
 | `nos/*.svg` + `nos/medidas.json` | O padrão de nós (trilha e recorte), claro e escuro, sem margem | Tela de login, estados vazios, cabeçalho de página; nunca atrás de texto corrido |

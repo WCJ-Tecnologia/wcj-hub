@@ -19,14 +19,20 @@ const HEIGHT: Record<WBrandLogoSize, string> = {
     xl: 'h-14',
 };
 
-/** Arquivos oficiais, copiados sem alteração de docs/brand/logo/ (a marca proíbe redesenhar ou recolorir). */
+/**
+ * Arquivos oficiais, copiados sem alteração do mestre da marca (a marca proíbe redesenhar ou recolorir).
+ * O logo do produto (símbolo + "Hub", docs/brand/logo/produtos/wcj-hub/) tem uma versão só, que serve
+ * ao completo e ao horizontal; o símbolo é o da WCJ (ADR-006).
+ */
+const HUB_LOGO = { light: '/brand/wcj-hub-logo-fundo-claro.svg', dark: '/brand/wcj-hub-logo-fundo-escuro.svg' };
+
 const FILES: Record<WBrandLogoVariant, { light: string; dark: string }> = {
-    full: { light: '/brand/wcj-logo-fundo-claro.svg', dark: '/brand/wcj-logo-fundo-escuro.svg' },
-    horizontal: { light: '/brand/wcj-logo-horizontal-fundo-claro.svg', dark: '/brand/wcj-logo-horizontal-fundo-escuro.svg' },
+    full: HUB_LOGO,
+    horizontal: HUB_LOGO,
     symbol: { light: '/brand/wcj-simbolo-azul.svg', dark: '/brand/wcj-simbolo-azul-claro.svg' },
 };
 
-const ALT = 'WCJ Tecnologia';
+const ALT = 'WCJ Hub';
 
 export interface WBrandLogoAtomProps {
     variant?: WBrandLogoVariant;
@@ -38,7 +44,7 @@ export interface WBrandLogoAtomProps {
 }
 
 /**
- * Logo da WCJ nos arquivos oficiais de public/brand/. Escolha a versão pela
+ * Logo do WCJ Hub nos arquivos oficiais de public/brand/. Escolha a versão pela
  * altura e o fundo pela superfície: `dark` na sidebar e no painel do login,
  * `auto` sobre a página (troca com o tema).
  */
