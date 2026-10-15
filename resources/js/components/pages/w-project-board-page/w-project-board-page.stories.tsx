@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { userEvent, within } from 'storybook/test';
 
 import { asUser, DEVELOPER } from '../../../../../.storybook/fixtures';
 import {
@@ -9,6 +10,7 @@ import {
     BOARD_PROJECT,
     BOARD_PROJECT_SEM_SPRINT,
     CARDS,
+    CARDS_MONTAR_SPRINT,
     CARDS_VAZIO,
     STAGES,
 } from '../../../../../.storybook/fixtures-quadro';
@@ -52,3 +54,38 @@ export const ComoDev: Story = {
     parameters: { inertia: { url: '/projetos/1/quadro', props: asUser(DEVELOPER) } },
 };
 export const Vazio: Story = { args: { cards: CARDS_VAZIO } };
+
+/** Liga o *Montar sprint* pelo botão do cabeçalho e marca SGM-23, SGM-30 e SGM-21. */
+async function selectThree(canvasElement: HTMLElement, button: RegExp) {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: button }));
+    for (const key of ['SGM-23', 'SGM-30', 'SGM-21']) {
+        await userEvent.click(await canvas.findByRole('checkbox', { name: new RegExp(`^Selecionar ${key} `) }));
+    }
+}
+
+/**
+ * *Montar sprint* sem sprint aberta (D-GER-35): o botão do cabeçalho liga o modo de seleção no Backlog;
+ * 3 marcadas, a barra soma as horas e *Iniciar sprint* abre o diálogo com a sprint proposta.
+ */
+export const MontarSprintSemSprintAberta: Story = {
+    args: { project: BOARD_PROJECT_SEM_SPRINT, cards: CARDS_MONTAR_SPRINT },
+    play: async ({ canvasElement }) => selectThree(canvasElement, /^Montar sprint$/),
+};
+/** Com sprint aberta o botão é *Pôr na Sprint 3*, e o diálogo só confirma. */
+export const PorNaSprintAberta: Story = {
+    args: { cards: CARDS_MONTAR_SPRINT },
+    play: async ({ canvasElement }) => selectThree(canvasElement, /^Pôr na Sprint 3$/),
+};
+/** O diálogo *Iniciar sprint*, aberto pela barra depois de marcar. */
+export const IniciarSprint: Story = {
+    args: { project: BOARD_PROJECT_SEM_SPRINT, cards: CARDS_MONTAR_SPRINT },
+    play: async ({ canvasElement }) => {
+        await selectThree(canvasElement, /^Montar sprint$/);
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Iniciar sprint' }));
+    },
+};
+export const MontarSprintCelular: Story = {
+    ...MontarSprintSemSprintAberta,
+    globals: { viewport: { value: 'mobile2', isRotated: false } },
+};

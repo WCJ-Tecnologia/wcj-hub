@@ -11,6 +11,9 @@ import type {
     PrioritySlug,
     StageRoleSlug,
 } from '@/types/quadro';
+import type { SprintFields } from '@/types/sprints';
+
+import { addBusinessDays } from '@/lib/dias-uteis';
 
 /** Ordem por prioridade: Urgente primeiro (F3 §03). */
 export const PRIORITY_RANK: Record<PrioritySlug, number> = { urgent: 0, high: 1, normal: 2, low: 3 };
@@ -83,6 +86,42 @@ export function classifyMove(intent: MoveIntent, project: BoardProject, abilitie
     if (to.role === 'done' && card.qa_summary && (card.qa_summary.rejected > 0 || card.qa_summary.pending > 0)) steps.push('done_warning');
 
     return { allowed: true, steps };
+}
+
+/**
+ * A sprint que a tela propõe sem sprint aberta (F5 §02, P46, R5): "Sprint N" (N = sprints do projeto + 1),
+ * início hoje e fim pela duração padrão em dias úteis, contando o início. O diálogo do arrastar e o do
+ * *Montar sprint* partem dela.
+ */
+export function proposedSprint(project: Pick<BoardProject, 'sprints_count' | 'sprint_days'>, today: string): SprintFields {
+    return {
+        name: `Sprint ${project.sprints_count + 1}`,
+        goal: '',
+        starts_on: today,
+        ends_on: addBusinessDays(today, project.sprint_days),
+    };
+}
+
+/** O botão do cabeçalho do quadro (D-GER-35): monta a sprint nova ou soma à aberta. */
+export function sprintBatchLabel(project: Pick<BoardProject, 'open_sprint'>): string {
+    return project.open_sprint ? `Pôr na ${project.open_sprint.name}` : 'Montar sprint';
+}
+
+/** As marcadas no *Montar sprint*: quantas, horas previstas somadas e quantas sem horas (P27). */
+export function batchSummary(cards: Pick<BoardCard, 'estimated_hours'>[]): { count: number; hours: number; withoutHours: number } {
+    return {
+        count: cards.length,
+        hours: cards.reduce((sum, card) => sum + (card.estimated_hours ?? 0), 0),
+        withoutHours: cards.filter((card) => card.estimated_hours === null).length,
+    };
+}
+
+/** "3 selecionadas · 14 h previstas" na barra do *Montar sprint*; só referência, nada trava (P49). */
+export function batchSummaryText(summary: ReturnType<typeof batchSummary>): string {
+    if (summary.count === 0) return 'Nenhuma selecionada';
+    const selected = summary.count === 1 ? '1 selecionada' : `${summary.count} selecionadas`;
+    const without = summary.withoutHours > 0 ? ` (${summary.withoutHours} sem horas)` : '';
+    return `${selected} · ${hours(summary.hours)} previstas${without}`;
 }
 
 /** Texto do aviso ao mover para o Pronto com roteiro pendente (P38). */

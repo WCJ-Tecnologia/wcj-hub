@@ -182,6 +182,17 @@ export interface MoveIntent {
     sequence: number[] | null;
 }
 
+/**
+ * *Montar sprint* do quadro (D-GER-35): o que a tela manda em `POST /projetos/{id}/sprint-aberta/tarefas/lote`
+ * (rota já no backend, B5b). As tarefas marcadas no Backlog entram juntas na sprint aberta, cada uma como no
+ * arrastar para o To do (P45); sem sprint aberta, `new_sprint` é a sprint criada na mesma transação (R5). O
+ * servidor recusa o lote inteiro se alguma não está mais no Backlog, no erro `task_ids`.
+ */
+export interface SprintBatchPayload {
+    task_ids: number[];
+    new_sprint?: { name: string; goal: string; starts_on: string; ends_on: string };
+}
+
 /** O que a tela manda ao servidor depois dos diálogos (`POST /projetos/{id}/cards/{chave}/mover`, proposta do kit). */
 export interface MovePayload {
     stage_id: number;

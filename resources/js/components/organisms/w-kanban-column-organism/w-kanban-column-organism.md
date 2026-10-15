@@ -19,18 +19,22 @@ Arrastar e soltar (dnd-kit): o corpo inteiro é área de soltar (`useDroppable`,
 
 ## Props
 
-| Prop                                                                          | Tipo                      | Padrão  | Obrigatória | Para quê                                                                  |
-| ----------------------------------------------------------------------------- | ------------------------- | ------- | ----------- | ------------------------------------------------------------------------- |
-| `stage`                                                                       | `BoardStage`              |         | sim         | A etapa                                                                   |
-| `cards`                                                                       | `BoardCard[]`             |         | sim         | Os cards desta coluna, **já ordenados** (`sortCards`)                     |
-| `abilities`                                                                   | `BoardAbilities`          |         | sim         | `create_card`, `create_support`; `move` liga o arrastar e o _Mover para…_ |
-| `stages`, `areas`, `members`                                                  |                           |         | sim         | Repassados ao card (menu ⋯ e _+_ de participante)                         |
-| `highlighted`                                                                 | `boolean`                 | `false` | não         | O card arrastado está sobre esta coluna: borda e fundo azuis              |
-| `onCreate`, `creating`, `createError`                                         |                           |         | não         | Criar rápido                                                              |
-| `onCreateSupport`                                                             | `() => void`              |         | não         | Abre o diálogo de suporte                                                 |
-| `onMove`, `onChangePriority`, `onChangeArea`, `onToggleParticipant`, `onOpen` | os do `WTaskCardOrganism` |         | não         | Repassados a cada card                                                    |
+| Prop                                                                          | Tipo                      | Padrão  | Obrigatória | Para quê                                                                       |
+| ----------------------------------------------------------------------------- | ------------------------- | ------- | ----------- | ------------------------------------------------------------------------------ |
+| `stage`                                                                       | `BoardStage`              |         | sim         | A etapa                                                                        |
+| `cards`                                                                       | `BoardCard[]`             |         | sim         | Os cards desta coluna, **já ordenados** (`sortCards`)                          |
+| `abilities`                                                                   | `BoardAbilities`          |         | sim         | `create_card`, `create_support`; `move` liga o arrastar e o _Mover para…_      |
+| `stages`, `areas`, `members`                                                  |                           |         | sim         | Repassados ao card (menu ⋯ e _+_ de participante)                              |
+| `highlighted`                                                                 | `boolean`                 | `false` | não         | O card arrastado está sobre esta coluna: borda e fundo azuis                   |
+| `onCreate`, `creating`, `createError`                                         |                           |         | não         | Criar rápido                                                                   |
+| `onCreateSupport`                                                             | `() => void`              |         | não         | Abre o diálogo de suporte                                                      |
+| `onMove`, `onChangePriority`, `onChangeArea`, `onToggleParticipant`, `onOpen` | os do `WTaskCardOrganism` |         | não         | Repassados a cada card                                                         |
+| `selection`                                                                   | `ColumnSelection`         |         | não         | _Montar sprint_ (D-GER-35), só no Backlog: caixa por card e _Selecionar todas_ |
+| `locked`                                                                      | `boolean`                 | `false` | não         | _Montar sprint_ ligado e esta não é o Backlog: esmaecida e `inert`             |
 
-Também exporta `cardDndId`, `stageDndId` e o tipo `BoardDndData`, que o quadro lê no `onDragEnd`.
+Também exporta `cardDndId`, `stageDndId` e os tipos `BoardDndData` (que o quadro lê no `onDragEnd`) e `ColumnSelection`.
+
+No modo _Montar sprint_ o card do Backlog é um rótulo da caixa: o card fica `inert` e sem ponteiro (sem menus nem link da ficha), então clicar em qualquer ponto marca; a caixa tem o nome "Selecionar SGM-23 Login com gov.br". O criar rápido some e nada arrasta.
 
 ## Exemplo
 

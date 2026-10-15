@@ -306,3 +306,30 @@ export const BOARD_FILTERS_VAZIO: BoardFilters = {
     old_done: false,
     archived: false,
 };
+
+/**
+ * *Montar sprint* (D-GER-35): o mesmo quadro com o Backlog mais cheio e horas previstas, para o modo de
+ * seleção somar ("3 selecionadas · 14 h previstas (1 sem horas)").
+ */
+export const CARDS_MONTAR_SPRINT: BoardCard[] = [
+    ...CARDS.map((item) =>
+        item.key === 'SGM-22'
+            ? { ...item, estimated_hours: 6 }
+            : item.key === 'SGM-23'
+              ? { ...item, estimated_hours: 8, developer: ANA }
+              : item,
+    ),
+    card({
+        id: 30,
+        key: 'SGM-30',
+        title: 'Segunda via do IPTU pelo portal',
+        stage_id: 1,
+        priority: 'high',
+        estimated_hours: 12,
+        developer: BRUNO,
+    }),
+    card({ id: 31, key: 'SGM-31', title: 'Aviso de vencimento por e-mail', stage_id: 1, priority: 'normal', estimated_hours: 4.5 }),
+];
+
+/** Os ids marcados nas stories do modo de seleção: SGM-23, SGM-30 e SGM-21 (este sem horas). */
+export const MONTAR_SPRINT_MARCADAS: number[] = [23, 30, 21];
