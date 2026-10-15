@@ -439,7 +439,8 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                     />
                 )}
 
-                {batch && (
+                {/* Atrás do planejamento aberto a barra não serve e ficaria sem contraste sob o véu do modal. */}
+                {batch && !batchDialog && (
                     <WSprintBatchBarOrganism
                         project={project}
                         selected={batchCards}
