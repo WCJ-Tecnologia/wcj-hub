@@ -6,6 +6,7 @@ use App\Domains\Projetos\Models\ReworkReason;
 use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Services\ListService;
+use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use Database\Seeders\ValidationTypeSeeder;
@@ -124,8 +125,11 @@ class ReworkReasonTest extends TestCase
 
         $this->actingAs($this->admin)->post("/admin/rework-reasons/{$usado->id}/reactivate")->assertSessionHas('success');
         $this->assertTrue($usado->fresh()->isActive());
+        $this->assertDatabaseHas('audit_logs', ['action' => 'reactivated', 'outcome' => 'success', 'auditable_type' => 'rework_reason', 'auditable_id' => $usado->id]);
 
-        $this->actingAs($this->admin)->delete("/admin/rework-reasons/{$usado->id}")->assertSessionHas('error', ListService::ALREADY_USED);
+        // O texto da spec (LST-03 AC 8), literal: a constante não pode mudar sem a spec mudar junto.
+        $this->actingAs($this->admin)->delete("/admin/rework-reasons/{$usado->id}")
+            ->assertSessionHas('error', 'Motivo já usado em alguma volta para desenvolvimento: desative em vez de excluir');
         $this->assertModelExists($usado);
 
         $this->actingAs($this->admin)->delete("/admin/rework-reasons/{$livre->id}")->assertSessionHas('success', 'Motivo Ajuste visual excluído.');
@@ -153,5 +157,33 @@ class ReworkReasonTest extends TestCase
 
         $this->assertSame($antes, ReworkReason::query()->orderBy('id')->get(['id', 'label', 'requires_text', 'deactivated_at'])->toArray());
         $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->where('auditable_type', 'rework_reason')->count());
+    }
+
+    /** Edge case da spec: o Administrador rebaixado perde o acesso na próxima requisição, e a negação é auditada. */
+    public function test_an_admin_demoted_is_denied_on_the_next_request(): void
+    {
+        $this->actingAs($this->admin)->get('/admin/listas')->assertOk();
+
+        $this->admin->forceFill(['role_id' => RoleEnum::PROJECT_MANAGER->value])->save();
+        $rebaixado = User::query()->findOrFail($this->admin->id);
+
+        $this->actingAs($rebaixado)->get('/admin/listas')->assertForbidden();
+        $this->actingAs($rebaixado)->post('/admin/rework-reasons', ['label' => 'Tentativa', 'requires_text' => false])->assertForbidden();
+
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $rebaixado->id, 'action' => 'viewed', 'outcome' => 'denied', 'auditable_type' => 'rework_reason']);
+        $this->assertDatabaseHas('audit_logs', ['user_id' => $rebaixado->id, 'action' => 'created', 'outcome' => 'denied', 'auditable_type' => 'rework_reason']);
+        $this->assertDatabaseMissing('rework_reasons', ['label' => 'Tentativa']);
+    }
+
+    /** Edge case da spec: motivo inexistente é 404 antes da Policy, sem linha denied. */
+    public function test_a_missing_reason_is_not_found_before_the_policy(): void
+    {
+        $gestor = User::factory()->projectManager()->create();
+
+        $this->actingAs($gestor)->put('/admin/rework-reasons/999999', ['label' => 'X', 'requires_text' => false])->assertNotFound();
+        $this->actingAs($gestor)->delete('/admin/rework-reasons/999999')->assertNotFound();
+        $this->actingAs($gestor)->post('/admin/rework-reasons/999999/deactivate')->assertNotFound();
+
+        $this->assertSame(0, AuditLog::query()->where('user_id', $gestor->id)->count());
     }
 }

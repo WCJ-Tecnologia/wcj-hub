@@ -1,7 +1,9 @@
 import type { Page } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
 
 import { expect, test } from './fixtures';
 import { createUser } from './helpers/dados';
+import { LoginPage } from './pages/login.page';
 
 /**
  * B2 passo 2 pela tela (F2 §01 a §04): criar o projeto com o "Novo cliente" inline (N6),
@@ -195,4 +197,28 @@ test('o Administrador mantém os motivos de retrabalho; o Outro é fixo', async 
     await page.getByRole('button', { name: `Excluir ${label}` }).click();
     await page.getByRole('dialog', { name: 'Excluir motivo' }).getByRole('button', { name: 'Excluir' }).click();
     await expect(table.getByText(label)).toHaveCount(0);
+});
+
+test.describe('quem não é Administrador', () => {
+    // Sem a sessão do admin: este teste entra com um dev criado aqui. O 403 da rota é de propósito.
+    test.use({ storageState: { cookies: [], origins: [] }, expectedConsoleErrors: [/status of 403/] });
+
+    test('o dev não vê Listas no menu e a rota responde 403 (LST-04)', async ({ page }) => {
+        const name = `Dev Listas ${PREFIX}`;
+        // Senha de teste gerada aqui, só para este usuário do banco de e2e.
+        const password = `Dev${randomBytes(9).toString('hex')}7`;
+        createUser(name, 3, password);
+
+        const login = new LoginPage(page);
+        await login.goto();
+        await login.login(`${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@e2e.test`, password);
+        await expect(page).toHaveURL(/\/admin\/dashboard$/);
+
+        const menu = page.getByRole('navigation', { name: 'Menu principal' });
+        await expect(menu.getByRole('link', { name: 'Projetos' })).toBeVisible();
+        await expect(menu.getByRole('link', { name: 'Listas' })).toHaveCount(0);
+
+        const response = await page.goto('/admin/listas');
+        expect(response?.status()).toBe(403);
+    });
 });
