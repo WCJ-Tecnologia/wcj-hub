@@ -52,6 +52,10 @@ enum AuditActionEnum: string
             $ability === 'update' => self::UPDATED,
             // Projetos (B2): editar, encerrar e reabrir passam pela mesma ability.
             $ability === 'manage' => self::UPDATED,
+            // Sprints (B5): encerrar e reabrir a sprint; pôr, tirar e estimar card pela tela da sprint.
+            $ability === 'close' => self::FINISHED,
+            $ability === 'reopen' => self::REOPENED,
+            $ability === 'manageTasks' => self::UPDATED,
             $ability === 'delete' => self::DELETED,
             $ability === 'deactivate' => self::DEACTIVATED,
             $ability === 'reactivate' => self::REACTIVATED,

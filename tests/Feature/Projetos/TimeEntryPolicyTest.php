@@ -157,12 +157,12 @@ class TimeEntryPolicyTest extends TestCase
 
     private function assertCannotTouch(User $user): void
     {
-        $antes = $this->doOutro->fresh()->only(['worked_on', 'hours', 'user_id', 'task_id']);
+        $antes = $this->doOutro->fresh()->getAttributes();
 
         $this->actingAs($user)->put("/horas/{$this->doOutro->id}", ['worked_on' => '2026-10-05', 'hours' => 9])->assertForbidden();
         $this->actingAs($user)->delete("/horas/{$this->doOutro->id}")->assertForbidden();
 
-        $this->assertSame($antes, $this->doOutro->fresh()->only(['worked_on', 'hours', 'user_id', 'task_id']));
+        $this->assertSame($antes, $this->doOutro->fresh()->getAttributes());
         $this->assertSame(['updated', 'deleted'], AuditLog::query()->where('outcome', 'denied')->where('auditable_type', 'time_entry')->orderBy('id')->pluck('action')->all());
         $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->where('auditable_type', 'time_entry')->count());
     }

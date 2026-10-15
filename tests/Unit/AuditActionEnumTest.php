@@ -44,6 +44,11 @@ class AuditActionEnumTest extends TestCase
             'view' => ['view', AuditActionEnum::VIEWED],
             'viewChoiceList' => ['viewChoiceList', AuditActionEnum::VIEWED],
             'gate de leitura' => ['view-audit-logs', AuditActionEnum::VIEWED],
+            // Sprints (B5).
+            'close' => ['close', AuditActionEnum::FINISHED],
+            'reopen' => ['reopen', AuditActionEnum::REOPENED],
+            'manageTasks' => ['manageTasks', AuditActionEnum::UPDATED],
+            'viewCapacity' => ['viewCapacity', AuditActionEnum::VIEWED],
         ];
     }
 

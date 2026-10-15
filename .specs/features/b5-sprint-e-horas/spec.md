@@ -2,7 +2,9 @@
 
 Feature `b5-sprint-e-horas` · **trilho completo só para as duas Policies novas** (AGENTS.md, "Trilhos" e "O que exige aprovação humana"); o resto do B5 (SprintService, DueDateService, CapacityQuery, TimeEntryService, telas `/projetos/{id}/sprints` e `/minhas-horas`) é trilho leve, com a spec na descrição do PR. Fonte: [`docs/funcional/f5-sprint-e-horas.md`](../../../docs/funcional/f5-sprint-e-horas.md) §04 e §09, [`docs/escopo.md`](../../../docs/escopo.md) B5 ("Permissão"), [`docs/necessidade.md`](../../../docs/necessidade.md) (P5, P27, P30, P45, P49, P50, C14, G3, G4), [`docs/banco.md`](../../../docs/banco.md) (`sprints`, `time_entries`). Escopo da skill: **Small** (duas Policies, nenhuma ability global nova).
 
-**Approved by**: _aguardando Lucas Scholz_
+**Approved by**: Lucas Scholz, 2026-10-15
+
+**Aprovada por Lucas Scholz em 15/10/2026, via sessão principal** ("Aprovo a SprintPolicy, a TimeEntryPolicy e as duas exclusões do B5 como propostas.").
 
 Escrita com IA por Lucas Scholz (D-GER-34).
 
@@ -31,19 +33,19 @@ O B5 abre rotas novas de sprint (criar, editar, encerrar, reabrir, excluir, pôr
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 |---|---|---|---|
-| Quem "gere" o projeto | O mesmo da `ProjectPolicy::manage`: Administrador, ou Gestor de projetos que é o responsável (`manager_id`) ou está alocado. A `SprintPolicy` e a `TimeEntryPolicy` perguntam à `ProjectPolicy` (Gate), não repetem a conta | F5 §09 "nos projetos dele"; um jeito só (AGENTS.md) | n |
-| Quem "vê" as sprints | `ProjectPolicy::view`: Administrador, quem gere e quem está alocado. Comercial nunca | F5 §09; C14 | n |
-| Abilities da `SprintPolicy` | `viewAny(Project)`, `view(Sprint)` = vê o projeto; `create(Project)`, `update(Sprint)`, `close(Sprint)`, `reopen(Sprint)`, `delete(Sprint)`, `manageTasks(Project)` (pôr e tirar card, horas previstas na linha da sprint e decidir a reestimativa proposta) e `viewCapacity(Project)` = gere o projeto | F5 §04 e §09; escopo B5; P27, P45, P49, P50 | n |
-| Dev vê a capacidade | Não: `viewCapacity` é só de quem gere; o painel nem vai para o dev | F5 §09 e §10.17 | n |
-| Regras de estado da sprint | Uma aberta por projeto, reabrir só sem outra aberta, excluir só a aberta sem tarefa: são do `SprintService` (recusa com mensagem), não da Policy | Regra no servidor, no ponto que efetiva (inegociável 9); a Policy decide só quem | n |
-| Projeto encerrado | Não trava sprint nem horas: quem gere segue criando e encerrando sprint e quem está no projeto segue lançando | O kanban não trava (AGENTS.md); P7 só barra tarefa nova | n |
-| Abilities da `TimeEntryPolicy` | `viewAny` (*Minhas horas*) = todo papel menos o Comercial; `create(Task)` = vê o projeto da tarefa (alocado, quem gere, Administrador); `update(TimeEntry)` e `delete(TimeEntry)` = Administrador, quem gere o projeto da tarefa, ou o dono do lançamento enquanto ainda vê o projeto | F5 §04 e §09; P30; C14 | n |
-| Dono que saiu do projeto | Não corrige mais o próprio lançamento naquele projeto; o gestor ou o Administrador corrige | P5: tirar a pessoa tira a visão do projeto; quem não vê não escreve | n |
-| Gestor lança pelo dev | Não existe: o lançamento grava sempre quem está logado (`user_id` do Service, sem campo na tela) | F5 §10.14; P30 "quem trabalhou lança" | n |
-| Tarefa arquivada | Lançar nela é recusado pela validação ("tarefa arquivada"), não pela Policy; corrigir e excluir o que já existe seguem | F5 §02 (a busca não oferece arquivada); P26 (as horas lançadas continuam valendo) | n |
-| Menu *Minhas horas* | Aparece com `view_projects` (`ProjectPolicy::viewAny` = todo papel menos o Comercial), a mesma regra de `TimeEntryPolicy::viewAny`; sem ability nova em `HandleInertiaRequests` | Abilities só escondem botão; a rota é decidida pela `TimeEntryPolicy` | n |
-| "Nunca teve tarefa" na exclusão da sprint | Lido como "nenhuma tarefa aponta para ela agora" (`tasks.sprint_id`). A sprint que teve cards e os perdeu todos (tirados de volta ao Backlog) pode ser excluída; o rastro das tarefas fica na auditoria delas | O Projetos não lê `audit_logs` (teste A9); o caso real do F5 é a sprint criada por engano | n |
-| Mapeamento da negação | `create` → `created`, `update` → `updated`, `delete` → `deleted`, `view*` → `viewed` já mapeiam; entram `close` → `finished`, `reopen` → `reopened`, `manageTasks` → `updated` em `AuditActionEnum::forAbility` | Sem mapeamento a linha grava o nome cru e a tela mostra "Outra ação" | n |
+| Quem "gere" o projeto | O mesmo da `ProjectPolicy::manage`: Administrador, ou Gestor de projetos que é o responsável (`manager_id`) ou está alocado. A `SprintPolicy` e a `TimeEntryPolicy` perguntam à `ProjectPolicy` (Gate), não repetem a conta | F5 §09 "nos projetos dele"; um jeito só (AGENTS.md) | y |
+| Quem "vê" as sprints | `ProjectPolicy::view`: Administrador, quem gere e quem está alocado. Comercial nunca | F5 §09; C14 | y |
+| Abilities da `SprintPolicy` | `viewAny(Project)`, `view(Sprint)` = vê o projeto; `create(Project)`, `update(Sprint)`, `close(Sprint)`, `reopen(Sprint)`, `delete(Sprint)`, `manageTasks(Project)` (pôr e tirar card, horas previstas na linha da sprint e decidir a reestimativa proposta) e `viewCapacity(Project)` = gere o projeto | F5 §04 e §09; escopo B5; P27, P45, P49, P50 | y |
+| Dev vê a capacidade | Não: `viewCapacity` é só de quem gere; o painel nem vai para o dev | F5 §09 e §10.17 | y |
+| Regras de estado da sprint | Uma aberta por projeto, reabrir só sem outra aberta, excluir só a aberta sem tarefa: são do `SprintService` (recusa com mensagem), não da Policy | Regra no servidor, no ponto que efetiva (inegociável 9); a Policy decide só quem | y |
+| Projeto encerrado | Não trava sprint nem horas: quem gere segue criando e encerrando sprint e quem está no projeto segue lançando | O kanban não trava (AGENTS.md); P7 só barra tarefa nova | y |
+| Abilities da `TimeEntryPolicy` | `viewAny` (*Minhas horas*) = todo papel menos o Comercial; `create(Task)` = vê o projeto da tarefa (alocado, quem gere, Administrador); `update(TimeEntry)` e `delete(TimeEntry)` = Administrador, quem gere o projeto da tarefa, ou o dono do lançamento enquanto ainda vê o projeto | F5 §04 e §09; P30; C14 | y |
+| Dono que saiu do projeto | Não corrige mais o próprio lançamento naquele projeto; o gestor ou o Administrador corrige | P5: tirar a pessoa tira a visão do projeto; quem não vê não escreve | y |
+| Gestor lança pelo dev | Não existe: o lançamento grava sempre quem está logado (`user_id` do Service, sem campo na tela) | F5 §10.14; P30 "quem trabalhou lança" | y |
+| Tarefa arquivada | Lançar nela é recusado pela validação ("tarefa arquivada"), não pela Policy; corrigir e excluir o que já existe seguem | F5 §02 (a busca não oferece arquivada); P26 (as horas lançadas continuam valendo) | y |
+| Menu *Minhas horas* | Aparece com `view_projects` (`ProjectPolicy::viewAny` = todo papel menos o Comercial), a mesma regra de `TimeEntryPolicy::viewAny`; sem ability nova em `HandleInertiaRequests` | Abilities só escondem botão; a rota é decidida pela `TimeEntryPolicy` | y |
+| "Nunca teve tarefa" na exclusão da sprint | Lido como "nenhuma tarefa aponta para ela agora" (`tasks.sprint_id`). A sprint que teve cards e os perdeu todos (tirados de volta ao Backlog) pode ser excluída; o rastro das tarefas fica na auditoria delas | O Projetos não lê `audit_logs` (teste A9); o caso real do F5 é a sprint criada por engano | y |
+| Mapeamento da negação | `create` → `created`, `update` → `updated`, `delete` → `deleted`, `view*` → `viewed` já mapeiam; entram `close` → `finished`, `reopen` → `reopened`, `manageTasks` → `updated` em `AuditActionEnum::forAbility` | Sem mapeamento a linha grava o nome cru e a tela mostra "Outra ação" | y |
 
 **Open questions:** none - all resolved or logged above.
 
