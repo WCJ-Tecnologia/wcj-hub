@@ -4,6 +4,7 @@ namespace Tests\Feature\Projetos;
 
 use App\Domains\Projetos\Models\Sprint;
 use App\Domains\Projetos\Services\SprintService;
+use App\Domains\Projetos\Services\SprintTaskService;
 use App\Platform\Models\User;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
@@ -73,10 +74,10 @@ class SprintAbertaConcorrenciaTest extends TestCase
 
         $corrida = Concorrencia::intercalarDepoisDe(
             self::checagemDaAberta(),
-            fn () => $sprints->addTask($segundo, $gestor, [...self::SPRINT, 'name' => 'Sprint 2']),
+            fn () => app(SprintTaskService::class)->addTask($segundo, $gestor, [...self::SPRINT, 'name' => 'Sprint 2']),
         );
 
-        $sprints->addTask($primeiro, $gestor, self::SPRINT);
+        app(SprintTaskService::class)->addTask($primeiro, $gestor, self::SPRINT);
 
         $this->assertTrue($corrida->rodou);
         $this->assertNull($corrida->outroErro);

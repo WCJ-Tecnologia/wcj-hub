@@ -6,6 +6,9 @@ use App\Domains\Projetos\Controllers\ProjectController;
 use App\Domains\Projetos\Controllers\ProjectMemberController;
 use App\Domains\Projetos\Controllers\ProjectSettingsController;
 use App\Domains\Projetos\Controllers\ReworkReasonController;
+use App\Domains\Projetos\Controllers\SprintController;
+use App\Domains\Projetos\Controllers\SprintTaskController;
+use App\Domains\Projetos\Controllers\TimeEntryController;
 use App\Platform\Controllers\Admin\AuditLogController;
 use App\Platform\Controllers\Admin\ClientController;
 use App\Platform\Controllers\Admin\ContactController;
@@ -136,5 +139,36 @@ Route::prefix('projetos')
             Route::delete('{project}/areas/{area}', [ProjectAreaController::class, 'destroy'])->name('areas.destroy');
             Route::post('{project}/areas/{area}/deactivate', [ProjectAreaController::class, 'deactivate'])->name('areas.deactivate');
             Route::post('{project}/areas/{area}/reactivate', [ProjectAreaController::class, 'reactivate'])->name('areas.reactivate');
+
+            // Sprints (F5, escopo B5). Sprint e tarefa de outro projeto são 404 (scopeBindings).
+            Route::get('{project}/sprints', [SprintController::class, 'index'])->name('sprints.index');
+            Route::post('{project}/sprints', [SprintController::class, 'store'])->name('sprints.store');
+            Route::put('{project}/sprints/{sprint}', [SprintController::class, 'update'])->name('sprints.update');
+            Route::delete('{project}/sprints/{sprint}', [SprintController::class, 'destroy'])->name('sprints.destroy');
+            Route::post('{project}/sprints/{sprint}/encerrar', [SprintController::class, 'close'])->name('sprints.close');
+            Route::post('{project}/sprints/{sprint}/reabrir', [SprintController::class, 'reopen'])->name('sprints.reopen');
+
+            // Pôr e tirar card da sprint e horas previstas pelo gestor (P27, P45). O arrastar do
+            // quadro (B3) chama os mesmos Services.
+            Route::post('{project}/sprint-aberta/tarefas', [SprintTaskController::class, 'store'])->name('sprints.tasks.store');
+            Route::delete('{project}/tarefas/{task}/sprint', [SprintTaskController::class, 'destroy'])->name('sprints.tasks.destroy');
+            Route::put('{project}/tarefas/{task}/horas-previstas', [SprintTaskController::class, 'estimate'])->name('tasks.estimate');
+            Route::post('{project}/tarefas/{task}/reestimativa/aprovar', [SprintTaskController::class, 'approve'])->name('tasks.proposal.approve');
+            Route::post('{project}/tarefas/{task}/reestimativa/recusar', [SprintTaskController::class, 'reject'])->name('tasks.proposal.reject');
+
+            // Lançar horas numa tarefa (P30): de Minhas horas e, no B3, da ficha do card.
+            Route::post('{project}/tarefas/{task}/horas', [TimeEntryController::class, 'store'])->name('time-entries.store');
         });
     });
+
+/*
+|--------------------------------------------------------------------------
+| Minhas horas (F5, escopo B5): corrigir e excluir lançamento pelo id.
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'backoffice', 'password.current'])->group(function () {
+    Route::get('minhas-horas', [TimeEntryController::class, 'index'])->name('time-entries.index');
+    Route::put('horas/{time_entry}', [TimeEntryController::class, 'update'])->name('time-entries.update');
+    Route::delete('horas/{time_entry}', [TimeEntryController::class, 'destroy'])->name('time-entries.destroy');
+});

@@ -2,13 +2,10 @@
 
 namespace App\Domains\Projetos\Services;
 
-use App\Domains\Projetos\Models\BoardStage;
 use App\Domains\Projetos\Models\Project;
 use App\Domains\Projetos\Models\Sprint;
 use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
-use App\Domains\Projetos\Models\TaskStageMovement;
-use App\Domains\Projetos\Models\TaskType;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
@@ -27,10 +24,7 @@ use Illuminate\Validation\ValidationException;
  * índice no banco. Nada aqui recusa por capacidade, horas, dev ou etapa (P49, premissa do
  * kanban): só por regra de estado, dado inválido e integridade. Toda escrita audita na mesma
  * transação (G3).
- *
- * Pôr e tirar card (P45, P52): pôr preenche sprint_id e, se o card está na Fila, o leva à etapa
- * de papel sprint (To do); tirar limpa sprint_id e devolve à Fila. O card de suporte só liga e
- * desliga, sem trocar de coluna. Cada troca de etapa grava o movimento (P14), sem retrabalho.
+ * Pôr e tirar card é do SprintTaskService; a troca de sprint e etapa, do SprintTaskMover.
  */
 class SprintService
 {
@@ -42,7 +36,10 @@ class SprintService
 
     private const NAME_UNIQUE = 'sprints_project_id_name_unique';
 
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly SprintTaskMover $mover,
+    ) {}
 
     /**
      * A sprint que a tela propõe (P46, R5): "Sprint N" (N = sprints que o projeto já teve + 1),
@@ -79,7 +76,7 @@ class SprintService
             $locked = $this->lockProject($project);
             $this->assertNoOtherOpen($locked);
 
-            return $this->insert($locked, $data, $actor);
+            return $this->insertLocked($locked, $data, $actor);
         }));
     }
 
@@ -135,14 +132,14 @@ class SprintService
             $locked->forceFill(['closed_at' => now()])->save();
             $this->audit->log(AuditActionEnum::FINISHED, $locked, $before, $this->snapshot($locked), $actor->id);
 
-            $nextSprint = $next === null ? null : $this->insert($locked->project, $next, $actor);
-            $queue = $this->roleStage($locked->project_id, StageRole::QUEUE);
+            $nextSprint = $next === null ? null : $this->insertLocked($locked->project, $next, $actor);
+            $queue = $this->mover->roleStage($locked->project_id, StageRole::QUEUE);
 
             foreach ($toNext as $task) {
-                $this->relink($task, $nextSprint, null, $actor);
+                $this->mover->relink($task, $nextSprint, null, $actor);
             }
             foreach ($toBacklog as $task) {
-                $this->relink($task, null, $this->isSupport($task) ? null : $queue, $actor);
+                $this->mover->relink($task, null, $this->mover->isSupport($task) ? null : $queue, $actor);
             }
 
             return ['next' => $nextSprint, 'next_count' => $toNext->count(), 'backlog_count' => $toBacklog->count()];
@@ -193,62 +190,6 @@ class SprintService
     }
 
     /**
-     * Põe o card na sprint aberta (P45). Sem aberta, cria a $newSprint na mesma transação (R5); sem
-     * $newSprint, recusa (a IA e o quadro sem diálogo). Se alguém abriu uma sprint no meio, o card
-     * entra nela e `joined_existing` avisa a tela (F5 §07).
-     *
-     * @param  array{name: string, goal: ?string, starts_on: string, ends_on: string}|null  $newSprint
-     * @return array{sprint: Sprint, created: bool, joined_existing: bool}
-     */
-    public function addTask(Task $task, User $actor, ?array $newSprint = null): array
-    {
-        return $this->writeSprint($newSprint ?? [], fn () => DB::transaction(function () use ($task, $actor, $newSprint) {
-            $project = $this->lockProject($task->project);
-            $locked = $this->lockTask($task, $project->id);
-
-            $sprint = $this->openSprint($project->id);
-            $created = false;
-            if ($sprint === null) {
-                if ($newSprint === null) {
-                    throw new DomainException("O projeto {$project->key_prefix} não tem sprint aberta. Crie a sprint pela tela.");
-                }
-                $sprint = $this->insert($project, $newSprint, $actor);
-                $created = true;
-            }
-
-            if ($locked->sprint_id !== $sprint->id) {
-                $stage = $this->isSupport($locked) || $locked->boardStage->stage_role_id !== StageRole::QUEUE
-                    ? null
-                    : $this->roleStage($project->id, StageRole::SPRINT);
-                $this->relink($locked, $sprint, $stage, $actor);
-            }
-
-            return ['sprint' => $sprint, 'created' => $created, 'joined_existing' => ! $created && $newSprint !== null];
-        }));
-    }
-
-    /**
-     * Tira o card da sprint (P45): volta à Fila, fora de sprint. O card de suporte só desliga e fica
-     * na coluna em que está (P52). Não é retrabalho. Card fora de sprint: nada muda.
-     */
-    public function removeTask(Task $task, User $actor): Task
-    {
-        return DB::transaction(function () use ($task, $actor) {
-            $project = $this->lockProject($task->project);
-            $locked = $this->lockTask($task, $project->id);
-
-            if ($locked->sprint_id === null) {
-                return $locked;
-            }
-
-            $stage = $this->isSupport($locked) ? null : $this->roleStage($project->id, StageRole::QUEUE);
-            $this->relink($locked, null, $stage, $actor);
-
-            return $locked;
-        });
-    }
-
-    /**
      * As tarefas da sprint que não chegaram a etapa de papel done e não estão arquivadas (P26, P50),
      * com a etapa e o dev para o diálogo de encerrar.
      *
@@ -267,40 +208,11 @@ class SprintService
     }
 
     /**
-     * Troca a sprint da tarefa e, com $stage, a etapa (com o movimento, P14). A etapa e a sprint são
-     * do projeto da tarefa (R15).
+     * Cria com a linha do projeto já travada por quem chama (P45).
+     *
+     * @param  array{name: string, goal: ?string, starts_on: string, ends_on: string}  $data
      */
-    private function relink(Task $task, ?Sprint $sprint, ?BoardStage $stage, User $actor): void
-    {
-        foreach ([$sprint?->project_id, $stage?->project_id] as $projectId) {
-            if ($projectId !== null && $projectId !== $task->project_id) {
-                throw new DomainException('A sprint e a etapa precisam ser do projeto da tarefa.');
-            }
-        }
-
-        $before = $task->only(['sprint_id', 'board_stage_id']);
-        $from = $task->board_stage_id;
-        $task->sprint_id = $sprint?->id;
-
-        if ($stage !== null && $stage->id !== $from) {
-            $task->board_stage_id = $stage->id;
-            $task->position = ((int) Task::query()->where('board_stage_id', $stage->id)->max('position')) + 1;
-        }
-        $task->save();
-
-        if ($task->board_stage_id !== $from) {
-            TaskStageMovement::query()->create([
-                'task_id' => $task->id,
-                'moved_by' => $actor->id,
-                'from_board_stage_id' => $from,
-                'to_board_stage_id' => $task->board_stage_id,
-            ]);
-        }
-        $this->audit->log(AuditActionEnum::UPDATED, $task, $before, $task->only(['sprint_id', 'board_stage_id']), $actor->id);
-    }
-
-    /** @param  array{name: string, goal: ?string, starts_on: string, ends_on: string}  $data */
-    private function insert(Project $project, array $data, User $actor): Sprint
+    public function insertLocked(Project $project, array $data, User $actor): Sprint
     {
         $sprint = $project->sprints()->create($this->fields($data));
         $this->audit->log(AuditActionEnum::CREATED, $sprint, null, $this->snapshot($sprint), $actor->id);
@@ -317,26 +229,12 @@ class SprintService
     }
 
     /** Quem chama já travou a linha do projeto: a leitura vale até o fim da transação (P45). */
-    private function openSprint(int $projectId): ?Sprint
+    public function openSprint(int $projectId): ?Sprint
     {
         return Sprint::query()->where('project_id', $projectId)->whereNull('closed_at')->first();
     }
 
-    private function roleStage(int $projectId, int $role): BoardStage
-    {
-        return BoardStage::query()
-            ->where('project_id', $projectId)
-            ->where('stage_role_id', $role)
-            ->whereNull('archived_at')
-            ->firstOrFail();
-    }
-
-    private function isSupport(Task $task): bool
-    {
-        return $task->taskType?->slug === TaskType::SUPPORT;
-    }
-
-    private function lockProject(Project $project): Project
+    public function lockProject(Project $project): Project
     {
         return Project::query()->lockForUpdate()->findOrFail($project->id);
     }
@@ -354,19 +252,6 @@ class SprintService
         return $locked;
     }
 
-    private function lockTask(Task $task, int $projectId): Task
-    {
-        $locked = Task::query()->with(['boardStage', 'taskType'])->lockForUpdate()->findOrFail($task->id);
-        if ($locked->project_id !== $projectId) {
-            throw new DomainException('A tarefa não é deste projeto.');
-        }
-        if ($locked->archived_at !== null) {
-            throw new DomainException('O card está arquivado: desarquive antes de pôr na sprint.');
-        }
-
-        return $locked;
-    }
-
     /**
      * O nome repetido no projeto (unique do banco, também na corrida) volta como erro do campo.
      *
@@ -376,7 +261,7 @@ class SprintService
      * @param  \Closure(): T  $write
      * @return T
      */
-    private function writeSprint(array $data, \Closure $write): mixed
+    public function writeSprint(array $data, \Closure $write): mixed
     {
         return $this->writeOrRefuseDuplicate($write, fn (UniqueConstraintViolationException $e) => str_contains($e->getMessage(), self::NAME_UNIQUE)
             ? ValidationException::withMessages(['name' => 'Já existe a '.($data['name'] ?? 'sprint').' neste projeto'])

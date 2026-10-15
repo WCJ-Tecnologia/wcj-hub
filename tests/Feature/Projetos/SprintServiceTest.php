@@ -9,6 +9,7 @@ use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Services\SprintService;
+use App\Domains\Projetos\Services\SprintTaskService;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use DomainException;
@@ -113,7 +114,7 @@ class SprintServiceTest extends TestCase
         $sprint = $this->sprint($this->project);
         $task = $this->tarefa($this->project);
 
-        $result = $this->sprints->addTask($task, $this->gestor);
+        $result = app(SprintTaskService::class)->addTask($task, $this->gestor);
 
         $task->refresh();
         $this->assertTrue($result['sprint']->is($sprint));
@@ -130,7 +131,7 @@ class SprintServiceTest extends TestCase
     {
         $task = $this->tarefa($this->project);
 
-        $result = $this->sprints->addTask($task, $this->gestor, self::SPRINT);
+        $result = app(SprintTaskService::class)->addTask($task, $this->gestor, self::SPRINT);
 
         $this->assertTrue($result['created']);
         $this->assertSame('Sprint 1', $result['sprint']->name);
@@ -142,7 +143,7 @@ class SprintServiceTest extends TestCase
         $task = $this->tarefa($this->project);
 
         try {
-            $this->sprints->addTask($task, $this->gestor);
+            app(SprintTaskService::class)->addTask($task, $this->gestor);
             $this->fail('Pôs o card sem sprint.');
         } catch (DomainException $e) {
             $this->assertSame("O projeto {$this->project->key_prefix} não tem sprint aberta. Crie a sprint pela tela.", $e->getMessage());
@@ -156,7 +157,7 @@ class SprintServiceTest extends TestCase
         $aberta = $this->sprint($this->project, ['name' => 'Sprint 5']);
         $task = $this->tarefa($this->project);
 
-        $result = $this->sprints->addTask($task, $this->gestor, [...self::SPRINT, 'name' => 'Sprint 6']);
+        $result = app(SprintTaskService::class)->addTask($task, $this->gestor, [...self::SPRINT, 'name' => 'Sprint 6']);
 
         $this->assertTrue($result['joined_existing']);
         $this->assertTrue($result['sprint']->is($aberta));
@@ -169,10 +170,10 @@ class SprintServiceTest extends TestCase
         $support = $this->etapa($this->project, StageRole::SUPPORT);
         $task = $this->tarefa($this->project, $support, ['task_type_id' => TaskType::query()->where('slug', TaskType::SUPPORT)->value('id')]);
 
-        $this->sprints->addTask($task, $this->gestor);
+        app(SprintTaskService::class)->addTask($task, $this->gestor);
         $this->assertSame([$sprint->id, $support->id], [$task->fresh()->sprint_id, $task->fresh()->board_stage_id]);
 
-        $this->sprints->removeTask($task, $this->gestor);
+        app(SprintTaskService::class)->removeTask($task, $this->gestor);
         $this->assertSame([null, $support->id], [$task->fresh()->sprint_id, $task->fresh()->board_stage_id]);
         $this->assertSame(0, TaskStageMovement::query()->count());
     }
@@ -182,7 +183,7 @@ class SprintServiceTest extends TestCase
         $sprint = $this->sprint($this->project);
         $task = $this->tarefa($this->project, $this->etapa($this->project, StageRole::DEVELOPMENT), ['sprint_id' => $sprint->id]);
 
-        $this->sprints->removeTask($task, $this->gestor);
+        app(SprintTaskService::class)->removeTask($task, $this->gestor);
 
         $task->refresh();
         $this->assertNull($task->sprint_id);
@@ -196,7 +197,7 @@ class SprintServiceTest extends TestCase
         $task = $this->tarefa($this->project, null, ['archived_at' => now(), 'archive_reason' => 'Duplicado']);
 
         $this->expectException(DomainException::class);
-        $this->sprints->addTask($task, $this->gestor);
+        app(SprintTaskService::class)->addTask($task, $this->gestor);
     }
 
     public function test_card_of_another_project_is_refused(): void
@@ -207,7 +208,7 @@ class SprintServiceTest extends TestCase
         $task->project_id = $outro->id; // a instância que chegaria por uma rota mal resolvida
 
         $this->expectException(DomainException::class);
-        $this->sprints->addTask($task, $this->gestor);
+        app(SprintTaskService::class)->addTask($task, $this->gestor);
     }
 
     public function test_closing_sends_each_pending_card_where_the_manager_chose_and_creates_the_next(): void
@@ -324,7 +325,7 @@ class SprintServiceTest extends TestCase
             $this->assertSame('A Sprint 2 tem tarefas: não dá para excluir.', $e->getMessage());
         }
 
-        $this->sprints->removeTask($task, $this->gestor);
+        app(SprintTaskService::class)->removeTask($task, $this->gestor);
         $this->sprints->delete($aberta, $this->gestor);
 
         $this->assertNull(Sprint::query()->find($aberta->id));
@@ -340,7 +341,7 @@ class SprintServiceTest extends TestCase
         $this->tarefa($this->project, $todo, ['position' => 7]);
         $task = $this->tarefa($this->project);
 
-        $this->sprints->addTask($task, $this->gestor);
+        app(SprintTaskService::class)->addTask($task, $this->gestor);
 
         $this->assertSame(8, $task->fresh()->position);
         $this->assertInstanceOf(Task::class, $task);
