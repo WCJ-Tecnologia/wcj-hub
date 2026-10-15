@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { Archive, ArchiveRestore, FolderKanban, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, CalendarRange, FolderKanban, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { WStatusPillAtom } from '@/components/atoms/w-status-pill-atom/w-status-pill-atom';
@@ -198,6 +198,13 @@ export function WProjectsPage({ projects, filters, filterOptions, formOptions, t
                     ariaLabel: `Configurar ${row.name}`,
                     icon: Settings,
                     onClick: () => router.visit(`/projetos/${row.id}/configuracao`),
+                },
+                // Sprints do projeto (F5 §01): quem vê o projeto vê as sprints.
+                {
+                    label: 'Sprints',
+                    ariaLabel: `Sprints de ${row.name}`,
+                    icon: CalendarRange,
+                    onClick: () => router.visit(`/projetos/${row.id}/sprints`),
                 },
                 { label: 'Editar', ariaLabel: `Editar ${row.name}`, icon: Pencil, onClick: () => openEdit(row), hidden: !row.can.manage },
                 {

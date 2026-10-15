@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     Building2,
+    Clock,
     ContactRound,
     FolderKanban,
     History,
@@ -57,7 +58,11 @@ export const NAV: WNavGroup[] = [
     {
         // F2 §09: todos menos o Comercial (C14); cada um vê só os projetos que pode ver (P5).
         title: 'Projetos',
-        items: [{ label: 'Projetos', href: '/projetos', icon: FolderKanban, visible: (a) => a.view_projects }],
+        // Minhas horas (F5 §01, P30): a mesma regra da TimeEntryPolicy::viewAny, todos menos o Comercial.
+        items: [
+            { label: 'Projetos', href: '/projetos', icon: FolderKanban, visible: (a) => a.view_projects },
+            { label: 'Minhas horas', href: '/minhas-horas', icon: Clock, visible: (a) => a.view_projects },
+        ],
     },
     {
         // F1 §09: o Administrador vê todos; o gestor, Clientes e Contatos; o dev, nenhum.

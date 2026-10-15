@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { KanbanSquare } from 'lucide-react';
+import { CalendarRange, KanbanSquare } from 'lucide-react';
 
 import { WStatusPillAtom } from '@/components/atoms/w-status-pill-atom/w-status-pill-atom';
 import { WBoardStagesTabOrganism } from '@/components/organisms/w-board-stages-tab-organism/w-board-stages-tab-organism';
@@ -65,6 +65,11 @@ export function WProjectSettingsPage({ project, members, stages, areas, options,
                     <Button variant="outline" asChild>
                         <Link href={`/projetos/${project.id}/quadro`}>
                             <KanbanSquare className="size-4" aria-hidden /> Abrir o quadro
+                        </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                        <Link href={`/projetos/${project.id}/sprints`}>
+                            <CalendarRange className="size-4" aria-hidden /> Sprints
                         </Link>
                     </Button>
                 </>
