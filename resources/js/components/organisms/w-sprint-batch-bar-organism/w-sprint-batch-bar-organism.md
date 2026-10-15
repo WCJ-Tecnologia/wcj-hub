@@ -4,7 +4,7 @@ Organismo · `organisms/w-sprint-batch-bar-organism/w-sprint-batch-bar-organism.
 
 ## O que faz
 
-A barra do _Montar sprint_ do quadro (D-GER-35), que aparece enquanto o modo de seleção está ligado. Fica presa no pé da área do conteúdo (`sticky`, sem cobrir a barra lateral) e mostra o resumo das marcadas no Backlog, pelo `batchSummaryText()` de `lib/quadro.ts`: "3 selecionadas · 20 h previstas (1 sem horas)". O total é só referência (P49): nada olha a capacidade.
+A barra do _Montar sprint_ do quadro (D-GER-35), que aparece enquanto o modo de seleção está ligado. Fica presa no pé da área do conteúdo (`sticky`, sem cobrir a barra lateral) e mostra o resumo das marcadas no Backlog, pelo `batchSummaryText()` de `lib/quadro.ts`: "3 selecionadas · 52 h previstas (1 sem horas)". O total é só referência (P49): nada olha a capacidade.
 
 Botões: _Cancelar_ (sai do modo sem gravar) e _Iniciar sprint_ (sem sprint aberta) ou _Pôr na Sprint N_ (com sprint aberta), desabilitado sem nenhuma marcada. O botão principal só abre o `WStartSprintDialogOrganism`; quem grava é a página.
 

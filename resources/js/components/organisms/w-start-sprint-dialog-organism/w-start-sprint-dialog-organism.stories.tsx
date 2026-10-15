@@ -6,6 +6,8 @@ import {
     BOARD_PROJECT_SEM_SPRINT,
     CARDS_MONTAR_SPRINT,
     MONTAR_SPRINT_MARCADAS,
+    SPRINT_PLANNING,
+    SPRINT_PLANNING_COM_ABERTA,
 } from '../../../../../.storybook/fixtures-quadro';
 import { WStartSprintDialogOrganism } from './w-start-sprint-dialog-organism';
 
@@ -20,7 +22,9 @@ const meta = {
         onOpenChange: fn(),
         project: BOARD_PROJECT_SEM_SPRINT,
         cards: MARCADAS,
+        planning: SPRINT_PLANNING,
         today: '2026-10-15',
+        onRemove: fn(),
         onConfirm: fn(),
     },
 } satisfies Meta<typeof WStartSprintDialogOrganism>;
@@ -28,15 +32,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Sem sprint aberta: *Iniciar sprint* com a Sprint 4 proposta (hoje, fim em 10 dias úteis) e as marcadas. */
+/**
+ * Sem sprint aberta, 3 cards: a Sprint 4 proposta em cima; SGM-30 (44 h) estoura o Bruno (4 h/dia × 10 dias
+ * úteis = 40 h), em destaque e sem travar; SGM-21 está sem dev e sem horas. Troque o dev, as horas ou a data
+ * de fim e veja a capacidade mudar.
+ */
 export const SemSprintAberta: Story = {};
-/** Com sprint aberta: só a confirmação, *Pôr na Sprint 3*. */
-export const ComSprintAberta: Story = { args: { project: BOARD_PROJECT } };
-/** O servidor recusou o lote: uma das marcadas saiu do Backlog no meio, e o nome já existia. */
+/** Com a Sprint 3 aberta: o período é o dela, e o que já falta da Ana e do Diego nela entra na conta. */
+export const ComSprintAberta: Story = { args: { project: BOARD_PROJECT, planning: SPRINT_PLANNING_COM_ABERTA } };
+/** O servidor recusou: um card saiu do Backlog, o QA não está alocado e o nome já existia. */
 export const LoteRecusado: Story = {
     args: {
         errors: {
-            task_ids: 'Nada foi gravado: SGM-30 já está na Sprint 3.',
+            tasks: 'Nada foi gravado: SGM-30 já está na Sprint 3.',
+            'tasks.0.qa_id': 'O QA não está alocado neste projeto.',
             name: 'Já existe a Sprint 4 neste projeto',
         },
     },

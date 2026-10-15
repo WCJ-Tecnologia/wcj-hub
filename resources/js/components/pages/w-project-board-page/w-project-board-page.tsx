@@ -10,11 +10,12 @@
  * - `PATCH /projetos/{id}/cards/{chave}`                          `{ type_id }` ao trocar o tipo pela etiqueta (14/10)
  * - `POST  /projetos/{id}/tipos`, `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  * - `POST  /projetos/{id}/areas`, `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
- * - `POST  /projetos/{id}/sprint-aberta/tarefas/lote`             `SprintBatchPayload`: *Montar sprint* (D-GER-35). **Já existe no backend** (B5b),
- *                                                                  volta para o quadro com o toast; o lote recusado vem no erro `task_ids`
+ * - `POST  /projetos/{id}/sprint-aberta/tarefas/lote`             `SprintBatchPayload`: *Montar sprint* já planejado (D-GER-35). **Já existe no
+ *                                                                  backend** (B5b), volta para o quadro com o toast; o lote recusado vem em `tasks`.
+ *                                                                  A prop `planning` é o `SprintPlanningQuery::forProject()`, só com `manage_sprint`
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Archive, CalendarRange, ListChecks, Settings } from 'lucide-react';
+import { Archive, CalendarRange, ListChecks, Settings, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -47,6 +48,7 @@ import type {
     PersonRef,
     PrioritySlug,
     SprintBatchPayload,
+    SprintPlanning,
     TaskTypeRef,
 } from '@/types/quadro';
 
@@ -62,6 +64,8 @@ export interface WProjectBoardPageProps {
     filters: BoardFilters;
     /** Hoje, `AAAA-MM-DD` no fuso de São Paulo. */
     today: string;
+    /** *Montar sprint* (D-GER-35): pessoas alocadas e a sprint aberta (`SprintPlanningQuery`); só com `abilities.manage_sprint`. */
+    planning?: SprintPlanning | null;
 }
 
 /** A ordem do quadro é de cada pessoa, lembrada no navegador (P13). */
@@ -134,7 +138,7 @@ function moveLocally(cards: BoardCard[], card: BoardCard, payload: MovePayload):
  * filtros, colunas com arrastar e soltar, criar rápido, card de suporte e os diálogos de movimento
  * (`useBoardMove`). Mover é otimista: o card muda de coluna antes da resposta e volta se der erro.
  */
-export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today }: WProjectBoardPageProps) {
+export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today, planning }: WProjectBoardPageProps) {
     const currentUserId = usePage<SharedProps>().props.auth.user?.id ?? null;
     const base = `/projetos/${project.id}`;
 
@@ -365,15 +369,15 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             actions={
                 <>
                     {/* *Montar sprint* (D-GER-35): só quem põe card na sprint; entra no modo de seleção do Backlog. */}
-                    {abilities.manage_sprint && (
+                    {abilities.manage_sprint && planning && (
                         <Button
                             variant={batch ? 'secondary' : 'default'}
-                            aria-pressed={batch !== null}
                             disabled={!batch && backlogCards.length === 0}
-                            title={backlogCards.length === 0 ? 'O Backlog está vazio' : undefined}
+                            title={!batch && backlogCards.length === 0 ? 'O Backlog está vazio' : undefined}
                             onClick={() => (batch ? stopBatch() : setBatch([]))}
                         >
-                            <ListChecks aria-hidden /> {sprintBatchLabel(project)}
+                            {/* Ligado, o botão principal é o da barra; aqui fica a saída, sem repetir o nome. */}
+                            {batch ? <X aria-hidden /> : <ListChecks aria-hidden />} {batch ? 'Sair da seleção' : sprintBatchLabel(project)}
                         </Button>
                     )}
                     <Button variant="outline" asChild>
@@ -450,12 +454,14 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
 
             {move.dialogs}
 
-            {batch && (
+            {batch && planning && (
                 <WStartSprintDialogOrganism
                     open={batchDialog}
                     onOpenChange={setBatchDialog}
                     project={project}
                     cards={batchCards}
+                    planning={planning}
+                    onRemove={(card) => setBatch((ids) => ids?.filter((id) => id !== card.id) ?? null)}
                     today={today}
                     loading={batchBusy}
                     errors={batchErrors}

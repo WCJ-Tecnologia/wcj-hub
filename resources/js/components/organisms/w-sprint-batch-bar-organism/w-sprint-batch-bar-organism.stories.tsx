@@ -29,7 +29,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Sem sprint aberta: "3 selecionadas · 20 h previstas (1 sem horas)" e *Iniciar sprint*. */
+/** Sem sprint aberta: "3 selecionadas · 52 h previstas (1 sem horas)" e *Iniciar sprint*. */
 export const SemSprintAberta: Story = {};
 /** Com sprint aberta: *Pôr na Sprint 3*. */
 export const ComSprintAberta: Story = { args: { project: BOARD_PROJECT } };

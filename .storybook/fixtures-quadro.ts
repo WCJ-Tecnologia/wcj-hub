@@ -2,7 +2,16 @@
  * Dados de exemplo do quadro (F3) para as stories: o mesmo formato que o TaskPresenter do B3 manda
  * (`resources/js/types/quadro.ts`). Projeto e nomes no padrão do ExemploSeeder.
  */
-import type { BoardAbilities, BoardCard, BoardFilters, BoardOptions, BoardProject, BoardStage, PersonRef } from '@/types/quadro';
+import type {
+    BoardAbilities,
+    BoardCard,
+    BoardFilters,
+    BoardOptions,
+    BoardProject,
+    BoardStage,
+    PersonRef,
+    SprintPlanning,
+} from '@/types/quadro';
 
 export const BOARD_PROJECT: BoardProject = {
     id: 1,
@@ -319,13 +328,14 @@ export const CARDS_MONTAR_SPRINT: BoardCard[] = [
               ? { ...item, estimated_hours: 8, developer: ANA }
               : item,
     ),
+    // SGM-30: 44 h com o Bruno (4 h/dia) passa da capacidade dele numa sprint de 10 dias úteis (40 h): o aviso do plano.
     card({
         id: 30,
         key: 'SGM-30',
         title: 'Segunda via do IPTU pelo portal',
         stage_id: 1,
         priority: 'high',
-        estimated_hours: 12,
+        estimated_hours: 44,
         developer: BRUNO,
     }),
     card({ id: 31, key: 'SGM-31', title: 'Aviso de vencimento por e-mail', stage_id: 1, priority: 'normal', estimated_hours: 4.5 }),
@@ -333,3 +343,38 @@ export const CARDS_MONTAR_SPRINT: BoardCard[] = [
 
 /** Os ids marcados nas stories do modo de seleção: SGM-23, SGM-30 e SGM-21 (este sem horas). */
 export const MONTAR_SPRINT_MARCADAS: number[] = [23, 30, 21];
+
+/**
+ * O planejamento do *Montar sprint* (D-GER-35), como o `SprintPlanningQuery` manda: as pessoas alocadas com a
+ * carga diária (Diego sem carga) e, sem sprint aberta, nada mais.
+ */
+export const SPRINT_PLANNING: SprintPlanning = {
+    people: [
+        { id: ANA.id, name: ANA.name, daily_hours: 8, role: 'developer' },
+        { id: BRUNO.id, name: BRUNO.name, daily_hours: 4, role: 'developer' },
+        { id: CARLA.id, name: CARLA.name, daily_hours: 6, role: 'developer' },
+        { id: DIEGO.id, name: DIEGO.name, daily_hours: null, role: 'developer' },
+        { id: RAFAEL.id, name: RAFAEL.name, daily_hours: 8, role: 'project_manager' },
+    ],
+    open_sprint: null,
+};
+
+/** Com a Sprint 3 aberta: o que já falta de cada dev nela entra na conta do plano. */
+export const SPRINT_PLANNING_COM_ABERTA: SprintPlanning = {
+    ...SPRINT_PLANNING,
+    open_sprint: {
+        id: 3,
+        name: 'Sprint 3',
+        starts_on: '2026-10-06',
+        ends_on: '2026-10-19',
+        capacity: {
+            business_days: 10,
+            developers: [
+                { id: ANA.id, name: ANA.name, daily_hours: 8, capacity: 80, remaining: 24, difference: 56 },
+                { id: DIEGO.id, name: DIEGO.name, daily_hours: null, capacity: null, remaining: 40, difference: null },
+            ],
+            without_developer: { tasks: 1, hours: 2 },
+            without_hours: { tasks: 1 },
+        },
+    },
+};
