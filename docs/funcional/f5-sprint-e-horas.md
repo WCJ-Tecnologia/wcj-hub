@@ -16,7 +16,16 @@ Fica fora deste bloco: mover card em geral e o diálogo de retrabalho (F3), e os
 
 **Montar a sprint.** A sprint é obrigatória: é a única saída do `Backlog` (P45). O gestor arrasta o card do `Backlog` para o `To do`, e isso põe o card na sprint aberta do projeto (P45). Se não há sprint aberta, abre o diálogo *Nova sprint* já preenchido: nome "Sprint N", início hoje e fim pela duração padrão do projeto, em dias úteis de segunda a sexta (P46, R5). O objetivo é opcional (P45). O gestor confirma e, na mesma ação, a sprint é criada e o card entra nela. Se cancelar, o card fica no `Backlog`. Só existe uma sprint aberta por projeto (P45).
 
-**Montar em lote (D-GER-35).** Para não arrastar card por card, o cabeçalho do quadro tem o botão *Montar sprint* (sem sprint aberta) ou *Pôr na Sprint N* (com sprint aberta), para o gestor e o Administrador. Clicar liga o modo de seleção: cada card do `Backlog` ganha uma caixa, há *Selecionar todas*, e o resto do quadro fica desligado (não arrasta, as outras colunas esmaecem). Uma barra embaixo mostra "3 selecionadas · 20 h previstas", com *Cancelar* e *Iniciar sprint* (ou *Pôr na Sprint N*). *Iniciar sprint* abre o diálogo com os campos da sprint preenchidos como no arrastar ("Sprint N", início hoje, fim pela duração padrão, objetivo opcional); com sprint aberta, é só a confirmação. Confirmar cria a sprint (quando não há aberta) e põe as tarefas nela numa ação só, cada uma com o mesmo efeito do arrastar para o `To do` (P45, R5). É tudo ou nada: se alguma tarefa saiu do `Backlog` enquanto o gestor escolhia (arquivada, posta em outra sprint, movida), nada é gravado e o diálogo diz quais. O arraste continua valendo para um card de cada vez.
+**Montar em lote, já planejada (D-GER-35).** Para não arrastar card por card, o cabeçalho do quadro tem o botão *Montar sprint* (sem sprint aberta) ou *Pôr na Sprint N* (com sprint aberta), para o gestor e o Administrador.
+
+1. Clicar liga o modo de seleção: cada card do `Backlog` ganha uma caixa, há *Selecionar todas*, e o resto do quadro fica desligado (não arrasta, as outras colunas esmaecem). Uma barra embaixo mostra "3 selecionadas · 52 h previstas", com *Cancelar* e *Iniciar sprint* (ou *Pôr na Sprint N*).
+2. *Iniciar sprint* abre o planejamento, porque montar a sprint é planejar ("Horas na montagem" e "Capacidade", abaixo, acontecendo dentro da montagem):
+   - em cima, a sprint: sem sprint aberta, os campos preenchidos como no arrastar ("Sprint N", início hoje, fim pela duração padrão, objetivo opcional); com sprint aberta, o nome e o período dela;
+   - uma linha por card marcado, em que o gestor escolhe o dev e o QA (entre as pessoas alocadas, com a carga diária ao lado do nome), confirma as horas previstas (P27), escolhe a prioridade (P19) ou tira o card do plano;
+   - ao lado, a capacidade de cada pessoa alocada, recalculada a cada mudança: carga diária, capacidade na sprint (carga × dias úteis do período, P48), horas atribuídas (as do plano mais as que faltam dela na sprint aberta) e disponível. O disponível negativo aparece em destaque, só como aviso (P49).
+3. Confirmar cria a sprint (quando não há aberta) e põe os cards nela numa ação só, cada um com o mesmo efeito do arrastar para o `To do` (P45, R5) e com o dev, o QA, as horas e a prioridade escolhidos. Assim a sprint começa arrumada. Nada é obrigatório: card sem dev ou sem horas entra do mesmo jeito (P27, P49).
+
+É tudo ou nada: se algum card saiu do `Backlog` enquanto o gestor planejava (arquivado, posto em outra sprint, movido) ou se a pessoa escolhida não está mais alocada, nada é gravado e o diálogo diz o quê. O arraste continua valendo para um card de cada vez.
 
 Exemplo do fim: início terça 06/10/2026 com duração de 10 dias úteis. Contando o dia de início, os 10 dias úteis vão até segunda 19/10/2026, que é o fim proposto (ver 10.1).
 
@@ -49,8 +58,14 @@ Exemplo do fim: início terça 06/10/2026 com duração de 10 dias úteis. Conta
 |---|---|---|---|---|
 | Caixa em cada card do `Backlog` | marca / desmarca | ao menos uma | nenhuma marcada | Só os cards do `Backlog` à vista (os filtros do quadro valem). Card sem dev ou sem horas entra do mesmo jeito (P27, P49). Clicar em qualquer ponto do card marca. |
 | Selecionar todas | sim / não | | não | Marca ou desmarca todos os cards à vista no `Backlog`. |
-| Resumo, na barra | só leitura | | | "3 selecionadas · 20 h previstas (1 sem horas)". Não compara com a capacidade (P49). |
-| Sprint: nome, objetivo, início, fim (diálogo *Iniciar sprint*) | os mesmos campos da sprint | nome, início e fim | a proposta do arrastar: "Sprint N", hoje, fim pela duração padrão | Só sem sprint aberta. Com sprint aberta, o diálogo só lista as tarefas e confirma. |
+| Resumo, na barra | só leitura | | | "3 selecionadas · 52 h previstas (1 sem horas)". Não compara com a capacidade (P49). |
+| Sprint: nome, objetivo, início, fim (planejamento) | os mesmos campos da sprint | nome, início e fim | a proposta do arrastar: "Sprint N", hoje, fim pela duração padrão | Só sem sprint aberta; com sprint aberta, mostra o nome e o período dela. O período manda nos dias úteis e na capacidade. |
+| Dev, em cada card (planejamento) | escolha entre as pessoas ativas alocadas no projeto, com a carga diária ao lado | não | o dev que o card já tem | Gestor alocado também pode ser dev (P5). Pessoa fora do projeto é recusada (R15). |
+| QA, em cada card (planejamento) | a mesma lista | não | o QA que o card já tem | (P20) |
+| Horas previstas, em cada card (planejamento) | horas, com decimais, maior que 0 | não | as do card | Total dev + QA (P27). |
+| Prioridade, em cada card (planejamento) | Baixa, Normal, Alta, Urgente | não | a do card | Escolhe uma; o planejamento não tira a prioridade (P19). |
+| Capacidade (planejamento) | só leitura, ao vivo | | | Por pessoa alocada: carga diária, capacidade (carga × dias úteis do período), atribuídas (as horas do plano mais as que faltam na sprint aberta) e disponível. Negativo em destaque, só aviso (P49). À parte: sem dev e sem horas previstas. |
+| Resumo do plano | só leitura | | | "3 cards · 52 h previstas · 1 sem dev · 1 sem horas". |
 
 ### Encerrar sprint (diálogo)
 
@@ -109,7 +124,7 @@ Estados vazios: "Nenhuma sprint ainda. *Nova sprint*" (com o lembrete de que a s
 | Ação | Quem | O que faz | Confirmação / aviso |
 |---|---|---|---|
 | Arrastar do `Backlog` para o `To do` | Gestor do projeto, Administrador | Põe o card na sprint aberta (P45). Sem sprint aberta, abre o diálogo *Nova sprint* preenchido e, ao confirmar, cria a sprint e põe o card nela, numa ação só (R5). | Sem diálogo quando já há sprint aberta. |
-| Montar sprint (no quadro) | Gestor do projeto, Administrador | O botão do cabeçalho do quadro (*Montar sprint* ou *Pôr na Sprint N*) liga a seleção no `Backlog`; *Iniciar sprint* cria a sprint, quando não há aberta, e põe todas as marcadas nela, cada uma como no arrastar para o `To do`, numa ação só (P45, R5, D-GER-35). Desabilitado com o `Backlog` vazio. | Tudo ou nada: "Nada foi gravado: SGM-24 já está na Sprint 5; SGM-25 não está mais no Backlog." Sucesso: "3 tarefas entraram na Sprint 5." ou "Sprint 6 criada com 3 tarefas." |
+| Montar sprint (no quadro) | Gestor do projeto, Administrador | O botão do cabeçalho do quadro (*Montar sprint* ou *Pôr na Sprint N*) liga a seleção no `Backlog`. *Iniciar sprint* abre o planejamento (dev, QA, horas e prioridade por card, com a capacidade ao vivo); confirmar cria a sprint, quando não há aberta, põe todas as marcadas nela, cada uma como no arrastar para o `To do`, e aplica o plano de cada card, numa ação só (P45, R5, P27, D-GER-35). Cada mudança fica no histórico do card (G3). Desabilitado com o `Backlog` vazio. | Tudo ou nada: "Nada foi gravado: SGM-24 já está na Sprint 5; SGM-25 não está mais no Backlog." Sucesso: "3 tarefas entraram na Sprint 5." ou "Sprint 6 criada com 3 tarefas." |
 | Nova sprint | Gestor do projeto, Administrador | Cria a sprint pela lista. O botão só aparece quando o projeto não tem sprint aberta (P45). | |
 | Editar sprint | Gestor do projeto, Administrador | Nome, objetivo, início e fim, a qualquer momento, aberta ou encerrada. Mudar as datas muda os dias úteis e a capacidade. | Mesmas recusas da criação. |
 | Tirar card da sprint | Gestor do projeto, Administrador | Arrastar o card para o `Backlog`, ou o botão *Tirar da sprint* no card. Devolve ao `Backlog`, fora de sprint (P45). Não conta como retrabalho (F3). | Nenhuma. |
