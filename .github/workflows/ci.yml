@@ -1,12 +1,47 @@
 name: CI
 
+# PR só de documentação (docs/ e .md) não roda a suíte. O padrão sobrepõe o anterior:
+# tudo entra, docs/ e .md saem, e voltam os .md que o CI lê (specs:check, test:skills).
+# Os arquivos de ponto vão explícitos para não depender de o '**' casar nome com ponto.
+# A varredura de segredo não tem filtro e roda sempre (segredos.yml).
 on:
   push:
     branches: [main]
+    paths:
+      - '**'
+      - '.*'
+      - '.github/**'
+      - '.githooks/**'
+      - '.storybook/**'
+      - '!docs/**'
+      - '!**.md'
+      - '.specs/**'
+      - '.ai/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - '.codex/**'
   pull_request:
+    paths:
+      - '**'
+      - '.*'
+      - '.github/**'
+      - '.githooks/**'
+      - '.storybook/**'
+      - '!docs/**'
+      - '!**.md'
+      - '.specs/**'
+      - '.ai/**'
+      - '.claude/**'
+      - '.cursor/**'
+      - '.codex/**'
 
 permissions:
   contents: read
+
+# Push novo no mesmo PR cancela a rodada anterior; na main nenhuma rodada é cancelada.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   php:
@@ -68,34 +103,6 @@ jobs:
         run: python3 --version && npm run test:skills
       - name: Specs gate (.specs/ checked by the tlc-spec-driven validators)
         run: npm run specs:check
-
-  gitleaks:
-    name: Secrets scan (full history)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      # A gitleaks-action exige licença paga em repositório de organização; o binário é livre.
-      - name: Install gitleaks
-        env:
-          GITLEAKS_VERSION: 8.30.1
-        run: |
-          base=https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}
-          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
-          sha256sum --check --ignore-missing "gitleaks_${GITLEAKS_VERSION}_checksums.txt"
-          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      # The .gitleaks.toml cases in guard.test.mjs are skipped where gitleaks is not installed; here they must run.
-      - name: Signing secret rules (.gitleaks.toml cases)
-        env:
-          GITLEAKS_BIN: ${{ github.workspace }}/gitleaks
-        run: node --test --test-name-pattern='^(acha|passa) ' .ai/adapters/guard/guard.test.mjs
-      - name: Scan full history
-        run: ./gitleaks git --config .gitleaks.toml --redact --verbose .
 
   e2e:
     name: E2E (Playwright, chromium)

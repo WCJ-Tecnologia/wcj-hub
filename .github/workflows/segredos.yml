@@ -1,0 +1,44 @@
+name: Segredos
+
+# Sem filtro de caminho: segredo pode entrar por documento (inegociável 6), então a
+# varredura roda em todo PR e todo push na main, inclusive quando o CI pula.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: segredos-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gitleaks:
+    name: Secrets scan (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A gitleaks-action exige licença paga em repositório de organização; o binário é livre.
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          base=https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}
+          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing "gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # The .gitleaks.toml cases in guard.test.mjs are skipped where gitleaks is not installed; here they must run.
+      - name: Signing secret rules (.gitleaks.toml cases)
+        env:
+          GITLEAKS_BIN: ${{ github.workspace }}/gitleaks
+        run: node --test --test-name-pattern='^(acha|passa) ' .ai/adapters/guard/guard.test.mjs
+      - name: Scan full history
+        run: ./gitleaks git --config .gitleaks.toml --redact --verbose .
