@@ -120,7 +120,7 @@ export function WTaskDetailHeaderOrganism({
                             <WTagPopoverOrganism
                                 kind="type"
                                 options={types.map((type) => ({ id: type.id, name: type.label, color: type.color }))}
-                                value={{ id: detail.type.id, name: detail.type.label, color: detail.type.color }}
+                                value={detail.type ? { id: detail.type.id, name: detail.type.label, color: detail.type.color } : null}
                                 busy={busy}
                                 errors={errors}
                                 onChange={(option) => {
@@ -138,7 +138,7 @@ export function WTaskDetailHeaderOrganism({
                                 }
                             />
                         ) : (
-                            <WTagAtom label={detail.type.label} color={detail.type.color} kind="type" />
+                            detail.type && <WTagAtom label={detail.type.label} color={detail.type.color} kind="type" />
                         )}
                         {onChangeArea && abilities.update ? (
                             <WTagPopoverOrganism

@@ -321,7 +321,7 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
     const createType = (payload: TagPayload) => createTag('tipos', payload, 'o tipo');
     const updateType = (type: TaskTypeRef, payload: TagPayload) =>
         updateTag(`tipos/${type.id}`, payload, `o tipo ${type.label}`, (item) =>
-            item.type.id === type.id ? { ...item, type: { ...item.type, label: payload.name, color: payload.color } } : item,
+            item.type?.id === type.id ? { ...item, type: { ...item.type, label: payload.name, color: payload.color } } : item,
         );
     const createArea = (payload: TagPayload) => createTag('areas', payload, 'a área');
     const updateArea = (area: AreaRef, payload: TagPayload) =>

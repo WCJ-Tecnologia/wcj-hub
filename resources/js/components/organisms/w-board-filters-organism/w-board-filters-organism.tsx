@@ -46,9 +46,10 @@ export interface WBoardFiltersOrganismProps {
 }
 
 /**
- * A barra acima do quadro (F3 §05): busca por chave ou título, *Só os meus*, Dev, QA, Tipo, Área,
- * Prioridade, Marcas, *Mostrar prontos antigos*, *Arquivados* e, à direita, *Ordem*. Só devolve o
- * filtro novo em `onChange`: a página filtra (servidor) e lembra a ordem (navegador).
+ * A barra acima do quadro (F3 §05): busca por chave ou título, *Só os meus*, o botão *Filtros* (popover com
+ * Tipo, Área, Prioridade, Dev, QA, Marcas, *Mostrar prontos antigos* e *Arquivados*, com o número de filtros
+ * ligados; decisão de 14/10) e, à direita, *Ordem*. Só devolve o filtro novo em `onChange`: a página filtra
+ * (servidor) e lembra a ordem (navegador).
  */
 export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrderChange, className }: WBoardFiltersOrganismProps) {
     const id = useId();
@@ -83,97 +84,112 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
         { key: 'developer_id', label: 'Dev', all: 'Todos os devs', items: options.members },
         { key: 'qa_id', label: 'QA', all: 'Todos os QAs', items: options.members },
     ];
+    // Cada select vira um campo com rótulo dentro do popover (14/10): o filtro saiu da barra para um botão só.
     const renderSelect = (select: FilterSelect) => (
-        <Select key={select.key} value={toSelect(filters[select.key])} onValueChange={(value) => set({ [select.key]: fromSelect(value) })}>
-            <SelectTrigger aria-label={select.label} size="sm" className="w-40">
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={ALL}>{select.all}</SelectItem>
-                {select.items.map((item) => (
-                    <SelectItem key={item.id} value={String(item.id)}>
-                        {item.color !== undefined && (
-                            <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
-                        )}
-                        {item.name}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <div key={select.key} className="grid gap-1.5">
+            <Label htmlFor={`${id}-${select.key}`} className="text-xs text-muted-foreground">
+                {select.label}
+            </Label>
+            <Select value={toSelect(filters[select.key])} onValueChange={(value) => set({ [select.key]: fromSelect(value) })}>
+                <SelectTrigger id={`${id}-${select.key}`} size="sm" className="w-full">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value={ALL}>{select.all}</SelectItem>
+                    {select.items.map((item) => (
+                        <SelectItem key={item.id} value={String(item.id)}>
+                            {item.color !== undefined && (
+                                <span aria-hidden className={cn('size-2.5 shrink-0 rounded-full', tagDotClasses(item.color))} />
+                            )}
+                            {item.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
     );
 
+    // Quantos filtros estão ligados: o número no botão *Filtros*.
+    const activeCount =
+        [filters.type_id, filters.area_id, filters.priority, filters.developer_id, filters.qa_id].filter((value) => value !== null).length +
+        filters.marks.length +
+        (filters.old_done ? 1 : 0) +
+        (filters.archived ? 1 : 0);
+
     return (
-        <div data-slot="w-board-filters-organism" className={cn('grid gap-3', className)}>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div role="search" className="relative min-w-0 flex-1 basis-64">
-                    <Search
-                        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                        aria-hidden
-                    />
-                    <Input
-                        type="search"
-                        value={filters.search}
-                        onChange={(event) => set({ search: event.target.value })}
-                        placeholder="Buscar por chave ou título…"
-                        aria-label="Buscar card por chave ou título"
-                        autoComplete="off"
-                        className="pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
-                    />
-                    {filters.search && (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => set({ search: '' })}
-                            aria-label="Limpar busca"
-                            className="absolute top-1/2 right-2 size-7 -translate-y-1/2 text-muted-foreground"
-                        >
-                            <X aria-hidden />
-                        </Button>
-                    )}
-                </div>
-                <div className="flex items-center gap-2">
-                    <Switch id={`${id}-mine`} checked={filters.mine} onCheckedChange={(checked) => set({ mine: checked })} />
-                    <Label htmlFor={`${id}-mine`} className="cursor-pointer">
-                        Só os meus
-                    </Label>
-                </div>
-                <WBoardOrderToggleMolecule value={order} onChange={onOrderChange} className="ml-auto" />
+        <div data-slot="w-board-filters-organism" className={cn('flex flex-wrap items-center gap-x-4 gap-y-2', className)}>
+            <div role="search" className="relative min-w-0 flex-1 basis-64">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Input
+                    type="search"
+                    value={filters.search}
+                    onChange={(event) => set({ search: event.target.value })}
+                    placeholder="Buscar por chave ou título…"
+                    aria-label="Buscar card por chave ou título"
+                    autoComplete="off"
+                    className="pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden"
+                />
+                {filters.search && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => set({ search: '' })}
+                        aria-label="Limpar busca"
+                        className="absolute top-1/2 right-2 size-7 -translate-y-1/2 text-muted-foreground"
+                    >
+                        <X aria-hidden />
+                    </Button>
+                )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-                {tagSelects.map(renderSelect)}
-                <Select
-                    value={filters.priority ?? ALL}
-                    onValueChange={(value) => set({ priority: value === ALL ? null : (value as PrioritySlug) })}
-                >
-                    <SelectTrigger aria-label="Prioridade" size="sm" className="w-48">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value={ALL}>Todas as prioridades</SelectItem>
-                        {PRIORITY_OPTIONS.map((priority) => (
-                            <SelectItem key={priority} value={priority}>
-                                <WPriorityMarkAtom priority={priority} variant="chip" />
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                {peopleSelects.map(renderSelect)}
+            <div className="flex items-center gap-2">
+                <Switch id={`${id}-mine`} checked={filters.mine} onCheckedChange={(checked) => set({ mine: checked })} />
+                <Label htmlFor={`${id}-mine`} className="cursor-pointer">
+                    Só os meus
+                </Label>
+            </div>
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button type="button" variant="outline" size="sm">
-                            <ListFilter aria-hidden /> Marcas
-                            {filters.marks.length > 0 && (
-                                <Badge variant="secondary" className="font-mono tabular-nums">
-                                    {filters.marks.length}
-                                    <span className="sr-only">{filters.marks.length === 1 ? ' escolhida' : ' escolhidas'}</span>
-                                </Badge>
-                            )}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-60" aria-label="Filtrar por marcas">
+            {/* Todos os filtros num botão só (14/10): a barra fica limpa e o número diz quantos estão ligados. */}
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" aria-label={activeCount > 0 ? `Filtros, ${activeCount} ligados` : 'Filtros'}>
+                        <ListFilter aria-hidden /> Filtros
+                        {activeCount > 0 && (
+                            <Badge variant="secondary" className="font-mono tabular-nums" aria-hidden>
+                                {activeCount}
+                            </Badge>
+                        )}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80" aria-label="Filtros do quadro">
+                    <div className="grid gap-4">
+                        <div className="grid gap-3">
+                            {tagSelects.map(renderSelect)}
+                            <div className="grid gap-1.5">
+                                <Label htmlFor={`${id}-priority`} className="text-xs text-muted-foreground">
+                                    Prioridade
+                                </Label>
+                                <Select
+                                    value={filters.priority ?? ALL}
+                                    onValueChange={(value) => set({ priority: value === ALL ? null : (value as PrioritySlug) })}
+                                >
+                                    <SelectTrigger id={`${id}-priority`} size="sm" className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={ALL}>Todas as prioridades</SelectItem>
+                                        {PRIORITY_OPTIONS.map((priority) => (
+                                            <SelectItem key={priority} value={priority}>
+                                                <WPriorityMarkAtom priority={priority} variant="chip" />
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {peopleSelects.map(renderSelect)}
+                        </div>
+
                         <fieldset className="grid gap-2.5">
                             <legend className="mb-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
                                 Cards com a marca
@@ -191,28 +207,46 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
                                 </div>
                             ))}
                         </fieldset>
-                    </PopoverContent>
-                </Popover>
 
-                <div className="flex items-center gap-2 px-1">
-                    <Switch id={`${id}-old`} checked={filters.old_done} onCheckedChange={(checked) => set({ old_done: checked })} />
-                    <Label htmlFor={`${id}-old`} className="cursor-pointer">
-                        Mostrar prontos antigos
-                    </Label>
-                </div>
-                <div className="flex items-center gap-2 px-1">
-                    <Switch id={`${id}-archived`} checked={filters.archived} onCheckedChange={(checked) => set({ archived: checked })} />
-                    <Label htmlFor={`${id}-archived`} className="cursor-pointer">
-                        Arquivados
-                    </Label>
-                </div>
+                        <div className="grid gap-2.5 border-t border-border pt-3">
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    id={`${id}-old`}
+                                    checked={filters.old_done}
+                                    onCheckedChange={(checked) => set({ old_done: checked })}
+                                />
+                                <Label htmlFor={`${id}-old`} className="cursor-pointer font-normal">
+                                    Mostrar prontos antigos
+                                </Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Switch
+                                    id={`${id}-archived`}
+                                    checked={filters.archived}
+                                    onCheckedChange={(checked) => set({ archived: checked })}
+                                />
+                                <Label htmlFor={`${id}-archived`} className="cursor-pointer font-normal">
+                                    Arquivados
+                                </Label>
+                            </div>
+                        </div>
 
-                {hasActiveFilters(filters) && (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => onChange(clearBoardFilters(filters))}>
-                        <X aria-hidden /> Limpar filtros
-                    </Button>
-                )}
-            </div>
+                        {hasActiveFilters(filters) && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="justify-start"
+                                onClick={() => onChange(clearBoardFilters(filters))}
+                            >
+                                <X aria-hidden /> Limpar filtros
+                            </Button>
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
+
+            <WBoardOrderToggleMolecule value={order} onChange={onOrderChange} className="ml-auto" />
         </div>
     );
 }

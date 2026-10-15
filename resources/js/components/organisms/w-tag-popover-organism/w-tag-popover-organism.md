@@ -6,7 +6,7 @@ Organismo · `organisms/w-tag-popover-organism/w-tag-popover-organism.tsx` · st
 
 As etiquetas do card (**tipo** e **área**) ao estilo Trello (decisões de Lucas Scholz em 14/10): no card e na ficha, clicar na etiqueta abre um popover com a lista do projeto.
 
-- **Escolher:** clicar numa opção troca a etiqueta do card (`onChange`); na área, "Nenhuma" limpa (o tipo é obrigatório, P18). A atual tem o ✓. O card sem área mostra o chip tracejado **"+ Área"**.
+- **Escolher:** clicar numa opção troca a etiqueta do card (`onChange`); na área, "Nenhuma" limpa; o tipo não tem "Nenhum" (define-se uma vez). A atual tem o ✓. O card sem tipo ou sem área (o card rápido nasce assim, P17, 14/10) mostra o chip tracejado **"+ Tipo"** / **"+ Área"**.
 - **Editar:** com `onUpdate` (gestor do projeto e Administrador; `abilities.manage_types` / `manage_areas`), cada linha tem o lápis: nome e cor no mesmo popover, com prévia.
 - **Criar:** com `onCreate`, _Novo tipo_ / _Nova área_ no fim abre o mesmo formulário.
 - **Do projeto, sem propagar:** tipos e áreas são do projeto. Todo projeto nasce com os tipos padrão (Melhoria, Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e sem área; criar ou editar aqui muda só este projeto.

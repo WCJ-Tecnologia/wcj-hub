@@ -13,14 +13,17 @@ import type { AreaRef, PrioritySlug, SupportRequest, TaskPatchPayload, TaskTypeR
 const NO_AREA = 'none';
 
 /** "Melhoria · Portal do cidadão · Alta"; sem área, "Melhoria · Alta". */
-export function attributesSummary(type: TaskTypeRef, area: AreaRef | null, priority: PrioritySlug): string {
-    return [type.label, area?.name, PRIORITY_LABEL[priority]].filter(Boolean).join(' · ');
+export function attributesSummary(type: TaskTypeRef | null, area: AreaRef | null, priority: PrioritySlug | null): string {
+    const parts = [type?.label, area?.name, priority ? PRIORITY_LABEL[priority] : null].filter(Boolean);
+    return parts.length > 0 ? parts.join(' · ') : 'Sem tipo, área nem prioridade';
 }
 
 export interface WTaskAttributesSectionOrganismProps {
-    type: TaskTypeRef;
+    /** null = sem tipo (card rápido, P17, 14/10). */
+    type: TaskTypeRef | null;
     area: AreaRef | null;
-    priority: PrioritySlug;
+    /** null = sem prioridade (card rápido, P17, 14/10). */
+    priority: PrioritySlug | null;
     /** Card de suporte (P52): quem pediu, por onde e quando; null nos demais. Só leitura aqui. */
     support: SupportRequest | null;
     /** Listas gerais ativas (P18): `options.types`, `options.areas`. */
@@ -56,7 +59,8 @@ export function WTaskAttributesSectionOrganism({
     const describedBy = (name: string) => (errors?.[name] ? `${fieldId(name)}-error` : undefined);
 
     // Tipo desativado some da escolha e continua no card que já o usa (P18, G7).
-    const typeOptions = types.some((item) => item.id === type.id) ? types : [{ ...type, label: `${type.label} (desativado)` }, ...types];
+    const typeOptions =
+        !type || types.some((item) => item.id === type.id) ? types : [{ ...type, label: `${type.label} (desativado)` }, ...types];
     // A área que saiu da lista do projeto continua no card até alguém trocar.
     const areaOptions = !area || areas.some((item) => item.id === area.id) ? areas : [area, ...areas];
     const noAreas = areaOptions.length === 0;
@@ -67,9 +71,9 @@ export function WTaskAttributesSectionOrganism({
                 <div className="grid gap-3 sm:grid-cols-3">
                     <WFormFieldMolecule label="Tipo" htmlFor={fieldId('type_id')} error={errors?.type_id}>
                         <Select
-                            value={String(type.id)}
+                            value={type ? String(type.id) : undefined}
                             disabled={busy}
-                            onValueChange={(value) => Number(value) !== type.id && onChange({ type_id: Number(value) })}
+                            onValueChange={(value) => Number(value) !== type?.id && onChange({ type_id: Number(value) })}
                         >
                             {/* O Root do Radix não é elemento: id e aria vão no trigger, que é o botão focável. */}
                             <SelectTrigger
@@ -77,7 +81,7 @@ export function WTaskAttributesSectionOrganism({
                                 aria-invalid={Boolean(errors?.type_id)}
                                 aria-describedby={describedBy('type_id')}
                             >
-                                <SelectValue />
+                                <SelectValue placeholder="Sem tipo" />
                             </SelectTrigger>
                             <SelectContent>
                                 {typeOptions.map((item) => (
@@ -120,7 +124,7 @@ export function WTaskAttributesSectionOrganism({
 
                     <WFormFieldMolecule label="Prioridade" htmlFor={fieldId('priority')} error={errors?.priority}>
                         <Select
-                            value={priority}
+                            value={priority ?? undefined}
                             disabled={busy}
                             onValueChange={(value) => value !== priority && onChange({ priority: value as PrioritySlug })}
                         >
@@ -129,7 +133,7 @@ export function WTaskAttributesSectionOrganism({
                                 aria-invalid={Boolean(errors?.priority)}
                                 aria-describedby={describedBy('priority')}
                             >
-                                <SelectValue />
+                                <SelectValue placeholder="Sem prioridade" />
                             </SelectTrigger>
                             <SelectContent>
                                 {PRIORITIES.map((item) => (
@@ -143,10 +147,10 @@ export function WTaskAttributesSectionOrganism({
                 </div>
             ) : (
                 <dl className="grid gap-3 sm:grid-cols-3">
-                    <ReadOnlyItem label="Tipo">{type.label}</ReadOnlyItem>
+                    <ReadOnlyItem label="Tipo">{type?.label ?? 'Sem tipo'}</ReadOnlyItem>
                     <ReadOnlyItem label="Área">{area?.name ?? 'Nenhuma'}</ReadOnlyItem>
                     <ReadOnlyItem label="Prioridade">
-                        <WPriorityMarkAtom priority={priority} variant="chip" />
+                        {priority ? <WPriorityMarkAtom priority={priority} variant="chip" /> : 'Sem prioridade'}
                     </ReadOnlyItem>
                 </dl>
             )}

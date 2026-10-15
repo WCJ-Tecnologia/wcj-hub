@@ -6,16 +6,16 @@ Organismo · `organisms/w-task-card-organism/w-task-card-organism.tsx` · story 
 
 O card do quadro kanban, nas zonas do F3 §03 (decisão de 13/10, D-GER-32), sobre o `Card` do shadcn, na largura da coluna:
 
-| Zona      | O que mostra                                                                                                                 | Quando          | Peça                                              |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------- |
-| Topo      | Faixa de prioridade com o nome escrito ("Urgente", "Alta"…), cor por prioridade (P19, decisão de 14/10)                      | sempre          | `WPriorityMarkAtom`                               |
-| Cabeçalho | Tipo e Área como etiquetas coloridas, sempre nessa ordem (P18; cor do cadastro, decisão de 14/10); menu ⋯                    | área: quando há | `WTagAtom`, `DropdownMenu`                        |
-| Cabeçalho | Chave (P16) e título em até 2 linhas; o título é o link para a ficha                                                         | sempre          | `WTaskKeyAtom`, `Link`                            |
-| Cabeçalho | "↳ SGM-10": a chave do pai, com link e o título no tooltip (P57)                                                             | no card filho   | `WTaskKeyAtom`                                    |
-| Marcas    | Atrasado, Em pausa (com motivo), voltas de retrabalho, Suporte (quem pediu), reestimativa proposta (P15, P27, P39, P52, P53) | quando há       | `WTaskMarksMolecule`                              |
-| Corpo     | Capa (`<img alt="">`, 7 rem, `object-cover`, P59); horas previstas (P27)                                                     | quando há       |                                                   |
-| Rodapé    | Pessoas, com o _+_ de participante (P20, P58); à direita, data prevista, anexos e comentários (P24, P28)                     | sempre          | `WPeopleAvatarsMolecule`, `WCardCountersMolecule` |
-| Rodapé    | "2 · 1 · 3" e a barra dos filhos (P57)                                                                                       | no card pai     | `WChildProgressMolecule`                          |
+| Zona      | O que mostra                                                                                                                                                             | Quando                    | Peça                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- | ------------------------------------------------- |
+| Topo      | Faixa de prioridade com o nome escrito ("Urgente", "Alta"…), cor por prioridade (P19, decisão de 14/10). Sem prioridade (o card rápido nasce assim), o card é liso       | quando há prioridade      | `WPriorityMarkAtom`                               |
+| Cabeçalho | Tipo e Área como etiquetas coloridas, sempre nessa ordem (P18; cor do cadastro, decisão de 14/10); sem tipo ou sem área, o chip "+ Tipo" / "+ Área" abre a lista; menu ⋯ | sempre (chip ou etiqueta) | `WTagAtom`, `DropdownMenu`                        |
+| Cabeçalho | Chave (P16) e título em até 2 linhas; o título é o link para a ficha                                                                                                     | sempre                    | `WTaskKeyAtom`, `Link`                            |
+| Cabeçalho | "↳ SGM-10": a chave do pai, com link e o título no tooltip (P57)                                                                                                         | no card filho             | `WTaskKeyAtom`                                    |
+| Marcas    | Atrasado, Em pausa (com motivo), voltas de retrabalho, Suporte (quem pediu), reestimativa proposta (P15, P27, P39, P52, P53)                                             | quando há                 | `WTaskMarksMolecule`                              |
+| Corpo     | Capa (`<img alt="">`, 7 rem, `object-cover`, P59); horas previstas (P27)                                                                                                 | quando há                 |                                                   |
+| Rodapé    | Pessoas, com o _+_ de participante (P20, P58); à direita, data prevista, anexos e comentários (P24, P28)                                                                 | sempre                    | `WPeopleAvatarsMolecule`, `WCardCountersMolecule` |
+| Rodapé    | "2 · 1 · 3" e a barra dos filhos (P57)                                                                                                                                   | no card pai               | `WChildProgressMolecule`                          |
 
 **Profundidade.** O card tem sombra de repouso (`shadow-md`) e sobe 1 px com sombra maior no hover; a coluna é o "poço" (`bg-muted`), então o card branco se destaca dela. No escuro a sombra não aparece: a coluna fica mais escura que o card (`dark:bg-background/60` na coluna), e o relevo vem do contraste. Não há componente de sombra no shadcn; é sombra do Tailwind mais contraste de camadas.
 
@@ -31,7 +31,7 @@ O card do quadro kanban, nas zonas do F3 §03 (decisão de 13/10, D-GER-32), sob
 
 Cada item de edição só aparece com o callback dele (a página esconde o que a pessoa não pode; quem decide é o servidor). Escolher a opção que já está marcada não chama o callback.
 
-Card só com título (o criado pelo rápido) fica baixo: cabeçalho com o tipo, chave e título, e o rodapé com o _+_ de participante e a prioridade.
+Card só com título (o criado pelo rápido, 14/10) nasce **sem tipo, área nem prioridade**: liso (sem aba), com os chips "+ Tipo" e "+ Área", chave, título e o _+_ de participante.
 
 ## Props
 

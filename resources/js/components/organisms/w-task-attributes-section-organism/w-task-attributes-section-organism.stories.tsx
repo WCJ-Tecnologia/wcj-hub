@@ -13,9 +13,9 @@ import {
 
 /** Com estado local: cada troca muda o valor na hora, como depois da resposta do servidor. */
 function AttributesSectionDemo(props: WTaskAttributesSectionOrganismProps) {
-    const [type, setType] = useState<TaskTypeRef>(props.type);
+    const [type, setType] = useState<TaskTypeRef | null>(props.type);
     const [area, setArea] = useState<AreaRef | null>(props.area);
-    const [priority, setPriority] = useState<PrioritySlug>(props.priority);
+    const [priority, setPriority] = useState<PrioritySlug | null>(props.priority);
 
     return (
         <div className="grid gap-3">

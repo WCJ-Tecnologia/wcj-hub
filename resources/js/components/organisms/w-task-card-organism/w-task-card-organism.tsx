@@ -137,17 +137,20 @@ export function WTaskCardOrganism({
             className={cn(
                 // Profundidade: sombra de verdade (a coluna é o "poço", bg-muted) e uma subida de 1 px no hover; no escuro a sombra some, então o card é mais claro que a coluna.
                 // Pasta suspensa (14/10): a faixa da prioridade é a aba; o corpo é um painel com cantos próprios que entra por cima dela.
-                'relative w-full gap-0 overflow-hidden rounded-md rounded-t-2xl border-border/80 p-0 pt-6 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
+                'relative w-full gap-0 overflow-hidden rounded-md border-border/80 p-0 text-sm shadow-md transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-lg dark:border-border',
+                // Com prioridade, a aba de pasta no topo (14/10); sem ela, o card rápido nasce liso.
+                card.priority !== null && 'rounded-t-2xl pt-6',
                 dragging && 'rotate-2 cursor-grabbing shadow-xl ring-1 ring-primary/40',
                 className,
             )}
             {...rest}
         >
-            <WPriorityMarkAtom priority={card.priority} />
+            {card.priority && <WPriorityMarkAtom priority={card.priority} />}
             {/* O painel: `relative` o põe por cima da aba; encostado nas laterais e com o canto de cima bem arredondado, a cor só aparece nas orelhas, afinando até sumir. */}
             <div
                 className={cn(
-                    'relative grid gap-2 overflow-hidden rounded-t-xl bg-card px-3 pt-3 pb-2.5',
+                    'relative grid gap-2 overflow-hidden bg-card px-3 pt-3 pb-2.5',
+                    card.priority !== null ? 'rounded-t-xl' : 'rounded-md',
                     compact && 'pt-1.5 pb-1.5',
                     card.children && !compact && 'pb-4',
                 )}
@@ -168,7 +171,7 @@ export function WTaskCardOrganism({
                                     <WTagPopoverOrganism
                                         kind="type"
                                         options={types.map((type) => ({ id: type.id, name: type.label, color: type.color }))}
-                                        value={{ id: card.type.id, name: card.type.label, color: card.type.color }}
+                                        value={card.type ? { id: card.type.id, name: card.type.label, color: card.type.color } : null}
                                         size="sm"
                                         onChange={(option) => {
                                             const type = option && types.find((item) => item.id === option.id);
@@ -184,7 +187,7 @@ export function WTaskCardOrganism({
                                         }
                                     />
                                 ) : (
-                                    <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
+                                    card.type && <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
                                 )}
                                 {/* A área ao estilo Trello: a etiqueta (ou o "+ Área") abre a lista para escolher, criar e editar. */}
                                 {onChangeArea ? (
@@ -350,7 +353,7 @@ function TaskCardMenu({ card, stage, stages, areas, onMove, onChangePriority, on
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="w-40">
                             <DropdownMenuRadioGroup
-                                value={card.priority}
+                                value={card.priority ?? ''}
                                 onValueChange={(value) => value !== card.priority && onChangePriority(card, value as PrioritySlug)}
                             >
                                 {PRIORITY_MENU.map((priority) => (

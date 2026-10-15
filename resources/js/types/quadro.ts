@@ -47,8 +47,8 @@ export interface AreaRef {
 /**
  * Tipo do card (P18): **do projeto** (decisão de 14/10): todo projeto nasce com os padrão (Melhoria,
  * Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e cria ou edita os seus sem propagar.
- * `slug` só nos itens que o código conhece (`improvement`, `support`, `development`), um por projeto; o card criado
- * só com o título nasce `development` (P17, decisão de 14/10).
+ * `slug` só nos itens que o código conhece (`improvement`, `support`, `development`), um por projeto. O card criado
+ * só com o título nasce **sem tipo** (P17, decisão de 14/10): quem for editar define na ficha ou pela etiqueta.
  */
 export interface TaskTypeRef {
     id: number;
@@ -81,8 +81,10 @@ export interface BoardCard {
     stage_id: number;
     /** Ordem manual na coluna (P13); a ordem por prioridade não lê isto. */
     position: number;
-    priority: PrioritySlug;
-    type: TaskTypeRef;
+    /** null = sem prioridade: o card rápido nasce assim (P17, decisão de 14/10) até alguém definir. */
+    priority: PrioritySlug | null;
+    /** null = sem tipo: o card rápido nasce assim (P17, 14/10). */
+    type: TaskTypeRef | null;
     area: AreaRef | null;
     parent: ParentRef | null;
     /** URL da capa (anexo de imagem escolhido, P59); null = sem imagem. */
@@ -350,9 +352,11 @@ export interface TaskDetail {
     id: number;
     key: string;
     title: string;
-    type: TaskTypeRef;
+    /** null = sem tipo (o card rápido nasce assim, P17, 14/10). */
+    type: TaskTypeRef | null;
     area: AreaRef | null;
-    priority: PrioritySlug;
+    /** null = sem prioridade (idem). */
+    priority: PrioritySlug | null;
     /** A etapa atual, com o papel: decide a marca de pausa e sai do *Mover para…* (P11). */
     stage: BoardStage;
     developer: PersonRef | null;

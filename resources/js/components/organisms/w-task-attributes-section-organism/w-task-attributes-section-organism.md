@@ -59,3 +59,7 @@ Só renderiza o conteúdo: a página envolve no `WCollapsibleSectionMolecule`, c
 - O pedido do cliente é só leitura aqui; contato anonimizado já vem do servidor como "removido a pedido do titular" (N12).
 - Uma área que saiu da lista do projeto, mas continua no card, entra como opção até alguém trocar (mesma ideia do G7).
 - Nada aqui decide regra: a lista de opções vem do servidor, e quem recusa é o servidor (inegociável 9).
+
+## Sem tipo e sem prioridade (14/10)
+
+O card rápido nasce sem tipo, área nem prioridade (P17): `type` e `priority` aceitam `null`, os selects mostram "Sem tipo" / "Sem prioridade" até alguém escolher, e `attributesSummary` devolve "Sem tipo, área nem prioridade" quando não há nada.

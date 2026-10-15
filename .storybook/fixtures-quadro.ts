@@ -102,12 +102,12 @@ export const ABILITIES_DEV: BoardAbilities = {
 /** Projeto encerrado: ninguém cria card; mover segue (P7). */
 export const ABILITIES_ENCERRADO: BoardAbilities = { ...ABILITIES_GESTOR, create_card: false, create_support: false };
 
-/** Card mínimo: só o que o criar rápido preenche (P17, R4): tipo Desenvolvimento (14/10) e prioridade Normal. */
+/** Card mínimo: só o que o criar rápido preenche (P17, R4, 14/10): título; sem tipo, área nem prioridade. */
 export function card(partial: Partial<BoardCard> & Pick<BoardCard, 'id' | 'key' | 'title' | 'stage_id'>): BoardCard {
     return {
         position: partial.id,
-        priority: 'normal',
-        type: DESENVOLVIMENTO,
+        priority: null,
+        type: null,
         area: null,
         parent: null,
         cover_url: null,
@@ -162,14 +162,16 @@ export const CARD_COMPLETO: BoardCard = card({
 
 export const CARDS: BoardCard[] = [
     // Backlog
+    // SGM-21: como nasce do criar rápido (14/10): só o título, sem tipo, área nem prioridade.
+    card({ id: 21, key: 'SGM-21', title: 'Relatório de inadimplência por bairro', stage_id: 1 }),
     card({
-        id: 21,
-        key: 'SGM-21',
-        title: 'Relatório de inadimplência por bairro',
+        id: 22,
+        key: 'SGM-22',
+        title: 'Exportar cadastro de contribuintes em CSV',
         stage_id: 1,
-        area: { id: 2, name: 'Financeiro', color: 'green' },
+        type: DESENVOLVIMENTO,
+        priority: 'low',
     }),
-    card({ id: 22, key: 'SGM-22', title: 'Exportar cadastro de contribuintes em CSV', stage_id: 1, priority: 'low' }),
     card({
         id: 23,
         key: 'SGM-23',
