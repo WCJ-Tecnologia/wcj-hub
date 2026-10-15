@@ -135,15 +135,15 @@ O B5 abre rotas novas de sprint (criar, editar, encerrar, reabrir, excluir, pôr
 
 | Requirement ID | Story | Phase | Status |
 |---|---|---|---|
-| SPR-01 | P1: Escritas de sprint só de quem gere (AC 1–5) | Execute | Pending |
-| SPR-02 | P1: Negação de sprint auditada com a ação certa (AC 6) | Execute | Pending |
-| SPR-03 | P1: Ver sprints e capacidade (AC 1–4) | Execute | Pending |
-| HRS-01 | P1: Lançar e corrigir horas (AC 1–7) | Execute | Pending |
-| HRS-02 | P1: Negação de lançamento auditada (AC 8) | Execute | Pending |
-| DEL-01 | P1: Excluir sprint só aberta e sem tarefa (AC 1–3) | Execute | Pending |
-| DEL-02 | P1: Excluir lançamento auditado (AC 4) | Execute | Pending |
+| SPR-01 | P1: Escritas de sprint só de quem gere (AC 1–5) | Execute | Verified |
+| SPR-02 | P1: Negação de sprint auditada com a ação certa (AC 6) | Execute | Verified |
+| SPR-03 | P1: Ver sprints e capacidade (AC 1–4) | Execute | Verified |
+| HRS-01 | P1: Lançar e corrigir horas (AC 1–7) | Execute | Verified |
+| HRS-02 | P1: Negação de lançamento auditada (AC 8) | Execute | Verified |
+| DEL-01 | P1: Excluir sprint só aberta e sem tarefa (AC 1–3) | Execute | Verified |
+| DEL-02 | P1: Excluir lançamento auditado (AC 4) | Execute | Verified |
 
-**Coverage:** 7 total, 0 mapped to tests, 7 unmapped ⚠️ (antes do código)
+**Coverage:** 7 total, 7 mapped to tests, 0 unmapped
 
 ---
 

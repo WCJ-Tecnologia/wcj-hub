@@ -1,8 +1,99 @@
-# B5 (SprintPolicy, TimeEntryPolicy e as duas exclusões) Validation (rodada 1)
+# B5 (SprintPolicy, TimeEntryPolicy e as duas exclusões) Validation (rodada 2)
 
-## Validation: FAIL
+## Validation: PASS
 
-**Result**: FAIL na rodada 1, por **cinco gaps Minor, todos só de teste**. Nenhum pede mudança no código de produção. O núcleo de permissão está provado:
+**Result**: PASS na rodada 2. O `8b30f7f` fecha os cinco gaps da rodada 1, e só mexe em teste e na spec. O código de produção é o mesmo do `7667d75`: `git diff 7667d75..8b30f7f -- app routes resources` sai vazio. Os sete sobreviventes da rodada 1 agora morrem numa cópia descartável:
+- x6, x17, x18 e x19, que eram gaps de teste;
+- s2 e s11, a ability sem chamador;
+- x20, o mesmo do x19 no `TimeEntryService::delete`.
+
+Uma amostra de 14 mutantes que já tinham morrido na rodada 1 voltou a morrer. Então a mudança no `assertDeniedForAll` não enfraqueceu nada. Todos os sete critérios (SPR-01 a SPR-03, HRS-01, HRS-02, DEL-01, DEL-02) passam.
+
+Gate verde na árvore real (HEAD `8b30f7f`):
+- `composer lint`: passou.
+- `php artisan test`: **541 passed (4312 assertions)**. Eram 535: +4 no `SprintPolicyTest` (3 do provider + 1) e +2 no `B5TransacaoTest`.
+- `npm run typecheck`: exit 0.
+- `npm run lint`: exit 0.
+
+O PASS não encerra a feature (`.ai/core/especificacao.md` §5 item 9).
+
+**Date (rodada 2)**: 2026-10-15
+**Spec (rodada 2)**: `.specs/features/b5-sprint-e-horas/spec.md`, aprovada por Lucas Scholz em 15/10/2026. A única mudança é o "Independent Test" do DEL-02, que agora aponta `TimeEntryServiceTest.php` e `B5TransacaoTest.php`.
+**Diff range (rodada 2)**: `7667d75..8b30f7f`, um commit:
+- `tests/Feature/Projetos/SprintPolicyTest.php` (+51/−6);
+- `tests/Feature/Projetos/B5TransacaoTest.php` (novo, +93);
+- `tests/Feature/Projetos/TimeEntryServiceTest.php` (+3);
+- `spec.md` (1 linha);
+- o `validation.md` da rodada 1.
+
+**Verifier (rodada 2)**: subagente independente (autor ≠ verifier), escopo focado nos Fix 1 a 5 da rodada 1
+
+### Fix da rodada 1 → evidência (rodada 2)
+
+| Fix | Critério | Evidência (`arquivo:linha` + asserção) | Resultado |
+|---|---|---|---|
+| 1 | SPR-01 AC 1 e DEL-01 AC 1: quem gere exclui e cria pela rota | `SprintPolicyTest.php:220-237`, provider `quemGere` (admin, gestor responsável, gestor alocado). Excluir: `:228-229` `assertRedirect(.../sprints)` + `assertSessionHas('success', 'Sprint 2 excluída.')`; `:230` `assertNull(Sprint::find(...))`; `:231-232` a linha `deleted` `sole()` com `[user_id, 'success', ['Sprint 2', null]]`. Criar: `:234-236` `assertSessionHasNoErrors()` + `'Sprint 3 criada.'`; `:237` uma aberta com esse nome | PASS (x6 e `s-create-false` mortos, nos três papéis) |
+| 2 | Critério de sucesso: `SprintPolicy::view(Sprint)` | `SprintPolicyTest.php:241-254`. `:247` `Gate::forUser($user)->allows('view', $encerrada)` verdadeiro para admin, gestor e dev alocado. `:250` falso para dev não alocado, gestor que não gere e Comercial. `:253` o dev não tem `update` | PASS (s2 e s11 mortos) |
+| 3 | SPR-02 AC 6: uma `denied` desta requisição e desta pessoa | `SprintPolicyTest.php:210-218` `assertOneDenied`, chamado em `:191` (escritas) e `:202` (tarefas). Pega o `max('id')` antes da requisição, `assertCount(1, $rows)` com as linhas novas, e `[auditable_type, action, user_id]` | PASS (x17 em "tirar", x17b em "aprovar" e x17c em "reabrir", os três como `abort_unless(...can..., 403)` sem `denied`, mortos) |
+| 4 | DEL-02 AC 4: pessoa e horas no antes | `TimeEntryServiceTest.php:40` `assertSame([$dev->id, null], changes['user_id'])`, `:41` `assertSame(['3.00', null], changes['hours'])`. Tarefa e data já eram afirmadas em `:37-38` | PASS (x18 morto) |
+| 5 | DEL-01 AC 1 e DEL-02 AC 4: na mesma transação | `B5TransacaoTest.php` usa `DatabaseTruncation` + `UsaBancoDeVerdade`, sem `RefreshDatabase`; `:72` e `:84` conferem `transactionLevel() === 0`. Um `AuditService` que lança em `log()` (`:47-56`) é injetado nos Services. Sprint: `:77` falha com `'a auditoria falhou'`, `:79` a sprint continua lá. Lançamento: `:89` e `:91`, idem. Rodou no MySQL 8, não foi pulado (2 testes, 6 asserções). O `failure()` (`:59-68`) também pega o `fail()` do PHPUnit, mas a comparação com a mensagem exata em `:77`/`:89` faz o teste reprovar mesmo assim | PASS (x19 e x20 mortos) |
+
+### Sensor de mutação (rodada 2)
+
+O mesmo isolamento da rodada 1:
+- cópia `git worktree add /tmp/b5-verifier HEAD --detach` em `8b30f7f`, removida no fim;
+- `vendor/` com um symlink por pacote, mais cópias reais de `composer`, `autoload.php` e `bin`;
+- autoload conferido em `/private/tmp/b5-verifier/app/...`;
+- testes por `php vendor/bin/phpunit`, uma suíte por vez;
+- restauração com `git checkout -- <arquivo>` na cópia.
+
+Base na cópia: `SprintPolicyTest` + `TimeEntryServiceTest` + `SprintServiceTest` com 43 OK, e `B5TransacaoTest` com 2 OK. A árvore real ficou com `git status --porcelain` vazio antes e depois; só este `validation.md` foi editado.
+
+| # | Mutante | Rodada 1 | Rodada 2 | Quem matou |
+|---|---|---|---|---|
+| x6 | `SprintPolicy::delete` → `false` | vivo | **morto** | `test_who_manages_creates_and_deletes_an_empty_open_sprint` |
+| s2 | `SprintPolicy::view` → `true` | vivo | **morto** | `test_view_of_a_sprint_follows_who_sees_the_project` |
+| s11 | `SprintPolicy::view` → `manage` | vivo | **morto** | idem |
+| x17 | "tirar" (`SprintTaskController::destroy`) com `abort_unless(can(...), 403)`, sem `denied` | vivo | **morto** | `…cannot_write…` (dev e gestor), pelo `assertOneDenied` |
+| x17b | idem em "aprovar" (novo) | não rodado | **morto** | idem |
+| x17c | idem em "reabrir" do `SprintController` (novo) | não rodado | **morto** | idem |
+| x18 | `TimeEntryService::delete` com o antes sem `user_id` e `hours` | vivo | **morto** | `TimeEntryServiceTest::test_create_update_and_delete_are_audited_with_the_before` |
+| x19 | `SprintService::delete` sem `DB::transaction` | vivo | **morto** | `B5TransacaoTest::test_sprint_delete_rolls_back_when_the_audit_fails` |
+| x20 | `TimeEntryService::delete` sem `DB::transaction` (novo) | não rodado | **morto** | `B5TransacaoTest::test_time_entry_delete_rolls_back_when_the_audit_fails` |
+| amostra | `s-create-false`, `s-create-true`, `s-viewCapacity-view`, `t-dono-sem-view`, `t-gestor-manage-vira-view`, `c-sprint-destroy`, `c-sprinttask-reject`, `f-SprintTask-viewAny`, `f-StoreTimeEntry-viewAny`, `v-lockProject-sem-lock`, `v-delete-sem-tasks`, `v-delete-sem-closed_at`, `v-time-delete-sem-audit`, `e-sem-manageTasks` | os 14 mortos | **os 14 mortos** | os mesmos testes da rodada 1. O `s-create-false` agora também morre no teste novo do Fix 1 |
+
+**Total das duas rodadas**: 63 mutantes distintos (os 60 da rodada 1, mais x17b, x17c e x20). Nenhum sobrevivente.
+- 62 mortos.
+- 1 equivalente (x12: o `! isSales()` do dono, que já sai negado pelo `ProjectPolicy::view`).
+
+Os 39 mutantes pedidos na rodada 1 estão todos mortos.
+
+### Gate (rodada 2, árvore real, HEAD `8b30f7f`, sem edição)
+
+| Comando | Resultado |
+|---|---|
+| `composer lint` (`pint --test`) | passed |
+| `php artisan test` (MySQL 8, `wcj-hub-mysql-1`) | **541 passed (4312 assertions)**, 133 s, 1ª execução |
+| `npm run typecheck` | exit 0 |
+| `npm run lint` | exit 0 |
+
+Não rodei o Playwright, o Storybook nem o build: o commit não toca front.
+
+### Fix necessários (rodada 2)
+
+Nenhum.
+
+As duas notas da rodada 1 seguem valendo, e nenhuma bloqueia:
+- os 404 de outro projeto não afirmam a ausência de `denied`;
+- o A5 aceita `abort_unless(can(...))`.
+
+A segunda agora tem rede no `SprintPolicyTest`, mas só nas rotas que ele exercita.
+
+---
+
+## Rodada 1 (histórico): FAIL
+
+**Result (rodada 1)**: FAIL na rodada 1, por **cinco gaps Minor, todos só de teste**. Nenhum pede mudança no código de produção. O núcleo de permissão está provado:
 - As delegações da `SprintPolicy` que algum chamador usa, trocadas por `true` e por `false`, morreram, menos `delete → false`.
 - Os cinco mutantes pedidos da `TimeEntryPolicy` morreram.
 - Os sete `authorize()` tirados dos controllers morreram no teste de comportamento e no A5.
