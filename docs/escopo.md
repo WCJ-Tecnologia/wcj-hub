@@ -106,6 +106,8 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Permissão.** `TaskPolicy`: `create` (alocado), `view` (alocado), `update` e `move` (alocado; sair do `Backlog` = `manageSprint`, gestor e admin), `archive`/`delete` (gestor e admin), `comment`/`attach`/`logTime` (alocado). Comercial e não alocado: 403, auditado.
 
+**Front pronto (kits de 14/10 e 15/10, D-GER-33).** As duas telas do bloco já existem sem backend, no Storybook: o quadro (`components/pages/w-project-board-page/`, PR #11) e a ficha com o sino (`components/pages/w-task-detail-page/`, `w-notifications-bell-organism`, PR #12). O contrato que o servidor cumpre está em `resources/js/types/quadro.ts` (`BoardCard`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`, `MovePayload` com `sequence` para renumerar a coluna, `TaskDetail`), e as rotas que as telas chamam estão no comentário do topo de cada página, como proposta: o B3 confirma ou renomeia e ajusta a página no mesmo commit. O B3 entrega o servidor e a ligação, em três PRs (quadro e card rápido → ficha → arquivar, suporte e avisos); prompt de partida na Sessão F do `docs/00-COMECE-AQUI.md`.
+
 ### B4. Teste cruzado e roteiro de QA
 
 **Funcional.** [`docs/funcional/f4-teste-e-qualidade.md`](funcional/f4-teste-e-qualidade.md). **Trilho leve.**
