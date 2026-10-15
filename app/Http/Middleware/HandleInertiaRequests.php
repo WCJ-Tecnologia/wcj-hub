@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Projetos\Models\Project;
+use App\Domains\Projetos\Models\ReworkReason;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -42,6 +43,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 // Salvou, mas há o que conferir (ex.: e-mail de contato repetido, N8).
                 'warning' => fn () => $request->session()->get('warning'),
+                // O id do registro que a ação acabou de criar, para a tela que precisa escolhê-lo
+                // em seguida (o "Novo cliente" do formulário do projeto, N6).
+                'created_id' => fn () => $request->session()->get('created_id'),
             ],
         ];
     }
@@ -72,6 +76,8 @@ class HandleInertiaRequests extends Middleware
                 // Da ProjectPolicy (F2 §09): o Comercial não entra em Projetos (C14).
                 'view_projects' => $user->can('viewAny', Project::class),
                 'manage_projects' => $user->can('create', Project::class),
+                // Menu Administração → Listas (F2 §09, G7): só o Administrador edita as listas gerais.
+                'manage_lists' => $user->can('viewAny', ReworkReason::class),
             ],
         ];
     }

@@ -12,7 +12,7 @@ use Tests\TestCase;
  * B1 T23: as abilities que o front usa para montar o menu Administração (F1 §09; NUC-14). O
  * Administrador vê Usuários, Clientes, Contatos e Auditoria; o gestor, Clientes e Contatos; o dev
  * e o comercial, nenhum. Projetos (F2 §09, B2): todos menos o comercial veem a lista; admin e
- * gestor criam. As abilities saem das Policies, que continuam decidindo cada rota.
+ * gestor criam; as listas gerais (B2 passo 2, G7) só o Administrador. As abilities saem das Policies, que continuam decidindo cada rota.
  */
 class AbilitiesTest extends TestCase
 {
@@ -25,22 +25,22 @@ class AbilitiesTest extends TestCase
             'administrador' => [RoleEnum::ADMIN, [
                 'manage_users' => true, 'delete_records' => true, 'view_audit_logs' => true,
                 'reset_passwords' => true, 'view_clients' => true, 'view_contacts' => true,
-                'view_projects' => true, 'manage_projects' => true,
+                'view_projects' => true, 'manage_projects' => true, 'manage_lists' => true,
             ]],
             'gestor de projetos' => [RoleEnum::PROJECT_MANAGER, [
                 'manage_users' => false, 'delete_records' => false, 'view_audit_logs' => false,
                 'reset_passwords' => false, 'view_clients' => true, 'view_contacts' => true,
-                'view_projects' => true, 'manage_projects' => true,
+                'view_projects' => true, 'manage_projects' => true, 'manage_lists' => false,
             ]],
             'desenvolvedor' => [RoleEnum::DEVELOPER, [
                 'manage_users' => false, 'delete_records' => false, 'view_audit_logs' => false,
                 'reset_passwords' => false, 'view_clients' => false, 'view_contacts' => false,
-                'view_projects' => true, 'manage_projects' => false,
+                'view_projects' => true, 'manage_projects' => false, 'manage_lists' => false,
             ]],
             'comercial' => [RoleEnum::SALES, [
                 'manage_users' => false, 'delete_records' => false, 'view_audit_logs' => false,
                 'reset_passwords' => false, 'view_clients' => false, 'view_contacts' => false,
-                'view_projects' => false, 'manage_projects' => false,
+                'view_projects' => false, 'manage_projects' => false, 'manage_lists' => false,
             ]],
         ];
     }
@@ -66,6 +66,7 @@ class AbilitiesTest extends TestCase
             'view_contacts' => '/admin/contacts',
             'view_audit_logs' => '/admin/audit-logs',
             'view_projects' => '/projetos',
+            'manage_lists' => '/admin/listas',
         ];
 
         foreach ($rotas as $ability => $rota) {

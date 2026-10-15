@@ -106,6 +106,8 @@ Um bloco = uma feature na skill `tlc-spec-driven` (trilho completo) ou um PR com
 
 **Permissão.** `TaskPolicy`: `create` (alocado), `view` (alocado), `update` e `move` (alocado; sair do `Backlog` = `manageSprint`, gestor e admin), `archive`/`delete` (gestor e admin), `comment`/`attach`/`logTime` (alocado). Comercial e não alocado: 403, auditado.
 
+**Front pronto (kits de 14/10 e 15/10, D-GER-33).** As duas telas do bloco já existem sem backend, no Storybook: o quadro (`components/pages/w-project-board-page/`, PR #11) e a ficha com o sino (`components/pages/w-task-detail-page/`, `w-notifications-bell-organism`, PR #12). O contrato que o servidor cumpre está em `resources/js/types/quadro.ts` (`BoardCard`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`, `MovePayload` com `sequence` para renumerar a coluna, `TaskDetail`), e as rotas que as telas chamam estão no comentário do topo de cada página, como proposta: o B3 confirma ou renomeia e ajusta a página no mesmo commit. O B3 entrega o servidor e a ligação, em três PRs (quadro e card rápido → ficha → arquivar, suporte e avisos); prompt de partida na Sessão F do `docs/00-COMECE-AQUI.md`.
+
 ### B4. Teste cruzado e roteiro de QA
 
 **Funcional.** [`docs/funcional/f4-teste-e-qualidade.md`](funcional/f4-teste-e-qualidade.md). **Trilho leve.**
@@ -201,7 +203,7 @@ Copiado e ampliado de `necessidade.md`:
 
 ## 7. Travas
 
-O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Scholz** (decisão de 06/10). Cauã e Vitinho acionam só ele; se precisar, ele chama Lucas Alencar ou Alaor Rodrigues. A coluna "Com quem" diz quem ele envolve.
+O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Scholz** (decisão de 06/10). O Cauã aciona só ele; se precisar, ele chama Lucas Alencar ou Alaor Rodrigues. A coluna "Com quem" diz quem ele envolve.
 
 | Trava | Com quem | Bloqueia |
 |---|---|---|
@@ -214,7 +216,7 @@ O que para o desenvolvimento e exige humano. **Responsável por todas: Lucas Sch
 
 ## 8. Ordem de execução
 
-Duas pessoas (Cauã e Vitinho) em paralelo, com Lucas Scholz supervisionando. Detalhe de quem faz o quê e do rito do PR em [`docs/plano-de-desenvolvimento.md`](plano-de-desenvolvimento.md).
+Duas pessoas em paralelo: Cauã (B3 → B4 → B6 → B8) e, desde 15/10, Lucas Scholz (B2 passo 2 → B5 → B7 → B9; antes, Vitinho, D-GER-33/34), que também supervisiona. Detalhe de quem faz o quê e do rito do PR em [`docs/plano-de-desenvolvimento.md`](plano-de-desenvolvimento.md).
 
 1. **B0** repositório, migrações e base (depende de nada). Em paralelo, a prova de conceito do MCP.
 2. **B1** Núcleo ∥ **B2** Projeto e configuração (dependem de B0).

@@ -11,7 +11,7 @@
  * - `POST  /projetos/{id}/tipos`, `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  * - `POST  /projetos/{id}/areas`, `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  */
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Archive, CalendarRange, Settings } from 'lucide-react';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -349,7 +349,12 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             actions={
                 <>
                     <SoonAction icon={<CalendarRange aria-hidden />} label="Sprints" hint="Em breve (B5)" />
-                    <SoonAction icon={<Settings aria-hidden />} label="Configuração" hint="Em breve (B2)" />
+                    {/* A configuração do projeto (B2 passo 2): quem só vê o projeto abre só leitura (F2 §09). */}
+                    <Button variant="outline" asChild>
+                        <Link href={`/projetos/${project.id}/configuracao`}>
+                            <Settings aria-hidden /> Configuração
+                        </Link>
+                    </Button>
                 </>
             }
         >

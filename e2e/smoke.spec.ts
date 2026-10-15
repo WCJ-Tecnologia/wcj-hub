@@ -9,6 +9,7 @@ const SCREENS = [
     { path: '/admin/clients', title: 'Clientes' },
     { path: '/admin/contacts', title: 'Contatos' },
     { path: '/admin/audit-logs', title: 'Auditoria' },
+    { path: '/admin/listas', title: 'Listas' },
     { path: '/admin/profile', title: 'Meu perfil' },
 ];
 
@@ -26,12 +27,12 @@ for (const screen of SCREENS) {
     });
 }
 
-test('@smoke o menu Administração do administrador tem os quatro itens', async ({ page }) => {
+test('@smoke o menu Administração do administrador tem os cinco itens', async ({ page }) => {
     const admin = new AdminPage(page);
     await admin.goto('/admin/dashboard');
 
     await expect(admin.sidebar.getByText('Administração')).toBeVisible();
-    for (const item of ['Usuários', 'Clientes', 'Contatos', 'Auditoria']) {
+    for (const item of ['Usuários', 'Clientes', 'Contatos', 'Auditoria', 'Listas']) {
         await expect(admin.sidebar.getByRole('link', { name: item })).toBeVisible();
     }
 });

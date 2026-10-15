@@ -8,7 +8,10 @@ use App\Domains\Projetos\Services\ProjectPresenter;
 use App\Domains\Projetos\Services\ProjectQuery;
 use App\Domains\Projetos\Services\ProjectService;
 use App\Http\Controllers\Controller;
+use App\Platform\Requests\Admin\StoreClientRequest;
+use App\Platform\Services\ClientService;
 use App\Support\LocalTime;
+use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,6 +28,7 @@ class ProjectController extends Controller
         private readonly ProjectService $projects,
         private readonly ProjectQuery $query,
         private readonly ProjectPresenter $presenter,
+        private readonly ClientService $clients,
     ) {}
 
     public function index(Request $request): Response
@@ -46,6 +50,8 @@ class ProjectController extends Controller
             'filterOptions' => $this->query->filterOptions($user),
             // O dev não cria nem edita projeto: não recebe a lista de clientes e gestores (F1 §09).
             'formOptions' => $user->can('create', Project::class) ? $this->query->formOptions() : null,
+            // Para o "Novo cliente" dentro do formulário do projeto (N6, F2 §02).
+            'countries' => Paises::opcoes(),
             'today' => now(LocalTime::zone())->toDateString(),
         ]);
     }
@@ -55,6 +61,17 @@ class ProjectController extends Controller
         $project = $this->projects->create($request->projectData());
 
         return back()->with('success', "Projeto {$project->key_prefix} criado com o quadro padrão.");
+    }
+
+    /**
+     * "Novo cliente" sem sair do formulário do projeto (N6, F2 §02): o mesmo Service e a mesma
+     * Policy de Administração → Clientes; o id criado volta no flash para a tela deixá-lo escolhido.
+     */
+    public function storeClient(StoreClientRequest $request): RedirectResponse
+    {
+        $client = $this->clients->create($request->validated(), $request->user());
+
+        return back()->with('success', "Cliente {$client->name} criado e escolhido no projeto.")->with('created_id', $client->id);
     }
 
     public function update(StoreProjectRequest $request, Project $project): RedirectResponse

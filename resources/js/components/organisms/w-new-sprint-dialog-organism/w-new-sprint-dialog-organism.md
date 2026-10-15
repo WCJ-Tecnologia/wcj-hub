@@ -14,7 +14,7 @@ Diálogo _Nova sprint_ do F5 §02 (R5, P45, P46): abre quando o gestor arrasta u
 | Fim        | `addBusinessDays(início, project.sprint_days)`, contando o início como 1º dia útil | obrigatório; recalcula quando o início muda, até a pessoa mexer no fim; antes do início: "O fim não pode ser antes do início" na hora |
 | Dias úteis | `businessDaysBetween(início, fim)`                                                 | só leitura, seg–sex inclusive, sem feriado (P29, P48)                                                                                 |
 
-As contas de dia útil estão em `lib/dias-uteis.ts`, sobre `AAAA-MM-DD` em UTC (nunca o fuso do navegador). Ex. do F5: terça 06/10/2026 com 10 dias → segunda 19/10/2026.
+Os campos são os do `WSprintFieldsMolecule` (o mesmo de *Nova sprint* e *Editar sprint* da tela de sprints e da próxima sprint do encerramento, B5); este diálogo só põe o card e a proposta. As contas de dia útil estão em `lib/dias-uteis.ts`, sobre `AAAA-MM-DD` em UTC (nunca o fuso do navegador). Ex. do F5: terça 06/10/2026 com 10 dias → segunda 19/10/2026.
 
 ## Props
 

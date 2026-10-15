@@ -20,6 +20,8 @@ export interface Abilities {
     view_projects: boolean;
     /** ProjectPolicy::create: Administrador e Gestor de projetos. */
     manage_projects: boolean;
+    /** ReworkReasonPolicy::viewAny: só o Administrador edita as listas gerais (G7, F2 §09). */
+    manage_lists: boolean;
 }
 
 export interface AuthUser {
@@ -37,6 +39,8 @@ export interface FlashMessages {
     error?: string;
     /** Vem junto do success: a ação foi feita, com um aviso. */
     warning?: string;
+    /** O id do registro que a ação acabou de criar (o "Novo cliente" do formulário do projeto, N6). */
+    created_id?: number;
 }
 
 export interface PaginationLink {

@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 15,
+  "next_id": 18,
   "lessons": [
     {
       "id": "L-001",
@@ -265,6 +265,60 @@
       ],
       "created": "2026-10-09T15:01:42Z",
       "last_seen": "2026-10-09T15:01:42Z"
+    },
+    {
+      "id": "L-015",
+      "key": "surviving_mutant::prove a negacao auditada contando exatamente uma linha denied nova por requisicao com user id nunca lendo latest id",
+      "text": "Prove a negação auditada contando exatamente uma linha denied nova por requisição, com user_id, nunca lendo latest('id').",
+      "signal": "surviving_mutant",
+      "scope": "tests/negacao",
+      "status": "candidate",
+      "features": [
+        "b5-sprint-e-horas"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tests/Feature/Projetos/SprintPolicyTest.php:191 (tests/negacao)"
+      ],
+      "created": "2026-10-15T15:29:13Z",
+      "last_seen": "2026-10-15T15:29:13Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::toda ability da policy inclusive a sem chamador view por registro e a exclusao precisa de um teste positivo por quem pode nao so de negacao",
+      "text": "Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.",
+      "signal": "ac_gap",
+      "scope": "tests/policy",
+      "status": "candidate",
+      "features": [
+        "b5-sprint-e-horas"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SPR-01 AC1 / DEL-01 AC1 (tests/policy)"
+      ],
+      "created": "2026-10-15T15:29:13Z",
+      "last_seen": "2026-10-15T15:29:13Z"
+    },
+    {
+      "id": "L-017",
+      "key": "surviving_mutant::escrita mais auditoria na mesma transacao so se prova com databasetruncation e um auditservice que lanca refreshdatabase esconde a falta da transacao",
+      "text": "Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.",
+      "signal": "surviving_mutant",
+      "scope": "tests/transacao",
+      "status": "candidate",
+      "features": [
+        "b5-sprint-e-horas"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SprintService::delete sem DB::transaction (tests/transacao)"
+      ],
+      "created": "2026-10-15T15:29:13Z",
+      "last_seen": "2026-10-15T15:29:13Z"
     }
   ]
 }

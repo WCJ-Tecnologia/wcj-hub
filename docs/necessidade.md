@@ -57,6 +57,7 @@ Esta tabela guarda só as **decisões de projeto**: quem decide, prazo, stack, h
 | D-GER-31 | 09/10/2026 | **Quem aprova os funcionais é Lucas Scholz**, todos os blocos. Rafael Garcia participou de Projetos com feedback e elaboração (reunião de 24/09, modelos e pontos a validar) e valida o uso no bugbash; não assina aprovação. Corrige a D-GER-28. |
 | D-GER-32 | 13/10/2026 | **Card do quadro** (proposta de Lucas Varanda, decidida por Lucas Scholz): a "tag" do card é a **Área** do projeto (uma por card, P18; sem tags múltiplas); **card pai**, um nível, com a subtask como card normal do quadro e o progresso calculado pela etapa dos filhos (P57; descartada a subtask dentro do card, que seria um segundo checklist ao lado dos `CA_n`); esforço é só **Horas previstas** (P27; sem pontos); **participantes** além de Dev e QA (P58); **capa** escolhida entre os anexos (P59). No `banco.md`: `tasks.parent_task_id`, `tasks.cover_attachment_id` e a tabela `task_participants` (seção 7), a aprovar por Lucas Alencar antes do B3. |
 | D-GER-33 | 14/10/2026 | **Lucas Varanda e Vitinho (Victor Costa) saíram do projeto.** O front que o Varanda faria (D-GER-29: shell e componentes que o template não tem) passa a ser entregue por Lucas Scholz com IA, a começar pelo kit do quadro (F3), para o Cauã seguir com o B3. Os blocos que eram do Vitinho (B2 passo 2, B5, B7, B9) e o teste cruzado dos PRs do Cauã ficam a redistribuir, por decisão de Lucas Scholz. Corrige a D-GER-25 na divisão de pessoas, não no trilho. |
+| D-GER-34 | 15/10/2026 | **Lucas Scholz assume o lado do Vitinho.** Os blocos que eram dele (B2 passo 2, B5, B7, B9) passam a ser desenvolvidos por Lucas Scholz com IA, em paralelo com o Cauã (B3 → B4 → B6 → B8), na ordem da coluna do Vitinho no plano. Teste cruzado: o Cauã confere os PRs do Lucas Scholz; Lucas Scholz confere os do Cauã (quem fez não confere). Fecha a redistribuição deixada em aberto pela D-GER-33. |
 | D-GER-28 | 06/10/2026 | **Documento funcional por bloco** (`docs/funcional/`), no modelo dos funcionais da PTA: aprovado antes da spec (dono por bloco revisto na D-GER-31). O `docs/escopo.md` aponta para eles, e a spec de cada bloco nasce do funcional aprovado. |
 | D-IA-04 | 24/09/2026 | Todos os usuários internos têm plano **Pro ou superior** (Claude e/ou ChatGPT). Nenhum usa plano gratuito. |
 | D-IA-07 | 24/09/2026 | Limite por conexão: leitura 60/min, escrita 20/min, ajustáveis (IA7). Servidor MCP com `laravel/mcp`; login da IA por OAuth 2.1 com Passport. |
@@ -544,7 +545,7 @@ Consequência para a v1 (IA3):
 | Chamados | Alaor Rodrigues (D-GER-04) |
 | Interface de IA | Lucas Scholz (produto) + Lucas Alencar (técnico) (D-GER-07) |
 | **Pessoa técnica que aprova o banco (etapa 2)** | **Lucas Alencar** (D-GER-01) |
-| **Execução** | Cauã e Vitinho, com IA; supervisão, aprovação de funcional, spec e PR por Lucas Scholz (D-GER-25) |
+| **Execução** | Cauã e Lucas Scholz, com IA (desde 15/10, D-GER-34; até 14/10, Cauã e Vitinho, D-GER-25); supervisão, aprovação de funcional, spec e PR por Lucas Scholz |
 | **Front-end e marca no template** | Lucas Varanda (D-GER-29) |
 | Infraestrutura (VPS) | Alaor Rodrigues (D-GER-19) |
 

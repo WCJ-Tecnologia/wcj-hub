@@ -98,6 +98,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tests/Feature/Nucleo/ClientServiceTest.php:508 (rodada 12, 1a execucao) (tests)
 - last seen: 2026-10-09T15:01:42Z
 
+### L-015 - Prove a negação auditada contando exatamente uma linha denied nova por requisição, com user_id, nunca lendo latest('id').
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/negacao` · harmful: 0
+- features: b5-sprint-e-horas
+- evidence: tests/Feature/Projetos/SprintPolicyTest.php:191 (tests/negacao)
+- last seen: 2026-10-15T15:29:13Z
+
+### L-016 - Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `tests/policy` · harmful: 0
+- features: b5-sprint-e-horas
+- evidence: SPR-01 AC1 / DEL-01 AC1 (tests/policy)
+- last seen: 2026-10-15T15:29:13Z
+
+### L-017 - Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/transacao` · harmful: 0
+- features: b5-sprint-e-horas
+- evidence: SprintService::delete sem DB::transaction (tests/transacao)
+- last seen: 2026-10-15T15:29:13Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

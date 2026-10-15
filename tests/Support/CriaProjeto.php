@@ -4,9 +4,11 @@ namespace Tests\Support;
 
 use App\Domains\Projetos\Models\BoardStage;
 use App\Domains\Projetos\Models\Project;
+use App\Domains\Projetos\Models\Sprint;
 use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskPriority;
+use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -93,6 +95,37 @@ trait CriaProjeto
     protected function etapa(Project $project, int $role): BoardStage
     {
         return $project->boardStages()->where('stage_role_id', $role)->whereNull('archived_at')->firstOrFail();
+    }
+
+    /**
+     * Sprint gravada direto (B5): aberta por padrão, de 06/10 a 19/10/2026 (10 dias úteis).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    protected function sprint(Project $project, array $attributes = []): Sprint
+    {
+        return $project->sprints()->create([
+            'name' => 'Sprint '.($project->sprints()->count() + 1),
+            'starts_on' => '2026-10-06',
+            'ends_on' => '2026-10-19',
+            ...$attributes,
+        ]);
+    }
+
+    /**
+     * O movimento que leva a tarefa a uma etapa, no instante dado (UTC), como o B3 vai gravar: é
+     * a fonte da 1ª entrada em desenvolvimento da data prevista (P28).
+     */
+    protected function moverEm(Task $task, BoardStage $to, string $utc, ?User $by = null): void
+    {
+        TaskStageMovement::query()->forceCreate([
+            'task_id' => $task->id,
+            'moved_by' => ($by ?? User::factory()->create())->id,
+            'from_board_stage_id' => $task->board_stage_id,
+            'to_board_stage_id' => $to->id,
+            'created_at' => $utc,
+        ]);
+        $task->forceFill(['board_stage_id' => $to->id])->save();
     }
 
     /**

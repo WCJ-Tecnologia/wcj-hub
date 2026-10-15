@@ -92,6 +92,18 @@ Etiquetas (decisões de 14/10, como no Trello): tipo e área são `atoms/w-tag-a
 
 Regra do kit, a mesma do quadro: os organismos só devolvem intenção por callback e recebem `busy` e `errors`; quem grava é a página, uma escrita por vez, e o erro do servidor abre a seção do campo (`FIELD_SECTION`). As rotas estão no topo de `w-task-detail-page.tsx` e de `w-notifications-bell-organism.tsx`, como proposta; o B3 confirma.
 
+## Configuração do projeto e listas gerais (F2)
+
+O B2 passo 2: `/projetos/{id}/configuracao` e `/admin/listas`, já com backend. O contrato é `types/configuracao.ts` (o que o `ProjectSettingsPresenter` manda) e as fixtures, `.storybook/fixtures-configuracao.ts`.
+
+Como se encaixam: `pages/w-project-settings-page` põe as abas (`shadcn/tabs`, aba na URL) e cada aba é um organismo que faz as próprias escritas: `w-project-members-tab-organism` (com o `w-allocate-people-dialog-organism`), `w-board-stages-tab-organism` (lista reordenável por dnd-kit, `w-board-stage-form-dialog-organism`, `w-remove-board-stage-dialog-organism` com o destino dos cards), `w-project-areas-tab-organism` (`w-project-area-form-dialog-organism`) e `w-project-defaults-tab-organism`. `pages/w-lists-page` tem os motivos de retrabalho (`w-rework-reason-form-dialog-organism`). O dev alocado vê Pessoas e Etapas só leitura (`project.can.manage` falso). A cor da área entra com a coluna `project_areas.color` (B3), pelo `w-tag-color-picker-molecule` no formulário da área.
+
+## Sprints e horas (F5)
+
+O B5: `/projetos/{id}/sprints` e `/minhas-horas`, com backend. Os contratos são `types/sprints.ts` (o que o `SprintScreen` e o `SprintPresenter` mandam) e `types/horas.ts` (o `TimeEntryPresenter`); as fixtures, `.storybook/fixtures-sprints.ts` e `.storybook/fixtures-horas.ts`.
+
+Como se encaixam: `pages/w-project-sprints-page` junta `w-sprint-list-organism` (a aberta em destaque, as encerradas na tabela, *Ver tarefas*), `w-sprint-tasks-organism` (filtros, horas previstas na linha, reestimativa, *Tirar da sprint*) e `w-capacity-panel-organism` (só para quem gere), com os diálogos `w-sprint-form-dialog-organism` (criar e editar) e `w-close-sprint-dialog-organism` (destino de cada tarefa e a próxima sprint). Os campos da sprint são um só, `w-sprint-fields-molecule`, no visual do `w-new-sprint-dialog-organism` do kit do quadro (que continua sendo o diálogo do arrastar, R5). `pages/w-my-hours-page` tem o período, os totais e o `w-time-entry-form-dialog-organism` (lançar e corrigir, com o `w-task-picker-molecule` do kit da ficha). As contas de dia útil são do `lib/dias-uteis.ts` na tela e do `App\Support\DiasUteis` no servidor, com os mesmos exemplos nos testes.
+
 ## Storybook e Inertia
 
 Não há Laravel atrás do Storybook. Por isso o `@inertiajs/react` é trocado por `.storybook/inertia-mock.tsx`:

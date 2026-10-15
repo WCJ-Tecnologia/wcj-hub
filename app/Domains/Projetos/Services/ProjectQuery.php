@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class ProjectQuery
 {
+    /** Quem pode ser alocado (F2 §02): Administrador, Gestor de projetos e Desenvolvedor; o Comercial não (C14). */
+    public const MEMBER_ROLES = [RoleEnum::ADMIN->value, RoleEnum::PROJECT_MANAGER->value, RoleEnum::DEVELOPER->value];
+
     /**
      * @param  array{search: string, client_id: ?int, manager_id: ?int, type: ?string, finished: bool}  $filters
      * @return LengthAwarePaginator<int, Project>

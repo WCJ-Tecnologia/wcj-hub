@@ -1,0 +1,231 @@
+/** Dados de exemplo da configuração do projeto e das listas gerais (F2), no formato do ProjectSettingsPresenter. */
+import type {
+    AreaRow,
+    MemberRow,
+    PersonOption,
+    ProjectSettingsFilters,
+    ReworkReasonRow,
+    SettingsProject,
+    StageRoleOption,
+    StageRow,
+} from '@/types/configuracao';
+
+export const SETTINGS_PROJECT: SettingsProject = {
+    id: 1,
+    key_prefix: 'SGM',
+    name: 'Gestão de multas',
+    client: '[Exemplo] Rezende Bouw',
+    manager: 'Carla Dias',
+    finished_at: null,
+    defaults: { require_pause_reason: true, sprint_days: 10 },
+    can: { manage: true },
+};
+
+export const SETTINGS_FILTERS: ProjectSettingsFilters = { tab: 'pessoas', show_inactive: false };
+
+export const MEMBERS: MemberRow[] = [
+    {
+        id: 1,
+        user_id: 2,
+        name: 'Bruno Lima',
+        role_label: 'Desenvolvedor',
+        daily_hours: '6.50',
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        tasks_as_dev: 3,
+        tasks_as_qa: 1,
+    },
+    {
+        id: 2,
+        user_id: 3,
+        name: 'Carla Dias',
+        role_label: 'Gestor de projetos',
+        daily_hours: '8.00',
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        tasks_as_dev: 0,
+        tasks_as_qa: 2,
+    },
+    {
+        id: 3,
+        user_id: 7,
+        name: 'Diego Nunes',
+        role_label: 'Desenvolvedor',
+        daily_hours: '8.00',
+        active: false,
+        deactivated_at: '02/10/2026 14:10',
+        deactivated_by: 'Ana Souza',
+        tasks_as_dev: 0,
+        tasks_as_qa: 0,
+    },
+];
+
+export const PEOPLE_OPTIONS: PersonOption[] = [
+    { id: 1, name: 'Ana Souza', role_label: 'Administrador' },
+    { id: 4, name: 'Eduardo Prado', role_label: 'Desenvolvedor' },
+    { id: 5, name: 'Fernanda Rocha', role_label: 'Desenvolvedor' },
+    { id: 6, name: 'Gustavo Reis', role_label: 'Gestor de projetos' },
+];
+
+/** O quadro padrão da P10 (14/10), com histórico no Doing e cards em três etapas. */
+export const STAGES: StageRow[] = [
+    {
+        id: 1,
+        name: 'Support',
+        position: 1,
+        role_id: 8,
+        role_slug: 'support',
+        role_label: 'Suporte',
+        cards: 1,
+        role_locked: true,
+        removable: false,
+    },
+    {
+        id: 2,
+        name: 'Backlog',
+        position: 2,
+        role_id: 1,
+        role_slug: 'queue',
+        role_label: 'Fila',
+        cards: 6,
+        role_locked: true,
+        removable: false,
+    },
+    {
+        id: 3,
+        name: 'To do',
+        position: 3,
+        role_id: 2,
+        role_slug: 'sprint',
+        role_label: 'Sprint',
+        cards: 2,
+        role_locked: true,
+        removable: false,
+    },
+    {
+        id: 4,
+        name: 'Paused',
+        position: 4,
+        role_id: 7,
+        role_slug: 'paused',
+        role_label: 'Pausa',
+        cards: 0,
+        role_locked: false,
+        removable: true,
+    },
+    {
+        id: 5,
+        name: 'Doing',
+        position: 5,
+        role_id: 3,
+        role_slug: 'development',
+        role_label: 'Desenvolvimento',
+        cards: 3,
+        role_locked: true,
+        removable: true,
+    },
+    {
+        id: 6,
+        name: 'Code-review',
+        position: 6,
+        role_id: 4,
+        role_slug: 'code_review',
+        role_label: 'Code review',
+        cards: 0,
+        role_locked: false,
+        removable: true,
+    },
+    {
+        id: 7,
+        name: 'In test',
+        position: 7,
+        role_id: 5,
+        role_slug: 'test',
+        role_label: 'Teste',
+        cards: 1,
+        role_locked: false,
+        removable: true,
+    },
+    {
+        id: 8,
+        name: 'Done',
+        position: 8,
+        role_id: 6,
+        role_slug: 'done',
+        role_label: 'Pronto',
+        cards: 12,
+        role_locked: true,
+        removable: true,
+    },
+];
+
+export const STAGE_ROLES: StageRoleOption[] = [
+    { id: 3, label: 'Desenvolvimento' },
+    { id: 4, label: 'Code review' },
+    { id: 5, label: 'Teste' },
+    { id: 6, label: 'Pronto' },
+    { id: 7, label: 'Pausa' },
+];
+
+export const AREAS: AreaRow[] = [
+    { id: 1, name: 'Admin', active: true, deactivated_at: null, deactivated_by: null },
+    { id: 2, name: 'Âncora', active: true, deactivated_at: null, deactivated_by: null },
+    { id: 3, name: 'Fornecedores', active: false, deactivated_at: '30/09/2026 09:12', deactivated_by: 'Carla Dias' },
+];
+
+const CAN_REASON = { update: true, deactivate: true, reactivate: false, delete: true };
+
+export const REWORK_REASONS: ReworkReasonRow[] = [
+    {
+        id: 1,
+        label: 'Ajuste visual',
+        requires_text: false,
+        fixed: false,
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        can: CAN_REASON,
+    },
+    {
+        id: 3,
+        label: 'Erro / bug',
+        requires_text: false,
+        fixed: false,
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        can: { ...CAN_REASON, delete: false },
+    },
+    {
+        id: 2,
+        label: 'Regra de negócio',
+        requires_text: false,
+        fixed: false,
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        can: CAN_REASON,
+    },
+    {
+        id: 4,
+        label: 'Requisito incompleto ou mal documentado',
+        requires_text: false,
+        fixed: false,
+        active: false,
+        deactivated_at: '01/10/2026 10:00',
+        deactivated_by: 'Ana Souza',
+        can: { update: true, deactivate: false, reactivate: true, delete: true },
+    },
+    {
+        id: 5,
+        label: 'Outro',
+        requires_text: true,
+        fixed: true,
+        active: true,
+        deactivated_at: null,
+        deactivated_by: null,
+        can: { update: true, deactivate: false, reactivate: false, delete: false },
+    },
+];
