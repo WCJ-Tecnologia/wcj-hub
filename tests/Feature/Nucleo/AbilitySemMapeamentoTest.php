@@ -25,7 +25,7 @@ class AbilitySemMapeamentoTest extends TestCase
         parent::setUp();
 
         // Uma ability que o enum não conhece, negada a todos, numa rota como as do Hub.
-        Gate::define('archive', fn () => false);
+        Gate::define('arquivarTeste', fn () => false);
         Route::middleware(['web', 'auth'])->post('/teste/clients/{client}/archive', [ArquivaCliente::class, 'archive']);
     }
 
@@ -38,7 +38,7 @@ class AbilitySemMapeamentoTest extends TestCase
 
         $log = AuditLog::query()->sole();
         $this->assertSame($dev->id, $log->user_id);
-        $this->assertSame('archive', $log->action);
+        $this->assertSame('arquivarTeste', $log->action);
         $this->assertSame(AuditLog::OUTCOME_DENIED, $log->outcome);
         $this->assertSame('client', $log->auditable_type);
         $this->assertSame($client->id, $log->auditable_id);
@@ -55,7 +55,7 @@ class AbilitySemMapeamentoTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->has('logs.data', 1)
-                ->where('logs.data.0.action', 'archive')
+                ->where('logs.data.0.action', 'arquivarTeste')
                 ->where('logs.data.0.action_label', 'Outra ação')
                 ->where('logs.data.0.user', 'Davi Dev')
                 ->where('logs.data.0.record', 'Cliente Padaria Pão Quente')
@@ -68,6 +68,6 @@ class ArquivaCliente extends Controller
 {
     public function archive(Client $client): void
     {
-        $this->authorize('archive', $client);
+        $this->authorize('arquivarTeste', $client);
     }
 }

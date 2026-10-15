@@ -49,6 +49,13 @@ class AuditActionEnumTest extends TestCase
             'reopen' => ['reopen', AuditActionEnum::REOPENED],
             'manageTasks' => ['manageTasks', AuditActionEnum::UPDATED],
             'viewCapacity' => ['viewCapacity', AuditActionEnum::VIEWED],
+            // Quadro e card (B3).
+            'createSupport' => ['createSupport', AuditActionEnum::CREATED],
+            'move' => ['move', AuditActionEnum::MOVED],
+            'manageSprint' => ['manageSprint', AuditActionEnum::UPDATED],
+            'comment' => ['comment', AuditActionEnum::UPDATED],
+            'attach' => ['attach', AuditActionEnum::UPDATED],
+            'archive' => ['archive', AuditActionEnum::ARCHIVED],
         ];
     }
 
@@ -62,8 +69,8 @@ class AuditActionEnumTest extends TestCase
     // o nome da ability, e o rótulo fica genérico.
     public function test_ability_sem_acao_mapeada_nao_vira_acao_do_enum(): void
     {
-        $this->assertNull(AuditActionEnum::forAbility('archive'));
-        $this->assertSame('Outra ação', AuditActionEnum::labelOf('archive'));
+        $this->assertNull(AuditActionEnum::forAbility('abilitySemMapa'));
+        $this->assertSame('Outra ação', AuditActionEnum::labelOf('abilitySemMapa'));
         $this->assertSame('Desativado', AuditActionEnum::labelOf('deactivated'));
     }
 }
