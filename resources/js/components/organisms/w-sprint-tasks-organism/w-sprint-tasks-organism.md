@@ -12,7 +12,7 @@ Na sprint aberta, para quem gere (`canManage`, a ability `manageTasks`):
 - a marca "Reestimativa proposta: 24 h" com _Aprovar_ e _Recusar_ (P27);
 - _Tirar da sprint_, com confirmação: o card volta ao Backlog, sem retrabalho (P45).
 
-Vazio: "Nenhuma tarefa nesta sprint." com _Abrir o quadro_.
+Vazio: "Nenhuma tarefa nesta sprint." com _Abrir o quadro_ e o texto que aponta o _Montar sprint_ do quadro (D-GER-35).
 
 ## Props
 
