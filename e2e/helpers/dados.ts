@@ -112,10 +112,16 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
             $ids[] = App\\Domains\\Projetos\\Models\\Task::query()->create([
                 'project_id' => $project->id, 'number' => $project->last_task_number, 'board_stage_id' => $queue,
                 'title' => $title, 'developer_id' => ${devId}, 'estimated_hours' => $hours,
+                // Tipo e prioridade ainda são obrigatórios no banco até a migração do B3 (14/10).
+                'task_type_id' => App\\Domains\\Projetos\\Models\\TaskType::query()->where('slug', 'improvement')->value('id'),
+                'task_priority_id' => App\\Domains\\Projetos\\Models\\TaskPriority::NORMAL,
             ])->id;
         }
         echo $project->id.','.implode(',', $ids);
     `);
-    const [projectId, ...taskIds] = out.split(/\s+/).pop()!.split(',').map(Number);
+    // O tinker devolve exit 0 mesmo quando o código lança: confere a saída.
+    const last = out.split(/\s+/).pop() ?? '';
+    if (!/^\d+(,\d+)+$/.test(last)) throw new Error(`createSprintProject falhou: ${out}`);
+    const [projectId, ...taskIds] = last.split(',').map(Number);
     return { projectId, taskIds };
 }

@@ -76,6 +76,8 @@ test('@smoke o gestor cria a sprint, acompanha a capacidade e encerra decidindo 
 test('@smoke Minhas horas: lançar, corrigir e excluir', async ({ page, axe }) => {
     test.setTimeout(60_000);
     const devId = createUser(`Dev H${PREFIX}`, 3);
+    // A tarefa desta rodada pela chave: o banco do e2e guarda lançamentos de rodadas anteriores.
+    const key = `${`H${PREFIX}`.slice(0, 10)}-2`;
     createSprintProject(`H${PREFIX}`.slice(0, 10), devId);
 
     await page.goto('/minhas-horas');
@@ -84,15 +86,14 @@ test('@smoke Minhas horas: lançar, corrigir e excluir', async ({ page, axe }) =
 
     await page.getByRole('button', { name: 'Lançar horas' }).first().click();
     const dialog = page.getByRole('dialog', { name: 'Lançar horas' });
-    await dialog.getByLabel('Buscar tarefa por chave ou título').fill('Filtro por placa');
-    await dialog
-        .getByRole('option', { name: /Filtro por placa/ })
-        .first()
-        .click();
+    await dialog.getByRole('combobox', { name: 'Buscar tarefa por chave ou título' }).fill(key);
+    await dialog.getByRole('option', { name: new RegExp(key) }).click();
     await dialog.getByLabel('Horas').fill('25');
     await dialog.getByRole('button', { name: 'Lançar' }).click();
     await expect(dialog.getByText('Informe horas maiores que 0 e até 24')).toBeVisible();
     await dialog.getByLabel('Horas').fill('2,5');
+    // O mouse ficou sobre o botão depois do clique: o hover (bg-primary/90) não é o estado que o axe confere.
+    await page.mouse.move(0, 0);
     expect((await axe().include('[role="dialog"]').analyze()).violations).toEqual([]);
     await print(page, '06-lancar-horas');
     await dialog.getByRole('button', { name: 'Lançar' }).click();
@@ -100,23 +101,19 @@ test('@smoke Minhas horas: lançar, corrigir e excluir', async ({ page, axe }) =
     await expect(page.getByText('Horas lançadas.')).toBeVisible();
 
     const table = page.getByRole('table', { name: 'Meus lançamentos de horas' });
-    await expect(table.getByText('2,5 h')).toBeVisible();
+    const row = table.getByRole('row').filter({ hasText: key });
+    await expect(row.getByText('2,5 h')).toBeVisible();
     await print(page, '07-minhas-horas');
 
-    await table
-        .getByRole('button', { name: /^Corrigir 2,5 h/ })
-        .first()
-        .click();
+    await row.getByRole('button', { name: `Corrigir 2,5 h de ${await row.getByRole('cell').first().innerText()} em ${key}` }).click();
     const fix = page.getByRole('dialog', { name: 'Corrigir lançamento' });
     await fix.getByLabel('Horas').fill('3');
     await fix.getByRole('button', { name: 'Salvar correção' }).click();
     await expect(fix).toBeHidden();
-    await expect(table.getByText('3 h', { exact: true })).toBeVisible();
+    await expect(row.getByText('3 h', { exact: true })).toBeVisible();
 
-    await table
-        .getByRole('button', { name: /^Excluir 3 h/ })
-        .first()
-        .click();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Excluir' }).click();
+    await row.getByRole('button', { name: new RegExp(`^Excluir 3 h de .* em ${key}$`) }).click();
+    await page.getByRole('dialog', { name: 'Excluir lançamento' }).getByRole('button', { name: 'Excluir' }).click();
     await expect(page.getByText('Lançamento excluído.')).toBeVisible();
+    await expect(row).toHaveCount(0);
 });
