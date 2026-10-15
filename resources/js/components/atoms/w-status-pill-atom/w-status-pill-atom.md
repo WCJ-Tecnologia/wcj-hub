@@ -11,13 +11,13 @@ Pílula de status com ícone e texto, feita sobre o `Badge` do shadcn (variantes
 
 ## Props
 
-| Prop        | Tipo                                                                     | Padrão      | Obrigatória | Para quê                                                                  |
-| ----------- | ------------------------------------------------------------------------ | ----------- | ----------- | ------------------------------------------------------------------------- |
-| `status`    | `string \| boolean \| null \| undefined`                                 |             | sim         | Valor técnico. Booleano vira `active`/`inactive`. Nulo não renderiza nada |
-| `kind`      | `'user' \| 'client' \| 'contact' \| 'audit' \| 'project' \| 'criterion'` |             | sim         | Dicionário que traduz o status (tabela abaixo)                            |
-| `label`     | `string`                                                                 |             | não         | Substitui o rótulo do dicionário                                          |
-| `size`      | `'default' \| 'sm'`                                                      | `'default'` | não         | `sm` para card de celular                                                 |
-| `className` | `string`                                                                 |             | não         |                                                                           |
+| Prop        | Tipo                                                                                 | Padrão      | Obrigatória | Para quê                                                                  |
+| ----------- | ------------------------------------------------------------------------------------ | ----------- | ----------- | ------------------------------------------------------------------------- |
+| `status`    | `string \| boolean \| null \| undefined`                                             |             | sim         | Valor técnico. Booleano vira `active`/`inactive`. Nulo não renderiza nada |
+| `kind`      | `'user' \| 'client' \| 'contact' \| 'audit' \| 'project' \| 'criterion' \| 'sprint'` |             | sim         | Dicionário que traduz o status (tabela abaixo)                            |
+| `label`     | `string`                                                                             |             | não         | Substitui o rótulo do dicionário                                          |
+| `size`      | `'default' \| 'sm'`                                                                  | `'default'` | não         | `sm` para card de celular                                                 |
+| `className` | `string`                                                                             |             | não         |                                                                           |
 
 ## Dicionários (`kind`)
 
@@ -29,6 +29,7 @@ Pílula de status com ícone e texto, feita sobre o `Badge` do shadcn (variantes
 | `audit`     | `success` Ok, `denied` Negado                                                     | F1 §03, G3       |
 | `project`   | `active` Aberto, `inactive` Encerrado                                             | F2 §02, P7       |
 | `criterion` | `pending` A testar (pendente), `approved` Aprovado, `failed` Reprovado (vermelho) | F3 §02, P36      |
+| `sprint`    | `active` Aberta, `inactive` Encerrada                                             | F5 §02, P45, P50 |
 
 ## Exemplo
 

@@ -57,7 +57,13 @@ const CRITERION: Record<string, Entry> = {
     failed: { tone: 'rejected', icon: XCircle, label: 'Reprovado' },
 };
 
-const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT, project: PROJECT, criterion: CRITERION };
+// F5 §02: a situação da sprint é Aberta ou Encerrada (P45, P50).
+const SPRINT: Record<string, Entry> = {
+    active: { tone: 'approved', icon: CheckCircle2, label: 'Aberta' },
+    inactive: { tone: 'neutral', icon: XCircle, label: 'Encerrada' },
+};
+
+const SETS = { user: USER, client: CLIENT, contact: CONTACT, audit: AUDIT, project: PROJECT, criterion: CRITERION, sprint: SPRINT };
 
 export type WStatusPillKind = keyof typeof SETS;
 
