@@ -118,10 +118,10 @@ class SprintAbertaConcorrenciaTest extends TestCase
 
         $corrida = Concorrencia::intercalarDepoisDe(
             self::checagemDaAberta(),
-            fn () => app(SprintTaskService::class)->addMany($project, [$c->id], $gestor, [...self::SPRINT, 'name' => 'Sprint 2']),
+            fn () => app(SprintTaskService::class)->addMany($project, [['id' => $c->id]], $gestor, [...self::SPRINT, 'name' => 'Sprint 2']),
         );
 
-        app(SprintTaskService::class)->addMany($project, [$a->id, $b->id], $gestor, self::SPRINT);
+        app(SprintTaskService::class)->addMany($project, [['id' => $a->id], ['id' => $b->id]], $gestor, self::SPRINT);
 
         $this->assertTrue($corrida->rodou);
         $this->assertNull($corrida->outroErro);

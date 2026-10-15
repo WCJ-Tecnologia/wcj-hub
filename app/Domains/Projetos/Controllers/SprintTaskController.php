@@ -53,7 +53,7 @@ class SprintTaskController extends Controller
     public function storeMany(SprintTasksBatchRequest $request, Project $project): RedirectResponse
     {
         return $this->attempt(
-            fn () => $this->sprints->addMany($project, $request->taskIds(), $request->user(), $request->newSprint()),
+            fn () => $this->sprints->addMany($project, $request->plan(), $request->user(), $request->newSprint()),
             function (array $result) {
                 $name = $result['sprint']->name;
                 $count = $result['count'];

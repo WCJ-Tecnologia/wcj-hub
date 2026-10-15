@@ -5,9 +5,12 @@ namespace Tests\Feature\Projetos;
 use App\Domains\Projetos\Models\Sprint;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TimeEntry;
+use App\Domains\Projetos\Services\DueDateService;
 use App\Domains\Projetos\Services\SprintService;
 use App\Domains\Projetos\Services\SprintTaskMover;
 use App\Domains\Projetos\Services\SprintTaskService;
+use App\Domains\Projetos\Services\TaskAssignmentService;
+use App\Domains\Projetos\Services\TaskHoursService;
 use App\Domains\Projetos\Services\TimeEntryService;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\AuditLog;
@@ -116,10 +119,11 @@ class B5TransacaoTest extends TestCase
             }
         };
         $mover = new SprintTaskMover($audit);
-        $service = new SprintTaskService(new SprintService($audit, $mover), $mover);
+        $dueDates = new DueDateService;
+        $service = new SprintTaskService(new SprintService($audit, $mover), $mover, new TaskAssignmentService($audit, $dueDates), new TaskHoursService($audit, $dueDates));
         $nova = ['name' => 'Sprint 1', 'goal' => null, 'starts_on' => '2026-10-06', 'ends_on' => '2026-10-19'];
 
-        $this->assertSame('a auditoria falhou', $this->failure(fn () => $service->addMany($project, array_map(fn ($task) => $task->id, $tasks), $this->gestor, $nova)));
+        $this->assertSame('a auditoria falhou', $this->failure(fn () => $service->addMany($project, array_map(fn ($task) => ['id' => $task->id], $tasks), $this->gestor, $nova)));
 
         $this->assertSame(0, Sprint::query()->count());
         foreach ($tasks as $task) {
