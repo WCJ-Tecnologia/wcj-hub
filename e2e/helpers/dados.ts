@@ -90,3 +90,32 @@ export function createUser(name: string, roleId: 1 | 2 | 3 | 4, password?: strin
         `),
     );
 }
+
+/**
+ * Projeto do B5 com o quadro padrão, o dev alocado e duas tarefas no Backlog (o card é do B3: as
+ * tarefas são gravadas direto, com o número pelo contador). Devolve os ids.
+ */
+export function createSprintProject(prefix: string, devId: number): { projectId: number; taskIds: number[] } {
+    const out = tinker(`
+        $admin = App\\Platform\\Models\\User::query()->where('email', 'like', '%e2e%')->where('role_id', 1)->orderBy('id')->firstOrFail();
+        $client = App\\Platform\\Models\\Client::query()->create(['name' => ${JSON.stringify(`Cliente ${prefix}`)}, 'country' => 'US', 'document' => null]);
+        $project = App\\Domains\\Projetos\\Models\\Project::query()->create([
+            'client_id' => $client->id, 'manager_id' => $admin->id, 'key_prefix' => ${JSON.stringify(prefix)},
+            'name' => ${JSON.stringify(`Sprints ${prefix}`)}, 'starts_on' => now('America/Sao_Paulo')->toDateString(),
+        ]);
+        app(App\\Domains\\Projetos\\Services\\BoardStageService::class)->createDefaultBoard($project);
+        $project->members()->create(['user_id' => ${devId}]);
+        $queue = $project->boardStages()->where('stage_role_id', 1)->value('id');
+        $ids = [];
+        foreach ([['Tela de recurso de multa', 16], ['Filtro por placa', null]] as [$title, $hours]) {
+            $project->increment('last_task_number');
+            $ids[] = App\\Domains\\Projetos\\Models\\Task::query()->create([
+                'project_id' => $project->id, 'number' => $project->last_task_number, 'board_stage_id' => $queue,
+                'title' => $title, 'developer_id' => ${devId}, 'estimated_hours' => $hours,
+            ])->id;
+        }
+        echo $project->id.','.implode(',', $ids);
+    `);
+    const [projectId, ...taskIds] = out.split(/\s+/).pop()!.split(',').map(Number);
+    return { projectId, taskIds };
+}
