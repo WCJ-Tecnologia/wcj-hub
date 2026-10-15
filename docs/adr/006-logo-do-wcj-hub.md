@@ -1,31 +1,30 @@
 # ADR-006: Logo do WCJ Hub
 
 **Data:** 2026-10-14
-**Estado:** proposta
-**Decidido por:** aguarda Lucas Scholz
+**Estado:** aprovada
+**Decidido por:** Lucas Scholz, 2026-10-14 (escolheu a opção 4 entre as variações)
 
 ## Contexto
 
-O Hub usava o logo da WCJ Tecnologia (ADR-005): a sidebar, o login, o favicon e o ícone do app mostravam "wcj tecnologia", iguais aos do site e de qualquer peça da empresa. Na barra de abas e na tela inicial do celular, nada dizia que aquele era o Hub. A marca proíbe redesenhar ou recolorir o logo (`docs/brand/MARCA.md`), então o logo do produto não podia ser um desenho novo.
+O Hub usava o logo da WCJ Tecnologia (ADR-005): a sidebar, o login, o favicon e o ícone do app mostravam "wcj tecnologia", iguais aos do site e de qualquer peça da empresa. Na barra de abas e na tela inicial do celular, nada dizia que aquele era o Hub. A marca proíbe redesenhar ou recolorir o logo (`docs/brand/MARCA.md`).
 
 ## Decisão
 
-1. **O logo do produto é o da WCJ com "hub" no lugar de "tecnologia".** O símbolo e o "wcj" entram como estão. O "hub" é montado com as peças do letreiro "tecnologia" do próprio logo: h = "n" + haste do "l"; u = "n" girado 180°; b = bojo do "o" + haste. Sem fonte e sem desenho novo, no mesmo espaçamento e na cor do "tecnologia".
-2. **Fonte única no mestre da marca.** O gerador é `wcj-master-brand-brain/marca/ferramentas/vetorizar/hub.py`; os arquivos saem em `marca/logo/produtos/wcj-hub/` e se copiam para `docs/brand/logo/produtos/wcj-hub/` e `public/brand/`, sem alteração.
-3. **Duas versões, a mesma regra de tamanho do ADR-005.**
-   - Completo (`wcj-hub-logo-*`): "hub" embaixo do "wcj", com a largura dele; mesma proporção do logo completo da WCJ. Painel do login.
-   - Horizontal (`wcj-hub-logo-horizontal-*`): "hub" ao lado do "wcj", com as hastes na altura dele. Sidebar aberta, topbar, login no celular.
-   - Abaixo de 16 px e na sidebar recolhida segue o símbolo da WCJ.
-4. **Ícone ink.** Favicon (`favicon.svg`, `favicon.ico`) com o símbolo `#4D90FF` em quadrado `#0C0E13`; ícone de app (`apple-touch-icon.png`, manifest) com o "hub" embaixo do símbolo e a versão "maskable" na zona segura. O ink separa a aba do Hub da do site (azul) e é o `theme_color` do app.
-5. **E-mail:** o ícone do cabeçalho passa a ser o do Hub (`wcj-hub-icone-64.png`), com o nome em texto como antes.
-6. **O `WBrandLogoAtom` não muda de API.** `full` e `horizontal` apontam para os arquivos do Hub; `symbol` continua o da WCJ; o `alt` passa a "WCJ Hub".
+1. **O logo do produto é o símbolo da WCJ com "Hub" ao lado.** O símbolo entra como está. O "Hub" é escrito na **Nico Moji**, a fonte do letreiro do logo da WCJ (licença OFL), com o H maiúsculo, convertido em contorno: o arquivo não depende da fonte instalada.
+2. **Medidas.** O "Hub" tem a altura do símbolo, com a base na base dele, a 42% dessa altura de distância. Cores das quatro versões do logo da WCJ: símbolo azul, "Hub" na cor do "wcj" (ink no claro, branco no escuro).
+3. **Fonte única no mestre da marca.** O gerador é `wcj-master-brand-brain/marca/ferramentas/vetorizar/hub.py`, com a fonte em `fonte/`; os arquivos saem em `marca/logo/produtos/wcj-hub/` e se copiam para `docs/brand/logo/produtos/wcj-hub/` e `public/brand/`, sem alteração.
+4. **Uma versão do logo.** O `WBrandLogoAtom` usa o mesmo arquivo para `full` (login) e `horizontal` (sidebar, topbar); `symbol` continua o símbolo da WCJ (sidebar recolhida, abaixo de 16 px). O `alt` passa a "WCJ Hub".
+5. **Ícone ink.** Favicon (`favicon.svg`, `favicon.ico`) com o símbolo `#4D90FF` em quadrado `#0C0E13`; ícone de app (`apple-touch-icon.png`, manifest) com o "Hub" branco embaixo do símbolo, e a versão "maskable" na zona segura. O ink separa a aba do Hub da do site (azul) e é o `theme_color` do app.
+6. **E-mail:** o ícone do cabeçalho passa a ser o do Hub (`wcj-hub-icone-64.png`), com o nome em texto como antes.
 
 ## Alternativas descartadas
 
-- **"hub" em Space Grotesk ao lado do logo da WCJ, com um fio:** mais simples, mas mistura fonte de texto com o letreiro desenhado do logo; fica com cara de rótulo, não de marca.
-- **"hub" no lugar de "tecnologia", no mesmo corpo:** três letras embaixo de "wcj" deixavam um vazio à direita e somem no tamanho do login.
-- **Símbolo novo (um "H" de nós):** a marca não admite redesenho, e o símbolo da WCJ já é o que identifica a empresa.
-- **Ícone azul com o "hub":** igual demais ao ícone do site da WCJ na barra de abas.
+Testadas em 14/10 e recusadas pelo Lucas:
+
+- "wcj" + "hub" com letras recortadas do "tecnologia" (completo, horizontal, empilhado): estranho, e o "wcj" sobrava.
+- Símbolo + "hub" minúsculo montado com peças do letreiro: letra esquisita.
+- Símbolo + "Hub"/"HUB" em Space Grotesk, Hanken Grotesk ou Space Mono: fonte de texto, fora do letreiro do logo.
+- Símbolo + "HUB" desenhado à mão no estilo do letreiro, e "HUB" na Nico Moji, normal ou engrossado: preferiu o "Hub".
 
 ## Consequências
 

@@ -20,12 +20,15 @@ const HEIGHT: Record<WBrandLogoSize, string> = {
 };
 
 /**
- * Arquivos oficiais, copiados sem alteração do mestre da marca (a marca proíbe redesenhar ou recolorir):
- * completo e horizontal são o logo do produto (docs/brand/logo/produtos/wcj-hub/); o símbolo é o da WCJ.
+ * Arquivos oficiais, copiados sem alteração do mestre da marca (a marca proíbe redesenhar ou recolorir).
+ * O logo do produto (símbolo + "Hub", docs/brand/logo/produtos/wcj-hub/) tem uma versão só, que serve
+ * ao completo e ao horizontal; o símbolo é o da WCJ (ADR-006).
  */
+const HUB_LOGO = { light: '/brand/wcj-hub-logo-fundo-claro.svg', dark: '/brand/wcj-hub-logo-fundo-escuro.svg' };
+
 const FILES: Record<WBrandLogoVariant, { light: string; dark: string }> = {
-    full: { light: '/brand/wcj-hub-logo-fundo-claro.svg', dark: '/brand/wcj-hub-logo-fundo-escuro.svg' },
-    horizontal: { light: '/brand/wcj-hub-logo-horizontal-fundo-claro.svg', dark: '/brand/wcj-hub-logo-horizontal-fundo-escuro.svg' },
+    full: HUB_LOGO,
+    horizontal: HUB_LOGO,
     symbol: { light: '/brand/wcj-simbolo-azul.svg', dark: '/brand/wcj-simbolo-azul-claro.svg' },
 };
 

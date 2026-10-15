@@ -4,7 +4,7 @@
 
 ## O que faz
 
-Mostra o logo do **WCJ Hub** a partir dos **arquivos oficiais** em `public/brand/`, copiados sem alteração de `docs/brand/logo/produtos/wcj-hub/` (completo e horizontal) e de `docs/brand/logo/` (o símbolo, que é o da WCJ). Você escolhe a **versão** pelo tamanho e a **superfície** pelo fundo. Por padrão, o logo é um link.
+Mostra o logo do **WCJ Hub** a partir dos **arquivos oficiais** em `public/brand/`, copiados sem alteração de `docs/brand/logo/produtos/wcj-hub/` (o logo do produto, símbolo + "Hub" na Nico Moji, uma versão só para `full` e `horizontal`) e de `docs/brand/logo/` (o símbolo, que é o da WCJ). Você escolhe a **versão** pelo tamanho e a **superfície** pelo fundo. Por padrão, o logo é um link.
 
 Nunca use `<img src="/brand/...">` direto nem redesenhe ou recolora o logo (`docs/brand/MARCA.md`, "O que não fazer").
 
@@ -12,11 +12,11 @@ Nunca use `<img src="/brand/...">` direto nem redesenhe ou recolora o logo (`doc
 
 A regra da marca vale pela altura do **desenho**:
 
-| `variant`    | Desenho                         | Quando                                                   |
-| ------------ | ------------------------------- | -------------------------------------------------------- |
-| `full`       | símbolo + "wcj" + "hub" embaixo | 40 px de altura ou mais (painel do login)                |
-| `horizontal` | símbolo + "wcj" + "hub" ao lado | de 16 a 40 px (sidebar aberta, topbar, login no celular) |
-| `symbol`     | só o símbolo da WCJ             | menos de 16 px, ou pouco espaço (sidebar recolhida)      |
+| `variant`    | Desenho             | Quando                                                   |
+| ------------ | ------------------- | -------------------------------------------------------- |
+| `full`       | símbolo + "Hub"     | 40 px de altura ou mais (painel do login)                |
+| `horizontal` | símbolo + "Hub"     | de 16 a 40 px (sidebar aberta, topbar, login no celular) |
+| `symbol`     | só o símbolo da WCJ | menos de 16 px, ou pouco espaço (sidebar recolhida)      |
 
 Os SVG já trazem a área de proteção (o raio de um nó em volta), então o desenho é menor que a caixa (`size`).
 
@@ -24,8 +24,8 @@ Os SVG já trazem a área de proteção (o raio de um nó em volta), então o de
 
 | `surface` | Arquivo                                                 | Fundo                                          |
 | --------- | ------------------------------------------------------- | ---------------------------------------------- |
-| `dark`    | versão `fundo-escuro` (símbolo `#4D90FF`, "wcj" branco) | sidebar, painel do login: sempre escuros       |
-| `light`   | versão `fundo-claro` (símbolo `#1A6CF3`, "wcj" ink)     | fundo sempre claro                             |
+| `dark`    | versão `fundo-escuro` (símbolo `#4D90FF`, "Hub" branco) | sidebar, painel do login: sempre escuros       |
+| `light`   | versão `fundo-claro` (símbolo `#1A6CF3`, "Hub" ink)     | fundo sempre claro                             |
 | `auto`    | as duas; o tema esconde uma                             | sobre a página, que troca entre claro e escuro |
 
 ## Props

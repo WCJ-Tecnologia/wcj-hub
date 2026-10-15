@@ -123,7 +123,7 @@ Laravel 12 + Inertia 2 + React 19 + TypeScript, do template `ai-systems` 0.6.0 (
 - **Tema** da marca WCJ: `design/tokens.json` (a partir de `docs/brand/tokens.wcj.json`), fontes em `public/fonts` (`resources/css/fonts.css`). Cor, fonte e raio só por token. Marca no front pelo ADR-005:
   - dois azuis: `bg-primary` (`#1A6CF3`) em botão e foco, `text-primary-text` (`#0F4FC4`) em texto e link, nunca `text-primary`;
   - cantos de 5 px;
-  - logo só pelo `WBrandLogoAtom`, com os SVG oficiais em `public/brand/`, que não se redesenham: completo e horizontal são o logo do produto, "wcj hub" (ADR-006, gerado no mestre da marca), e o símbolo é o da WCJ;
+  - logo só pelo `WBrandLogoAtom`, com os SVG oficiais em `public/brand/`, que não se redesenham: completo e horizontal são o logo do produto, símbolo + "Hub" (ADR-006, gerado no mestre da marca), e o símbolo sozinho é o da WCJ;
   - eyebrow, rótulo e número em Space Mono;
   - padrão de nós só no painel do login;
   - e-mail com hex inline da marca (`resources/views/components/mail-layout.blade.php`).
