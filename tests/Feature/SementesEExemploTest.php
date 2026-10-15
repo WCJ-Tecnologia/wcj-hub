@@ -32,8 +32,7 @@ class SementesEExemploTest extends TestCase
         $this->assertSame([1 => 'claude', 2 => 'chatgpt', 3 => 'codex', 4 => 'gpt'], $slugs('ai_assistants'));
         $this->assertFalse((bool) DB::table('ai_assistants')->where('slug', 'chatgpt')->value('write_allowed'));
 
-        $this->assertSame(['Melhoria', 'Correção de bug', 'Suporte', 'Mudança (GMUD)'], DB::table('task_types')->orderBy('id')->pluck('label')->all());
-        $this->assertSame(['improvement', 'support'], DB::table('task_types')->whereNotNull('slug')->orderBy('id')->pluck('slug')->all());
+        $this->assertSame(0, DB::table('task_types')->count(), 'tipo é do projeto (14/10): nasce com o projeto, não na semente');
         $this->assertSame(5, DB::table('rework_reasons')->count());
         $this->assertSame(['Outro'], DB::table('rework_reasons')->where('requires_text', true)->pluck('label')->all());
         $this->assertSame(['other'], DB::table('rework_reasons')->whereNotNull('slug')->pluck('slug')->all(), 'só o Outro tem slug (P40)');
@@ -46,12 +45,10 @@ class SementesEExemploTest extends TestCase
     public function test_a_renamed_list_item_is_not_recreated_by_a_new_run(): void
     {
         $this->seed(DatabaseSeeder::class);
-        DB::table('task_types')->where('label', 'Correção de bug')->update(['label' => 'Bug']);
         DB::table('rework_reasons')->where('label', 'Ajuste visual')->update(['label' => 'Visual']);
 
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertSame(4, DB::table('task_types')->count());
         $this->assertSame(5, DB::table('rework_reasons')->count());
     }
 
@@ -65,6 +62,11 @@ class SementesEExemploTest extends TestCase
         $this->assertSame(3, DB::table('tasks')->count());
         $this->assertSame(3, (int) DB::table('projects')->where('key_prefix', 'EXE')->value('last_task_number'));
         $this->assertSame(
+            ['Melhoria', 'Correção de bug', 'Suporte', 'Mudança (GMUD)', 'Desenvolvimento'],
+            DB::table('task_types')->orderBy('id')->pluck('label')->all(),
+            'o projeto de exemplo nasce com os 5 tipos padrão (14/10)'
+        );
+        $this->assertSame(
             ['Support', 'Backlog', 'To do', 'Paused', 'Doing', 'Code-review', 'In test', 'Done'],
             DB::table('board_stages')->orderBy('position')->pluck('name')->all(),
             'as 8 etapas na ordem da P10'
@@ -72,7 +74,7 @@ class SementesEExemploTest extends TestCase
 
         $this->artisan('app:limpar-exemplo', ['--force' => true])->assertSuccessful();
 
-        foreach (['tasks', 'task_stage_movements', 'task_acceptance_criteria', 'board_stages', 'project_members', 'projects', 'contacts'] as $tabela) {
+        foreach (['tasks', 'task_stage_movements', 'task_acceptance_criteria', 'board_stages', 'task_types', 'project_members', 'projects', 'contacts'] as $tabela) {
             $this->assertSame(0, DB::table($tabela)->count(), $tabela);
         }
         $this->assertSame(0, User::query()->count());

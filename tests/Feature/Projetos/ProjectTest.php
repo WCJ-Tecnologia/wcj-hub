@@ -68,6 +68,11 @@ class ProjectTest extends TestCase
             ],
             $project->boardStages()->orderBy('position')->get()->map(fn ($s) => [$s->name, $s->stage_role_id, $s->position])->all(),
         );
+        // MIG-02: o projeto nasce com os 5 tipos padrão, só dele (banco.md seção 7, 14/10).
+        $this->assertSame(
+            [['improvement', 'Melhoria'], [null, 'Correção de bug'], ['support', 'Suporte'], [null, 'Mudança (GMUD)'], ['development', 'Desenvolvimento']],
+            $project->taskTypes()->orderBy('id')->get()->map(fn ($t) => [$t->slug, $t->label])->all(),
+        );
 
         $log = AuditLog::query()->where('auditable_type', 'project')->sole();
         $this->assertSame(['created', 'success', $gestor->id], [$log->action, $log->outcome, $log->user_id]);
@@ -138,6 +143,7 @@ class ProjectTest extends TestCase
 
         $this->assertSame(1, Project::query()->count());
         $this->assertSame(8, DB::table('board_stages')->count(), 'o quadro do projeto recusado não ficou');
+        $this->assertSame(5, DB::table('task_types')->count(), 'os tipos do projeto recusado não ficaram');
     }
 
     public function test_an_invalid_prefix_is_refused(): void

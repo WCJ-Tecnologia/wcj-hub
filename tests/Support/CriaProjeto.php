@@ -10,13 +10,13 @@ use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskPriority;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
+use App\Domains\Projetos\Services\TaskTypeService;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
 use Database\Seeders\ReworkReasonSeeder;
 use Database\Seeders\StageRoleSeeder;
 use Database\Seeders\TaskPrioritySeeder;
-use Database\Seeders\TaskTypeSeeder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -57,8 +57,9 @@ trait CriaProjeto
      */
     private function supportCard(Contact $requester): int
     {
-        $this->seed([StageRoleSeeder::class, TaskTypeSeeder::class, TaskPrioritySeeder::class]);
+        $this->seed([StageRoleSeeder::class, TaskPrioritySeeder::class]);
         $project = $this->project($requester->client, User::factory()->projectManager()->create());
+        app(TaskTypeService::class)->createDefaults($project);
         $stage = DB::table('board_stages')->insertGetId([
             'project_id' => $project->id, 'stage_role_id' => StageRole::SUPPORT, 'name' => 'Suporte', 'position' => 1,
             'created_at' => now(), 'updated_at' => now(),
@@ -66,7 +67,7 @@ trait CriaProjeto
 
         return DB::table('tasks')->insertGetId([
             'project_id' => $project->id, 'number' => 1, 'board_stage_id' => $stage,
-            'task_type_id' => TaskType::query()->where('slug', TaskType::SUPPORT)->value('id'),
+            'task_type_id' => $project->taskTypes()->where('slug', TaskType::SUPPORT)->value('id'),
             'task_priority_id' => TaskPriority::NORMAL, 'title' => 'Pedido do cliente',
             'requester_contact_id' => $requester->id, 'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -74,7 +75,7 @@ trait CriaProjeto
 
     protected function semearProjetos(): void
     {
-        $this->seed([StageRoleSeeder::class, TaskPrioritySeeder::class, TaskTypeSeeder::class, ReworkReasonSeeder::class]);
+        $this->seed([StageRoleSeeder::class, TaskPrioritySeeder::class, ReworkReasonSeeder::class]);
     }
 
     /**
@@ -139,10 +140,16 @@ trait CriaProjeto
             'project_id' => $project->id,
             'number' => $project->last_task_number,
             'board_stage_id' => ($stage ?? $this->etapa($project, StageRole::QUEUE))->id,
-            'task_type_id' => TaskType::query()->where('slug', TaskType::IMPROVEMENT)->value('id'),
+            'task_type_id' => $this->tipo($project, TaskType::IMPROVEMENT),
             'task_priority_id' => TaskPriority::NORMAL,
             'title' => 'Tarefa '.$project->last_task_number,
             ...$attributes,
         ]);
+    }
+
+    /** O id do tipo do projeto pelo slug (P18, 14/10: tipo é do projeto). */
+    protected function tipo(Project $project, string $slug): ?int
+    {
+        return $project->taskTypes()->where('slug', $slug)->value('id');
     }
 }

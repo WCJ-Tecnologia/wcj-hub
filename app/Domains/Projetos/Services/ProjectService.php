@@ -28,11 +28,13 @@ class ProjectService
     public function __construct(
         private readonly AuditService $audit,
         private readonly BoardStageService $stages,
+        private readonly TaskTypeService $types,
     ) {}
 
     /**
-     * Nasce aberto, com o quadro padrão (P10), sem áreas, sem ninguém alocado e com os padrões
-     * do banco: motivo da pausa ligado e sprint de 10 dias úteis (P15, P46).
+     * Nasce aberto, com o quadro padrão (P10), os 5 tipos padrão (P18, 14/10), sem áreas, sem
+     * ninguém alocado e com os padrões do banco: motivo da pausa ligado e sprint de 10 dias úteis
+     * (P15, P46).
      *
      * @param  array{client_id: int, manager_id: int, key_prefix: string, name: string, starts_on: string, due_on: ?string}  $data
      */
@@ -41,6 +43,7 @@ class ProjectService
         return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($data) {
             $project = Project::query()->create($data);
             $board = $this->stages->createDefaultBoard($project);
+            $this->types->createDefaults($project);
 
             $this->audit->log(AuditActionEnum::CREATED, $project, null, [...$this->snapshot($project), 'board_stages' => $board]);
 

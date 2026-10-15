@@ -7,6 +7,7 @@ use App\Platform\Models\ContactChannel;
 use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -39,6 +40,8 @@ class Task extends Model
         'sprint_id',
         'package_id',
         'origin_task_id',
+        'parent_task_id',
+        'cover_attachment_id',
         'requester_contact_id',
         'contact_channel_id',
         'requested_at',
@@ -118,6 +121,29 @@ class Task extends Model
     public function productionBugs(): HasMany
     {
         return $this->hasMany(self::class, 'origin_task_id');
+    }
+
+    /** Card pai, um nível (P57). */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_task_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_task_id');
+    }
+
+    /** Capa: um anexo de imagem da própria tarefa (P59). */
+    public function coverAttachment(): BelongsTo
+    {
+        return $this->belongsTo(TaskAttachment::class, 'cover_attachment_id');
+    }
+
+    /** Quem acompanha além do dev e do QA (P58). */
+    public function participants(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'task_participants')->withTimestamps();
     }
 
     public function requesterContact(): BelongsTo

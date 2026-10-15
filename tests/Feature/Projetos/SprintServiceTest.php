@@ -168,7 +168,7 @@ class SprintServiceTest extends TestCase
     {
         $sprint = $this->sprint($this->project);
         $support = $this->etapa($this->project, StageRole::SUPPORT);
-        $task = $this->tarefa($this->project, $support, ['task_type_id' => TaskType::query()->where('slug', TaskType::SUPPORT)->value('id')]);
+        $task = $this->tarefa($this->project, $support, ['task_type_id' => $this->tipo($this->project, TaskType::SUPPORT)]);
 
         app(SprintTaskService::class)->addTask($task, $this->gestor);
         $this->assertSame([$sprint->id, $support->id], [$task->fresh()->sprint_id, $task->fresh()->board_stage_id]);
@@ -278,7 +278,7 @@ class SprintServiceTest extends TestCase
     {
         $sprint = $this->sprint($this->project);
         $support = $this->etapa($this->project, StageRole::SUPPORT);
-        $task = $this->tarefa($this->project, $support, ['sprint_id' => $sprint->id, 'task_type_id' => TaskType::query()->where('slug', TaskType::SUPPORT)->value('id')]);
+        $task = $this->tarefa($this->project, $support, ['sprint_id' => $sprint->id, 'task_type_id' => $this->tipo($this->project, TaskType::SUPPORT)]);
 
         $this->sprints->close($sprint, [$task->id => 'backlog'], null, $this->gestor);
 
