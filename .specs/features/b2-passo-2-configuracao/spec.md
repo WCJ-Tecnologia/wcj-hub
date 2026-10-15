@@ -89,10 +89,10 @@ Os motivos de retrabalho são uma lista geral que só o Administrador edita (G7,
 
 | Requirement ID | Story | Phase | Status |
 |---|---|---|---|
-| LST-01 | P1: Só o Administrador mantém os motivos (AC 1–4) | Execute | Implementing |
-| LST-02 | P1: Negação auditada com a ação certa (AC 5–6) | Execute | Implementing |
-| LST-03 | P1: Regras do "Outro" e do já usado (AC 7–8) | Execute | Implementing |
-| LST-04 | P1: Ability `manage_lists` e o item do menu (AC 1–3) | Execute | Implementing |
+| LST-01 | P1: Só o Administrador mantém os motivos (AC 1–4) | Execute | Verified |
+| LST-02 | P1: Negação auditada com a ação certa (AC 5–6) | Execute | Verified |
+| LST-03 | P1: Regras do "Outro" e do já usado (AC 7–8) | Execute | Verified |
+| LST-04 | P1: Ability `manage_lists` e o item do menu (AC 1–3) | Execute | Verified |
 
 **Coverage:** 4 total, 4 mapped to tests, 0 unmapped
 
@@ -100,5 +100,5 @@ Os motivos de retrabalho são uma lista geral que só o Administrador edita (G7,
 
 ## Success Criteria
 
-- [ ] `ReworkReasonTest` e `AbilitiesTest` verdes no MySQL 8.
-- [ ] Verifier da skill em agente separado com PASS e mutação sem sobrevivente nas regras de permissão (cada `isAdmin()` trocado por `true`, o `authorize()` tirado de cada ação, a ability sem a Policy).
+- [x] `ReworkReasonTest`, `ReworkReasonTransacaoTest` e `AbilitiesTest` verdes no MySQL 8.
+- [x] Verifier da skill em agente separado com PASS (rodada 2 do `validation.md`: 35 mutantes, 34 mortos, 1 equivalente) e mutação sem sobrevivente nas regras de permissão (cada `isAdmin()` trocado por `true`, o `authorize()` tirado de cada ação, a ability sem a Policy).

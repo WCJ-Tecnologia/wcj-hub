@@ -57,12 +57,14 @@ class ReworkReasonTransacaoTest extends TestCase
     {
         $this->assertSame(0, DB::transactionLevel());
 
+        // O fail() fica fora do try: a exceção do PHPUnit também é RuntimeException e cairia no catch.
+        $failure = null;
         try {
             $this->serviceWithFailingAudit()->createReworkReason(['label' => 'Sem auditoria', 'requires_text' => false]);
-            $this->fail('A falha da auditoria não subiu.');
         } catch (RuntimeException $e) {
-            $this->assertSame('a auditoria falhou', $e->getMessage());
+            $failure = $e->getMessage();
         }
+        $this->assertSame('a auditoria falhou', $failure, 'A falha da auditoria não subiu.');
 
         $this->assertDatabaseMissing('rework_reasons', ['label' => 'Sem auditoria']);
     }
@@ -71,12 +73,14 @@ class ReworkReasonTransacaoTest extends TestCase
     {
         $reason = ReworkReason::query()->where('label', 'Ajuste visual')->sole();
 
+        // O fail() fica fora do try: a exceção do PHPUnit também é RuntimeException e cairia no catch.
+        $failure = null;
         try {
             $this->serviceWithFailingAudit()->updateReworkReason($reason, ['label' => 'Renomeado', 'requires_text' => true]);
-            $this->fail('A falha da auditoria não subiu.');
         } catch (RuntimeException $e) {
-            $this->assertSame('a auditoria falhou', $e->getMessage());
+            $failure = $e->getMessage();
         }
+        $this->assertSame('a auditoria falhou', $failure, 'A falha da auditoria não subiu.');
 
         $this->assertDatabaseHas('rework_reasons', ['id' => $reason->id, 'label' => 'Ajuste visual', 'requires_text' => false]);
     }
