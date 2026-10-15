@@ -119,7 +119,7 @@ O B5 abre rotas novas de sprint (criar, editar, encerrar, reabrir, excluir, pôr
 3. IF a sprint está encerrada THEN o sistema SHALL recusar com "Só se exclui a sprint aberta." e manter a sprint.
 4. WHEN quem pode corrigir o lançamento o exclui THEN o sistema SHALL apagar o lançamento e gravar a linha `deleted` de `time_entry` na auditoria com tarefa, pessoa, data e horas no antes, na mesma transação.
 
-**Independent Test**: `tests/Feature/Projetos/SprintServiceTest.php` e `tests/Feature/Projetos/TimeEntryTest.php`.
+**Independent Test**: `tests/Feature/Projetos/SprintServiceTest.php` e `tests/Feature/Projetos/TimeEntryServiceTest.php` e `tests/Feature/Projetos/B5TransacaoTest.php`.
 
 ---
 

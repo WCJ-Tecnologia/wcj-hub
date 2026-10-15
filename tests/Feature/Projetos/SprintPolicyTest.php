@@ -10,6 +10,7 @@ use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CriaProjeto;
@@ -187,9 +188,7 @@ class SprintPolicyTest extends TestCase
         $antes = $this->retrato();
 
         foreach ($this->escritas() as $caso => [$method, $suffix, $data, $action]) {
-            $this->actingAs($user)->{$method}($this->url($suffix), $data)->assertForbidden();
-            $log = AuditLog::query()->where('outcome', 'denied')->latest('id')->first();
-            $this->assertSame(['sprint', $action], [$log?->auditable_type, $log?->action], $caso);
+            $this->assertOneDenied($user, fn () => $this->actingAs($user)->{$method}($this->url($suffix), $data)->assertForbidden(), $action, $caso);
         }
 
         $tarefas = [
@@ -200,13 +199,58 @@ class SprintPolicyTest extends TestCase
             'recusar' => ['post', "/tarefas/{$this->task->id}/reestimativa/recusar", []],
         ];
         foreach ($tarefas as $caso => [$method, $suffix, $data]) {
-            $this->actingAs($user)->{$method}($this->url($suffix), $data)->assertForbidden();
-            $log = AuditLog::query()->where('outcome', 'denied')->latest('id')->first();
-            $this->assertSame(['sprint', 'updated'], [$log?->auditable_type, $log?->action], $caso);
+            $this->assertOneDenied($user, fn () => $this->actingAs($user)->{$method}($this->url($suffix), $data)->assertForbidden(), 'updated', $caso);
         }
 
         $this->assertSame($antes, $this->retrato());
         $this->assertSame(0, AuditLog::query()->where('outcome', 'success')->whereIn('auditable_type', ['sprint', 'task'])->count());
+    }
+
+    /** Exatamente uma linha `denied` nova, desta requisição e desta pessoa (Verifier, rodada 1, gap 3). */
+    private function assertOneDenied(User $user, \Closure $request, string $action, string $caso): void
+    {
+        $before = AuditLog::query()->where('outcome', 'denied')->max('id') ?? 0;
+        $request();
+        $rows = AuditLog::query()->where('outcome', 'denied')->where('id', '>', $before)->get();
+
+        $this->assertCount(1, $rows, $caso);
+        $this->assertSame(['sprint', $action, $user->id], [$rows[0]->auditable_type, $rows[0]->action, $rows[0]->user_id], $caso);
+    }
+
+    // Verifier, rodada 1, gap 1: excluir e criar pela rota, por quem gere (SPR-01 AC 1, DEL-01 AC 1).
+    #[DataProvider('quemGere')]
+    public function test_who_manages_creates_and_deletes_an_empty_open_sprint(string $papel): void
+    {
+        $user = $this->quem($papel);
+        $this->task->forceFill(['sprint_id' => null])->save();
+
+        $this->actingAs($user)->delete($this->url("/sprints/{$this->aberta->id}"))
+            ->assertRedirect($this->url('/sprints'))
+            ->assertSessionHas('success', 'Sprint 2 excluída.');
+        $this->assertNull(Sprint::query()->find($this->aberta->id));
+        $log = AuditLog::query()->where('auditable_type', 'sprint')->where('action', 'deleted')->sole();
+        $this->assertSame([$user->id, 'success', ['Sprint 2', null]], [$log->user_id, $log->outcome, $log->changes['name']]);
+
+        $this->actingAs($user)->post($this->url('/sprints'), ['name' => 'Sprint 3', 'goal' => '', 'starts_on' => '2026-11-03', 'ends_on' => '2026-11-16'])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', 'Sprint 3 criada.');
+        $this->assertSame(1, Sprint::query()->whereNull('closed_at')->where('name', 'Sprint 3')->count());
+    }
+
+    // Verifier, rodada 1, gap 2: SprintPolicy::view(Sprint), a ability por registro, igual à do projeto.
+    public function test_view_of_a_sprint_follows_who_sees_the_project(): void
+    {
+        $permitidos = [User::factory()->admin()->create(), $this->gestor, $this->dev];
+        $negados = [User::factory()->developer()->create(), User::factory()->projectManager()->create(), User::factory()->sales()->create()];
+
+        foreach ($permitidos as $user) {
+            $this->assertTrue(Gate::forUser($user)->allows('view', $this->encerrada), $user->email);
+        }
+        foreach ($negados as $user) {
+            $this->assertFalse(Gate::forUser($user)->allows('view', $this->encerrada), $user->email);
+        }
+        // O dev vê, mas não gere: view não é manage.
+        $this->assertFalse(Gate::forUser($this->dev)->allows('update', $this->encerrada));
     }
 
     public function test_sprint_of_another_project_is_404(): void

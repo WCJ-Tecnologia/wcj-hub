@@ -36,6 +36,9 @@ class TimeEntryServiceTest extends TestCase
         $this->assertSame(['2.50', '3.00'], $logs[1]->changes['hours']);
         $this->assertSame(['2026-10-07', null], $logs[2]->changes['worked_on']);
         $this->assertSame([$task->id, null], $logs[2]->changes['task_id']);
+        // Verifier, rodada 1, gap 4: o antes da exclusão leva a pessoa e as horas (DEL-02 AC 4).
+        $this->assertSame([$dev->id, null], $logs[2]->changes['user_id']);
+        $this->assertSame(['3.00', null], $logs[2]->changes['hours']);
     }
 
     public function test_more_than_one_entry_on_the_same_day_and_task_is_fine(): void
