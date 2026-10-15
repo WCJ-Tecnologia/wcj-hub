@@ -228,7 +228,7 @@ Pelo perfil de uso (`docs/escopo.md` §10): **arquitetura** sim (`tests/Arch`: A
 
 Além do padrão (inegociável 5):
 
-- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.md`. A diferença de 13/10 (`tasks.parent_task_id`, `tasks.cover_attachment_id`, `task_participants`; seção 7 do `banco.md`) entra no B3 como migração aditiva, só depois da conferência do Lucas Alencar. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
+- **Toda migração.** As 27 tabelas vieram no B0, exatamente como o `docs/banco.md`. A diferença de 13/10 (`tasks.parent_task_id`, `tasks.cover_attachment_id`, `task_participants`; seção 7 do `banco.md`) entra no B3 como migração aditiva, aprovada por Lucas Scholz em 15/10/2026. Coluna ou tabela que não está lá: pare e pergunte (o bloco não cria migração por conta própria).
 - **Policy nova ou alterada**, e qualquer mudança em `abilities`.
 - **Exclusão de verdade** (qualquer `delete` de registro de negócio) e a anonimização do contato.
 - **OAuth e MCP:** escopos do Passport, ferramentas MCP, o que a IA pode escrever (`users.ai_write_allowed`, `ai_assistants.write_allowed`), limites do `config/hub.php`.

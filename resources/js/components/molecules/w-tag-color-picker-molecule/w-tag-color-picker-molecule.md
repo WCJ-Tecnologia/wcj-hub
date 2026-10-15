@@ -31,4 +31,4 @@ A raiz leva `data-slot="w-tag-color-picker-molecule"`.
 ## Cuidados
 
 - Entra nos formulários de tipo (B2 passo 2, listas gerais) e de área (B2 passo 2, configuração do projeto), que ainda não existem: o kit entrega só a peça.
-- As colunas `task_types.color` e `project_areas.color` (varchar(10), null) são proposta no `docs/banco.md`, pendentes da conferência do Lucas Alencar.
+- As colunas `task_types.color` e `project_areas.color` (varchar(10), null) são proposta no `docs/banco.md`, aprovadas por Lucas Scholz em 15/10/2026.

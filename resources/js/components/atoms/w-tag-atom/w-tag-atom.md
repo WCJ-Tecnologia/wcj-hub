@@ -33,4 +33,4 @@ A raiz leva `data-slot="w-tag-atom"` e `data-color`.
 ## Cuidados
 
 - Cor nova na paleta: entra em `design/tokens.json` (claro e escuro), no `TagColor` e nos mapas de `lib/tags.ts`; nunca classe solta.
-- A escolha da cor é do cadastro (lista geral de tipos, F1; áreas do projeto, F2), pelo `WTagColorPickerMolecule`. As colunas `task_types.color` e `project_areas.color` são proposta, pendentes da conferência do Lucas Alencar.
+- A escolha da cor é do cadastro (lista geral de tipos, F1; áreas do projeto, F2), pelo `WTagColorPickerMolecule`. As colunas `task_types.color` e `project_areas.color` são proposta, aprovadas por Lucas Scholz em 15/10/2026.

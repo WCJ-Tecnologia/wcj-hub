@@ -45,4 +45,4 @@ O gatilho leva `data-slot="w-tag-popover-organism"`, `data-kind` e `data-color`.
 ## Cuidados
 
 - Rotas (proposta do kit, no topo de `w-project-board-page.tsx`): `POST /projetos/{id}/tipos` e `PATCH /projetos/{id}/tipos/{tid}`, `POST /projetos/{id}/areas` e `PATCH /projetos/{id}/areas/{aid}`, todas `{ name, color }`; a etiqueta do card segue no `PATCH …/cards/{chave} { type_id }` / `{ area_id }`. Nome repetido no projeto é recusado pelo servidor e chega em `errors.name`.
-- Banco: `task_types` passa a ser por projeto (`project_id`, `color`, semeado com os 5 padrão ao criar o projeto) e `project_areas` ganha `color`: proposta no `docs/banco.md` §7, pendente da conferência do Lucas Alencar. O código continua achando `support` e `improvement` pelo `slug`, agora por projeto.
+- Banco: `task_types` passa a ser por projeto (`project_id`, `color`, semeado com os 5 padrão ao criar o projeto) e `project_areas` ganha `color`: proposta no `docs/banco.md` §7, aprovado por Lucas Scholz em 15/10/2026. O código continua achando `support` e `improvement` pelo `slug`, agora por projeto.

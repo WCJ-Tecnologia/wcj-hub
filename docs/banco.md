@@ -14,9 +14,10 @@ Escopo desta versão: Núcleo (Platform) e Projetos. CRM (seção 3) é proposta
 Chamados fica fora; a seção 5 mostra o que ele acrescenta sem migração destrutiva.
 Situação: APROVADO (fatia 1). Lucas Alencar aprovou também a diferença da seção 7 (R15, asserção no
 Service, e as 3 colunas aditivas de 06/10) em 06/10/2026. A migração está no PR #1 (B0).
-PENDENTE: a diferença de 13/10 (fim da seção 7, D-GER-32): duas colunas aditivas em tasks
-(parent_task_id, cover_attachment_id) e a tabela task_participants, 27 → 28 tabelas. Aguarda a
-conferência do Lucas Alencar; a migração entra no B3, depois dela.
+APROVADO por Lucas Scholz em 15/10/2026 (sem esperar a conferência do Lucas Alencar): a diferença de
+13/10 (fim da seção 7, D-GER-32: parent_task_id, cover_attachment_id e a tabela task_participants, 27 →
+28 tabelas) e a de 14/10 (task_types por projeto com color, project_areas.color, task_type_id e
+task_priority_id nulos). As migrações entram no B3.
 Aprovado por: Lucas Alencar  em: 2026-10-06   (41 tabelas) e, no mesmo dia, a fatia 1 de 27 tabelas (seção 7)
 
 ### 0. CONVENÇÕES
@@ -1113,7 +1114,7 @@ Contagem: 41 − 9 (CRM) − 1 (service_types) − 1 (task_validations) − 1 (s
 (package_statuses) − 1 (ai_tool_calls) = 27.
 
 Decisões do Lucas Scholz sobre o card do quadro (13/10, proposta de Lucas Varanda, D-GER-32).
-PENDENTE DE CONFERÊNCIA do Lucas Alencar; a migração entra no B3, só depois. Tudo aditivo:
+APROVADO por Lucas Scholz em 15/10/2026 (sem esperar a conferência do Lucas Alencar); a migração entra no B3. Tudo aditivo:
 - tasks.parent_task_id (fk tasks, null, restrict): card pai, do mesmo projeto, um nível só (P57). A
   subtask é um card normal do quadro; o progresso do pai é contagem dos filhos por papel da etapa,
   nunca gravado. Descartada a alternativa "subtask dentro do card" (tabela própria com status): seria
@@ -1130,7 +1131,7 @@ PENDENTE DE CONFERÊNCIA do Lucas Alencar; a migração entra no B3, só depois.
 Contagem com a diferença de 13/10: 27 + 1 (task_participants) = 28.
 
 Decisão do Lucas Scholz sobre as etiquetas do card (14/10, ao ver o kit do quadro no Storybook).
-PENDENTE DE CONFERÊNCIA do Lucas Alencar; migração aditiva no B3, só depois:
+APROVADO por Lucas Scholz em 15/10/2026 (sem esperar a conferência do Lucas Alencar); migração no B3:
 - task_types.color (varchar(10), null) e project_areas.color (varchar(10), null): a cor da etiqueta de
   tipo e de área no card, como no Trello. Paleta fechada de 10 nomes (gray, blue, sky, green, lime,
   yellow, orange, red, pink, purple; `TagColor` em `resources/js/types/quadro.ts`, tokens em
