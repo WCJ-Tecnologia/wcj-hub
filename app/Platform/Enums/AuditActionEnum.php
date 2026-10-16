@@ -65,7 +65,7 @@ enum AuditActionEnum: string
             // Quadro e card (B3): criar o card de suporte, mover, pôr na sprint, comentar e anexar, arquivar.
             $ability === 'createSupport' => self::CREATED,
             $ability === 'move' => self::MOVED,
-            in_array($ability, ['manageSprint', 'comment', 'attach'], true) => self::UPDATED,
+            in_array($ability, ['manageSprint', 'comment', 'attach', 'proposeHours'], true) => self::UPDATED,
             $ability === 'archive' => self::ARCHIVED,
             $ability === 'delete' => self::DELETED,
             $ability === 'deactivate' => self::DEACTIVATED,
