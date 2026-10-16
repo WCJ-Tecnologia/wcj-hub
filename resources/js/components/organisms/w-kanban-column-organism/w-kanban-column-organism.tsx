@@ -8,6 +8,8 @@ import { WQuickCreateMolecule } from '@/components/molecules/w-quick-create-mole
 import { WTaskCardOrganism, type WTaskCardOrganismProps } from '@/components/organisms/w-task-card-organism/w-task-card-organism';
 import { Badge } from '@/components/shadcn/badge';
 import { Button } from '@/components/shadcn/button';
+import { Checkbox } from '@/components/shadcn/checkbox';
+import { Label } from '@/components/shadcn/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { cn } from '@/lib/utils';
 import type { AreaRef, BoardAbilities, BoardCard, BoardStage, PersonRef, TaskTypeRef } from '@/types/quadro';
@@ -18,6 +20,15 @@ export const stageDndId = (stage: Pick<BoardStage, 'id'>) => `stage-${stage.id}`
 
 /** O que o quadro lê de `active.data` e `over.data` no `onDragEnd`. */
 export type BoardDndData = { type: 'card'; card: BoardCard; stage_id: number } | { type: 'stage'; stage_id: number };
+
+/**
+ * Modo de seleção do *Montar sprint* (D-GER-35): os ids marcados e a troca. Só a coluna de papel `queue`
+ * (Backlog) recebe; as outras ficam desligadas (`locked`).
+ */
+export interface ColumnSelection {
+    selected: ReadonlySet<number>;
+    onChange: (ids: number[]) => void;
+}
 
 /** Os callbacks que a coluna repassa a cada card. */
 export type ColumnCardCallbacks = Pick<
@@ -54,6 +65,10 @@ export interface WKanbanColumnOrganismProps extends ColumnCardCallbacks {
     createError?: string;
     /** *Novo card de suporte* (só no Support, com `abilities.create_support`). */
     onCreateSupport?: () => void;
+    /** *Montar sprint* ligado e esta é a coluna Backlog: uma caixa por card e *Selecionar todas* (D-GER-35). */
+    selection?: ColumnSelection;
+    /** *Montar sprint* ligado e esta não é o Backlog: a coluna fica esmaecida e sem interação (`inert`). */
+    locked?: boolean;
 }
 
 /**
@@ -74,6 +89,8 @@ export function WKanbanColumnOrganism({
     creating = false,
     createError,
     onCreateSupport,
+    selection,
+    locked = false,
     ...callbacks
 }: WKanbanColumnOrganismProps) {
     const titleId = useId();
@@ -81,19 +98,32 @@ export function WKanbanColumnOrganism({
     const [composing, setComposing] = useState(false);
     const { setNodeRef } = useDroppable({ id: stageDndId(stage), data: { type: 'stage', stage_id: stage.id } satisfies BoardDndData });
 
-    const showQuickCreate = stage.role === 'queue' && abilities.create_card && onCreate;
-    const showSupport = stage.role === 'support' && abilities.create_support && onCreateSupport;
+    const selecting = selection !== undefined;
+    const showQuickCreate = stage.role === 'queue' && abilities.create_card && onCreate && !selecting;
+    const showSupport = stage.role === 'support' && abilities.create_support && onCreateSupport && !locked;
+    const allSelected = selecting && cards.length > 0 && cards.every((card) => selection.selected.has(card.id));
+    const toggleAll = (checked: boolean) => {
+        if (!selection) return;
+        const next = new Set(selection.selected);
+        cards.forEach((card) => (checked ? next.add(card.id) : next.delete(card.id)));
+        selection.onChange([...next]);
+    };
 
     return (
         <section
             data-slot="w-kanban-column-organism"
             data-stage={stage.id}
             data-over={highlighted || undefined}
+            data-selecting={selecting || undefined}
             aria-labelledby={titleId}
+            // No *Montar sprint* só o Backlog responde: as outras colunas saem do foco e do clique (D-GER-35).
+            inert={locked || undefined}
             className={cn(
                 // O "poço" dos cards: no claro, o cinza cheio da marca; no escuro, mais escuro que o card, para ele parecer em relevo.
                 'flex h-full w-72 shrink-0 snap-start flex-col rounded-lg border border-transparent bg-muted transition-colors dark:bg-background/60',
                 highlighted && 'border-primary/50 bg-accent/60',
+                locked && 'opacity-50',
+                selecting && 'border-primary/50',
             )}
         >
             <header className="flex items-center gap-2 px-3 pt-3 pb-2">
@@ -151,6 +181,15 @@ export function WKanbanColumnOrganism({
                 )}
             </header>
 
+            {selecting && cards.length > 0 && (
+                <div className="mx-2 mb-2 flex items-center gap-2 rounded-md bg-card px-2 py-1.5">
+                    <Checkbox id={`${titleId}-all`} checked={allSelected} onCheckedChange={(checked) => toggleAll(checked === true)} />
+                    <Label htmlFor={`${titleId}-all`} className="text-sm font-medium">
+                        Selecionar todas ({cards.length})
+                    </Label>
+                </div>
+            )}
+
             {showQuickCreate && composing && (
                 <div className="px-2 pb-2">
                     <WQuickCreateMolecule
@@ -171,19 +210,37 @@ export function WKanbanColumnOrganism({
                     strategy={verticalListSortingStrategy}
                 >
                     <ul className="grid gap-2">
-                        {cards.map((card) => (
-                            <SortableCard
-                                key={card.id}
-                                card={card}
-                                stage={stage}
-                                stages={stages}
-                                areas={areas}
-                                types={types}
-                                members={members}
-                                draggable={abilities.move}
-                                {...callbacks}
-                            />
-                        ))}
+                        {cards.map((card) =>
+                            selection ? (
+                                <SelectableCard
+                                    key={card.id}
+                                    card={card}
+                                    stage={stage}
+                                    areas={areas}
+                                    types={types}
+                                    members={members}
+                                    checked={selection.selected.has(card.id)}
+                                    onCheckedChange={(checked) => {
+                                        const next = new Set(selection.selected);
+                                        if (checked) next.add(card.id);
+                                        else next.delete(card.id);
+                                        selection.onChange([...next]);
+                                    }}
+                                />
+                            ) : (
+                                <SortableCard
+                                    key={card.id}
+                                    card={card}
+                                    stage={stage}
+                                    stages={stages}
+                                    areas={areas}
+                                    types={types}
+                                    members={members}
+                                    draggable={abilities.move && !locked}
+                                    {...callbacks}
+                                />
+                            ),
+                        )}
                     </ul>
                 </SortableContext>
                 {/* Coluna vazia: só a contagem 0 (F3 §03) e uma área discreta onde soltar. */}
@@ -247,6 +304,48 @@ function SortableCard({ card, stage, stages, areas, types, members, draggable, o
                 onMove={draggable ? onMove : undefined}
                 {...callbacks}
             />
+        </li>
+    );
+}
+
+interface SelectableCardProps {
+    card: BoardCard;
+    stage: BoardStage;
+    areas: AreaRef[];
+    types: TaskTypeRef[];
+    members: PersonRef[];
+    checked: boolean;
+    onCheckedChange: (checked: boolean) => void;
+}
+
+/**
+ * O card no modo *Montar sprint* (D-GER-35): a caixa e o card lado a lado, e clicar em qualquer ponto do
+ * card marca. O card fica só de leitura (`inert`, sem os menus nem o link da ficha), para o clique ser
+ * sempre o da seleção; a caixa leva a chave e o título no nome acessível.
+ */
+function SelectableCard({ card, stage, areas, types, members, checked, onCheckedChange }: SelectableCardProps) {
+    const id = useId();
+
+    return (
+        <li data-card={card.key} data-selected={checked || undefined}>
+            <label
+                htmlFor={id}
+                className={cn(
+                    'flex cursor-pointer items-start gap-2 rounded-md p-1 outline-none',
+                    checked ? 'bg-accent ring-2 ring-primary' : 'hover:bg-accent/50',
+                )}
+            >
+                <Checkbox
+                    id={id}
+                    checked={checked}
+                    onCheckedChange={(next) => onCheckedChange(next === true)}
+                    aria-label={`Selecionar ${card.key} ${card.title}`}
+                    className="mt-2 shrink-0"
+                />
+                <div inert className="pointer-events-none min-w-0 flex-1">
+                    <WTaskCardOrganism card={card} stage={stage} areas={areas} types={types} members={members} />
+                </div>
+            </label>
         </li>
     );
 }

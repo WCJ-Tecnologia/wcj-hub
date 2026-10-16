@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class TaskPresenter
 {
+    public function __construct(private readonly SprintPlanningQuery $planning) {}
+
     /**
      * As props da página `projects/board` (`WProjectBoardPageProps`).
      *
@@ -30,16 +32,20 @@ class TaskPresenter
      */
     public function board(Project $project, User $viewer, Collection $cards, array $filters): array
     {
+        $abilities = $this->abilities($project, $viewer);
+
         return [
             'project' => $this->project($project),
             'stages' => $project->boardStages()->with('stageRole:id,slug')->whereNull('archived_at')->orderBy('position')->get()
                 ->map(fn ($stage) => ['id' => $stage->id, 'name' => $stage->name, 'role' => $stage->stageRole->slug, 'position' => $stage->position])
                 ->all(),
             'cards' => $cards->map(fn (Task $card) => $this->card($card))->values()->all(),
-            'abilities' => $this->abilities($project, $viewer),
+            'abilities' => $abilities,
             'options' => $this->options($project),
             'filters' => $filters,
             'today' => DiasUteis::today(),
+            // *Montar sprint* (B5b): pessoas e capacidade, só para quem põe card na sprint.
+            'planning' => $abilities['manage_sprint'] ? $this->planning->forProject($project) : null,
         ];
     }
 

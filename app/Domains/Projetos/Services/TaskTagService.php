@@ -4,7 +4,6 @@ namespace App\Domains\Projetos\Services;
 
 use App\Domains\Projetos\Models\ProjectArea;
 use App\Domains\Projetos\Models\Task;
-use App\Domains\Projetos\Models\TaskPriority;
 use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Services\Concerns\WritesTasks;
 use App\Platform\Enums\AuditActionEnum;
@@ -25,13 +24,14 @@ class TaskTagService
     public function __construct(
         private readonly AuditService $audit,
         private readonly SprintService $sprints,
+        private readonly TaskAssignmentService $assignments,
     ) {}
 
     /**
      * Etiquetas do card pelo quadro (F3 §03 e §11 itens 7 a 9; P18, P19): prioridade pelo slug,
      * área e tipo do próprio projeto, ativos. Só as chaves enviadas mudam; nulo limpa.
      *
-     * @param  array{priority?: ?string, area_id?: ?int, type_id?: ?int}  $changes
+     * @param  array{priority?: string, area_id?: ?int, type_id?: ?int}  $changes
      */
     public function updateTags(Task $task, User $actor, array $changes): Task
     {
@@ -39,12 +39,6 @@ class TaskTagService
             $this->sprints->lockProject($task->project);
             $locked = $this->lockTask($task);
             $before = $this->snapshot($locked);
-
-            if (array_key_exists('priority', $changes)) {
-                $locked->task_priority_id = $changes['priority'] === null
-                    ? null
-                    : TaskPriority::query()->where('slug', $changes['priority'])->value('id');
-            }
 
             if (array_key_exists('area_id', $changes)) {
                 $locked->project_area_id = $this->area($locked, $changes['area_id']);
@@ -57,6 +51,11 @@ class TaskTagService
             $locked->save();
             if ($locked->wasChanged()) {
                 $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked), $actor->id);
+            }
+
+            // Prioridade: um jeito só, o do B5b (dev, QA e prioridade pelo TaskAssignmentService).
+            if (array_key_exists('priority', $changes)) {
+                $locked = $this->assignments->update($locked, ['priority' => $changes['priority']], $actor);
             }
 
             return $locked;

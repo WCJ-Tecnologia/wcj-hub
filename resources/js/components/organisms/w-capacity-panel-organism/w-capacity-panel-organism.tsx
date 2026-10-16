@@ -1,4 +1,5 @@
 import { AlertTriangle, Gauge } from 'lucide-react';
+import { useId } from 'react';
 
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
 import { WDataTableOrganism, type WColumn } from '@/components/organisms/w-data-table-organism/w-data-table-organism';
@@ -8,6 +9,12 @@ import type { CapacityPanel } from '@/types/sprints';
 
 export interface WCapacityPanelOrganismProps {
     capacity: CapacityPanel;
+    /**
+     * `sprint` (padrão): a tabela da tela de sprints, com *Faltam* e *Diferença*. `plan`: o *Montar sprint* do
+     * quadro (D-GER-35), em lista compacta para caber ao lado do plano, com *Atribuídas* e *Disponível*, e toda
+     * pessoa alocada, mesmo sem card. A conta é a mesma (`CapacityQuery` no servidor, `planCapacity` na tela).
+     */
+    variant?: 'sprint' | 'plan';
 }
 
 type DevRow = CapacityPanel['developers'][number];
@@ -20,7 +27,8 @@ const NO_LOAD = 'sem carga diária: capacidade não calculada';
  * em destaque, só como aviso: nada no sistema trava por ela (P49). Abaixo, à parte, as tarefas sem
  * dev e as sem horas previstas. Só para quem gere o projeto (F5 §09): a tela nem recebe para o dev.
  */
-export function WCapacityPanelOrganism({ capacity }: WCapacityPanelOrganismProps) {
+export function WCapacityPanelOrganism({ capacity, variant = 'sprint' }: WCapacityPanelOrganismProps) {
+    const titleId = useId();
     const over = (row: DevRow) => row.difference !== null && row.difference < 0;
 
     const difference = (row: DevRow) => {
@@ -52,10 +60,61 @@ export function WCapacityPanelOrganism({ capacity }: WCapacityPanelOrganismProps
         { key: 'difference', header: 'Diferença', className: 'text-right', cell: difference },
     ];
 
+    const summary = (
+        <dl className={cn('grid gap-2 text-sm', variant === 'sprint' && 'sm:grid-cols-2')}>
+            <div className="rounded-md border border-border px-3 py-2">
+                <dt className="font-mono text-xs text-muted-foreground uppercase">Sem dev</dt>
+                <dd>
+                    {capacity.without_developer.tasks} tarefas · {hours(capacity.without_developer.hours)} previstas
+                </dd>
+            </div>
+            <div className="rounded-md border border-border px-3 py-2">
+                <dt className="font-mono text-xs text-muted-foreground uppercase">Sem horas previstas</dt>
+                <dd>{capacity.without_hours.tasks} tarefas</dd>
+            </div>
+        </dl>
+    );
+
+    if (variant === 'plan') {
+        return (
+            <section data-slot="w-capacity-panel-organism" data-variant="plan" aria-labelledby={titleId} className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 id={titleId} className="font-heading text-base font-semibold">
+                        Capacidade
+                    </h3>
+                    <p className="font-mono text-xs text-muted-foreground uppercase">{capacity.business_days} dias úteis · só referência</p>
+                </div>
+                {capacity.developers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhuma pessoa alocada no projeto.</p>
+                ) : (
+                    <ul aria-label="Capacidade por pessoa" className="divide-y divide-border rounded-md border border-border">
+                        {capacity.developers.map((row) => (
+                            <li key={row.id} className={cn('space-y-0.5 px-3 py-2 text-sm', over(row) && 'bg-destructive/5')}>
+                                <p className="flex items-baseline justify-between gap-2">
+                                    <span className="font-medium">{row.name}</span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {row.daily_hours === null
+                                            ? 'sem carga diária'
+                                            : `${hours(row.daily_hours)}/dia · ${hours(row.capacity ?? 0)}`}
+                                    </span>
+                                </p>
+                                <p className="flex items-baseline justify-between gap-2 text-xs">
+                                    <span>Atribuídas {hours(row.remaining)}</span>
+                                    <span>Disponível {difference(row)}</span>
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                {summary}
+            </section>
+        );
+    }
+
     return (
-        <section data-slot="w-capacity-panel-organism" aria-labelledby="capacity-title" className="space-y-3">
+        <section data-slot="w-capacity-panel-organism" aria-labelledby={titleId} className="space-y-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 id="capacity-title" className="font-heading text-lg font-semibold">
+                <h2 id={titleId} className="font-heading text-lg font-semibold">
                     Capacidade
                 </h2>
                 <p className="font-mono text-xs text-muted-foreground uppercase">{capacity.business_days} dias úteis · só referência</p>
@@ -87,18 +146,7 @@ export function WCapacityPanelOrganism({ capacity }: WCapacityPanelOrganismProps
                 )}
             />
 
-            <dl className="grid gap-2 text-sm sm:grid-cols-2">
-                <div className="rounded-md border border-border px-3 py-2">
-                    <dt className="font-mono text-xs text-muted-foreground uppercase">Sem dev</dt>
-                    <dd>
-                        {capacity.without_developer.tasks} tarefas · {hours(capacity.without_developer.hours)} previstas
-                    </dd>
-                </div>
-                <div className="rounded-md border border-border px-3 py-2">
-                    <dt className="font-mono text-xs text-muted-foreground uppercase">Sem horas previstas</dt>
-                    <dd>{capacity.without_hours.tasks} tarefas</dd>
-                </div>
-            </dl>
+            {summary}
         </section>
     );
 }

@@ -6,21 +6,28 @@ Tela · `pages/w-project-board-page/w-project-board-page.tsx` · Inertia `projec
 
 O quadro do projeto em `/projetos/{id}/quadro` (F3 §01, §03 a §05), como o controller do B3 vai montar (**proposta do kit; o Cauã ajusta**):
 
-- `WAppLayoutTemplate` em largura `full` (sem máximo: o quadro corta na borda da janela, 14/10), eyebrow "Projetos", título = nome do projeto, subtítulo "SGM · Sprint 3 aberta" ou "SGM · sem sprint aberta"; à direita, _Sprints_ e _Configuração_ desabilitados com a dica "Em breve (B5)" / "Em breve (B2)";
+- `WAppLayoutTemplate` em largura `full` (sem máximo: o quadro corta na borda da janela, 14/10), eyebrow "Projetos", título = nome do projeto, subtítulo "SGM · Sprint 3 aberta" ou "SGM · sem sprint aberta"; à direita, _Montar sprint_ (ou _Pôr na Sprint N_), _Sprints_ (link para `/projetos/{id}/sprints`, do B5) e _Configuração_;
 - `WBoardFiltersOrganism`, `WKanbanBoardOrganism` e, com _Arquivados_ ligado, o vazio "Nenhum card arquivado" no lugar do quadro;
 - os diálogos do movimento pelo `useBoardMove` (`move.dialogs`) e o `WSupportCardDialogOrganism`;
 - recusa do movimento (`onDenied`) em `toast.error(motivo)`.
 
 **Rotas** (comentário no topo do arquivo; o B3 confirma):
 
-| Ação             | Chamada                                                                     |
-| ---------------- | --------------------------------------------------------------------------- |
-| Filtros          | `GET /projetos/{id}/quadro?search=&mine=1&…` (`only: ['cards', 'filters']`) |
-| Criar rápido     | `POST /projetos/{id}/cards { title }`                                       |
-| Card de suporte  | `POST /projetos/{id}/cards/suporte` (`SupportCardPayload`)                  |
-| Mover            | `POST /projetos/{id}/cards/{chave}/mover` (`MovePayload`)                   |
-| Prioridade, Área | `PATCH /projetos/{id}/cards/{chave} { priority }` / `{ area_id }`           |
-| Participante     | `POST /projetos/{id}/cards/{chave}/participantes { user_id, add }`          |
+| Ação             | Chamada                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| Filtros          | `GET /projetos/{id}/quadro?search=&mine=1&…` (`only: ['cards', 'filters']`)                      |
+| Criar rápido     | `POST /projetos/{id}/cards { title }`                                                            |
+| Card de suporte  | `POST /projetos/{id}/cards/suporte` (`SupportCardPayload`)                                       |
+| Mover            | `POST /projetos/{id}/cards/{chave}/mover` (`MovePayload`)                                        |
+| Prioridade, Área | `PATCH /projetos/{id}/cards/{chave} { priority }` / `{ area_id }`                                |
+| Participante     | `POST /projetos/{id}/cards/{chave}/participantes { user_id, add }`                               |
+| Montar sprint    | `POST /projetos/{id}/sprint-aberta/tarefas/lote` (`SprintBatchPayload`), **já no backend** (B5b) |
+
+**Montar sprint** (D-GER-35). O botão do cabeçalho aparece só com `abilities.manage_sprint` e a prop `planning`. Sem sprint aberta ele se chama _Montar sprint_; com sprint aberta, _Pôr na Sprint N_ (`sprintBatchLabel`). Fica desabilitado com o Backlog vazio e, com o modo ligado, vira _Sair da seleção_.
+
+Clicar liga o modo de seleção do `WKanbanBoardOrganism` (`selection`): caixa em cada card do Backlog, _Selecionar todas_, o resto do quadro desligado. Embaixo do quadro aparece o `WSprintBatchBarOrganism`, com "N selecionadas · H h previstas", _Cancelar_ e _Iniciar sprint_ / _Pôr na Sprint N_. Esse botão abre o `WStartSprintDialogOrganism`, o planejamento: dev, QA, horas e prioridade por card, com a capacidade de cada pessoa ao vivo; tirar um card do plano tira também da seleção.
+
+Confirmar manda o `SprintBatchPayload` com o plano. No sucesso o modo desliga, e o servidor volta para o quadro com o toast e os cards já no To do. No erro, o diálogo fica aberto com a recusa. Só conta como marcado o card que está à vista no Backlog: o que saiu dele (recusa, filtro) deixa de contar.
 
 **Mover é otimista.** No `onCommit` do `useBoardMove`, o card muda de coluna (e de posição, na ordem manual) no estado local antes do `router.post`; no `onError` volta, e o erro aparece no diálogo aberto (`errors` do hook) ou, sem diálogo, em toast. Com diálogo, ele fica aberto com spinner (`processing`) até o `onSuccess` chamar `move.cancel()`. Prioridade, Área e participante também são otimistas, com o mesmo desfazer.
 
@@ -30,15 +37,16 @@ O quadro do projeto em `/projetos/{id}/quadro` (F3 §01, §03 a §05), como o co
 
 ## Props
 
-| Prop        | Tipo             | Para quê                                                    |
-| ----------- | ---------------- | ----------------------------------------------------------- |
-| `project`   | `BoardProject`   | Nome, prefixo, encerrado, sprint aberta, regras da pausa    |
-| `stages`    | `BoardStage[]`   | Etapas ativas, na ordem de F2                               |
-| `cards`     | `BoardCard[]`    | Os cards, já filtrados pelo servidor                        |
-| `abilities` | `BoardAbilities` | Decididas pelas Policies; a tela só esconde                 |
-| `options`   | `BoardOptions`   | Áreas, tipos, alocados, motivos e origens, contatos, canais |
-| `filters`   | `BoardFilters`   | Os filtros da URL                                           |
-| `today`     | `string`         | `AAAA-MM-DD` em São Paulo (início proposto da sprint)       |
+| Prop        | Tipo                     | Para quê                                                                                       |
+| ----------- | ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `project`   | `BoardProject`           | Nome, prefixo, encerrado, sprint aberta, regras da pausa                                       |
+| `stages`    | `BoardStage[]`           | Etapas ativas, na ordem de F2                                                                  |
+| `cards`     | `BoardCard[]`            | Os cards, já filtrados pelo servidor                                                           |
+| `abilities` | `BoardAbilities`         | Decididas pelas Policies; a tela só esconde                                                    |
+| `options`   | `BoardOptions`           | Áreas, tipos, alocados, motivos e origens, contatos, canais                                    |
+| `filters`   | `BoardFilters`           | Os filtros da URL                                                                              |
+| `today`     | `string`                 | `AAAA-MM-DD` em São Paulo (início proposto da sprint)                                          |
+| `planning`  | `SprintPlanning \| null` | Pessoas alocadas e a sprint aberta (`SprintPlanningQuery::forProject`), só com `manage_sprint` |
 
 ## Cuidados
 

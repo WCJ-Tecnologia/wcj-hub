@@ -334,8 +334,9 @@ class TaskServiceTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame([$area->id, $this->tipo($this->project, 'development'), 'urgent'], [$task->fresh()->project_area_id, $task->fresh()->task_type_id, $task->fresh()->taskPriority->slug]);
 
-        $this->actingAs($this->dev)->patch($this->card($task), ['priority' => null, 'area_id' => null])->assertSessionHasNoErrors();
-        $this->assertSame([null, null], [$task->fresh()->task_priority_id, $task->fresh()->project_area_id]);
+        $this->actingAs($this->dev)->patch($this->card($task), ['area_id' => null])->assertSessionHasNoErrors();
+        $this->assertNull($task->fresh()->project_area_id);
+        $this->actingAs($this->dev)->patch($this->card($task), ['priority' => null])->assertSessionHasErrors('priority');
     }
 
     public function test_support_type_by_the_tag_needs_the_request_fields(): void

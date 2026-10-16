@@ -25,14 +25,15 @@ class UpdateTaskTagsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'priority' => ['sometimes', 'nullable', Rule::exists('task_priorities', 'slug')],
+            // A prioridade se escolhe, não se tira (o plano do B5b e o menu do card).
+            'priority' => ['sometimes', 'required', Rule::exists('task_priorities', 'slug')],
             'area_id' => ['sometimes', 'nullable', 'integer'],
             'type_id' => ['sometimes', 'nullable', 'integer'],
         ];
     }
 
     /**
-     * @return array{priority?: ?string, area_id?: ?int, type_id?: ?int}
+     * @return array{priority?: string, area_id?: ?int, type_id?: ?int}
      */
     public function changes(): array
     {

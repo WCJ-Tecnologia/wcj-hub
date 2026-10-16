@@ -238,7 +238,9 @@ export function WSprintTasksOrganism({ projectId, sprint, filters, canManage }: 
                         icon={<ClipboardList className="size-5" aria-hidden />}
                         title={filtered ? 'Nenhuma tarefa com esses filtros.' : 'Nenhuma tarefa nesta sprint.'}
                         description={
-                            filtered ? 'Limpe a busca ou os filtros para ver todas.' : 'Abra o quadro para arrastar cards do Backlog.'
+                            filtered
+                                ? 'Limpe a busca ou os filtros para ver todas.'
+                                : 'Monte a sprint pelo quadro: Montar sprint marca várias tarefas do Backlog de uma vez.'
                         }
                         action={
                             filtered ? undefined : (
