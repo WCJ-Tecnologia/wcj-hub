@@ -24,6 +24,7 @@ use App\Domains\Projetos\Models\ValidationType;
 use App\Domains\Projetos\Policies\ProjectPolicy;
 use App\Domains\Projetos\Policies\ReworkReasonPolicy;
 use App\Domains\Projetos\Policies\SprintPolicy;
+use App\Domains\Projetos\Policies\TaskCommentPolicy;
 use App\Domains\Projetos\Policies\TaskPolicy;
 use App\Domains\Projetos\Policies\TimeEntryPolicy;
 use App\Domains\Projetos\Services\ProjectClientManagement;
@@ -182,5 +183,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Sprint::class, SprintPolicy::class);
         Gate::policy(TimeEntry::class, TimeEntryPolicy::class);
         Gate::policy(Task::class, TaskPolicy::class);
+        Gate::policy(TaskComment::class, TaskCommentPolicy::class);
     }
 }

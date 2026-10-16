@@ -68,8 +68,8 @@ class TaskPresenter
             'parent' => $task->parent === null ? null : [
                 'id' => $task->parent->id, 'key' => $task->parent->key(), 'title' => $task->parent->title, 'url' => $task->parent->url(),
             ],
-            // A capa se escolhe na ficha (PR 2 do B3), que traz o endereço do anexo.
-            'cover_url' => null,
+            // A capa (P59): o anexo de imagem escolhido na ficha, pela rota de download.
+            'cover_url' => $task->cover_attachment_id === null ? null : url("/projetos/{$task->project_id}/cards/{$task->key()}/anexos/{$task->cover_attachment_id}"),
             'estimated_hours' => $task->estimated_hours === null ? null : (float) $task->estimated_hours,
             'proposed_hours' => $task->proposed_hours === null ? null : (float) $task->proposed_hours,
             'developer' => $task->developer === null ? null : ['id' => $task->developer->id, 'name' => $task->developer->name],

@@ -5,6 +5,7 @@ namespace App\Domains\Projetos\Services;
 use App\Domains\Projetos\Models\ProjectMember;
 use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskPriority;
+use App\Domains\Projetos\Notifications\TaskAssigned;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
@@ -19,8 +20,8 @@ use Illuminate\Support\Facades\DB;
  * prevista que ainda falta (P28: nunca refaz pela troca de dev). Uma linha de auditoria com o antes e
  * o depois (G3).
  *
- * P22: quem passa a ser dev ou QA recebe aviso no sistema e por e-mail. O aviso (`TaskAssigned`) é do
- * B3 e entra aqui, no ponto marcado, para valer igual na ficha e no quadro.
+ * P22: quem passa a ser dev ou QA recebe aviso no sistema e por e-mail (`TaskAssigned`, B3), depois do
+ * commit, igual na ficha e no *Montar sprint*; quem se define a si mesmo não (F3 §10.5).
  */
 class TaskAssignmentService
 {
@@ -70,7 +71,13 @@ class TaskAssignmentService
 
             if ($locked->wasChanged()) {
                 $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked), $actor->id);
-                // P22 (B3): disparar o TaskAssigned para o dev e o QA novos (wasChanged('developer_id'), wasChanged('qa_id')).
+                // P22: o dev e o QA novos são avisados depois do commit; quem se define não (F3 §10.5).
+                foreach (['developer_id' => TaskAssigned::DEVELOPER, 'qa_id' => TaskAssigned::QA] as $column => $role) {
+                    if ($locked->wasChanged($column) && $locked->{$column} !== null && $locked->{$column} !== $actor->id) {
+                        $assigned = $locked;
+                        DB::afterCommit(fn () => User::query()->find($assigned->{$column})?->notify(new TaskAssigned($assigned->loadMissing('project'), $actor, $role)));
+                    }
+                }
             }
 
             return $locked;

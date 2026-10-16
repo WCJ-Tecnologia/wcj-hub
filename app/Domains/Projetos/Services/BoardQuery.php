@@ -8,13 +8,9 @@ use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
 use App\Platform\Models\User;
-use App\Support\DiasUteis;
 use App\Support\Like;
-use App\Support\LocalTime;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Collection as BaseCollection;
 
 /**
  * Os cards do quadro (F3 §03 e §05; P13, P15, P39, P53, P57, P58), com os filtros da URL. O
@@ -27,7 +23,10 @@ class BoardQuery
 {
     public const MARKS = ['late', 'pause', 'rework', 'support', 'proposed'];
 
-    public function __construct(private readonly ChildProgressQuery $children) {}
+    public function __construct(
+        private readonly ChildProgressQuery $children,
+        private readonly LateQuery $late,
+    ) {}
 
     /**
      * @param  array{search: string, mine: bool, developer_id: ?int, qa_id: ?int, type_id: ?int, area_id: ?int, priority: ?string, marks: list<string>, old_done: bool, archived: bool}  $filters
@@ -70,7 +69,7 @@ class BoardQuery
         $cards = $query->orderBy('tasks.position')->orderBy('tasks.number')->get();
 
         $this->fillPauseReasons($cards);
-        $this->fillLate($cards);
+        $this->late->fill($cards);
         $progress = $this->children->forParents($cards->pluck('id')->all());
         $cards->each(fn (Task $card) => $card->setAttribute('child_progress', $progress[$card->id] ?? null));
 
@@ -165,59 +164,5 @@ class BoardQuery
             $into = $reasons->get($card->id)?->where('to_board_stage_id', $card->board_stage_id)->last();
             $card->setAttribute('pause_reason', $into?->reason_text);
         });
-    }
-
-    /**
-     * Atraso (P53, R16): passou da data prevista sem chegar ao pronto, descontados os dias úteis
-     * em pausa (cada pausa conta os dias úteis inteiros entre entrar e sair; a conta fina dos
-     * indicadores é do F7). Uma consulta para todos os cards com data prevista.
-     *
-     * @param  Collection<int, Task>  $cards
-     */
-    private function fillLate(Collection $cards): void
-    {
-        $today = DiasUteis::today();
-        $candidates = $cards->filter(fn (Task $card) => $card->due_on !== null
-            && $card->boardStage->stage_role_id !== StageRole::DONE
-            && $card->due_on->toDateString() < $today);
-
-        $movements = $candidates->isEmpty() ? collect() : TaskStageMovement::query()
-            ->join('board_stages', 'board_stages.id', '=', 'task_stage_movements.to_board_stage_id')
-            ->whereIn('task_stage_movements.task_id', $candidates->pluck('id'))
-            ->orderBy('task_stage_movements.created_at')
-            ->orderBy('task_stage_movements.id')
-            ->get(['task_stage_movements.task_id', 'task_stage_movements.created_at', 'board_stages.stage_role_id'])
-            ->groupBy('task_id');
-
-        $candidateIds = $candidates->pluck('id')->flip();
-        $cards->each(function (Task $card) use ($candidateIds, $movements, $today) {
-            if (! $candidateIds->has($card->id)) {
-                $card->setAttribute('late', false);
-
-                return;
-            }
-            $paused = $this->pausedBusinessDays($movements->get($card->id) ?? collect(), $today);
-            $limit = $paused === 0 ? $card->due_on->toDateString() : DiasUteis::add(DiasUteis::next($card->due_on->toDateString()), $paused);
-            $card->setAttribute('late', $today > $limit);
-        });
-    }
-
-    /** @param  BaseCollection<int, TaskStageMovement>  $movements */
-    private function pausedBusinessDays(BaseCollection $movements, string $today): int
-    {
-        $days = 0;
-        $since = null;
-        foreach ($movements as $movement) {
-            $day = LocalTime::format(CarbonImmutable::parse($movement->created_at, 'UTC'), 'Y-m-d');
-            if ($since !== null) {
-                $days += max(0, DiasUteis::between($since, $day) - 1);
-                $since = null;
-            }
-            if ((int) $movement->stage_role_id === StageRole::PAUSED) {
-                $since = $day;
-            }
-        }
-
-        return $since === null ? $days : $days + max(0, DiasUteis::between($since, $today) - 1);
     }
 }
