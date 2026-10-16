@@ -128,7 +128,7 @@ export function WTaskPullRequestsSectionOrganism({
                                     <span className="sr-only">(abre em nova aba)</span>
                                 </a>
                                 <p className="text-xs text-muted-foreground">
-                                    por {pr.added_by.name} em {dateTimeBr(pr.added_at)}
+                                    por {pr.added_by?.name ?? '—'} em {dateTimeBr(pr.added_at)}
                                 </p>
                             </div>
                             {canEdit && (

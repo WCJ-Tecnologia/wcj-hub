@@ -301,7 +301,8 @@ export interface AcceptanceCriterion {
 export interface TaskPullRequest {
     id: number;
     url: string;
-    added_by: PersonRef;
+    /** Quem colou; null nos links de antes da coluna (spec b3-ficha): a tela mostra "—". */
+    added_by: PersonRef | null;
     /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
     added_at: string;
 }
@@ -329,7 +330,8 @@ export interface TaskAttachment {
     is_image: boolean;
     /** URL de download (e de miniatura, quando imagem). */
     url: string;
-    uploaded_by: PersonRef;
+    /** Quem enviou; null nos anexos de antes da coluna (spec b3-ficha): a tela mostra "—". */
+    uploaded_by: PersonRef | null;
     /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
     uploaded_at: string;
     /** Evidência do QA ligada a um critério (F4); null = anexo comum. */
