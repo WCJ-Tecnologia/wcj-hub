@@ -43,14 +43,16 @@ A ficha do kit (PR #12) chama 20 rotas novas. Três grupos delas não são decis
 | Comentário: editar e excluir | **`TaskCommentPolicy` nova**: `update` e `delete` = autor **e** ainda vê o projeto (quem saiu do projeto não mexe mais, como no lançamento de horas do B5). O Administrador e o gestor **não** editam nem excluem o comentário dos outros | F3 §10.10 ("só o próprio") | |
 | Excluir comentário | Exclusão de verdade, pelo autor; o antes (texto) fica na auditoria | F3 §04 | |
 | Excluir anexo | Exclusão de verdade, qualquer alocado (`TaskPolicy::attach`); o Service apaga o arquivo e a linha juntos, e a FK limpa a capa (P59). Se o arquivo já não existe no disco, a linha sai do mesmo jeito | F3 §04, §10.11; banco.md `task_attachments` | |
-| Excluir critério | Exclusão de verdade, qualquer alocado (`TaskPolicy::update`), só enquanto ele e cada subitem estão *A testar* (T1); os subitens saem junto (cascade); o número não volta (T9). Testado: recusa com mensagem | F3 §04 e §10.9 | |
+| Excluir critério | Exclusão de verdade, qualquer alocado (`TaskPolicy::update`), só enquanto ele e cada subitem estão *A testar* (T1); os subitens saem junto (cascade); excluir não renumera os outros (T9; ver a pergunta do número abaixo). Testado: recusa com mensagem | F3 §04 e §10.9 | |
 | Excluir link de PR | Exclusão de verdade, qualquer alocado (`TaskPolicy::update`) | F3 §04 | |
 | **Quem colou, enviou, propôs, arquivou** (pergunta) | **Recomendo migração aditiva, 4 colunas nulas:** `task_pull_requests.user_id`, `task_attachments.user_id` (fk users, restrict), `tasks.proposed_by` e `tasks.archived_by` (fk users, restrict). Nulas porque as linhas de antes não têm o dado; a tela mostra "—". **Alternativa:** mudar o contrato do kit para `PersonRef \| null` e não guardar. | O kit já desenha o "quem"; ler `audit_logs` do módulo fura o A9 | **pergunta ao Lucas** |
+| **Número do critério depois de excluir o último** (pergunta) | **Hoje: "maior número + 1"** (banco.md, `task_acceptance_criteria`: "Número novo = maior number da tarefa no mesmo pai + 1"). Excluir um do meio não renumera nem reaproveita; **excluir o último faz o próximo nascer com o número dele**. O diálogo do F3 §04 promete "O número não será reaproveitado". Para cumprir o F3 sempre, seria preciso um contador por tarefa (coluna nova). | F3 × banco.md divergem: decisão do Lucas (AGENTS.md, inegociável 5) | **pergunta ao Lucas** |
+| Limites do anexo | 20 MB por arquivo, até 10 por envio; imagem (jpg, png, gif, webp), PDF, Office (doc, docx, xls, xlsx, ppt, pptx, odt, ods), csv, txt e zip, conferidos pelos bytes. Sem SVG nem HTML (podem carregar script). Em `config/hub.php`, ajustáveis pelo `.env` (`HUB_ATTACHMENT_MAX_KB`, `HUB_ATTACHMENT_MAX_FILES`). Imagem abre na página; o resto baixa, com `nosniff` | F3 §10.11 ("limite do template", que não define); seguranca.md §7 | |
 | Tamanho do anexo e "editado em" | Sem coluna: o tamanho vem do disco (`Storage::size`) ao montar a ficha; "editado" = `updated_at` depois de `created_at` | Dado que já existe | |
 | Abilities da ficha | `update`, `comment`, `attach`, `move` = `TaskPolicy`; `set_hours` e `decide_hours` = `SprintPolicy::manageTasks`; `propose_hours` = `TaskPolicy::proposeHours`; `manage_sprint`, `manage_types`, `manage_areas` como no quadro; `archive` e `delete` = `false` até o PR 3; o `can` de cada comentário vem da `TaskCommentPolicy` | Abilities só escondem botão | |
 | Mapeamento da negação | `proposeHours` → `updated`; `update`/`delete` do comentário já mapeiam | Sem mapeamento a tela mostra "Outra ação" | |
 
-**Open questions:** a das 4 colunas (linha em negrito acima).
+**Open questions:** as duas em negrito acima (as 4 colunas de "quem"; o número do critério depois de excluir o último).
 
 ---
 
@@ -72,7 +74,7 @@ A ficha do kit (PR #12) chama 20 rotas novas. Três grupos delas não são decis
 ### P1: Exclusões de verdade só do que a regra deixa ⭐ MVP
 
 1. WHEN um alocado exclui um anexo THEN o sistema SHALL apagar o arquivo e a linha, e o card que o tinha como capa SHALL ficar sem capa.
-2. WHEN um alocado exclui um critério *A testar* THEN o sistema SHALL apagar ele e os subitens, e o próximo critério SHALL ganhar o número seguinte ao maior que já existiu.
+2. WHEN um alocado exclui um critério *A testar* THEN o sistema SHALL apagar ele e os subitens, sem renumerar os outros (T9).
 3. IF o critério ou um subitem já foi testado THEN o sistema SHALL recusar com "CA_3 já foi testado: edite em vez de excluir." e manter tudo.
 4. WHEN um alocado exclui um link de PR THEN o sistema SHALL apagar a linha.
 5. Em toda exclusão, a linha `deleted` da auditoria SHALL ir na mesma transação, com o antes.

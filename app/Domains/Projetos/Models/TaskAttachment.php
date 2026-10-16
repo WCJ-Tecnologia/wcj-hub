@@ -2,6 +2,7 @@
 
 namespace App\Domains\Projetos\Models;
 
+use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,6 +18,7 @@ class TaskAttachment extends Model
         'path',
         'original_name',
         'mime_type',
+        'user_id',
     ];
 
     public function task(): BelongsTo
@@ -27,5 +29,16 @@ class TaskAttachment extends Model
     public function acceptanceCriterion(): BelongsTo
     {
         return $this->belongsTo(TaskAcceptanceCriterion::class, 'task_acceptance_criterion_id');
+    }
+
+    /** Quem enviou (spec b3-ficha); nulo nas linhas de antes. */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function isImage(): bool
+    {
+        return str_starts_with($this->mime_type, 'image/');
     }
 }
