@@ -1,6 +1,8 @@
 # B3 PR 1 (TaskPolicy e as três migrações 2026_10_16_*) Validation
 
-## Veredito vigente: PASS (rodada 3, 19/10)
+## Validation: PASS
+
+**Result**: PASS (rodada 3, 19/10). As rodadas 1 e 2 ficam abaixo como histórico.
 
 **Rodada 3**: PASS. O Fix 6 fechou. Os 3 sobreviventes da rodada 2 (u2, u3 e u4, recusa de rótulo repetido do tipo) morrem no teste novo do `TaskTypeTest`. O ac2 (`reactivate` sem `authorize`) agora morre no teste de comportamento, não só no A5. O gate está verde, com 634 testes. Somando as três rodadas, todo mutante contado está morto.
 
@@ -231,7 +233,7 @@ Não usei `git reset` nem `stash`. `git status --porcelain` saiu vazio no fim.
 Os 22 mutantes que a spec exige (delegações, Backlog e `authorize()`) estão todos mortos: 17 na rodada 1 e os 5 que faltavam (p4, p7 a p10) nesta. A `TaskPolicy` e os FormRequests não mudaram no `83879c4` (`git diff 24d8489 83879c4 -- app/Domains/Projetos/Policies app/Domains/Projetos/Requests` vazio). Os 2 da migração (g1, g2) e os 7 sobreviventes da rodada 1 também morreram. Os sobreviventes estão no trilho leve (etiquetas), mas na lista desta rodada.
 
 **Sensor depth**: P0 (permissão, exclusão de verdade, migração que reescreve dado), manual.
-**Result**: 24/27 mortos. FAIL.
+**Sensor da rodada 2**: 24/27 mortos. FAIL.
 
 ### Code Quality (rodada 2)
 
@@ -290,9 +292,9 @@ O Fix 1 ao Fix 5 da rodada 1 estão **fechados**, cada um com o teste que o Fix 
 
 ## Rodada 1 (19/10)
 
-### Validation: FAIL (rodada 1)
+### Rodada 1 (19/10): veredito FAIL
 
-**Result**: FAIL na rodada 1. Um defeito de código e quatro lacunas de teste.
+**Veredito da rodada 1**: FAIL. Um defeito de código e quatro lacunas de teste.
 
 O defeito: o `down()` da migração `2026_10_16_000010` não roda. O MySQL recusa voltar `tasks.task_type_id` a not null com a FK ligada (erro 1832), mesmo num banco sem nenhuma tarefa, e a migração fica pela metade: as cores e `task_participants` já saíram, a linha da migração segue em `migrations` e o `migrate` seguinte quebra. Isso reprova o MIG-01 AC 5 e o critério de sucesso "`migrate:rollback` + `migrate` sem erro".
 
@@ -488,7 +490,7 @@ Conjuntos de teste:
 Dos 22 pedidos pela spec (p1 a p10, b1, b1b, b2, a1 a a9), 17 morreram: 16 no teste de comportamento e o a2 só no A5. Os outros 5 sobreviveram: p4, p7, p8, p9 e p10.
 
 **Sensor depth**: P0 (permissão e migração que reescreve dado), manual, ≥5 por ramo.
-**Result**: 55/62 mortos. FAIL.
+**Sensor da rodada 1**: 55/62 mortos. FAIL.
 
 ---
 

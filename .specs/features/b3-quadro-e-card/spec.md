@@ -2,7 +2,9 @@
 
 Feature `b3-quadro-e-card` · **trilho completo só para a Policy nova e para a migração** (AGENTS.md, "Trilhos" e "O que exige aprovação humana"; a migração dos tipos reescreve dado). O resto do PR 1 (quadro, card rápido, mover, pausa, retrabalho, etiquetas, participantes, card de suporte, aviso `TaskReturned`) é trilho leve, com a spec na descrição do PR. Fonte: [`docs/funcional/f3-quadro-e-card.md`](../../../docs/funcional/f3-quadro-e-card.md) §04, §09 e §11, [`docs/escopo.md`](../../../docs/escopo.md) B3 ("Permissão" e "Dados"), [`docs/necessidade.md`](../../../docs/necessidade.md) (P5, P7, P13, P18, P26, P45, P52, P56 a P59, C14, G3, G4), [`docs/banco.md`](../../../docs/banco.md) (`tasks`, `task_types`, `project_areas`, `task_participants`; seção 7, diferenças de 13/10 e 14/10, aprovadas por Lucas Scholz em 15/10). Escopo da skill: **Medium** (uma Policy, três migrações, uma delas com dado).
 
-**Approved by**: Lucas Scholz, 2026-10-19 (as 11 premissas da tabela *Assumptions*; Verifier a rodar antes do merge)
+**Approved by**: Lucas Scholz, 2026-10-19
+
+Aprovadas as 11 premissas da tabela *Assumptions* e, no mesmo dia, a exclusão de tipo (última linha da tabela); Verifier PASS na rodada 3 (`validation.md`).
 
 Escrita com IA por Cauã Soares.
 
@@ -34,23 +36,23 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 |---|---|---|---|
-| Quem é "qualquer alocado" | `ProjectPolicy::view` do projeto da tarefa: Administrador, quem gere e quem está alocado. Comercial nunca | F3 §09 e o texto do topo do F3; C14 | |
-| Quem "gere" | `ProjectPolicy::manage`: Administrador, ou Gestor de projetos responsável ou alocado | Um jeito só (AGENTS.md) | |
-| Abilities da `TaskPolicy` | `create(Project)`, `view(Task)`, `update(Task)`, `move(Task, ?BoardStage)`, `comment(Task)`, `attach(Task)` = vê o projeto; `createSupport(Project)`, `archive(Task)`, `delete(Task)` = gere o projeto; `manageSprint(Project)` = `SprintPolicy::manageTasks` | Escopo B3 "Permissão"; F3 §09 | |
-| Pôr na sprint e levar ao Backlog | `move` de um card **entre** o Backlog e outra coluna (de lá ou para lá) pede `manageSprint`. Reordenar **dentro** do Backlog não muda a sprint e fica com qualquer alocado | P45 e F3 §04 ("Reordenar na coluna: qualquer alocado") | |
-| `logTime` | Não entra: lançar horas já é `TimeEntryPolicy::create(Task)`, aprovada no B5 | Um jeito só; o escopo listou `logTime` antes do B5 existir | |
-| Tipo e área pela etiqueta | Criar e editar nome e cor de tipo e de área do projeto = `ProjectPolicy::manage`, a mesma das áreas na configuração (B2). Sem ability nova no back; o quadro manda `manage_types` e `manage_areas` calculadas dela | F3 §11 item 9; B2 passo 2 já usa `manage` para áreas | |
-| Trocar o tipo, a área ou a prioridade de um card | `update(Task)`: qualquer alocado | F3 §09 "Editar a ficha" | |
-| Projeto encerrado e card arquivado | Não são permissão: o `TaskService` recusa com mensagem (P7: "Projeto encerrado não recebe card novo"; P26: card arquivado não se move). A tela recebe `create_card = false` no projeto encerrado | Regra de estado no Service, como no B5; a Policy decide só quem | |
-| Mapeamento da negação | `create`, `update`, `delete`, `view*` já mapeiam; entram `move` → `moved` (caso novo, "Movido"), `createSupport` → `created`, `manageSprint` → `updated`, `archive` → `archived` (caso novo, "Arquivado"), `comment` e `attach` → `updated` | Sem mapeamento a linha grava o nome cru e a tela mostra "Outra ação" | |
-| Rota do card | `/projetos/{project}/cards/{chave}`, com a chave inteira (`SGM-17`), procurada só entre os cards do projeto da rota; chave de outro projeto é 404 antes da Policy | Escopo B3 "Telas"; `Copiar link` do kit | |
-| Migração dos tipos | Para cada projeto, copia cada tipo geral (slug, label, desativação), acrescenta `development` "Desenvolvimento", repõe `tasks.task_type_id` na cópia do próprio projeto e apaga os gerais; `project_id` vira not null; os uniques passam a `(project_id, slug)` e `(project_id, label)` | banco.md seção 7 (14/10) | |
-| Projeto novo | O `ProjectService` grava os 5 tipos padrão na criação, na mesma transação; o `TaskTypeSeeder` geral sai | banco.md seção 7 | |
-| Cor | `varchar(10)` nulo, só os 10 nomes da paleta (`gray`, `blue`, `sky`, `green`, `lime`, `yellow`, `orange`, `red`, `pink`, `purple`), validados no FormRequest; nulo = cinza | banco.md seção 7; `TagColor` do kit | |
+| Quem é "qualquer alocado" | `ProjectPolicy::view` do projeto da tarefa: Administrador, quem gere e quem está alocado. Comercial nunca | F3 §09 e o texto do topo do F3; C14 | y |
+| Quem "gere" | `ProjectPolicy::manage`: Administrador, ou Gestor de projetos responsável ou alocado | Um jeito só (AGENTS.md) | y |
+| Abilities da `TaskPolicy` | `create(Project)`, `view(Task)`, `update(Task)`, `move(Task, ?BoardStage)`, `comment(Task)`, `attach(Task)` = vê o projeto; `createSupport(Project)`, `archive(Task)`, `delete(Task)` = gere o projeto; `manageSprint(Project)` = `SprintPolicy::manageTasks` | Escopo B3 "Permissão"; F3 §09 | y |
+| Pôr na sprint e levar ao Backlog | `move` de um card **entre** o Backlog e outra coluna (de lá ou para lá) pede `manageSprint`. Reordenar **dentro** do Backlog não muda a sprint e fica com qualquer alocado | P45 e F3 §04 ("Reordenar na coluna: qualquer alocado") | y |
+| `logTime` | Não entra: lançar horas já é `TimeEntryPolicy::create(Task)`, aprovada no B5 | Um jeito só; o escopo listou `logTime` antes do B5 existir | y |
+| Tipo e área pela etiqueta | Criar e editar nome e cor de tipo e de área do projeto = `ProjectPolicy::manage`, a mesma das áreas na configuração (B2). Sem ability nova no back; o quadro manda `manage_types` e `manage_areas` calculadas dela | F3 §11 item 9; B2 passo 2 já usa `manage` para áreas | y |
+| Trocar o tipo, a área ou a prioridade de um card | `update(Task)`: qualquer alocado | F3 §09 "Editar a ficha" | y |
+| Projeto encerrado e card arquivado | Não são permissão: o `TaskService` recusa com mensagem (P7: "Projeto encerrado não recebe card novo"; P26: card arquivado não se move). A tela recebe `create_card = false` no projeto encerrado | Regra de estado no Service, como no B5; a Policy decide só quem | y |
+| Mapeamento da negação | `create`, `update`, `delete`, `view*` já mapeiam; entram `move` → `moved` (caso novo, "Movido"), `createSupport` → `created`, `manageSprint` → `updated`, `archive` → `archived` (caso novo, "Arquivado"), `comment` e `attach` → `updated` | Sem mapeamento a linha grava o nome cru e a tela mostra "Outra ação" | y |
+| Rota do card | `/projetos/{project}/cards/{chave}`, com a chave inteira (`SGM-17`), procurada só entre os cards do projeto da rota; chave de outro projeto é 404 antes da Policy | Escopo B3 "Telas"; `Copiar link` do kit | y |
+| Migração dos tipos | Para cada projeto, copia cada tipo geral (slug, label, desativação), acrescenta `development` "Desenvolvimento", repõe `tasks.task_type_id` na cópia do próprio projeto e apaga os gerais; `project_id` vira not null; os uniques passam a `(project_id, slug)` e `(project_id, label)` | banco.md seção 7 (14/10) | y |
+| Projeto novo | O `ProjectService` grava os 5 tipos padrão na criação, na mesma transação; o `TaskTypeSeeder` geral sai | banco.md seção 7 | y |
+| Cor | `varchar(10)` nulo, só os 10 nomes da paleta (`gray`, `blue`, `sky`, `green`, `lime`, `yellow`, `orange`, `red`, `pink`, `purple`), validados no FormRequest; nulo = cinza | banco.md seção 7; `TagColor` do kit | y |
 
-| Desativar, reativar e excluir tipo do projeto (19/10, CR-1-02 da revisão) | As mesmas quatro portas da área (B2): `POST …/tipos/{taskType}/deactivate`, `…/reactivate`, `DELETE …/tipos/{taskType}` só do nunca usado (`deleteIfUnused`, G2), tudo por `ProjectPolicy::manage`; os de slug (`improvement`, `support`, `development`) não se desativam nem se excluem, porque o código os procura; *Desativar* no popover da etiqueta | Inegociável 11 (porta de desfazer); F3 §03 "item desativado some da escolha". A exclusão de verdade pede o "ok" do Lucas Scholz (AGENTS.md) | **aguardando o ok do Lucas Scholz** |
+| Desativar, reativar e excluir tipo do projeto (19/10, CR-1-02 da revisão) | As mesmas quatro portas da área (B2): `POST …/tipos/{taskType}/deactivate`, `…/reactivate`, `DELETE …/tipos/{taskType}` só do nunca usado (`deleteIfUnused`, G2), tudo por `ProjectPolicy::manage`; os de slug (`improvement`, `support`, `development`) não se desativam nem se excluem, porque o código os procura; *Desativar* no popover da etiqueta | Inegociável 11 (porta de desfazer); F3 §03 "item desativado some da escolha". A exclusão de verdade pediu o "ok" do Lucas Scholz (AGENTS.md), dado em 19/10: "só o nunca usado, espelho da área" | y |
 
-**Open questions:** nenhuma; as 11 premissas acima foram aprovadas em 19/10; a última linha (excluir tipo) aguarda o ok.
+**Open questions:** none.
 
 ---
 
@@ -123,7 +125,7 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 | MIG-02 | P1: Projeto novo nasce com os 5 tipos (AC 6) | Execute | ✅ Verified | `ProjectTest.php:71-75`; `B3TransacaoTest.php:44-75` (mesma transação) |
 | MIG-03 | P1: Card sem tipo e sem prioridade (AC 7) | Execute | ✅ Verified | `TaskServiceTest.php:74-81` |
 
-**Coverage:** 7 total, 7 mapped to tests, 0 unmapped; 7 verified (Verifier rodada 3, 19/10, `validation.md`). Veredito da rodada 3: PASS. O Fix 6 fechou: u2, u3 e u4 morrem no `TaskTypeTest.php:57-76` e o ac2 morre no comportamento (`TaskPolicyTest.php:261`). A exclusão de verdade do tipo segue aguardando o ok do Lucas Scholz (premissa acima), decisão humana fora do veredito.
+**Coverage:** 7 total, 7 mapped to tests, 0 unmapped; 7 verified (Verifier rodada 3, 19/10, `validation.md`). Veredito da rodada 3: PASS. O Fix 6 fechou: u2, u3 e u4 morrem no `TaskTypeTest.php:57-76` e o ac2 morre no comportamento (`TaskPolicyTest.php:261`). A exclusão de verdade do tipo recebeu o ok do Lucas Scholz em 19/10 (premissa acima).
 
 ---
 
