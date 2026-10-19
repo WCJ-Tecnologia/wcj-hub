@@ -32,21 +32,26 @@ Acima das colunas:
 - projeto encerrado: a faixa "Projeto encerrado: não recebe card novo; mover, comentar e anexar seguem." (P7);
 - nenhum card: `WEmptyStateMolecule` "Nenhum card ainda" / "Escreva o título no topo do Backlog e tecle Enter." (F3 §03); com `filtered`, "Nenhum card com esses filtros" (F3 §05). As colunas continuam aparecendo.
 
+## Montar sprint (D-GER-35)
+
+Com `selection` (os ids marcados e `onChange`), o quadro entra no modo de seleção: a coluna de papel `queue` (Backlog) recebe uma caixa por card e _Selecionar todas (N)_, e cada card vira só leitura (clicar em qualquer ponto marca); as outras colunas ficam esmaecidas e `inert`, e nada arrasta. Ao ligar, a coluna Backlog rola para a vista (no celular o quadro abre na primeira coluna). A barra e o diálogo são da página. Story `ModoMontarSprint`.
+
 ## Props
 
-| Prop                                                                | Tipo                                       | Padrão  | Obrigatória | Para quê                                               |
-| ------------------------------------------------------------------- | ------------------------------------------ | ------- | ----------- | ------------------------------------------------------ |
-| `stages`                                                            | `BoardStage[]`                             |         | sim         | Etapas ativas, na ordem de F2                          |
-| `cards`                                                             | `BoardCard[]`                              |         | sim         | Os cards a mostrar (já filtrados)                      |
-| `order`                                                             | `BoardOrder`                               |         | sim         | Ordem das colunas e o que o arraste vertical faz (P13) |
-| `project`                                                           | `BoardProject`                             |         | sim         | `finished` mostra a faixa                              |
-| `abilities`                                                         | `BoardAbilities`                           |         | sim         | Repassadas às colunas                                  |
-| `options`                                                           | `Pick<BoardOptions, 'areas' \| 'members'>` |         | sim         | Menu ⋯ e _+_ dos cards                                 |
-| `onMove`                                                            | `(intent: MoveIntent) => void`             |         | sim         | Arrastar e _Mover para…_                               |
-| `filtered`                                                          | `boolean`                                  | `false` | não         | Troca a mensagem do vazio                              |
-| `onCreate`, `creating`, `createError`, `onCreateSupport`            |                                            |         | não         | Repassados às colunas Backlog e Support                |
-| `onChangePriority`, `onChangeArea`, `onToggleParticipant`, `onOpen` | os do `WTaskCardOrganism`                  |         | não         | Repassados aos cards                                   |
-| `className`                                                         | `string`                                   |         | não         |                                                        |
+| Prop                                                                | Tipo                                       | Padrão  | Obrigatória | Para quê                                                                |
+| ------------------------------------------------------------------- | ------------------------------------------ | ------- | ----------- | ----------------------------------------------------------------------- |
+| `stages`                                                            | `BoardStage[]`                             |         | sim         | Etapas ativas, na ordem de F2                                           |
+| `cards`                                                             | `BoardCard[]`                              |         | sim         | Os cards a mostrar (já filtrados)                                       |
+| `order`                                                             | `BoardOrder`                               |         | sim         | Ordem das colunas e o que o arraste vertical faz (P13)                  |
+| `project`                                                           | `BoardProject`                             |         | sim         | `finished` mostra a faixa                                               |
+| `abilities`                                                         | `BoardAbilities`                           |         | sim         | Repassadas às colunas                                                   |
+| `options`                                                           | `Pick<BoardOptions, 'areas' \| 'members'>` |         | sim         | Menu ⋯ e _+_ dos cards                                                  |
+| `onMove`                                                            | `(intent: MoveIntent) => void`             |         | sim         | Arrastar e _Mover para…_                                                |
+| `filtered`                                                          | `boolean`                                  | `false` | não         | Troca a mensagem do vazio                                               |
+| `onCreate`, `creating`, `createError`, `onCreateSupport`            |                                            |         | não         | Repassados às colunas Backlog e Support                                 |
+| `onChangePriority`, `onChangeArea`, `onToggleParticipant`, `onOpen` | os do `WTaskCardOrganism`                  |         | não         | Repassados aos cards                                                    |
+| `selection`                                                         | `ColumnSelection`                          |         | não         | _Montar sprint_ ligado (D-GER-35): caixas no Backlog, o resto desligado |
+| `className`                                                         | `string`                                   |         | não         |                                                                         |
 
 ## Exemplo
 

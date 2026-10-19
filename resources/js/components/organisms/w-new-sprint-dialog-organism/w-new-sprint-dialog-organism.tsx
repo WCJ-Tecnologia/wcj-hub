@@ -4,7 +4,7 @@ import { type FormEvent, useId, useState } from 'react';
 import { sprintFieldErrors, WSprintFieldsMolecule } from '@/components/molecules/w-sprint-fields-molecule/w-sprint-fields-molecule';
 import { Button } from '@/components/shadcn/button';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shadcn/dialog';
-import { addBusinessDays } from '@/lib/dias-uteis';
+import { proposedSprint } from '@/lib/quadro';
 import type { BoardCard, BoardProject } from '@/types/quadro';
 import type { SprintFields } from '@/types/sprints';
 
@@ -55,12 +55,7 @@ type FormProps = Omit<WNewSprintDialogOrganismProps, 'open' | 'onOpenChange' | '
 
 function NewSprintForm({ card, project, today, loading, errors, onConfirm, onCancel }: FormProps) {
     const formId = useId();
-    const [value, setValue] = useState<SprintFields>(() => ({
-        name: `Sprint ${project.sprints_count + 1}`,
-        goal: '',
-        starts_on: today,
-        ends_on: addBusinessDays(today, project.sprint_days),
-    }));
+    const [value, setValue] = useState<SprintFields>(() => proposedSprint(project, today));
     const [tried, setTried] = useState(false);
 
     const submit = (event: FormEvent) => {

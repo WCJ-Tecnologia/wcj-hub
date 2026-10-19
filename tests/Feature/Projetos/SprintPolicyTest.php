@@ -193,6 +193,7 @@ class SprintPolicyTest extends TestCase
 
         $tarefas = [
             'pôr' => ['post', '/sprint-aberta/tarefas', ['task_id' => $this->task->id]],
+            'pôr em lote' => ['post', '/sprint-aberta/tarefas/lote', ['tasks' => [['id' => $this->task->id]]]],
             'tirar' => ['delete', "/tarefas/{$this->task->id}/sprint", []],
             'horas' => ['put', "/tarefas/{$this->task->id}/horas-previstas", ['estimated_hours' => 99]],
             'aprovar' => ['post', "/tarefas/{$this->task->id}/reestimativa/aprovar", []],

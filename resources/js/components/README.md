@@ -74,11 +74,19 @@ Os componentes do quadro kanban entraram antes do B3, como kit: o Cauã liga o b
 
 | Arquivo                         | O que é                                                                                                                                                                                                     |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resources/js/types/quadro.ts`  | O que o `TaskPresenter` do B3 manda (`BoardCard`, `BoardStage`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`) e o que a tela devolve (`MoveIntent`, `MovePayload`)                      |
+| `resources/js/types/quadro.ts`  | O que o `TaskPresenter` do B3 manda (`BoardCard`, `BoardStage`, `BoardProject`, `BoardAbilities`, `BoardOptions`, `BoardFilters`, `SprintPlanning`) e o que a tela devolve (`MoveIntent`, `MovePayload`, `SprintBatchPayload`) |
 | `resources/js/lib/quadro.ts`    | Ordenar por prioridade ou manual (P13), `classifyMove` (qual diálogo abrir e qual recusa mostrar: P15, P39, P45, R5, P38), `hours()`, `applyFilters()` (só para o filtro instantâneo; o servidor é a fonte) |
 | `.storybook/fixtures-quadro.ts` | Projeto, 8 etapas, cards com todas as zonas e marcas, opções e abilities de gestor e de dev                                                                                                                 |
 
 Como se encaixam: `pages/w-project-board-page` monta `organisms/w-board-filters-organism` + `organisms/w-kanban-board-organism` (dnd-kit) e liga o `hooks/use-board-move.tsx`, que recebe o `MoveIntent` do arrastar (ou do _Mover para…_ do card) e abre, na ordem, os diálogos que o movimento pede (`w-new-sprint-dialog`, `w-pause-reason-dialog`, `w-rework-dialog`, o aviso do Done pelo `WConfirmDialogMolecule`), devolvendo um `MovePayload` para o `router.post`. A coluna (`w-kanban-column-organism`) traz o criar rápido no Backlog e o _Novo card de suporte_ no Support; o card (`w-task-card-organism`) é só apresentação e callbacks. As rotas que a página chama são proposta do kit, marcadas no topo do arquivo; o B3 confirma ou ajusta.
+
+_Montar sprint_ (D-GER-35) tem três peças:
+
+- o botão do cabeçalho da página liga o modo de seleção do quadro (`selection` no `w-kanban-board-organism`, que a coluna Backlog transforma em caixas);
+- a barra `w-sprint-batch-bar-organism` mostra a soma das marcadas;
+- o `w-start-sprint-dialog-organism` é o planejamento: os campos da sprint pela `w-sprint-fields-molecule` quando não há aberta, uma linha editável por card (dev, QA, horas, prioridade) e o `w-capacity-panel-organism` em `variant="plan"` ao vivo.
+
+Em `lib/quadro.ts` ficam `proposedSprint()` (a mesma proposta do `w-new-sprint-dialog` do arrastar), `planItemOf()`, `planSummaryText()` e `planCapacity()`. Esta última é a conta da `CapacityQuery` com o plano somado. A rota em lote e o `SprintPlanningQuery` (prop `planning`) já existem no backend; o B3 só liga a página do quadro de verdade.
 
 Regra do kit: o quadro e o card nunca decidem regra nem recusam movimento. `classifyMove` só escolhe o diálogo; quem recusa é o servidor, e a tela mostra o erro que vier.
 

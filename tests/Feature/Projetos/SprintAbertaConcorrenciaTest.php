@@ -104,4 +104,30 @@ class SprintAbertaConcorrenciaTest extends TestCase
         $this->assertTrue($corrida->bloqueada);
         $this->assertSame(['Sprint 1'], Sprint::query()->whereNull('closed_at')->pluck('name')->all());
     }
+
+    /**
+     * Dois *Adicionar do Backlog* sem sprint aberta ao mesmo tempo (D-GER-35, F5 §07): o segundo
+     * espera a linha do projeto em vez de criar outra sprint (quando a trava solta, ele entra na
+     * aberta, `joined_existing`, coberto no SprintEmLoteTest). No fim, uma sprint só.
+     */
+    public function test_two_batches_without_open_sprint_create_one_sprint(): void
+    {
+        $gestor = User::factory()->projectManager()->create();
+        $project = $this->projeto(['manager_id' => $gestor->id]);
+        [$a, $b, $c] = [$this->tarefa($project), $this->tarefa($project), $this->tarefa($project)];
+
+        $corrida = Concorrencia::intercalarDepoisDe(
+            self::checagemDaAberta(),
+            fn () => app(SprintTaskService::class)->addMany($project, [['id' => $c->id]], $gestor, [...self::SPRINT, 'name' => 'Sprint 2']),
+        );
+
+        app(SprintTaskService::class)->addMany($project, [['id' => $a->id], ['id' => $b->id]], $gestor, self::SPRINT);
+
+        $this->assertTrue($corrida->rodou);
+        $this->assertNull($corrida->outroErro);
+        $this->assertTrue($corrida->bloqueada);
+        $sprint = Sprint::query()->sole();
+        $this->assertSame('Sprint 1', $sprint->name);
+        $this->assertSame([$sprint->id, $sprint->id, null], [$a->fresh()->sprint_id, $b->fresh()->sprint_id, $c->fresh()->sprint_id]);
+    }
 }

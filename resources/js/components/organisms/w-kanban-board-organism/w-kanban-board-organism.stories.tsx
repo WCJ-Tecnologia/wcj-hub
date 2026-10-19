@@ -13,7 +13,9 @@ import {
     BOARD_OPTIONS,
     BOARD_PROJECT,
     CARDS,
+    CARDS_MONTAR_SPRINT,
     CARDS_VAZIO,
+    MONTAR_SPRINT_MARCADAS,
     STAGES,
 } from '../../../../../.storybook/fixtures-quadro';
 import { WKanbanBoardOrganism, type WKanbanBoardOrganismProps } from './w-kanban-board-organism';
@@ -56,6 +58,24 @@ function KanbanBoardDemo(props: WKanbanBoardOrganismProps) {
             />
             <Toaster />
         </>
+    );
+}
+
+/** *Montar sprint* (D-GER-35): o quadro em modo de seleção, com as marcadas guardadas aqui. */
+function SelectionDemo(props: WKanbanBoardOrganismProps) {
+    const [selected, setSelected] = useState<number[]>(MONTAR_SPRINT_MARCADAS);
+
+    return (
+        <WKanbanBoardOrganism
+            {...props}
+            selection={{
+                selected: new Set(selected),
+                onChange: (ids) => {
+                    action('selection.onChange')(ids);
+                    setSelected(ids);
+                },
+            }}
+        />
     );
 }
 
@@ -120,4 +140,12 @@ export const Celular: Story = {
             </div>
         ),
     ],
+};
+/**
+ * *Montar sprint* ligado (D-GER-35), com 3 marcadas: caixa em cada card do Backlog e *Selecionar todas*;
+ * as outras colunas esmaecem e nada arrasta. A barra e o diálogo estão nas stories da página.
+ */
+export const ModoMontarSprint: Story = {
+    args: { cards: CARDS_MONTAR_SPRINT },
+    render: (args) => <SelectionDemo {...args} />,
 };

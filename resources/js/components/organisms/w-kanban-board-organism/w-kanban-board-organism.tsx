@@ -25,6 +25,7 @@ import {
     WKanbanColumnOrganism,
     type BoardDndData,
     type ColumnCardCallbacks,
+    type ColumnSelection,
 } from '@/components/organisms/w-kanban-column-organism/w-kanban-column-organism';
 import { WTaskCardOrganism } from '@/components/organisms/w-task-card-organism/w-task-card-organism';
 import { sortCards } from '@/lib/quadro';
@@ -57,6 +58,11 @@ export interface WKanbanBoardOrganismProps extends Omit<ColumnCardCallbacks, 'on
     creating?: boolean;
     createError?: string;
     onCreateSupport?: () => void;
+    /**
+     * *Montar sprint* ligado (D-GER-35): a coluna Backlog ganha uma caixa por card e *Selecionar todas*;
+     * as outras colunas e o arrastar ficam desligados até a página sair do modo.
+     */
+    selection?: ColumnSelection;
     className?: string;
 }
 
@@ -95,6 +101,7 @@ export function WKanbanBoardOrganism({
     creating,
     createError,
     onCreateSupport,
+    selection,
     className,
     ...callbacks
 }: WKanbanBoardOrganismProps) {
@@ -118,6 +125,16 @@ export function WKanbanBoardOrganism({
         observer.observe(el);
         return () => observer.disconnect();
     });
+
+    // Ao ligar o *Montar sprint*, a coluna Backlog vem para a vista: no celular o quadro abre na primeira coluna.
+    const selecting = selection !== undefined;
+    useEffect(() => {
+        const el = scrollRef.current;
+        const column = el?.querySelector<HTMLElement>('[data-selecting]');
+        if (!selecting || !el || !column) return;
+        const gutter = parseFloat(getComputedStyle(el).scrollPaddingLeft) || 0;
+        el.scrollTo({ left: Math.max(0, column.offsetLeft - gutter) });
+    }, [selecting]);
 
     const sensors = useSensors(
         // 5 px antes de pegar: o clique no título (link) e no menu continuam cliques, e o card solto não abre a ficha.
@@ -284,6 +301,8 @@ export function WKanbanBoardOrganism({
                                 createError={createError}
                                 onCreateSupport={onCreateSupport}
                                 onMove={menuMove}
+                                selection={selection && stage.role === 'queue' ? selection : undefined}
+                                locked={selection !== undefined && stage.role !== 'queue'}
                                 {...callbacks}
                             />
                         ))}

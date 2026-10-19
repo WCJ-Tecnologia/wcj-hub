@@ -2,7 +2,7 @@
 
 Feature `b3-quadro-e-card` · **trilho completo só para a Policy nova e para a migração** (AGENTS.md, "Trilhos" e "O que exige aprovação humana"; a migração dos tipos reescreve dado). O resto do PR 1 (quadro, card rápido, mover, pausa, retrabalho, etiquetas, participantes, card de suporte, aviso `TaskReturned`) é trilho leve, com a spec na descrição do PR. Fonte: [`docs/funcional/f3-quadro-e-card.md`](../../../docs/funcional/f3-quadro-e-card.md) §04, §09 e §11, [`docs/escopo.md`](../../../docs/escopo.md) B3 ("Permissão" e "Dados"), [`docs/necessidade.md`](../../../docs/necessidade.md) (P5, P7, P13, P18, P26, P45, P52, P56 a P59, C14, G3, G4), [`docs/banco.md`](../../../docs/banco.md) (`tasks`, `task_types`, `project_areas`, `task_participants`; seção 7, diferenças de 13/10 e 14/10, aprovadas por Lucas Scholz em 15/10). Escopo da skill: **Medium** (uma Policy, três migrações, uma delas com dado).
 
-**Approved by**: _aguardando Lucas Scholz_
+**Approved by**: Lucas Scholz, 2026-10-19 (as 11 premissas da tabela *Assumptions*; Verifier a rodar antes do merge)
 
 Escrita com IA por Cauã Soares.
 

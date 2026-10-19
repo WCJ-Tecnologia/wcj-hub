@@ -9,25 +9,29 @@
  * - `POST  /projetos/{id}/cards/{chave}/participantes`            `{ user_id, add }` (P58)
  * - `POST  /projetos/{id}/tipos`, `PUT /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  * - `POST  /projetos/{id}/areas`, `PUT /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, as mesmas rotas da configuração (B2), agora com a cor
+ * - `POST  /projetos/{id}/sprint-aberta/tarefas/lote`             `SprintBatchPayload`: *Montar sprint* já planejado (D-GER-35). **Já existe no
+ *                                                                  backend** (B5b), volta para o quadro com o toast; o lote recusado vem em `tasks`.
+ *                                                                  A prop `planning` é o `SprintPlanningQuery::forProject()`, só com `manage_sprint`
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Archive, CalendarRange, Settings } from 'lucide-react';
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { Archive, CalendarRange, ListChecks, Settings, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
 import type { TagPayload } from '@/components/organisms/w-tag-popover-organism/w-tag-popover-organism';
 import { WBoardFiltersOrganism } from '@/components/organisms/w-board-filters-organism/w-board-filters-organism';
 import { WKanbanBoardOrganism } from '@/components/organisms/w-kanban-board-organism/w-kanban-board-organism';
+import { WSprintBatchBarOrganism } from '@/components/organisms/w-sprint-batch-bar-organism/w-sprint-batch-bar-organism';
+import { WStartSprintDialogOrganism } from '@/components/organisms/w-start-sprint-dialog-organism/w-start-sprint-dialog-organism';
 import {
     WSupportCardDialogOrganism,
     type SupportCardPayload,
 } from '@/components/organisms/w-support-card-dialog-organism/w-support-card-dialog-organism';
 import { Button } from '@/components/shadcn/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shadcn/tooltip';
 import { WAppLayoutTemplate } from '@/components/templates/w-app-layout-template/w-app-layout-template';
 import { useBoardMove } from '@/hooks/use-board-move';
-import { applyFilters, hasActiveFilters } from '@/lib/quadro';
+import { applyFilters, hasActiveFilters, sprintBatchLabel } from '@/lib/quadro';
 import type { SharedProps } from '@/types';
 import type {
     AreaRef,
@@ -42,6 +46,8 @@ import type {
     MovePayload,
     PersonRef,
     PrioritySlug,
+    SprintBatchPayload,
+    SprintPlanning,
     TaskTypeRef,
 } from '@/types/quadro';
 
@@ -57,6 +63,8 @@ export interface WProjectBoardPageProps {
     filters: BoardFilters;
     /** Hoje, `AAAA-MM-DD` no fuso de São Paulo. */
     today: string;
+    /** *Montar sprint* (D-GER-35): pessoas alocadas e a sprint aberta (`SprintPlanningQuery`); só com `abilities.manage_sprint`. */
+    planning?: SprintPlanning | null;
 }
 
 /** A ordem do quadro é de cada pessoa, lembrada no navegador (P13). */
@@ -124,31 +132,12 @@ function moveLocally(cards: BoardCard[], card: BoardCard, payload: MovePayload):
     return [...others, moved].map((item) => (positions.has(item.id) ? { ...item, position: positions.get(item.id)! } : item));
 }
 
-/** Link do cabeçalho que ainda não existe: focável, com a dica, sem navegar. */
-function SoonAction({ icon, label, hint }: { icon: ReactNode; label: string; hint: string }) {
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    variant="outline"
-                    aria-disabled="true"
-                    className="cursor-not-allowed opacity-60"
-                    onClick={(event: MouseEvent) => event.preventDefault()}
-                >
-                    {icon} {label}
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>{hint}</TooltipContent>
-        </Tooltip>
-    );
-}
-
 /**
  * O quadro do projeto (Inertia: `projects/board`, `/projetos/{id}/quadro`; F3 §01, §03 a §05):
  * filtros, colunas com arrastar e soltar, criar rápido, card de suporte e os diálogos de movimento
  * (`useBoardMove`). Mover é otimista: o card muda de coluna antes da resposta e volta se der erro.
  */
-export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today }: WProjectBoardPageProps) {
+export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today, planning }: WProjectBoardPageProps) {
     const currentUserId = usePage<SharedProps>().props.auth.user?.id ?? null;
     const base = `/projetos/${project.id}`;
 
@@ -174,6 +163,11 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
     const [supportErrors, setSupportErrors] = useState<Record<string, string>>();
     const [moving, setMoving] = useState(false);
     const [moveErrors, setMoveErrors] = useState<Record<string, string>>();
+    // *Montar sprint* (D-GER-35): null = modo desligado; senão, os ids marcados no Backlog.
+    const [batch, setBatch] = useState<number[] | null>(null);
+    const [batchDialog, setBatchDialog] = useState(false);
+    const [batchBusy, setBatchBusy] = useState(false);
+    const [batchErrors, setBatchErrors] = useState<Record<string, string>>();
 
     // Busca com espera de 300 ms antes de ir ao servidor; o resto vai na hora.
     const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -338,6 +332,32 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
 
     const visible = applyFilters(local, current, currentUserId, stages);
     const supportStage = stages.find((stage) => stage.role === 'support');
+    const backlogStage = stages.find((stage) => stage.role === 'queue');
+    const backlogCards = visible.filter((card) => card.stage_id === backlogStage?.id);
+    // Só conta o que está à vista no Backlog: o card que saiu dele (recusa, filtro) deixa de estar marcado.
+    const batchCards = batch ? backlogCards.filter((card) => batch.includes(card.id)) : [];
+
+    const stopBatch = () => {
+        setBatch(null);
+        setBatchDialog(false);
+        setBatchErrors(undefined);
+    };
+
+    const commitBatch = (payload: SprintBatchPayload) =>
+        router.post(
+            `${base}/sprint-aberta/tarefas/lote`,
+            { ...payload },
+            {
+                preserveScroll: true,
+                onStart: () => {
+                    setBatchBusy(true);
+                    setBatchErrors(undefined);
+                },
+                onSuccess: stopBatch,
+                onError: (errors: Record<string, string>) => setBatchErrors(errors),
+                onFinish: () => setBatchBusy(false),
+            },
+        );
 
     return (
         <WAppLayoutTemplate
@@ -347,7 +367,23 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             width="full"
             actions={
                 <>
-                    <SoonAction icon={<CalendarRange aria-hidden />} label="Sprints" hint="Em breve (B5)" />
+                    {/* *Montar sprint* (D-GER-35): só quem põe card na sprint; entra no modo de seleção do Backlog. */}
+                    {abilities.manage_sprint && planning && (
+                        <Button
+                            variant={batch ? 'secondary' : 'default'}
+                            disabled={!batch && backlogCards.length === 0}
+                            title={!batch && backlogCards.length === 0 ? 'O Backlog está vazio' : undefined}
+                            onClick={() => (batch ? stopBatch() : setBatch([]))}
+                        >
+                            {/* Ligado, o botão principal é o da barra; aqui fica a saída, sem repetir o nome. */}
+                            {batch ? <X aria-hidden /> : <ListChecks aria-hidden />} {batch ? 'Sair da seleção' : sprintBatchLabel(project)}
+                        </Button>
+                    )}
+                    <Button variant="outline" asChild>
+                        <Link href={`/projetos/${project.id}/sprints`}>
+                            <CalendarRange aria-hidden /> Sprints
+                        </Link>
+                    </Button>
                     {/* A configuração do projeto (B2 passo 2): quem só vê o projeto abre só leitura (F2 §09). */}
                     <Button variant="outline" asChild>
                         <Link href={`/projetos/${project.id}/configuracao`}>
@@ -398,11 +434,40 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                         onUpdateType={abilities.manage_types ? updateType : undefined}
                         onCreateArea={abilities.manage_areas ? createArea : undefined}
                         onUpdateArea={abilities.manage_areas ? updateArea : undefined}
+                        selection={batch ? { selected: new Set(batch), onChange: setBatch } : undefined}
+                    />
+                )}
+
+                {/* Atrás do planejamento aberto a barra não serve e ficaria sem contraste sob o véu do modal. */}
+                {batch && !batchDialog && (
+                    <WSprintBatchBarOrganism
+                        project={project}
+                        selected={batchCards}
+                        onCancel={stopBatch}
+                        onConfirm={() => {
+                            setBatchErrors(undefined);
+                            setBatchDialog(true);
+                        }}
                     />
                 )}
             </div>
 
             {move.dialogs}
+
+            {batch && planning && (
+                <WStartSprintDialogOrganism
+                    open={batchDialog}
+                    onOpenChange={setBatchDialog}
+                    project={project}
+                    cards={batchCards}
+                    planning={planning}
+                    onRemove={(card) => setBatch((ids) => ids?.filter((id) => id !== card.id) ?? null)}
+                    today={today}
+                    loading={batchBusy}
+                    errors={batchErrors}
+                    onConfirm={commitBatch}
+                />
+            )}
 
             {abilities.create_support && (
                 <WSupportCardDialogOrganism

@@ -154,6 +154,8 @@ Route::prefix('projetos')
             // Pôr e tirar card da sprint e horas previstas pelo gestor (P27, P45). O arrastar do
             // quadro (B3) chama os mesmos Services.
             Route::post('{project}/sprint-aberta/tarefas', [SprintTaskController::class, 'store'])->name('sprints.tasks.store');
+            // Montar a sprint em lote pelo quadro (botão *Montar sprint*), criando a sprint se não há aberta (D-GER-35).
+            Route::post('{project}/sprint-aberta/tarefas/lote', [SprintTaskController::class, 'storeMany'])->name('sprints.tasks.store-many');
             Route::delete('{project}/tarefas/{task}/sprint', [SprintTaskController::class, 'destroy'])->name('sprints.tasks.destroy');
             Route::put('{project}/tarefas/{task}/horas-previstas', [SprintTaskController::class, 'estimate'])->name('tasks.estimate');
             Route::post('{project}/tarefas/{task}/reestimativa/aprovar', [SprintTaskController::class, 'approve'])->name('tasks.proposal.approve');
