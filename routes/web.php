@@ -174,9 +174,13 @@ Route::prefix('projetos')
             Route::patch('{project}/cards/{card}', [TaskController::class, 'update'])->name('cards.update');
             Route::post('{project}/cards/{card}/participantes', [TaskController::class, 'participant'])->name('cards.participants');
 
-            // Tipos do projeto, criados e editados pela etiqueta do quadro (14/10).
+            // Tipos do projeto, criados e editados pela etiqueta do quadro (14/10); as mesmas quatro
+            // portas da área (desativar, reativar, excluir o nunca usado), só quem gere.
             Route::post('{project}/tipos', [TaskTypeController::class, 'store'])->name('types.store');
             Route::put('{project}/tipos/{taskType}', [TaskTypeController::class, 'update'])->name('types.update');
+            Route::delete('{project}/tipos/{taskType}', [TaskTypeController::class, 'destroy'])->name('types.destroy');
+            Route::post('{project}/tipos/{taskType}/deactivate', [TaskTypeController::class, 'deactivate'])->name('types.deactivate');
+            Route::post('{project}/tipos/{taskType}/reactivate', [TaskTypeController::class, 'reactivate'])->name('types.reactivate');
         });
     });
 

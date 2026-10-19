@@ -75,7 +75,7 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 
 **Acceptance Criteria**:
 
-1. WHEN a `TaskPolicy` nega uma ação THEN o sistema SHALL gravar em `audit_logs` uma linha `outcome = denied` com `auditable_type = task` (ou `project`, nas abilities que recebem o projeto) e a ação `created`, `viewed`, `updated`, `moved`, `archived` ou `deleted`, conforme a ability.
+1. WHEN a `TaskPolicy` nega uma ação THEN o sistema SHALL gravar em `audit_logs` exatamente uma linha `outcome = denied` por requisição, com a ação `created`, `viewed`, `updated`, `moved`, `archived` ou `deleted`, conforme a ability, e o alvo assim: `auditable_type = task` com o `auditable_id` do card nas abilities que recebem o card (`view`, `update`, `move`); `task` com `auditable_id` nulo em `create` e `createSupport` (a negação vem antes de o card existir); `project` com o id do projeto em tipo e área, que passam pela `ProjectPolicy::manage` (decidido na rodada 1 do Verifier, Fix 4, 19/10).
 2. IF a negação acontece THEN o sistema SHALL não gravar nenhuma linha `success` de `task` nem de `task_stage_movement`.
 
 **Independent Test**: `tests/Feature/Projetos/TaskPolicyTest.php`.

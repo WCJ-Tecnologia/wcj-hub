@@ -112,10 +112,11 @@ class TaskMoveService
             return $locked;
         });
 
-        // O aviso sai depois do commit: movimento desfeito não avisa ninguém (P22).
+        // O aviso sai depois do commit: movimento desfeito não avisa ninguém (P22). Dev desativado
+        // segue no card (G2), mas não recebe e-mail (CR-1-06).
         if ($returned !== null) {
             [$developerId, $stageName, $fields] = $returned;
-            User::query()->find($developerId)?->notify(new TaskReturned($moved, $actor, $stageName, $fields));
+            User::query()->active()->find($developerId)?->notify(new TaskReturned($moved, $actor, $stageName, $fields));
         }
 
         return $moved;

@@ -30,14 +30,16 @@ class TaskPresenter
      */
     public function board(Project $project, User $viewer, Collection $cards, array $filters): array
     {
+        $abilities = $this->abilities($project, $viewer);
+
         return [
             'project' => $this->project($project),
             'stages' => $project->boardStages()->with('stageRole:id,slug')->whereNull('archived_at')->orderBy('position')->get()
                 ->map(fn ($stage) => ['id' => $stage->id, 'name' => $stage->name, 'role' => $stage->stageRole->slug, 'position' => $stage->position])
                 ->all(),
             'cards' => $cards->map(fn (Task $card) => $this->card($card))->values()->all(),
-            'abilities' => $this->abilities($project, $viewer),
-            'options' => $this->options($project),
+            'abilities' => $abilities,
+            'options' => $this->options($project, $abilities['create_support']),
             'filters' => $filters,
             'today' => DiasUteis::today(),
         ];
@@ -117,8 +119,14 @@ class TaskPresenter
         ];
     }
 
-    /** @return array<string, mixed> */
-    private function options(Project $project): array
+    /**
+     * Os contatos do cliente e os canais só servem ao diálogo *Novo card de suporte*: vão só a quem
+     * pode criá-lo. O dev alocado não vê a lista de contatos no Núcleo (ContactPolicy::viewAny) e
+     * não a recebe aqui (CR-1-01 da revisão do B3 PR 1).
+     *
+     * @return array<string, mixed>
+     */
+    private function options(Project $project, bool $canCreateSupport): array
     {
         return [
             'areas' => $project->areas()->active()->orderBy('name')->get(['id', 'name', 'color'])
@@ -133,9 +141,9 @@ class TaskPresenter
                 ->map(fn ($reason) => ['id' => $reason->id, 'slug' => $reason->slug, 'label' => $reason->label])->all(),
             'rework_origins' => ValidationType::query()->orderBy('id')->get(['id', 'label'])
                 ->map(fn ($origin) => ['id' => $origin->id, 'label' => $origin->label])->all(),
-            'contacts' => Contact::query()->active()->where('client_id', $project->client_id)->orderBy('name')->get(['id', 'name'])
+            'contacts' => ! $canCreateSupport ? [] : Contact::query()->active()->where('client_id', $project->client_id)->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Contact $contact) => ['id' => $contact->id, 'name' => $contact->name])->all(),
-            'channels' => ContactChannel::query()->orderBy('id')->get(['id', 'label'])
+            'channels' => ! $canCreateSupport ? [] : ContactChannel::query()->orderBy('id')->get(['id', 'label'])
                 ->map(fn ($channel) => ['id' => $channel->id, 'label' => $channel->label])->all(),
         ];
     }
