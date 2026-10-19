@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 18,
+  "next_id": 22,
   "lessons": [
     {
       "id": "L-001",
@@ -290,17 +290,19 @@
       "text": "Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.",
       "signal": "ac_gap",
       "scope": "tests/policy",
-      "status": "candidate",
+      "status": "confirmed",
       "features": [
-        "b5-sprint-e-horas"
+        "b5-sprint-e-horas",
+        "b3-quadro-e-card"
       ],
-      "recurrence": 1,
+      "recurrence": 2,
       "harmful": 0,
       "evidence": [
-        "SPR-01 AC1 / DEL-01 AC1 (tests/policy)"
+        "SPR-01 AC1 / DEL-01 AC1 (tests/policy)",
+        "validation.md TSK-01 (view/comment/attach/archive/delete sem teste) (tests/policy)"
       ],
       "created": "2026-10-15T15:29:13Z",
-      "last_seen": "2026-10-15T15:29:13Z"
+      "last_seen": "2026-10-19T18:13:49Z"
     },
     {
       "id": "L-017",
@@ -319,6 +321,78 @@
       ],
       "created": "2026-10-15T15:29:13Z",
       "last_seen": "2026-10-15T15:29:13Z"
+    },
+    {
+      "id": "L-018",
+      "key": "surviving_mutant::toda ability da policy inclusive a sem chamador view por registro e a exclusao precisa de um teste positivo por quem pode nao so de negacao",
+      "text": "Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.",
+      "signal": "surviving_mutant",
+      "scope": "tests/policy",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md p4 p16 p7 p8 p9 p10 (TaskPolicy view/comment/attach/archive/delete) (tests/policy)"
+      ],
+      "created": "2026-10-19T18:13:37Z",
+      "last_seen": "2026-10-19T18:13:37Z"
+    },
+    {
+      "id": "L-019",
+      "key": "ac_gap::toda migracao cujo down a spec promete precisa de um teste que rode o down e o up de novo no mysql porque o mysql recusa voltar a not null uma coluna com fk que o up deixou nula",
+      "text": "Toda migração cujo down() a spec promete precisa de um teste que rode o down() e o up() de novo no MySQL, porque o MySQL recusa voltar a not null uma coluna com FK que o up() deixou nula.",
+      "signal": "ac_gap",
+      "scope": "migrations",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md MIG-01 AC 5; 2026_10_16_000010 down() erro 1832 (migrations)"
+      ],
+      "created": "2026-10-19T18:13:37Z",
+      "last_seen": "2026-10-19T18:13:37Z"
+    },
+    {
+      "id": "L-020",
+      "key": "surviving_mutant::para provar que um passo roda na transacao de quem chama faca o proprio passo falhar e afirme que as escritas anteriores voltaram uma falha depois dele nao distingue",
+      "text": "Para provar que um passo roda na transação de quem chama, faça o próprio passo falhar e afirme que as escritas anteriores voltaram; uma falha depois dele não distingue.",
+      "signal": "surviving_mutant",
+      "scope": "tests/transacao",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md s3 (ProjectService::create, createDefaults fora da transação) (tests/transacao)"
+      ],
+      "created": "2026-10-19T18:13:37Z",
+      "last_seen": "2026-10-19T18:13:37Z"
+    },
+    {
+      "id": "L-021",
+      "key": "spec_precision_gap::quando a spec diz o auditable type da linha denied o helper de negacao afirma tipo e id e a spec fecha qual tipo grava a ability que recebe a classe e o projeto",
+      "text": "Quando a spec diz o auditable_type da linha denied, o helper de negação afirma tipo e id, e a spec fecha qual tipo grava a ability que recebe a classe e o projeto.",
+      "signal": "spec_precision_gap",
+      "scope": "tests/negacao",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md TSK-04 AC 1, sonda pd1 (tests/negacao)"
+      ],
+      "created": "2026-10-19T18:13:37Z",
+      "last_seen": "2026-10-19T18:13:37Z"
     }
   ]
 }

@@ -111,17 +111,17 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-|---|---|---|---|
-| TSK-01 | P1: Qualquer alocado usa o quadro (AC 1–3, 6) | Design | Pending |
-| TSK-02 | P1: Dev não mexe na sprint nem cria suporte, tipo ou área (AC 4–5) | Design | Pending |
-| TSK-03 | P1: Não alocado e Comercial, 403 e nada muda (AC 2) | Design | Pending |
-| TSK-04 | P1: Negação auditada com a ação certa | Design | Pending |
-| MIG-01 | P1: Tipos do projeto sem perder dado (AC 1–5) | Design | Pending |
-| MIG-02 | P1: Projeto novo nasce com os 5 tipos (AC 6) | Design | Pending |
-| MIG-03 | P1: Card sem tipo e sem prioridade (AC 7) | Design | Pending |
+| Requirement ID | Story | Phase | Status | Teste |
+|---|---|---|---|---|
+| TSK-01 | P1: Qualquer alocado usa o quadro (AC 1–3, 6) | Execute | ❌ Needs Fix: AC 1, 3 e 6 PASS; `view(Task)`, `comment`, `attach`, `archive`, `delete` sem teste (Fix 2, Fix 3 do `validation.md`) | `TaskPolicyTest.php:122-144`, `:165-180`, `:211-228`; `TaskServiceTest.php:320-338` |
+| TSK-02 | P1: Dev não mexe na sprint nem cria suporte, tipo ou área (AC 4–5) | Execute | ✅ Verified | `TaskPolicyTest.php:182-209` |
+| TSK-03 | P1: Não alocado e Comercial, 403 e nada muda (AC 2) | Execute | ✅ Verified | `TaskPolicyTest.php:146-163` |
+| TSK-04 | P1: Negação auditada com a ação certa | Execute | ⚠️ Needs Fix: ação PASS; `auditable_type` sem asserção e sem valor fechado na spec (Fix 4) | `TaskPolicyTest.php:113-120`; `AuditActionEnumTest.php:53-58` |
+| MIG-01 | P1: Tipos do projeto sem perder dado (AC 1–5) | Execute | ❌ Needs Fix: AC 1–4 PASS; AC 5 falha, o `down()` da 000010 não roda (Fix 1) | `MigracaoTiposDoProjetoTest.php:45-127` |
+| MIG-02 | P1: Projeto novo nasce com os 5 tipos (AC 6) | Execute | ⚠️ Needs Fix: os 5 tipos PASS; "mesma transação" sem prova (Fix 5) | `ProjectTest.php:71-75` |
+| MIG-03 | P1: Card sem tipo e sem prioridade (AC 7) | Execute | ✅ Verified | `TaskServiceTest.php:74-81` |
 
-**Coverage:** 7 total, 0 mapped to tests, 7 unmapped
+**Coverage:** 7 total, 7 mapped to tests, 0 unmapped; 3 verified, 4 needs fix (Verifier rodada 1, 19/10, `validation.md`)
 
 ---
 
