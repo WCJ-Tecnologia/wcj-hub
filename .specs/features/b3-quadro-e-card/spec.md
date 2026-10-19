@@ -115,15 +115,15 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 
 | Requirement ID | Story | Phase | Status | Teste |
 |---|---|---|---|---|
-| TSK-01 | P1: Qualquer alocado usa o quadro (AC 1–3, 6) | Execute | ✅ Verified | `TaskPolicyTest.php:136-158`, `:178-193` (`view(Task)` pela rota), `:199-218` (`comment`, `attach`, `archive`, `delete` pelo Gate), `:220-235`, `:268-285`; `TaskServiceTest.php:347-349` |
-| TSK-02 | P1: Dev não mexe na sprint nem cria suporte, tipo ou área (AC 4–5) | Execute | ✅ Verified | `TaskPolicyTest.php:237-266` |
+| TSK-01 | P1: Qualquer alocado usa o quadro (AC 1–3, 6) | Execute | ✅ Verified | `TaskPolicyTest.php:136-158`, `:178-193` (`view(Task)` pela rota), `:199-218` (`comment`, `attach`, `archive`, `delete` pelo Gate), `:220-235`, `:269-286`; `TaskServiceTest.php:347-349` |
+| TSK-02 | P1: Dev não mexe na sprint nem cria suporte, tipo ou área (AC 4–5) | Execute | ✅ Verified | `TaskPolicyTest.php:237-267` |
 | TSK-03 | P1: Não alocado e Comercial, 403 e nada muda (AC 2) | Execute | ✅ Verified | `TaskPolicyTest.php:160-175` |
-| TSK-04 | P1: Negação auditada com a ação certa | Execute | ✅ Verified | `TaskPolicyTest.php:120-134` (`assertOneDenied`: uma linha, ação, `auditable_type`, `auditable_id`, `user_id`), usado em `:167-172`, `:242`, `:257-263`; `tests/Unit/AuditActionEnumTest.php:55,58` |
+| TSK-04 | P1: Negação auditada com a ação certa | Execute | ✅ Verified | `TaskPolicyTest.php:120-134` (`assertOneDenied`: uma linha, ação, `auditable_type`, `auditable_id`, `user_id`), usado em `:167-172`, `:242`, `:257-264`; `tests/Unit/AuditActionEnumTest.php:55,58` |
 | MIG-01 | P1: Tipos do projeto sem perder dado (AC 1–5) | Execute | ✅ Verified | `MigracaoTiposDoProjetoTest.php:45-127`; `MigracaoCardDoQuadroTest.php:66-121` (`down()` da 000010 e da 000020) |
 | MIG-02 | P1: Projeto novo nasce com os 5 tipos (AC 6) | Execute | ✅ Verified | `ProjectTest.php:71-75`; `B3TransacaoTest.php:44-75` (mesma transação) |
 | MIG-03 | P1: Card sem tipo e sem prioridade (AC 7) | Execute | ✅ Verified | `TaskServiceTest.php:74-81` |
 
-**Coverage:** 7 total, 7 mapped to tests, 0 unmapped; 7 verified (Verifier rodada 2, 19/10, `validation.md`). Veredito da rodada 2: FAIL só pelo sensor, com 3 sobreviventes na recusa de rótulo repetido do tipo, fora destes requisitos (Fix 6, só teste)
+**Coverage:** 7 total, 7 mapped to tests, 0 unmapped; 7 verified (Verifier rodada 3, 19/10, `validation.md`). Veredito da rodada 3: PASS. O Fix 6 fechou: u2, u3 e u4 morrem no `TaskTypeTest.php:57-76` e o ac2 morre no comportamento (`TaskPolicyTest.php:261`). A exclusão de verdade do tipo segue aguardando o ok do Lucas Scholz (premissa acima), decisão humana fora do veredito.
 
 ---
 

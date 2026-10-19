@@ -1,12 +1,112 @@
 # B3 PR 1 (TaskPolicy e as três migrações 2026_10_16_*) Validation
 
-## Veredito vigente: FAIL (rodada 2, 19/10)
+## Veredito vigente: PASS (rodada 3, 19/10)
 
-**Rodada 2**: FAIL. Os 7 sobreviventes da rodada 1 morreram, as 2 sondas de precisão morreram e os 5 Fix Plans estão fechados. Os 7 requisitos da spec (TSK-01 a TSK-04, MIG-01 a MIG-03) estão ✅ Verified. O gate está verde.
+**Rodada 3**: PASS. O Fix 6 fechou. Os 3 sobreviventes da rodada 2 (u2, u3 e u4, recusa de rótulo repetido do tipo) morrem no teste novo do `TaskTypeTest`. O ac2 (`reactivate` sem `authorize`) agora morre no teste de comportamento, não só no A5. O gate está verde, com 634 testes. Somando as três rodadas, todo mutante contado está morto.
 
-Sobram **3 sobreviventes**, todos na recusa de rótulo repetido do `TaskTypeService` (u2, u3, u4). Nenhum teste do repositório cria ou edita tipo com rótulo repetido. É lacuna só de teste e fora das regras de permissão e de migração que a spec manda mutar (ver Fix 6). Pela régua desta rodada (todo mutante pedido morre), o veredito é FAIL.
+Fica uma decisão humana, fora do veredito: a exclusão de verdade do tipo do projeto (`DELETE …/tipos/{taskType}`) está na spec como "aguardando o ok do Lucas Scholz".
+
+**Rodada 2**: FAIL, 24/27 (seção "Rodada 2" abaixo, mantida como estava). Os 7 sobreviventes da rodada 1 morreram, as 2 sondas de precisão morreram e os 5 Fix Plans estão fechados. Os 7 requisitos da spec (TSK-01 a TSK-04, MIG-01 a MIG-03) estão ✅ Verified. O gate está verde.
 
 **Rodada 1**: FAIL, 55/62 (seção "Rodada 1" abaixo, mantida como estava).
+
+---
+
+## Rodada 3 (19/10)
+
+**Date**: 2026-10-19
+**Diff range**: `b29d357..66c9907` (o commit `66c9907`, "rótulo repetido do tipo e negação do reactivate"), sobre a árvore real em `feat/b3-quadro-e-card`.
+**Verifier**: sessão separada de quem implementou, sem acesso ao raciocínio dela.
+**Escopo**: só o Fix 6 da rodada 2 e a nota do ac2. O `66c9907` mexe em dois testes e na spec:
+- `tests/Feature/Projetos/TaskTypeTest.php:57-76`, `test_a_repeated_label_is_refused_with_the_name_ignoring_accent_and_case_and_is_free_in_another_project`;
+- `tests/Feature/Projetos/TaskPolicyTest.php:261`, a linha do `reactivate` pelo dev;
+- `spec.md`, a premissa da exclusão de tipo, registrada como aguardando o ok.
+
+Nenhum arquivo de `app/` nem de `database/` mudou (`git show --stat 66c9907`).
+
+### Gate Check (árvore real, HEAD `66c9907`, sem edição)
+
+| Comando | Resultado |
+|---|---|
+| `composer lint` (`pint --test`) | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test --compact` (MySQL 8, `wcj-hub-mysql-1`, `wcj_hub_test`) | **634 passed (5121 assertions)**, 110,50 s, exit 0 |
+| `npm run typecheck` (`tsc --noEmit`) | exit 0 |
+| `npm run lint` (`eslint .`) | exit 0 |
+| Testes rodada 2 → rodada 3 | 633 → 634 (+1, o teste novo do `TaskTypeTest`); asserções 5106 → 5121 |
+| Base do sensor | `php artisan test --compact tests/Feature/Projetos/TaskTypeTest.php tests/Feature/Projetos/TaskPolicyTest.php`: 22 passed (256 assertions) |
+
+Não rodei Playwright, Storybook nem build: estão fora do trilho completo. A migração não mudou desde a rodada 2, onde `rollback --step=3` + `migrate` passou.
+
+### Fix 6 contra o Fix Plan
+
+| Pedido do Fix Plan | Evidência (`arquivo:linha` + asserção) | Resultado |
+|---|---|---|
+| `POST` com o rótulo repetido, em caixa e acento diferentes → a mensagem da recusa, nada criado | `TaskTypeTest.php:59-64`: `melhoria`, `MELHORIA` e `Melhoría` → `assertSessionHasErrors(['name' => 'Já existe o tipo Melhoria neste projeto.'])` (`:62`); `:64` `assertSame(5, …count())` | PASS |
+| `PUT` de "Correção de bug" para "suporte" → o mesmo erro, rótulo intacto | `TaskTypeTest.php:66-70`: `assertSessionHasErrors(['name' => 'Já existe o tipo Suporte neste projeto.'])` (`:69`); `:70` o rótulo segue "Correção de bug" | PASS |
+| O mesmo rótulo em outro projeto não trava este | `TaskTypeTest.php:72-75`: "Pesquisa" criado em outro projeto, `POST` neste → `assertSessionHasNoErrors()` (`:74`); `:75` um "Pesquisa" neste projeto | PASS |
+| Nota do ac2: o dev reativando tipo → 403 e uma `denied` | `TaskPolicyTest.php:261`: `assertOneDenied($dev, …post("/tipos/{$bug}/reactivate"), 'updated', 'project', $projeto, 'reativar tipo')->assertForbidden()` | PASS |
+
+### Discrimination Sensor (rodada 3)
+
+**Método.** O mesmo da rodada 2. O script `/tmp/b3-sensor-r2/run.py` foi copiado para `/tmp/b3-sensor-r3/run.py`, com as mesmas trocas exatas e só a lista de testes mudada: u2 a u4 contra o `TaskTypeTest`, ac2 contra o `TaskPolicyTest` (o A5 roda à parte). Para cada mutante, o script:
+1. confere o arquivo limpo;
+2. aplica a troca, que falha se o trecho não for único;
+3. roda `php artisan test --compact --stop-on-failure <teste>`;
+4. reverte com `git checkout -- <arquivo>` e confere o arquivo limpo de novo.
+
+Rodei duas vezes, a segunda guardando a saída inteira em `/tmp/b3-sensor-r3/out-<id>.txt` para achar a linha da falha. O resultado foi o mesmo nas duas. Não usei `git reset` nem `stash`. `git status --porcelain` saiu vazio no fim.
+
+| # | Mutante | Resultado | Quem matou |
+|---|---|---|---|
+| u2 | `TaskTypeService::duplicate()` sem `where('project_id', …)`: recusa rótulo que só existe em outro projeto | **morto** (rodada 2: sobrevivente) | `TaskTypeTest.php:74`, `assertSessionHasNoErrors()` ("Failed asserting that true is false") |
+| u3 | `create` sem `refuseDuplicate` e `duplicateRefusal` devolvendo `null`: rótulo repetido vira 500 | **morto** (rodada 2: sobrevivente) | `TaskTypeTest.php:62`, "Session is missing expected key [errors]" |
+| u4 | `update` sem `refuseDuplicate` e `duplicateRefusal` devolvendo `null` | **morto** (rodada 2: sobrevivente) | `TaskTypeTest.php:69`, idem |
+| ac2 | `TaskTypeController::reactivate` sem `authorize('manage')` | **morto no comportamento** (rodada 2: só pelo A5) | `TaskPolicyTest.php:261` → `:126` `assertCount(1, $rows)` ("actual size 0 matches expected size 1"); o A5 (`RotasAutorizadasTest`) também segue matando |
+
+O u1 segue equivalente (rodada 2) e não foi rodado de novo: o código de `app/` não mudou.
+
+**Total da rodada 3**: 4 mutantes, 4 mortos.
+**Acumulado**: as 27 contagens da rodada 2 passam a 27 mortos de 27, mais os 55 da rodada 1 que já estavam mortos. Nenhum sobrevivente aberto.
+**Sensor depth**: P0, manual.
+**Result**: 4/4 mortos. PASS.
+
+### Code Quality (rodada 3)
+
+| Princípio | Status |
+|---|---|
+| Minimum code / Surgical changes | ✅ Só teste e spec. Nenhum código de produção mudou |
+| Matches patterns | ✅ A negação usa o `assertOneDenied` do próprio arquivo; o teste do tipo usa as rotas e o gestor do `setUp` |
+| Spec-anchored outcome check | ✅ A mensagem afirmada é a exata do `TaskTypeService` |
+| Per-layer coverage | ✅ Criar, editar e outro projeto, pela rota; a recusa sem 500 está provada pelo u3 e pelo u4 |
+| Every test maps to a spec requirement or review finding | ✅ Fix 6 (P18, CR-1-02) |
+
+⚠️ A nota da rodada 2 continua e não bloqueia: `abilities.archive` do quadro vem de `$manages` (`TaskPresenter.php:116`), não de `can('archive', …)`.
+
+### Fix Plans (rodada 3)
+
+Nenhum. O Fix 6 está **fechado**.
+
+#### Para o humano decidir (não é Fix Plan, segue da rodada 2)
+
+- **Exclusão de verdade do tipo do projeto** (`DELETE /projetos/{id}/tipos/{taskType}`). Desde o `66c9907`, a spec registra a premissa como "**aguardando o ok do Lucas Scholz**". A regra está provada (t2, t3 e ac3 mortos na rodada 2), mas o ok é do humano, pelo AGENTS.md. O PR não deve mergear sem esse ok registrado.
+
+### Requirement Traceability Update (rodada 3)
+
+Os 7 requisitos seguem ✅ Verified. Só as linhas do `TaskPolicyTest` depois da `:261` andaram uma posição. Na spec: TSK-01 `:268-285` → `:269-286`, TSK-02 `:237-266` → `:237-267`, TSK-04 `:257-263` → `:257-264`.
+
+### Summary (rodada 3)
+
+**Overall**: ✅ Ready, pelo lado do Verifier. Falta só o ok humano da exclusão de tipo.
+
+**Spec-anchored check**: os 7 requisitos verificados. As 4 asserções do Fix 6 batem com a mensagem e o efeito do Service.
+**Sensor**: 4/4 nesta rodada (u2, u3, u4, ac2). Acumulado sem sobrevivente.
+**Gate**: 634 passed (5121 assertions); Pint, typecheck e lint verdes.
+
+**Lições**: nenhuma nova. O L-022 (duplicado por escopo) e o L-023 (porta em par) foram aplicados e funcionaram. O `lessons.py` conta recorrência por feature distinta, então registrar de novo nesta feature não muda nada.
+
+**Next steps**:
+1. O Lucas Scholz dá o ok na exclusão de verdade do tipo, na spec ou no PR.
+2. Depois disso, o PR 1 do B3 pode seguir para abertura e merge. Pela regra da org, perguntar antes do `gh pr create`.
 
 ---
 
