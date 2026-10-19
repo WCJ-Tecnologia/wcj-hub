@@ -258,6 +258,7 @@ class TaskPolicyTest extends TestCase
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/tipos'), ['name' => 'Pesquisa', 'color' => 'pink']), 'updated', 'project', $projeto, 'tipo novo')->assertForbidden();
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->put($this->url("/tipos/{$this->tipo($this->project, 'improvement')}"), ['name' => 'X', 'color' => null]), 'updated', 'project', $projeto, 'editar tipo')->assertForbidden();
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url("/tipos/{$bug}/deactivate")), 'updated', 'project', $projeto, 'desativar tipo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url("/tipos/{$bug}/reactivate")), 'updated', 'project', $projeto, 'reativar tipo')->assertForbidden();
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->delete($this->url("/tipos/{$bug}")), 'updated', 'project', $projeto, 'excluir tipo')->assertForbidden();
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/areas'), ['name' => 'Vendas', 'color' => 'red']), 'updated', 'project', $projeto, 'área nova')->assertForbidden();
         $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->put($this->url("/areas/{$area->id}"), ['name' => 'Fin', 'color' => 'red']), 'updated', 'project', $projeto, 'editar área')->assertForbidden();

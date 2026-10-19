@@ -48,7 +48,9 @@ O kit do quadro (PR #11 e #12) e as decisões de 13/10 e 14/10 pedem colunas e u
 | Projeto novo | O `ProjectService` grava os 5 tipos padrão na criação, na mesma transação; o `TaskTypeSeeder` geral sai | banco.md seção 7 | |
 | Cor | `varchar(10)` nulo, só os 10 nomes da paleta (`gray`, `blue`, `sky`, `green`, `lime`, `yellow`, `orange`, `red`, `pink`, `purple`), validados no FormRequest; nulo = cinza | banco.md seção 7; `TagColor` do kit | |
 
-**Open questions:** nenhuma; as premissas acima pedem o "ok" do Lucas Scholz.
+| Desativar, reativar e excluir tipo do projeto (19/10, CR-1-02 da revisão) | As mesmas quatro portas da área (B2): `POST …/tipos/{taskType}/deactivate`, `…/reactivate`, `DELETE …/tipos/{taskType}` só do nunca usado (`deleteIfUnused`, G2), tudo por `ProjectPolicy::manage`; os de slug (`improvement`, `support`, `development`) não se desativam nem se excluem, porque o código os procura; *Desativar* no popover da etiqueta | Inegociável 11 (porta de desfazer); F3 §03 "item desativado some da escolha". A exclusão de verdade pede o "ok" do Lucas Scholz (AGENTS.md) | **aguardando o ok do Lucas Scholz** |
+
+**Open questions:** nenhuma; as 11 premissas acima foram aprovadas em 19/10; a última linha (excluir tipo) aguarda o ok.
 
 ---
 

@@ -53,6 +53,28 @@ class TaskTypeTest extends TestCase
         return $labels;
     }
 
+    /** Rótulo único no projeto, sem diferença de acento e caixa; noutro projeto o mesmo nome é livre (P18; Verifier rodada 2, Fix 6). */
+    public function test_a_repeated_label_is_refused_with_the_name_ignoring_accent_and_case_and_is_free_in_another_project(): void
+    {
+        foreach (['melhoria', 'MELHORIA', 'Melhoría'] as $repetido) {
+            $this->actingAs($this->gestor)
+                ->post($this->url(), ['name' => $repetido, 'color' => 'pink'])
+                ->assertSessionHasErrors(['name' => 'Já existe o tipo Melhoria neste projeto.']);
+        }
+        $this->assertSame(5, $this->project->taskTypes()->count(), 'nada criado');
+
+        $bug = $this->project->taskTypes()->where('label', 'Correção de bug')->sole();
+        $this->actingAs($this->gestor)
+            ->put($this->url("/{$bug->id}"), ['name' => 'suporte', 'color' => null])
+            ->assertSessionHasErrors(['name' => 'Já existe o tipo Suporte neste projeto.']);
+        $this->assertSame('Correção de bug', $bug->fresh()->label);
+
+        $outro = $this->projeto();
+        $outro->taskTypes()->create(['label' => 'Pesquisa']);
+        $this->actingAs($this->gestor)->post($this->url(), ['name' => 'Pesquisa', 'color' => 'pink'])->assertSessionHasNoErrors();
+        $this->assertSame(1, $this->project->taskTypes()->where('label', 'Pesquisa')->count(), 'o rótulo de outro projeto não trava este');
+    }
+
     public function test_deactivate_takes_the_type_out_of_the_choice_and_the_card_keeps_it_until_reactivated(): void
     {
         $pesquisa = $this->project->taskTypes()->create(['label' => 'Pesquisa', 'color' => 'pink']);
