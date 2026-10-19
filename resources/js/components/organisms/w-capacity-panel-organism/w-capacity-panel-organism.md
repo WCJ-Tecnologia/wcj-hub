@@ -8,11 +8,14 @@ Painel _Capacidade_ da tela de sprints (F5 §03; P48, P49, N3). Uma linha por de
 
 A conta é toda do `CapacityQuery`; o painel só mostra. O QA não entra (P49).
 
+**`variant="plan"`** (D-GER-35): o painel do planejamento do _Montar sprint_ do quadro (`WStartSprintDialogOrganism`). Vem em lista compacta, para caber ao lado do plano, com _Atribuídas_ e _Disponível_ no lugar de _Faltam_ e _Diferença_ (os mesmos campos do `CapacityPanel`), e com toda pessoa alocada, mesmo sem card (a conta é a `planCapacity()` de `lib/quadro.ts`). Disponível negativo em destaque, só aviso.
+
 ## Props
 
-| Prop       | Tipo            | Obrigatória | Para quê                        |
-| ---------- | --------------- | ----------- | ------------------------------- |
-| `capacity` | `CapacityPanel` | sim         | o painel, como o servidor manda |
+| Prop       | Tipo                 | Obrigatória    | Para quê                                           |
+| ---------- | -------------------- | -------------- | -------------------------------------------------- |
+| `capacity` | `CapacityPanel`      | sim            | o painel, como o servidor manda                    |
+| `variant`  | `'sprint' \| 'plan'` | não (`sprint`) | tabela da tela de sprints ou lista do planejamento |
 
 ## Cuidados
 

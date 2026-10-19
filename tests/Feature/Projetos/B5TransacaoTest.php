@@ -3,9 +3,14 @@
 namespace Tests\Feature\Projetos;
 
 use App\Domains\Projetos\Models\Sprint;
+use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TimeEntry;
+use App\Domains\Projetos\Services\DueDateService;
 use App\Domains\Projetos\Services\SprintService;
 use App\Domains\Projetos\Services\SprintTaskMover;
+use App\Domains\Projetos\Services\SprintTaskService;
+use App\Domains\Projetos\Services\TaskAssignmentService;
+use App\Domains\Projetos\Services\TaskHoursService;
 use App\Domains\Projetos\Services\TimeEntryService;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\AuditLog;
@@ -89,5 +94,42 @@ class B5TransacaoTest extends TestCase
         $this->assertSame('a auditoria falhou', $this->failure(fn () => $service->delete($entry, $dev)));
 
         $this->assertTrue(TimeEntry::query()->whereKey($entry->id)->exists());
+    }
+
+    /**
+     * *Adicionar do Backlog* (D-GER-35): a sprint nova e as tarefas são um commit só. A auditoria
+     * passa na sprint e na 1ª tarefa e falha na 2ª: nada fica, nem a sprint, nem a 1ª tarefa.
+     */
+    public function test_batch_rolls_back_the_new_sprint_and_every_task_when_one_write_fails(): void
+    {
+        $this->assertSame(0, DB::transactionLevel());
+        $project = $this->projeto(['manager_id' => $this->gestor->id]);
+        $tasks = [$this->tarefa($project), $this->tarefa($project), $this->tarefa($project)];
+        $audit = new class extends AuditService
+        {
+            private int $calls = 0;
+
+            public function log(AuditActionEnum $action, Model $auditable, ?array $before = null, ?array $after = null, ?int $userId = null, ?int $aiAuthorizationId = null): AuditLog
+            {
+                if (++$this->calls === 3) {
+                    throw new RuntimeException('a auditoria falhou');
+                }
+
+                return parent::log($action, $auditable, $before, $after, $userId, $aiAuthorizationId);
+            }
+        };
+        $mover = new SprintTaskMover($audit);
+        $dueDates = new DueDateService;
+        $service = new SprintTaskService(new SprintService($audit, $mover), $mover, new TaskAssignmentService($audit, $dueDates), new TaskHoursService($audit, $dueDates));
+        $nova = ['name' => 'Sprint 1', 'goal' => null, 'starts_on' => '2026-10-06', 'ends_on' => '2026-10-19'];
+
+        $this->assertSame('a auditoria falhou', $this->failure(fn () => $service->addMany($project, array_map(fn ($task) => ['id' => $task->id], $tasks), $this->gestor, $nova)));
+
+        $this->assertSame(0, Sprint::query()->count());
+        foreach ($tasks as $task) {
+            $this->assertSame([null, $task->board_stage_id], [$task->fresh()->sprint_id, $task->fresh()->board_stage_id]);
+        }
+        $this->assertSame(0, TaskStageMovement::query()->count());
+        $this->assertSame(0, AuditLog::query()->count());
     }
 }

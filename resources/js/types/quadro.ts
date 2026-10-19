@@ -1,3 +1,5 @@
+import type { CapacityPanel } from '@/types/sprints';
+
 /**
  * Contrato do quadro (F3) entre o front e o `TaskPresenter` do B3.
  *
@@ -181,6 +183,53 @@ export interface MoveIntent {
     index: number | null;
     sequence: number[] | null;
 }
+
+/** Uma pessoa ativa alocada no projeto, que pode ser dev ou QA (P5), com a carga diária (N3). */
+export interface PlanningPerson {
+    id: number;
+    name: string;
+    /** null = sem carga diária: capacidade não calculada (N3). */
+    daily_hours: number | null;
+    /** `roles.slug`: o gestor alocado também pode ser dev ou QA (P5). */
+    role: string;
+}
+
+/**
+ * O planejamento do *Montar sprint* (D-GER-35), como o `SprintPlanningQuery` manda (o B3 inclui nas props
+ * do quadro com `abilities.manage_sprint`): as pessoas alocadas e, com sprint aberta, ela e o painel dela
+ * (`CapacityQuery`: o que já falta de cada dev). A tela soma o plano ao vivo com `planCapacity()`.
+ */
+export interface SprintPlanning {
+    people: PlanningPerson[];
+    open_sprint: { id: number; name: string; starts_on: string; ends_on: string; capacity: CapacityPanel } | null;
+}
+
+/**
+ * O plano de um card no *Montar sprint*: dev, QA e horas previstas (null limpa) e a prioridade escolhida.
+ * `type`, não `interface`: o `router.post` do Inertia só aceita objeto com índice implícito.
+ */
+export type SprintPlanItem = {
+    id: number;
+    developer_id: number | null;
+    qa_id: number | null;
+    /** Total dev + QA (P27). */
+    estimated_hours: number | null;
+    /** Ausente = fica como está (o plano não tira a prioridade, só escolhe uma; P19). */
+    priority?: PrioritySlug;
+};
+
+/**
+ * *Montar sprint* do quadro (D-GER-35): o que a tela manda em `POST /projetos/{id}/sprint-aberta/tarefas/lote`
+ * (rota já no backend, B5b). Cada card marcado no Backlog vai com o plano; todos entram juntos na sprint
+ * aberta, cada um como no arrastar para o To do (P45), com dev, QA, horas e prioridade aplicados na mesma
+ * transação. Sem sprint aberta, `new_sprint` é a sprint criada junto (R5). O servidor recusa tudo se algum
+ * card não está mais no Backlog (erro `tasks`) ou se a pessoa não está alocada (erro `tasks.{i}.developer_id`
+ * ou `tasks.{i}.qa_id`, na ordem de `tasks`).
+ */
+export type SprintBatchPayload = {
+    tasks: SprintPlanItem[];
+    new_sprint?: { name: string; goal: string; starts_on: string; ends_on: string };
+};
 
 /** O que a tela manda ao servidor depois dos diálogos (`POST /projetos/{id}/cards/{chave}/mover`, proposta do kit). */
 export interface MovePayload {

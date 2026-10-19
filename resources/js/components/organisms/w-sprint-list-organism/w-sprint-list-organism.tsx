@@ -189,7 +189,7 @@ export function WSprintListOrganism({
                         <WEmptyStateMolecule
                             icon={<CalendarRange className="size-5" aria-hidden />}
                             title={filters.search || filters.status ? 'Nenhuma sprint com esses filtros.' : 'Nenhuma sprint ainda.'}
-                            description="A sprint é a fase do projeto: é por ela que os cards saem do Backlog."
+                            description="A sprint é a fase do projeto: é por ela que os cards saem do Backlog. Monte a sprint pelo quadro, em Montar sprint."
                             action={newButton}
                         />
                     }
