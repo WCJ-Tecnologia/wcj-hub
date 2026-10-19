@@ -5,7 +5,7 @@
 >
 > Esta cópia, na `feat/b2-projeto-e-configuracao`, é a da `main` mais o que os ciclos 1 (do lado do Vitinho) e 2 do PR-6 anotaram (CV-13, AP-05 ocorrência, DA-11, DA-12, FP-07 e o bloco do PR-6); a versão própria que a branch trazia (30 linhas) foi absorvida aqui. O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
 
-**Última atualização:** 2026-10-09 · **Reviews acumulados:** 9 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-19 · **Reviews acumulados:** 10 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; b3-quadro-e-card ciclo 1 (PR-17); a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -80,6 +80,21 @@
 - **Evidência:** PR-6 `BoardStageService.php:17-26` (`ProjectService`, `ExemploSeeder` e `ProjectFactory::withBoard()` o chamam); `ProjectPolicy.php:51-58`; `Project.php:116-128`; `ProjectService.php:88-103`
 - **Visto em:** pr-6 ciclos 1 e 2. `project_members` **não tem coluna de papel**: "alocado com papel gestor" = papel global do usuário (`isProjectManager()`) + vínculo, como o `banco.md` diz; a lista (`scopeVisibleTo`) espelha a Policy `view`. "Nunca usado" de projeto não é o `isReferenced()` genérico (`board_stages`, `project_areas` e `project_members` sempre referenciam e saem por cascade). Lista de 8 etapas copiada em outro lugar é desvio
 
+### CV-14 — Escrita de card só pelos três Services do B3, com a ordem de travas projeto → card
+- **Escopo:** `app/Domains/Projetos/Services/{TaskService,TaskMoveService,TaskTagService}.php` e o trait `Services/Concerns/WritesTasks.php`
+- **Evidência:** `TaskService.php:25-27` (ordem das travas), `WritesTasks.php:22-30` (`lockTask`: relê com `lockForUpdate`, arquivado não muda), `TaskMoveService.php:55-58`
+- **Visto em:** b3-quadro-e-card ciclo 1. Criar pelo `TaskService`, mudar de etapa ou de posição só pelo `TaskMoveService` (que chama o `SprintTaskService` do B5 ao cruzar o Backlog), etiquetas e participante pelo `TaskTagService`. Os três travam a linha do projeto (`SprintService::lockProject`) e depois a do card; movimento (`task_stage_movements`) e auditoria na mesma transação; aviso (`TaskReturned`) só depois do commit. `board_stage_id` à mão fora disso é desvio
+
+### CV-15 — Card na rota pela chave (`SGM-17`), resolvido pelo `Route::bind('card')` só entre os cards do projeto da rota
+- **Escopo:** `app/Providers/AppServiceProvider.php::registerCardBinding()`; rotas `projects.cards.*`
+- **Evidência:** `AppServiceProvider.php:124-135`; `TaskPolicyTest::test_a_card_key_of_another_project_is_404_before_the_policy`
+- **Visto em:** b3-quadro-e-card ciclo 1. Chave de outro projeto, prefixo errado ou número inexistente é 404 antes da Policy (sem linha `denied`). O binder recebe `{project}` ainda como id (os binders explícitos rodam antes do implícito) e resolve o projeto ele mesmo. Os FormRequests do card usam o trait `Requests/Concerns/ActsOnCard` (`card()` + `AuthorizesBeforeValidation`)
+
+### CV-16 — Tipo de card é do projeto: ache pelo slug dentro do projeto; projeto novo nasce com os 5 pelo `TaskTypeService::createDefaults`
+- **Escopo:** `task_types.project_id` (not null desde a migração `2026_10_16_000030`), `Project::taskTypes()`, `TaskTypeService`
+- **Evidência:** `TaskService.php:119-122` (`typeOfSlug`), `ProjectService.php:46`, `ProjectFactory::withBoard()`, `tests/Support/CriaProjeto::tipo()`
+- **Visto em:** b3-quadro-e-card ciclo 1. `TaskType::where('slug', …)` solto é desvio (acharia o tipo de outro projeto). Não há `TaskTypeSeeder` geral; teste que precisa de tipo chama `createDefaults` (ou `withBoard()`)
+
 ## Anti-padrões recorrentes
 
 ### AP-01 — Check-then-act fora da transação, e a correção que inverte a ordem das travas
@@ -101,6 +116,7 @@
 - **Regressões:** 0
 - **Sinal:** commit de decisão que lista os documentos tocados; a porta de leitura (`00-COMECE-AQUI.md`) e o plano ficam de fora; **correção de review que muda um padrão citado no "Um jeito só" do `AGENTS.md`** sem tocar o `AGENTS.md`
 - **Ação sugerida:** em commit de decisão, `git grep` do termo antigo ("dono do módulo", o nome da regra) em `docs/` e `.specs/` antes de fechar
+- **Ocorrência (b3-quadro-e-card ciclo 1, CR-1-04):** a spec e o `AGENTS.md` dizem que lançar horas fica na `TimeEntryPolicy` (sem `logTime` na `TaskPolicy`) e que as queries ficam em `Services/`; o `docs/escopo.md` B3 seguiu com `logTime` e `Queries/`
 
 ### AP-05 — Fundação de front aberta em paralelo a blocos funcionais, renomeando o que eles editam
 - **Ocorrências:** pr-8 ciclo 1 (CR-1-02): o #8 parte do B0 e move/renomeia `components/ui/*`, `layouts/`, `data-table`, `row-actions`, `search-input`, `status-pill`, `user-form-dialog`, `app-sidebar`, que o #5 (B1) e o #6 (B2) editam; `git merge-tree` dá 9 conflitos com o #5 e 1 com o #6; 30 arquivos do B1 e 21 do B2 importam `@/components/ui/` ou `@/layouts/`; os componentes e hooks do B1 (CV-07, CV-09, `StatusPill` contact/audit, `DataTable rowClassName`, `SearchInput` do CR-1-10) não existem no #8
@@ -263,3 +279,12 @@
 - `guardPrefix` envolve a transação inteira (CR-1-03 do PR-6): o único unique de `projects` é o do prefixo; convenção, não bug ativo. Não subir a criticidade sem um segundo unique na transação.
 - Encerrar o já encerrado responde "encerrado" sem gravar: fluxo aberto. Delete audita com `auditable_id` do apagado: mesmo caminho do `deleteIfUnused`.
 - O `ExemploSeeder` da `main` ainda tem a constante `ETAPAS`; o PR-6 a troca pelo `BoardStageService`, como o comentário do seeder pedia. Sem conflito.
+
+### Registrado sem achado no ciclo 1 do PR-17 (b3-quadro-e-card; não é FP: o Lucas não foi consultado)
+- Janela entre `TaskPolicy::move` (lê a etapa atual sem trava) e o `TaskMoveService` (relê travado, mas não refaz "cruza o Backlog?"): milissegundos, reversível, fluxo aberto. Não apontar; refazer no Service seria um segundo jeito da regra (AP-02).
+- `constrained()` + `index()` na mesma coluna (`parent_task_id`, `cover_attachment_id`) **não** duplica índice: o MySQL reaproveita o explícito para a FK (conferido no `wcj_hub_test`); é o padrão do `origin_task_id` do B0. Não reabrir.
+- Dias úteis em pausa pelo `between − 1` (`BoardQuery::pausedBusinessDays`): aproximação declarada na premissa 5 do PR #17; a conta fina é do F7.
+- `down()` da migração dos tipos pode falhar no `unique('slug')` se dois projetos renomearam o tipo de mesmo slug: só dev; em produção a volta é o backup (B10).
+- `TaskController::show` que redireciona ao quadro com aviso: provisório declarado, sai no PR 2 do B3.
+- Spec do B3 só com `spec.md` e "Approved by: aguardando": o PR declara o Verifier depois da aprovação; é condição do trilho completo (recomendação do relatório), não achado de código.
+- Contatos do cliente nas props do quadro (CR-1-01) e tipo sem desfazer (CR-1-02) foram apontados como Médio; se o Lucas decidir que ficam assim, registrar aqui como FP com o motivo.
