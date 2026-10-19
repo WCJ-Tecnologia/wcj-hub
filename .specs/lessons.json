@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 22,
+  "next_id": 24,
   "lessons": [
     {
       "id": "L-001",
@@ -393,6 +393,42 @@
       ],
       "created": "2026-10-19T18:13:37Z",
       "last_seen": "2026-10-19T18:13:37Z"
+    },
+    {
+      "id": "L-022",
+      "key": "surviving_mutant::recusa de duplicado por escopo precisa de teste pela rota com o repetido no mesmo escopo mensagem e nada gravado e o mesmo valor em outro escopo aceito porque o unique do banco esconde a falta da checagem",
+      "text": "Recusa de duplicado por escopo precisa de teste pela rota com o repetido no mesmo escopo (mensagem e nada gravado) e o mesmo valor em outro escopo (aceito), porque o unique do banco esconde a falta da checagem.",
+      "signal": "surviving_mutant",
+      "scope": "tests/duplicado",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 2 u2, u3, u4 (TaskTypeService::create/update) (tests/duplicado)"
+      ],
+      "created": "2026-10-19T19:28:45Z",
+      "last_seen": "2026-10-19T19:28:45Z"
+    },
+    {
+      "id": "L-023",
+      "key": "surviving_mutant::porta nova que entra em par desativar e reativar ganha negacao no teste de comportamento para as duas a que ficar de fora so morre no teste de arquitetura",
+      "text": "Porta nova que entra em par (desativar e reativar) ganha negação no teste de comportamento para as duas; a que ficar de fora só morre no teste de arquitetura.",
+      "signal": "surviving_mutant",
+      "scope": "tests/negacao",
+      "status": "candidate",
+      "features": [
+        "b3-quadro-e-card"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 2 ac2 (TaskTypeController::reactivate) (tests/negacao)"
+      ],
+      "created": "2026-10-19T19:28:45Z",
+      "last_seen": "2026-10-19T19:28:45Z"
     }
   ]
 }

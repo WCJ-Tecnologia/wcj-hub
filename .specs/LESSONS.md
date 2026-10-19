@@ -138,6 +138,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: validation.md TSK-04 AC 1, sonda pd1 (tests/negacao)
 - last seen: 2026-10-19T18:13:37Z
 
+### L-022 - Recusa de duplicado por escopo precisa de teste pela rota com o repetido no mesmo escopo (mensagem e nada gravado) e o mesmo valor em outro escopo (aceito), porque o unique do banco esconde a falta da checagem.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/duplicado` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md rodada 2 u2, u3, u4 (TaskTypeService::create/update) (tests/duplicado)
+- last seen: 2026-10-19T19:28:45Z
+
+### L-023 - Porta nova que entra em par (desativar e reativar) ganha negação no teste de comportamento para as duas; a que ficar de fora só morre no teste de arquitetura.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/negacao` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md rodada 2 ac2 (TaskTypeController::reactivate) (tests/negacao)
+- last seen: 2026-10-19T19:28:45Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
