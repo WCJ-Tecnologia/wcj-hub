@@ -17,7 +17,8 @@ class LateQuery
     /**
      * Atraso (P53, R16): passou da data prevista sem chegar ao pronto, descontados os dias úteis
      * em pausa (cada pausa conta os dias úteis inteiros entre entrar e sair; a conta fina dos
-     * indicadores é do F7). Uma consulta para todos os cards com data prevista.
+     * indicadores é do F7). Uma consulta para todos os cards com data prevista. Card arquivado não
+     * atrasa: sai das contas de prazo e atraso (P26).
      *
      * @param  Collection<int, Task>  $cards
      */
@@ -25,6 +26,7 @@ class LateQuery
     {
         $today = DiasUteis::today();
         $candidates = $cards->filter(fn (Task $card) => $card->due_on !== null
+            && $card->archived_at === null
             && $card->boardStage->stage_role_id !== StageRole::DONE
             && $card->due_on->toDateString() < $today);
 

@@ -17,9 +17,10 @@ enum AuditActionEnum: string
     case FINISHED = 'finished';
     case REOPENED = 'reopened';
     // Projetos (B3): mudança de etapa do card (P14; o movimento também fica em task_stage_movements, R14)
-    // e arquivar o card com histórico (P26).
+    // e arquivar o card com histórico (P26); desarquivar o devolve ao Backlog (PR 3).
     case MOVED = 'moved';
     case ARCHIVED = 'archived';
+    case UNARCHIVED = 'unarchived';
 
     public function label(): string
     {
@@ -37,6 +38,7 @@ enum AuditActionEnum: string
             self::REOPENED => 'Reaberto',
             self::MOVED => 'Movido',
             self::ARCHIVED => 'Arquivado',
+            self::UNARCHIVED => 'Desarquivado',
         };
     }
 

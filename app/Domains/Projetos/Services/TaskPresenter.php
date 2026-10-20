@@ -11,6 +11,7 @@ use App\Platform\Models\Contact;
 use App\Platform\Models\ContactChannel;
 use App\Platform\Models\User;
 use App\Support\DiasUteis;
+use App\Support\LocalTime;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -37,7 +38,9 @@ class TaskPresenter
         return [
             'project' => $this->project($project),
             'stages' => $this->stages($project),
-            'cards' => $cards->map(fn (Task $card) => $this->card($card))->values()->all(),
+            // Com o filtro *Arquivados*, o quadro vira a lista (F3 §03): os cards vão em `archived`.
+            'cards' => $filters['archived'] ? [] : $cards->map(fn (Task $card) => $this->card($card))->values()->all(),
+            'archived' => $filters['archived'] ? $cards->map(fn (Task $card) => $this->archivedRow($card))->values()->all() : [],
             'abilities' => $abilities,
             'options' => $this->options($project, $abilities['create_support']),
             'filters' => $filters,
@@ -83,6 +86,27 @@ class TaskPresenter
             'support_requester' => $task->requesterContact?->name,
             // Roteiro de QA: B4.
             'qa_summary' => null,
+            'url' => $task->url(),
+        ];
+    }
+
+    /**
+     * Uma linha da lista de arquivados (`ArchivedCard` do kit; F3 §03: Chave, Título, Tipo,
+     * Arquivado em, Motivo).
+     *
+     * @return array<string, mixed>
+     */
+    public function archivedRow(Task $task): array
+    {
+        return [
+            'id' => $task->id,
+            'key' => $task->key(),
+            'title' => $task->title,
+            'type' => $task->taskType === null ? null : [
+                'id' => $task->taskType->id, 'slug' => $task->taskType->slug, 'label' => $task->taskType->label, 'color' => $task->taskType->color,
+            ],
+            'archived_at' => LocalTime::format($task->archived_at, 'Y-m-d H:i'),
+            'archive_reason' => $task->archive_reason,
             'url' => $task->url(),
         ];
     }

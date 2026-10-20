@@ -36,7 +36,6 @@ class BoardQuery
     {
         $query = Task::query()
             ->where('tasks.project_id', $project->id)
-            ->whereHas('boardStage', fn (Builder $stage) => $stage->whereNull('archived_at'))
             ->with([
                 'project:id,key_prefix',
                 'boardStage:id,stage_role_id,name',
@@ -56,9 +55,11 @@ class BoardQuery
                 'movements as rework_count' => fn (Builder $movement) => $movement->whereNotNull('rework_origin_id'),
             ]);
 
+        // A lista de arquivados (F3 §03) mostra também o card arquivado numa etapa removida depois;
+        // o quadro, só as etapas ativas.
         $filters['archived']
             ? $query->whereNotNull('tasks.archived_at')->orderByDesc('tasks.archived_at')
-            : $query->whereNull('tasks.archived_at');
+            : $query->whereNull('tasks.archived_at')->whereHas('boardStage', fn (Builder $stage) => $stage->whereNull('archived_at'));
 
         if (! $filters['archived'] && ! $filters['old_done']) {
             $this->onlyRecentDone($query, $project);
