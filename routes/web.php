@@ -10,6 +10,7 @@ use App\Domains\Projetos\Controllers\ReworkReasonController;
 use App\Domains\Projetos\Controllers\SprintController;
 use App\Domains\Projetos\Controllers\SprintTaskController;
 use App\Domains\Projetos\Controllers\TaskController;
+use App\Domains\Projetos\Controllers\TaskDetailController;
 use App\Domains\Projetos\Controllers\TaskTypeController;
 use App\Domains\Projetos\Controllers\TimeEntryController;
 use App\Platform\Controllers\Admin\AuditLogController;
@@ -173,6 +174,22 @@ Route::prefix('projetos')
             Route::post('{project}/cards/{card}/mover', [TaskController::class, 'move'])->name('cards.move');
             Route::patch('{project}/cards/{card}', [TaskController::class, 'update'])->name('cards.update');
             Route::post('{project}/cards/{card}/participantes', [TaskController::class, 'participant'])->name('cards.participants');
+
+            // A ficha do card (F3 §04 "Na ficha"; B3, PR 2). O filho é do card da rota: de outro card, 404.
+            Route::post('{project}/cards/{card}/horas/propor', [TaskDetailController::class, 'proposeHours'])->name('cards.hours.propose');
+            Route::post('{project}/cards/{card}/horas/aprovar', [TaskDetailController::class, 'approveHours'])->name('cards.hours.approve');
+            Route::post('{project}/cards/{card}/horas/recusar', [TaskDetailController::class, 'rejectHours'])->name('cards.hours.reject');
+            Route::post('{project}/cards/{card}/criterios', [TaskDetailController::class, 'storeCriterion'])->name('cards.criteria.store');
+            Route::patch('{project}/cards/{card}/criterios/{acceptanceCriterion}', [TaskDetailController::class, 'updateCriterion'])->name('cards.criteria.update');
+            Route::delete('{project}/cards/{card}/criterios/{acceptanceCriterion}', [TaskDetailController::class, 'destroyCriterion'])->name('cards.criteria.destroy');
+            Route::post('{project}/cards/{card}/prs', [TaskDetailController::class, 'storePullRequest'])->name('cards.prs.store');
+            Route::delete('{project}/cards/{card}/prs/{pullRequest}', [TaskDetailController::class, 'destroyPullRequest'])->name('cards.prs.destroy');
+            Route::post('{project}/cards/{card}/comentarios', [TaskDetailController::class, 'storeComment'])->name('cards.comments.store');
+            Route::patch('{project}/cards/{card}/comentarios/{comment}', [TaskDetailController::class, 'updateComment'])->name('cards.comments.update');
+            Route::delete('{project}/cards/{card}/comentarios/{comment}', [TaskDetailController::class, 'destroyComment'])->name('cards.comments.destroy');
+            Route::post('{project}/cards/{card}/anexos', [TaskDetailController::class, 'storeAttachments'])->name('cards.attachments.store');
+            Route::get('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'downloadAttachment'])->name('cards.attachments.show');
+            Route::delete('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'destroyAttachment'])->name('cards.attachments.destroy');
 
             // Tipos do projeto, criados e editados pela etiqueta do quadro (14/10); as mesmas quatro
             // portas da área (desativar, reativar, excluir o nunca usado), só quem gere.

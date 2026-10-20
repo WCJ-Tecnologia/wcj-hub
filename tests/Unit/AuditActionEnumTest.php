@@ -56,6 +56,8 @@ class AuditActionEnumTest extends TestCase
             'comment' => ['comment', AuditActionEnum::UPDATED],
             'attach' => ['attach', AuditActionEnum::UPDATED],
             'archive' => ['archive', AuditActionEnum::ARCHIVED],
+            // Ficha do card (B3, PR 2).
+            'proposeHours' => ['proposeHours', AuditActionEnum::UPDATED],
         ];
     }
 

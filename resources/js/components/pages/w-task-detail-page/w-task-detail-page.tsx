@@ -1,5 +1,6 @@
 /**
- * Rotas que esta tela chama: proposta do kit da ficha, o B3 confirma (e o Cauã ajusta aqui).
+ * Rotas que esta tela chama (confirmadas no B3, PR 2; `routes/web.php`, grupo do quadro). Arquivar,
+ * desarquivar e excluir são do PR 3: até lá, `abilities.archive` e `abilities.delete` vêm `false`.
  * `{chave}` = `SGM-17`. Toda escrita volta com a ficha inteira (`task`) e, na ficha, o Inertia
  * troca as props; a tela não guarda cópia otimista (cada seção é pequena e o retorno é rápido).
  *
@@ -24,8 +25,9 @@
  * - `POST   /projetos/{id}/cards/{chave}/arquivar`              `{ archive_reason }` (P26)
  * - `POST   /projetos/{id}/cards/{chave}/desarquivar`           (P26)
  * - `DELETE /projetos/{id}/cards/{chave}`                       só o nunca usado (P26); o servidor redireciona ao quadro
- * - `POST   /projetos/{id}/tipos` e `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pela etiqueta (gestor; 14/10)
- * - `POST   /projetos/{id}/areas` e `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pela etiqueta (gestor; 14/10)
+ * - `GET    /projetos/{id}/cards/{chave}/anexos/{aid}`          download com o nome original (imagem abre na página)
+ * - `POST   /projetos/{id}/tipos` e `PUT /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pela etiqueta (gestor; 14/10)
+ * - `POST   /projetos/{id}/areas` e `PUT /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, as mesmas rotas da configuração (B2)
  */
 import { Head, router, usePage } from '@inertiajs/react';
 import { type ReactNode, useState } from 'react';
@@ -242,12 +244,12 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
                     onChangeType={(type) => patch({ type_id: type.id }, 'attributes')}
                     onCreateType={(payload) => router.post(`/projetos/${project.id}/tipos`, { ...payload }, visit('type'))}
                     onUpdateType={(type, payload) =>
-                        router.patch(`/projetos/${project.id}/tipos/${type.id}`, { ...payload }, visit('type'))
+                        router.put(`/projetos/${project.id}/tipos/${type.id}`, { ...payload }, visit('type'))
                     }
                     onChangeArea={(area) => patch({ area_id: area?.id ?? null }, 'attributes')}
                     onCreateArea={(payload) => router.post(`/projetos/${project.id}/areas`, { ...payload }, visit('area'))}
                     onUpdateArea={(area, payload) =>
-                        router.patch(`/projetos/${project.id}/areas/${area.id}`, { ...payload }, visit('area'))
+                        router.put(`/projetos/${project.id}/areas/${area.id}`, { ...payload }, visit('area'))
                     }
                 />
 

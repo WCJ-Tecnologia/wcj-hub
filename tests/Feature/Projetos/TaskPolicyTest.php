@@ -174,15 +174,15 @@ class TaskPolicyTest extends TestCase
         $this->assertSame($antes, $this->retrato());
     }
 
-    /** TSK-01 (Verifier rodada 1, Fix 2): `view(Task)` pela rota do card, que até o PR 2 volta ao quadro com o aviso. */
-    public function test_who_sees_the_project_opens_the_card_link_and_lands_on_the_board_with_the_notice(): void
+    /** TSK-01 (Verifier rodada 1, Fix 2): `view(Task)` pela rota do card, que desde o PR 2 abre a ficha (`projects/task`). */
+    public function test_who_sees_the_project_opens_the_card_detail(): void
     {
         $chave = "{$this->project->key_prefix}-{$this->todo->number}";
 
         foreach ([$this->dev, $this->quemGereNo('admin'), $this->gestor, $this->quemGereNo('alocado')] as $user) {
             $this->actingAs($user)->get($this->card($this->todo))
-                ->assertRedirect($this->url('/quadro'))
-                ->assertSessionHas('warning', "A ficha de {$chave} ainda não está pronta: chega no próximo PR do quadro.");
+                ->assertOk()
+                ->assertInertia(fn (AssertableInertia $page) => $page->component('projects/task')->where('task.key', $chave));
         }
         $this->assertSame(0, AuditLog::query()->where('outcome', 'denied')->count());
 

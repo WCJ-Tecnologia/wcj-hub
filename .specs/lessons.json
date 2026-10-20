@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 24,
+  "next_id": 28,
   "lessons": [
     {
       "id": "L-001",
@@ -310,17 +310,19 @@
       "text": "Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.",
       "signal": "surviving_mutant",
       "scope": "tests/transacao",
-      "status": "candidate",
+      "status": "confirmed",
       "features": [
-        "b5-sprint-e-horas"
+        "b5-sprint-e-horas",
+        "b3-ficha"
       ],
-      "recurrence": 1,
+      "recurrence": 2,
       "harmful": 0,
       "evidence": [
-        "SprintService::delete sem DB::transaction (tests/transacao)"
+        "SprintService::delete sem DB::transaction (tests/transacao)",
+        "validation.md rodada 1 e7a-e7d, e4, e4b (4 exclusões da ficha) (tests/transacao)"
       ],
       "created": "2026-10-15T15:29:13Z",
-      "last_seen": "2026-10-15T15:29:13Z"
+      "last_seen": "2026-10-20T14:22:17Z"
     },
     {
       "id": "L-018",
@@ -429,6 +431,78 @@
       ],
       "created": "2026-10-19T19:28:45Z",
       "last_seen": "2026-10-19T19:28:45Z"
+    },
+    {
+      "id": "L-024",
+      "key": "ac_gap::o down que tira coluna com fk precisa de teste que o rode porque o mysql recusa o dropcolumn sem o dropforeign antes erro 1828 e a suite so sobe migracoes",
+      "text": "O down() que tira coluna com FK precisa de teste que o rode, porque o MySQL recusa o dropColumn sem o dropForeign antes (erro 1828) e a suíte só sobe migrações.",
+      "signal": "ac_gap",
+      "scope": "migrations",
+      "status": "candidate",
+      "features": [
+        "b3-ficha"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 1 h1 (000040 down sem dropForeign, erro 1828) (migrations)"
+      ],
+      "created": "2026-10-20T14:22:17Z",
+      "last_seen": "2026-10-20T14:22:17Z"
+    },
+    {
+      "id": "L-025",
+      "key": "surviving_mutant::cada exclusao de verdade afirma a propria linha deleted com o antes provar a linha em dois services nao cobre os outros",
+      "text": "Cada exclusão de verdade afirma a própria linha deleted com o antes; provar a linha em dois Services não cobre os outros.",
+      "signal": "surviving_mutant",
+      "scope": "auditoria",
+      "status": "candidate",
+      "features": [
+        "b3-ficha"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 1 e6b, e6d (TaskPullRequestService::remove, AttachmentService::remove) (auditoria)"
+      ],
+      "created": "2026-10-20T14:22:17Z",
+      "last_seen": "2026-10-20T14:22:17Z"
+    },
+    {
+      "id": "L-026",
+      "key": "surviving_mutant::coluna nova que a tela mostra precisa de assercao no contrato da pagina com o valor e com o nulo da linha antiga gravar a coluna nao prova que ela aparece",
+      "text": "Coluna nova que a tela mostra precisa de asserção no contrato da página, com o valor e com o nulo da linha antiga; gravar a coluna não prova que ela aparece.",
+      "signal": "surviving_mutant",
+      "scope": "tests/contrato",
+      "status": "candidate",
+      "features": [
+        "b3-ficha"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 1 k1-k3 (TaskDetailPresenter added_by, uploaded_by, proposed_by) (tests/contrato)"
+      ],
+      "created": "2026-10-20T14:22:17Z",
+      "last_seen": "2026-10-20T14:22:17Z"
+    },
+    {
+      "id": "L-027",
+      "key": "surviving_mutant::o 404 de filho de outro card tem teste por rota e com o arquivo no disco quando o 404 tambem pode vir do arquivo ausente",
+      "text": "O 404 de filho de outro card tem teste por rota, e com o arquivo no disco quando o 404 também pode vir do arquivo ausente.",
+      "signal": "surviving_mutant",
+      "scope": "tests/escopo-id",
+      "status": "candidate",
+      "features": [
+        "b3-ficha"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md rodada 1 d10c-d10e (PR e anexo de outro card) (tests/escopo-id)"
+      ],
+      "created": "2026-10-20T14:22:18Z",
+      "last_seen": "2026-10-20T14:22:18Z"
     }
   ]
 }

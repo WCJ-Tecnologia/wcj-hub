@@ -25,8 +25,8 @@ export const REMOVE_ATTACHMENT_TEXT = 'Remover o anexo? O arquivo será apagado.
 export const DELETE_COMMENT_TEXT = 'Excluir o comentário?';
 export const HISTORY_SOON_TEXT = 'Em breve (B7)';
 
-/** "Excluir CA_3? O número não será reaproveitado." (F3 §04). */
-export const deleteCriterionText = (number: string) => `Excluir ${number}? O número não será reaproveitado.`;
+/** "Excluir CA_3? Os outros critérios não mudam de número." (F3 §04; o número segue o banco.md, "maior + 1", decisão de 20/10). */
+export const deleteCriterionText = (number: string) => `Excluir ${number}? Os outros critérios não mudam de número.`;
 
 /** "Excluir de verdade. Não dá para desfazer. A chave SGM-17 não volta a ser usada." (F3 §04, P26). */
 export const deleteTaskText = (key: string) => `Excluir de verdade. Não dá para desfazer. A chave ${key} não volta a ser usada.`;

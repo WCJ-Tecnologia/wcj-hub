@@ -47,6 +47,8 @@ class Task extends Model
         'requested_at',
         'archived_at',
         'archive_reason',
+        'archived_by',
+        'proposed_by',
     ];
 
     protected function casts(): array
@@ -138,6 +140,17 @@ class Task extends Model
     public function coverAttachment(): BelongsTo
     {
         return $this->belongsTo(TaskAttachment::class, 'cover_attachment_id');
+    }
+
+    /** Quem propôs a reestimativa (P27) e quem arquivou (P26); nulos nas linhas de antes (spec b3-ficha). */
+    public function proposedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'proposed_by');
+    }
+
+    public function archivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'archived_by');
     }
 
     /** Quem acompanha além do dev e do QA (P58). */

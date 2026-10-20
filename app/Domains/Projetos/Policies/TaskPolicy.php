@@ -70,6 +70,15 @@ class TaskPolicy
         return Response::allow();
     }
 
+    /**
+     * Propor horas (P27; F3 §04, F5 §02): quem vê o projeto e não gere. Quem gere define direto e
+     * decide a proposta, pela SprintPolicy::manageTasks (spec b3-ficha).
+     */
+    public function proposeHours(User $user, Task $task): bool
+    {
+        return $user->can('view', $task->project) && ! $this->manageSprint($user, $task->project);
+    }
+
     public function comment(User $user, Task $task): bool
     {
         return $user->can('view', $task->project);

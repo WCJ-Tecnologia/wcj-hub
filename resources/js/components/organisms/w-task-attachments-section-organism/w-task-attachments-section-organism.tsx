@@ -138,7 +138,7 @@ export function WTaskAttachmentsSectionOrganism({
                                             </div>
                                             <p className="text-xs text-muted-foreground">
                                                 <span className="font-mono tabular-nums">{formatBytes(attachment.size)}</span> · por{' '}
-                                                {attachment.uploaded_by.name} em{' '}
+                                                {attachment.uploaded_by?.name ?? '—'} em{' '}
                                                 <span className="font-mono tabular-nums">{dateTimeBr(attachment.uploaded_at)}</span>
                                             </p>
                                         </div>

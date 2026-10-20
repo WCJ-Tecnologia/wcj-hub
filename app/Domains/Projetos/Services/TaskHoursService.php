@@ -32,6 +32,18 @@ class TaskHoursService
         });
     }
 
+    /**
+     * O dev propõe (P27; F3 §04): a proposta fica ao lado das horas, à espera de quem gere; horas
+     * e data prevista não mudam. Propor de novo troca a proposta; nulo a retira.
+     */
+    public function propose(Task $task, ?string $hours, User $actor): Task
+    {
+        return $this->write($task, $actor, function (Task $locked) use ($hours, $actor) {
+            $locked->proposed_hours = $hours;
+            $locked->proposed_by = $hours === null ? null : $actor->id;
+        });
+    }
+
     /** A proposta vira as horas previstas e sai (P27). */
     public function approveProposal(Task $task, User $actor): Task
     {
@@ -39,6 +51,7 @@ class TaskHoursService
             $this->assertProposal($locked);
             $locked->estimated_hours = $locked->proposed_hours;
             $locked->proposed_hours = null;
+            $locked->proposed_by = null;
         });
     }
 
@@ -48,6 +61,7 @@ class TaskHoursService
         return $this->write($task, $actor, function (Task $locked) {
             $this->assertProposal($locked);
             $locked->proposed_hours = null;
+            $locked->proposed_by = null;
         });
     }
 
@@ -88,6 +102,7 @@ class TaskHoursService
         return [
             'estimated_hours' => $task->estimated_hours,
             'proposed_hours' => $task->proposed_hours,
+            'proposed_by' => $task->proposed_by,
             'due_on' => $task->due_on?->toDateString(),
         ];
     }

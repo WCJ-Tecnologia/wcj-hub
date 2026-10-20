@@ -8,17 +8,21 @@ use App\Domains\Projetos\Requests\MoveTaskRequest;
 use App\Domains\Projetos\Requests\StoreSupportTaskRequest;
 use App\Domains\Projetos\Requests\StoreTaskRequest;
 use App\Domains\Projetos\Requests\TaskParticipantRequest;
-use App\Domains\Projetos\Requests\UpdateTaskTagsRequest;
+use App\Domains\Projetos\Requests\UpdateTaskRequest;
+use App\Domains\Projetos\Services\TaskDetailPresenter;
+use App\Domains\Projetos\Services\TaskEditService;
 use App\Domains\Projetos\Services\TaskMoveService;
 use App\Domains\Projetos\Services\TaskService;
 use App\Domains\Projetos\Services\TaskTagService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
- * O card no quadro (F3 §04 "No quadro"; escopo B3, PR 1): criar rápido, card de suporte, mover
- * (arrastar e *Mover para…*), etiquetas e participante. Autorização nos FormRequests (TaskPolicy,
+ * O card (F3 §02 e §04; escopo B3, PR 1 e 2): a ficha, criar rápido, card de suporte, mover
+ * (arrastar e *Mover para…*), editar (ficha e etiquetas) e participante. Autorização nos FormRequests (TaskPolicy,
  * antes da validação); o card da rota é procurado pela chave só entre os do projeto da rota.
  * Sucesso volta ao quadro sem aviso: o card já está onde a pessoa o deixou.
  */
@@ -28,17 +32,16 @@ class TaskController extends Controller
         private readonly TaskService $tasks,
         private readonly TaskMoveService $moves,
         private readonly TaskTagService $tags,
+        private readonly TaskEditService $edit,
+        private readonly TaskDetailPresenter $detail,
     ) {}
 
-    /**
-     * A ficha do card é o PR 2 do B3. Até lá, o link do card (título, *Abrir ficha*, *Copiar link*)
-     * volta ao quadro com o aviso, em vez de cair num 405.
-     */
-    public function show(Request $request, Project $project, Task $card): RedirectResponse
+    /** A ficha do card (F3 §02; Inertia `projects/task`): vê quem vê o projeto, inclusive arquivado. */
+    public function show(Request $request, Project $project, Task $card): Response
     {
         $this->authorize('view', $card);
 
-        return to_route('projects.board', $project)->with('warning', "A ficha de {$card->key()} ainda não está pronta: chega no próximo PR do quadro.");
+        return Inertia::render('projects/task', $this->detail->page($project, $card, $request->user()));
     }
 
     public function store(StoreTaskRequest $request, Project $project): RedirectResponse
@@ -59,9 +62,10 @@ class TaskController extends Controller
         return $this->attempt(fn () => $this->moves->move($card, $request->stage(), $request->user(), $request->payload()), fn () => back());
     }
 
-    public function update(UpdateTaskTagsRequest $request, Project $project, Task $card): RedirectResponse
+    /** A ficha e as etiquetas do quadro: um PATCH, cada campo pelo seu Service (TaskEditService). */
+    public function update(UpdateTaskRequest $request, Project $project, Task $card): RedirectResponse
     {
-        return $this->attempt(fn () => $this->tags->updateTags($card, $request->user(), $request->changes()), fn () => back());
+        return $this->attempt(fn () => $this->edit->update($card, $request->user(), $request->changes()), fn () => back());
     }
 
     public function participant(TaskParticipantRequest $request, Project $project, Task $card): RedirectResponse
