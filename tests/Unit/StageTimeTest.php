@@ -7,9 +7,12 @@ use App\Domains\Projetos\Services\StageTime;
 use App\Domains\Projetos\Services\TaskTimes;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
-/** As contas puras dos indicadores (F7 §06 "Como as contas são feitas", §10.1; P53, R16, P11). */
+/**
+ * As contas puras dos indicadores (F7 §06 "Como as contas são feitas", §10.1; P53, R16, P11). Sem o
+ * app e sem banco (a suíte Unit roda antes das migrações no CI): o fuso vai explícito.
+ */
 class StageTimeTest extends TestCase
 {
     private const ZONE = 'America/Sao_Paulo';
@@ -38,7 +41,7 @@ class StageTimeTest extends TestCase
     #[DataProvider('diasUteis')]
     public function test_business_days_count_only_monday_to_friday_in_the_local_zone(string $from, string $to, float $expected): void
     {
-        $this->assertEqualsWithDelta($expected, StageTime::businessDays($this->at($from), $this->at($to)), 0.0001);
+        $this->assertEqualsWithDelta($expected, StageTime::businessDays($this->at($from), $this->at($to), self::ZONE), 0.0001);
     }
 
     public function test_intervals_run_from_each_arrival_to_the_next_and_the_last_until_now(): void
@@ -49,7 +52,7 @@ class StageTimeTest extends TestCase
             ['stage_id' => 7, 'role_id' => StageRole::PAUSED, 'at' => $this->at('2026-10-07 09:00')],
         ];
 
-        $intervals = StageTime::intervals($arrivals, $this->at('2026-10-08 21:00'));
+        $intervals = StageTime::intervals($arrivals, $this->at('2026-10-08 21:00'), self::ZONE);
 
         $this->assertCount(3, $intervals);
         $this->assertSame([1.0, 1.0, 1.5], array_map(fn (array $i) => round($i['days'], 4), $intervals));
@@ -79,9 +82,9 @@ class StageTimeTest extends TestCase
             ['role_id' => StageRole::PAUSED, 'from' => $this->at('2026-10-07 09:00'), 'to' => $this->at('2026-10-08 21:00')],
         ];
 
-        $this->assertEqualsWithDelta(0.0, StageTime::pausedSince($intervals, null), 0.0001);
-        $this->assertEqualsWithDelta(1.5, StageTime::pausedSince($intervals, $this->at('2026-10-06 09:00')), 0.0001);
-        $this->assertEqualsWithDelta(0.5, StageTime::pausedSince($intervals, $this->at('2026-10-08 09:00')), 0.0001);
+        $this->assertEqualsWithDelta(0.0, StageTime::pausedSince($intervals, null, self::ZONE), 0.0001);
+        $this->assertEqualsWithDelta(1.5, StageTime::pausedSince($intervals, $this->at('2026-10-06 09:00'), self::ZONE), 0.0001);
+        $this->assertEqualsWithDelta(0.5, StageTime::pausedSince($intervals, $this->at('2026-10-08 09:00'), self::ZONE), 0.0001);
     }
 
     /** @return array<string, array{?string, string, float, ?float}> */
@@ -114,7 +117,7 @@ class StageTimeTest extends TestCase
             ['stage_id' => 7, 'role_id' => StageRole::PAUSED, 'at' => $this->at('2026-10-06 21:00')],
             ['stage_id' => 3, 'role_id' => StageRole::DEVELOPMENT, 'at' => $this->at('2026-10-07 09:00')],
             ['stage_id' => 6, 'role_id' => StageRole::DONE, 'at' => $this->at('2026-10-08 09:00')],
-        ], $now), $now);
+        ], $now, self::ZONE), $now, self::ZONE);
 
         $this->assertTrue($times->firstDevelopmentAt()->equalTo($this->at('2026-10-06 09:00')));
         $this->assertTrue($times->doneAt()->equalTo($this->at('2026-10-08 09:00')));
@@ -130,7 +133,7 @@ class StageTimeTest extends TestCase
         $now = $this->at('2026-10-09 12:00');
         $times = new TaskTimes(StageTime::intervals([
             ['stage_id' => 1, 'role_id' => StageRole::QUEUE, 'at' => $this->at('2026-10-05 09:00')],
-        ], $now), $now);
+        ], $now, self::ZONE), $now, self::ZONE);
 
         $this->assertFalse($times->leftOrigin());
         $this->assertNull($times->firstDevelopmentAt());

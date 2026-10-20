@@ -14,10 +14,12 @@ final class TaskTimes
 {
     /**
      * @param  list<array{stage_id: int, role_id: int, from: CarbonImmutable, to: CarbonImmutable, open: bool, days: float}>  $intervals
+     * @param  ?string  $zone  o fuso de quem usa; nulo = o do app (só os testes puros passam)
      */
     public function __construct(
         public readonly array $intervals,
         public readonly CarbonImmutable $now,
+        public readonly ?string $zone = null,
     ) {}
 
     /** @return array<int, float> papel → dias úteis (sem o pronto) */
@@ -46,7 +48,7 @@ final class TaskTimes
     /** Dias úteis em pausa desde a 1ª entrada em desenvolvimento: o que o atraso desconta (R16). */
     public function pausedSinceDevelopment(): float
     {
-        return StageTime::pausedSince($this->intervals, $this->firstDevelopmentAt());
+        return StageTime::pausedSince($this->intervals, $this->firstDevelopmentAt(), $this->zone);
     }
 
     /** A última chegada a uma etapa de papel pronto (F7 §02 "Concluída em"), ou nulo. */

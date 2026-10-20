@@ -20,11 +20,11 @@ final class StageTime
 
     /**
      * Dias úteis, com fração, entre dois instantes (UTC): só o tempo que cai de segunda a sexta,
-     * no fuso de quem usa. Fim antes do início: 0.
+     * no fuso de quem usa (`$zone` só nos testes puros, sem o app). Fim antes do início: 0.
      */
-    public static function businessDays(CarbonImmutable $from, CarbonImmutable $to): float
+    public static function businessDays(CarbonImmutable $from, CarbonImmutable $to, ?string $zone = null): float
     {
-        $zone = LocalTime::zone();
+        $zone ??= LocalTime::zone();
         $from = $from->setTimezone($zone);
         $to = $to->setTimezone($zone);
         if ($to->lte($from)) {
@@ -51,7 +51,7 @@ final class StageTime
      * @param  list<array{stage_id: int, role_id: int, at: CarbonImmutable}>  $arrivals
      * @return list<array{stage_id: int, role_id: int, from: CarbonImmutable, to: CarbonImmutable, open: bool, days: float}>
      */
-    public static function intervals(array $arrivals, CarbonImmutable $now): array
+    public static function intervals(array $arrivals, CarbonImmutable $now, ?string $zone = null): array
     {
         $intervals = [];
         $count = count($arrivals);
@@ -64,7 +64,7 @@ final class StageTime
                 'from' => $arrival['at'],
                 'to' => $to,
                 'open' => $open,
-                'days' => self::businessDays($arrival['at'], $to),
+                'days' => self::businessDays($arrival['at'], $to, $zone),
             ];
         }
 
@@ -97,7 +97,7 @@ final class StageTime
      *
      * @param  list<array{role_id: int, from: CarbonImmutable, to: CarbonImmutable}>  $intervals
      */
-    public static function pausedSince(array $intervals, ?CarbonImmutable $since): float
+    public static function pausedSince(array $intervals, ?CarbonImmutable $since, ?string $zone = null): float
     {
         if ($since === null) {
             return 0.0;
@@ -109,7 +109,7 @@ final class StageTime
                 continue;
             }
             $from = $interval['from']->greaterThan($since) ? $interval['from'] : $since;
-            $total += self::businessDays($from, $interval['to']);
+            $total += self::businessDays($from, $interval['to'], $zone);
         }
 
         return $total;
