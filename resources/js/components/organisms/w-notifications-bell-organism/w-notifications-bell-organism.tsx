@@ -1,7 +1,7 @@
 /**
  * Sino de avisos do shell (F3 §07; P22, R3): a lista de avisos da pessoa, com link para o card.
  *
- * Rotas: PROPOSTA do kit, o Cauã confirma no B3.
+ * Rotas (confirmadas no B3, PR 3; `NotificationController`): o aviso é procurado só entre os da pessoa.
  * - `POST /avisos/{id}/lida`: marca um aviso como lido;
  * - `POST /avisos/lidas`: marca todos como lidos.
  * As duas com `{ preserveScroll: true, only: ['notifications'] }`. Nada é otimista: o shell não tem

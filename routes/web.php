@@ -23,6 +23,7 @@ use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use App\Platform\Controllers\Auth\ChangePasswordController;
 use App\Platform\Controllers\Auth\ForgotPasswordController;
 use App\Platform\Controllers\Auth\NewPasswordController;
+use App\Platform\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'admin.dashboard' : 'login'));
@@ -67,6 +68,15 @@ Route::middleware('auth')->group(function () {
             ->name('password.change.update');
     });
 });
+
+// O sino do shell (F3 §07): cada pessoa marca só os próprios avisos.
+Route::prefix('avisos')
+    ->name('notifications.')
+    ->middleware(['auth', 'backoffice', 'password.current'])
+    ->group(function () {
+        Route::post('lidas', [NotificationController::class, 'readAll'])->name('read-all');
+        Route::post('{notification}/lida', [NotificationController::class, 'read'])->whereUuid('notification')->name('read');
+    });
 
 Route::prefix('admin')
     ->name('admin.')
