@@ -66,6 +66,14 @@ class TaskDetailTest extends TestCase
         $sub = $this->task->acceptanceCriteria()->create(['number' => 2, 'description' => 'Erros', 'test_result_id' => TestResult::PENDING]);
         $sub->children()->create(['task_id' => $this->task->id, 'number' => 1, 'description' => 'Senha errada', 'test_result_id' => TestResult::FAILED]);
         $this->task->comments()->create(['user_id' => $this->dev->id, 'body' => 'Começando']);
+        // MIG-04 AC 2 (Verifier rodada 1, Fix 3): o "quem" nas linhas novas, nulo ("—") nas de antes da coluna.
+        $this->task->pullRequests()->create(['url' => 'https://github.com/x/y/pull/1', 'user_id' => $this->dev->id]);
+        $this->task->pullRequests()->create(['url' => 'https://github.com/x/y/pull/2']);
+        Storage::disk('local')->put('tasks/novo.pdf', 'pdf');
+        Storage::disk('local')->put('tasks/antigo.pdf', 'pdf');
+        $this->task->attachments()->create(['path' => 'tasks/novo.pdf', 'original_name' => 'novo.pdf', 'mime_type' => 'application/pdf', 'user_id' => $this->dev->id]);
+        $this->task->attachments()->create(['path' => 'tasks/antigo.pdf', 'original_name' => 'antigo.pdf', 'mime_type' => 'application/pdf']);
+        $this->task->forceFill(['proposed_hours' => 5, 'proposed_by' => $this->dev->id])->save();
 
         $this->actingAs($this->dev)->get($this->url())->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('projects/task')
@@ -78,6 +86,11 @@ class TaskDetailTest extends TestCase
             ->where('task.criteria.1.children.0.result', 'failed')
             ->where('task.comments.0.author.name', 'Bruno Dev')
             ->where('task.comments.0.can', ['update' => true, 'delete' => true])
+            ->where('task.pull_requests.0.added_by.name', 'Bruno Dev')
+            ->where('task.pull_requests.1.added_by', null)
+            ->where('task.attachments.0.uploaded_by.name', 'Bruno Dev')
+            ->where('task.attachments.1.uploaded_by', null)
+            ->where('task.proposed_by.name', 'Bruno Dev')
             ->where('task.created_by', null)
             ->where('task.abilities.update', true)
             ->where('task.abilities.propose_hours', true)
@@ -205,6 +218,9 @@ class TaskDetailTest extends TestCase
         $this->assertNull($this->task->fresh()->cover_attachment_id, 'a FK limpa a capa (P59)');
         Storage::disk('local')->assertMissing($png->path);
         Storage::disk('local')->assertExists($pdf->path);
+        // FCH-03 AC 5 (Verifier rodada 1, Fix 1): a linha `deleted` com o antes (nome e caminho).
+        $apagado = AuditLog::query()->where('auditable_type', 'task_attachment')->where('action', 'deleted')->where('outcome', 'success')->sole();
+        $this->assertSame([$png->id, 'tela.png', $png->path, $this->dev->id], [$apagado->auditable_id, $apagado->changes['original_name'][0], $apagado->changes['path'][0], $apagado->user_id]);
     }
 
     /* ---------------------------------------------------------------- horas */
@@ -301,6 +317,9 @@ class TaskDetailTest extends TestCase
         $this->assertSame($this->dev->id, $pr->user_id);
         $this->actingAs($this->dev)->delete($this->url("/prs/{$pr->id}"))->assertSessionHasNoErrors();
         $this->assertSame(0, $this->task->pullRequests()->count());
+        // FCH-03 AC 5 (Verifier rodada 1, Fix 1): a linha `deleted` com o antes.
+        $apagado = AuditLog::query()->where('auditable_type', 'task_pull_request')->where('action', 'deleted')->where('outcome', 'success')->sole();
+        $this->assertSame([$pr->id, $url, $this->dev->id], [$apagado->auditable_id, $apagado->changes['url'][0], $apagado->user_id]);
     }
 
     public function test_the_author_edits_and_deletes_the_own_comment_only(): void

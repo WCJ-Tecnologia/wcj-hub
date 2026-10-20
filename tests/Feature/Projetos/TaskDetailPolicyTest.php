@@ -189,9 +189,17 @@ class TaskDetailPolicyTest extends TestCase
 
         $this->actingAs($this->dev)->patch($this->url("/comentarios/{$alheio->id}"), ['body' => 'X'])->assertNotFound();
         $this->actingAs($this->dev)->delete($this->url("/comentarios/{$alheio->id}"))->assertNotFound();
+        // O arquivo existe no disco: o 404 vem do vínculo com o card, não do arquivo ausente (Verifier rodada 1, Fix 5).
+        Storage::disk('local')->put('tasks/b.pdf', 'pdf');
         $other = $outro->attachments()->create(['path' => 'tasks/b.pdf', 'original_name' => 'b.pdf', 'mime_type' => 'application/pdf']);
+        $pr = $outro->pullRequests()->create(['url' => 'https://github.com/x/y/pull/9']);
         $this->actingAs($this->dev)->get($this->url("/anexos/{$other->id}"))->assertNotFound();
+        $this->actingAs($this->dev)->delete($this->url("/anexos/{$other->id}"))->assertNotFound();
+        $this->actingAs($this->dev)->delete($this->url("/prs/{$pr->id}"))->assertNotFound();
 
         $this->assertSame('Do outro', $alheio->fresh()->body);
+        $this->assertTrue($outro->attachments()->whereKey($other->id)->exists(), 'o anexo do outro card continua');
+        Storage::disk('local')->assertExists('tasks/b.pdf');
+        $this->assertTrue($outro->pullRequests()->whereKey($pr->id)->exists(), 'o PR do outro card continua');
     }
 }
