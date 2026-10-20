@@ -42,6 +42,15 @@ class ProjectPolicy
         return $user->isAdmin() || $this->manages($user, $project);
     }
 
+    /**
+     * As abas de indicadores do projeto e o `status_do_projeto` pela IA (F7 §09; P53, P54): o gestor
+     * do projeto e o Administrador. O dev vê só *Minhas tarefas e horas*, que pede `view`.
+     */
+    public function viewIndicators(User $user, Project $project): bool
+    {
+        return $this->manage($user, $project);
+    }
+
     /** Só o projeto nunca usado, e só o Administrador (G2, F2 §10.9); o "nunca usado" é do Service. */
     public function delete(User $user, Project $project): bool
     {

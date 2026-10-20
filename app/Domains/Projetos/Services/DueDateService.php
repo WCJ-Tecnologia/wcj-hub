@@ -48,6 +48,28 @@ class DueDateService
         return DiasUteis::add($start, $this->days((string) $task->estimated_hours, (string) $daily));
     }
 
+    /**
+     * O que falta para a data prevista existir (F7 §02, §07): o dev, as horas previstas ou a carga
+     * diária do dev; vazio quando não falta nada (a data então depende só da entrada em
+     * desenvolvimento). Lê `developer` já carregado.
+     *
+     * @return list<'developer'|'hours'|'daily_hours'>
+     */
+    public function missing(Task $task): array
+    {
+        $missing = [];
+        if ($task->developer === null) {
+            $missing[] = 'developer';
+        } elseif ($task->developer->daily_hours === null) {
+            $missing[] = 'daily_hours';
+        }
+        if ($task->estimated_hours === null) {
+            $missing[] = 'hours';
+        }
+
+        return $missing;
+    }
+
     /** O dia (no fuso de quem usa) da 1ª entrada da tarefa em etapa de papel development, ou nulo. */
     public function firstDevelopmentDay(Task $task): ?string
     {

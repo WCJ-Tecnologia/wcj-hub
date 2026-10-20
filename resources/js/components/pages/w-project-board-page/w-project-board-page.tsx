@@ -15,7 +15,7 @@
  *                                                                  A prop `planning` é o `SprintPlanningQuery::forProject()`, só com `manage_sprint`
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Archive, CalendarRange, ListChecks, Settings, X } from 'lucide-react';
+import { Archive, BarChart3, CalendarRange, ListChecks, Settings, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -393,6 +393,12 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                     <Button variant="outline" asChild>
                         <Link href={`/projetos/${project.id}/sprints`}>
                             <CalendarRange aria-hidden /> Sprints
+                        </Link>
+                    </Button>
+                    {/* Indicadores (F7, B7): o gestor abre na Situação; o dev cai em Minhas tarefas e horas (P54). */}
+                    <Button variant="outline" asChild>
+                        <Link href={`/projetos/${project.id}/indicadores`}>
+                            <BarChart3 aria-hidden /> Indicadores
                         </Link>
                     </Button>
                     {/* A configuração do projeto (B2 passo 2): quem só vê o projeto abre só leitura (F2 §09). */}
