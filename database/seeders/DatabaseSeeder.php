@@ -28,7 +28,6 @@ class DatabaseSeeder extends Seeder
             TaskPrioritySeeder::class,
             TestResultSeeder::class,
             ValidationTypeSeeder::class,
-            TaskTypeSeeder::class,
             ReworkReasonSeeder::class,
         ]);
     }

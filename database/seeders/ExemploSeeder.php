@@ -10,6 +10,7 @@ use App\Domains\Projetos\Models\TaskPriority;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
 use App\Domains\Projetos\Services\BoardStageService;
+use App\Domains\Projetos\Services\TaskTypeService;
 use App\Platform\Enums\RoleEnum;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
@@ -83,9 +84,10 @@ class ExemploSeeder extends Seeder
 
             // O quadro padrão mora no Service do quadro (P10, PR #4): a ordem não fica em dois lugares.
             app(BoardStageService::class)->createDefaultBoard($project);
+            app(TaskTypeService::class)->createDefaults($project);
             $backlog = $project->boardStages()->where('stage_role_id', StageRole::QUEUE)->firstOrFail();
 
-            $melhoria = TaskType::query()->where('slug', TaskType::IMPROVEMENT)->value('id');
+            $melhoria = $project->taskTypes()->where('slug', TaskType::IMPROVEMENT)->value('id');
 
             foreach (self::CARDS as $posicao => $card) {
                 $task = Task::query()->create([

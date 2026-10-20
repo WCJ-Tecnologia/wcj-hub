@@ -57,9 +57,13 @@ export interface WTaskCardOrganismProps extends Omit<HTMLAttributes<HTMLDivEleme
     /** Com eles (gestor e Administrador, `manage_types`), o popover do tipo ganha *Novo tipo* e o lápis (nome e cor, só neste projeto). */
     onCreateType?: (payload: TagPayload) => void;
     onUpdateType?: (type: TaskTypeRef, payload: TagPayload) => void;
+    /** Com ele (mesma permissão), o formulário de editar o tipo ganha *Desativar* (G7; os de nome interno o servidor recusa). */
+    onDeactivateType?: (type: TaskTypeRef) => void;
     /** Com eles (gestor e Administrador, `manage_areas`), o popover da área ganha *Nova área* e o lápis de editar nome e cor. */
     onCreateArea?: (payload: TagPayload) => void;
     onUpdateArea?: (area: AreaRef, payload: TagPayload) => void;
+    /** Com ele (mesma permissão), o formulário de editar a área ganha *Desativar* (a mesma rota da configuração). */
+    onDeactivateArea?: (area: AreaRef) => void;
     /** Abre a ficha sem navegar (ex.: num Sheet); sem ele, o título e *Abrir ficha* vão para `card.url`. */
     onOpen?: (card: BoardCard) => void;
     /** Visual de "sendo arrastado" (sombra maior, leve rotação). O arrastar é do quadro. */
@@ -89,8 +93,10 @@ export function WTaskCardOrganism({
     onChangeType,
     onCreateType,
     onUpdateType,
+    onDeactivateType,
     onCreateArea,
     onUpdateArea,
+    onDeactivateArea,
     onOpen,
     dragging = false,
     compact = false,
@@ -185,6 +191,13 @@ export function WTaskCardOrganism({
                                                 if (type) onUpdateType(type, payload);
                                             })
                                         }
+                                        onDeactivate={
+                                            onDeactivateType &&
+                                            ((option) => {
+                                                const type = types.find((item) => item.id === option.id);
+                                                if (type) onDeactivateType(type);
+                                            })
+                                        }
                                     />
                                 ) : (
                                     card.type && <WTagAtom label={card.type.label} color={card.type.color} kind="type" size="sm" />
@@ -201,6 +214,7 @@ export function WTaskCardOrganism({
                                         }
                                         onCreate={onCreateArea}
                                         onUpdate={onUpdateArea}
+                                        onDeactivate={onDeactivateArea}
                                     />
                                 ) : (
                                     card.area && <WTagAtom label={card.area.name} color={card.area.color} kind="area" size="sm" />

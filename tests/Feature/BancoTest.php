@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * O banco do B0 é o do docs/banco.md: as 27 tabelas, as travas que o banco segura sozinho
+ * O banco do B0 é o do docs/banco.md: as 27 tabelas (28 com task_participants, 13/10), as travas que o banco segura sozinho
  * (colunas geradas + unique, CHECK) e created_at/updated_at not null. Só prova no MySQL 8
  * (ADR-002): no SQLite metade disto nem existe.
  */
@@ -29,6 +29,8 @@ class BancoTest extends TestCase
         'projects', 'project_members', 'stage_roles', 'board_stages', 'task_types', 'project_areas', 'task_priorities',
         'tasks', 'task_stage_movements', 'rework_reasons', 'task_acceptance_criteria', 'test_results', 'validation_types',
         'task_pull_requests', 'task_comments', 'task_attachments', 'time_entries', 'packages', 'sprints',
+        // B3 (banco.md seção 7, 13/10)
+        'task_participants',
     ];
 
     private const SAIRAM = ['user_types', 'enterprises', 'user_has_enterprises'];
@@ -39,10 +41,10 @@ class BancoTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_the_27_tables_exist_and_the_template_ones_are_gone(): void
+    public function test_the_28_tables_exist_and_the_template_ones_are_gone(): void
     {
         $this->assertSame('mysql', DB::connection()->getDriverName());
-        $this->assertCount(27, self::TABELAS);
+        $this->assertCount(28, self::TABELAS);
 
         foreach (self::TABELAS as $tabela) {
             $this->assertTrue(Schema::hasTable($tabela), "falta {$tabela}");
@@ -59,7 +61,7 @@ class BancoTest extends TestCase
     {
         $colunas = DB::select(
             'select table_name as t, column_name as c, data_type as tipo, is_nullable as nulo from information_schema.columns
-             where table_schema = database() and table_name in ('.implode(',', array_fill(0, 27, '?')).')',
+             where table_schema = database() and table_name in ('.implode(',', array_fill(0, 28, '?')).')',
             self::TABELAS,
         );
 
@@ -205,7 +207,6 @@ class BancoTest extends TestCase
 
         return [
             'project_id' => $projeto, 'number' => 1, 'board_stage_id' => $etapa,
-            'task_type_id' => DB::table('task_types')->where('slug', 'improvement')->value('id'),
             'task_priority_id' => TaskPriority::NORMAL, 'title' => 'Card',
         ];
     }

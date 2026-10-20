@@ -28,25 +28,27 @@ class ProjectAreaService
 
     public function __construct(private readonly AuditService $audit) {}
 
-    public function create(Project $project, string $name): ProjectArea
+    /** @param  array{color?: ?string}  $color  a cor da etiqueta (14/10); sem a chave, cinza */
+    public function create(Project $project, string $name, array $color = []): ProjectArea
     {
-        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($project, $name) {
+        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($project, $name, $color) {
             $this->refuseDuplicate($project->id, $name, null);
-            $area = $project->areas()->create(['name' => $name]);
+            $area = $project->areas()->create(['name' => $name, ...$color]);
             $this->audit->log(AuditActionEnum::CREATED, $area, null, $this->snapshot($area));
 
             return $area;
         }), fn (UniqueConstraintViolationException $e) => $this->duplicateRefusal($e, $project->id, $name));
     }
 
-    public function update(ProjectArea $area, string $name): ProjectArea
+    /** @param  array{color?: ?string}  $color  sem a chave (a tela de configuração), a cor fica */
+    public function update(ProjectArea $area, string $name, array $color = []): ProjectArea
     {
-        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($area, $name) {
+        return $this->writeOrRefuseDuplicate(fn () => DB::transaction(function () use ($area, $name, $color) {
             $locked = ProjectArea::query()->lockForUpdate()->findOrFail($area->id);
             $this->refuseDuplicate($locked->project_id, $name, $locked->id);
 
             $before = $this->snapshot($locked);
-            $locked->fill(['name' => $name])->save();
+            $locked->fill(['name' => $name, ...$color])->save();
             if ($locked->wasChanged()) {
                 $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->snapshot($locked));
             }
@@ -114,6 +116,6 @@ class ProjectAreaService
      */
     private function snapshot(ProjectArea $area): array
     {
-        return ['project_id' => $area->project_id, 'name' => $area->name];
+        return ['project_id' => $area->project_id, 'name' => $area->name, 'color' => $area->color];
     }
 }

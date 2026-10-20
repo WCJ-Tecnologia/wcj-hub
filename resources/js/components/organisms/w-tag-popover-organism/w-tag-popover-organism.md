@@ -9,6 +9,7 @@ As etiquetas do card (**tipo** e **área**) ao estilo Trello (decisões de Lucas
 - **Escolher:** clicar numa opção troca a etiqueta do card (`onChange`); na área, "Nenhuma" limpa; o tipo não tem "Nenhum" (define-se uma vez). A atual tem o ✓. O card sem tipo ou sem área (o card rápido nasce assim, P17, 14/10) mostra o chip tracejado **"+ Tipo"** / **"+ Área"**.
 - **Editar:** com `onUpdate` (gestor do projeto e Administrador; `abilities.manage_types` / `manage_areas`), cada linha tem o lápis: nome e cor no mesmo popover, com prévia.
 - **Criar:** com `onCreate`, _Novo tipo_ / _Nova área_ no fim abre o mesmo formulário.
+- **Desativar:** com `onDeactivate` (mesma permissão), o formulário de editar ganha _Desativar_: a etiqueta sai da lista de escolha e os cards que já a têm continuam com ela (G7). Reativar fica na configuração do projeto; os tipos de nome interno (Melhoria, Suporte, Desenvolvimento) o servidor recusa, com o motivo no toast.
 - **Do projeto, sem propagar:** tipos e áreas são do projeto. Todo projeto nasce com os tipos padrão (Melhoria, Correção de bug, Suporte, Mudança (GMUD), Desenvolvimento) e sem área; criar ou editar aqui muda só este projeto.
 - `modal={false}`, como o menu do card, para não travar o dnd-kit nem esconder o quadro do leitor de tela. Salvar ou escolher fecha o popover.
 
@@ -22,6 +23,7 @@ As etiquetas do card (**tipo** e **área**) ao estilo Trello (decisões de Lucas
 | `onChange` | `(option: TagOption \| null) => void`        |           | Trocar ou limpar; quem grava é a página           |
 | `onCreate` | `(payload: { name, color }) => void`         |           | _Novo…_ (só com permissão)                        |
 | `onUpdate` | `(option, payload: { name, color }) => void` |           | Lápis de editar (só com permissão)                |
+| `onDeactivate` | `(option) => void`                       |           | _Desativar_ no formulário de editar (só com permissão) |
 | `busy`     | `boolean`                                    | `false`   | Gravando                                          |
 | `errors`   | `Record<string, string>`                     |           | `name`, `color` do servidor                       |
 | `size`     | `'sm' \| 'default'`                          | `default` | `sm` no card do quadro                            |

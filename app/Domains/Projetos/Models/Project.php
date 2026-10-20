@@ -82,6 +82,12 @@ class Project extends Model
         return $this->hasMany(ProjectArea::class);
     }
 
+    /** Tipos de card do projeto (P18, 14/10). */
+    public function taskTypes(): HasMany
+    {
+        return $this->hasMany(TaskType::class);
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);

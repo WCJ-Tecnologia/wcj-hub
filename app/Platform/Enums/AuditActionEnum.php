@@ -16,6 +16,10 @@ enum AuditActionEnum: string
     case VIEWED = 'viewed';
     case FINISHED = 'finished';
     case REOPENED = 'reopened';
+    // Projetos (B3): mudança de etapa do card (P14; o movimento também fica em task_stage_movements, R14)
+    // e arquivar o card com histórico (P26).
+    case MOVED = 'moved';
+    case ARCHIVED = 'archived';
 
     public function label(): string
     {
@@ -31,6 +35,8 @@ enum AuditActionEnum: string
             self::VIEWED => 'Consultado',
             self::FINISHED => 'Encerrado',
             self::REOPENED => 'Reaberto',
+            self::MOVED => 'Movido',
+            self::ARCHIVED => 'Arquivado',
         };
     }
 
@@ -56,6 +62,11 @@ enum AuditActionEnum: string
             $ability === 'close' => self::FINISHED,
             $ability === 'reopen' => self::REOPENED,
             $ability === 'manageTasks' => self::UPDATED,
+            // Quadro e card (B3): criar o card de suporte, mover, pôr na sprint, comentar e anexar, arquivar.
+            $ability === 'createSupport' => self::CREATED,
+            $ability === 'move' => self::MOVED,
+            in_array($ability, ['manageSprint', 'comment', 'attach'], true) => self::UPDATED,
+            $ability === 'archive' => self::ARCHIVED,
             $ability === 'delete' => self::DELETED,
             $ability === 'deactivate' => self::DEACTIVATED,
             $ability === 'reactivate' => self::REACTIVATED,

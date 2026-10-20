@@ -40,6 +40,13 @@ export interface WTagPopoverOrganismProps {
     /** Com eles (gestor e Administrador, `manage_types` / `manage_areas`), a lista ganha *Novo…* e o lápis de editar. */
     onCreate?: (payload: TagPayload) => void;
     onUpdate?: (option: TagOption, payload: TagPayload) => void;
+    /**
+     * Com ele, o formulário de editar ganha *Desativar*: a etiqueta sai da lista de escolha e os
+     * cards que já a têm continuam com ela (G7). Quem grava é a página (`POST …/deactivate`);
+     * reativar fica na configuração do projeto. Os tipos de nome interno (Melhoria, Suporte,
+     * Desenvolvimento) o servidor recusa.
+     */
+    onDeactivate?: (option: TagOption) => void;
     /** Gravando: botões desabilitados, spinner no Salvar. */
     busy?: boolean;
     /** Erros do servidor: `name`, `color`. */
@@ -91,6 +98,7 @@ export function WTagPopoverOrganism({
     onChange,
     onCreate,
     onUpdate,
+    onDeactivate,
     busy = false,
     errors,
     size = 'default',
@@ -188,6 +196,14 @@ export function WTagPopoverOrganism({
                             else onCreate?.(payload);
                             close();
                         }}
+                        onDeactivate={
+                            view.kind === 'edit' && onDeactivate
+                                ? () => {
+                                      onDeactivate(view.option);
+                                      close();
+                                  }
+                                : undefined
+                        }
                     />
                 )}
             </PopoverContent>
@@ -268,9 +284,11 @@ interface FormProps {
     errors?: Record<string, string>;
     onBack: () => void;
     onSave: (payload: TagPayload) => void;
+    /** Só ao editar, com permissão: tira a etiqueta da lista de escolha. */
+    onDeactivate?: () => void;
 }
 
-function TagForm({ kind, option, busy, errors, onBack, onSave }: FormProps) {
+function TagForm({ kind, option, busy, errors, onBack, onSave, onDeactivate }: FormProps) {
     const id = useId();
     const text = TEXT[kind];
     const [name, setName] = useState(option?.name ?? '');
@@ -311,7 +329,20 @@ function TagForm({ kind, option, busy, errors, onBack, onSave }: FormProps) {
             </WFormFieldMolecule>
             <div className="flex items-center gap-2">
                 <WTagAtom label={name.trim() || 'Prévia'} color={color} />
-                <Button type="submit" size="sm" className="ml-auto" disabled={busy}>
+                {onDeactivate && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto text-destructive hover:text-destructive"
+                        disabled={busy}
+                        onClick={onDeactivate}
+                        title="Sai da lista de escolha; os cards que já têm a etiqueta continuam com ela"
+                    >
+                        Desativar
+                    </Button>
+                )}
+                <Button type="submit" size="sm" className={onDeactivate ? undefined : 'ml-auto'} disabled={busy}>
                     {busy && <Loader2 className="size-4 animate-spin" aria-hidden />}
                     Salvar
                 </Button>

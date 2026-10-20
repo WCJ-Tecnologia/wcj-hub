@@ -1,15 +1,15 @@
 /**
- * Rotas que esta tela chama: proposta do kit do quadro, o B3 confirma (e o Cauã ajusta aqui).
+ * Rotas que esta tela chama (confirmadas no B3, PR 1; `routes/web.php`, grupo do quadro):
  *
  * - `GET   /projetos/{id}/quadro?search=&mine=1&developer_id=…`  esta tela, com os filtros (F3 §05)
  * - `POST  /projetos/{id}/cards`                                  criar rápido `{ title }` (P17, R4)
  * - `POST  /projetos/{id}/cards/suporte`                          card de suporte (P52)
  * - `POST  /projetos/{id}/cards/{chave}/mover`                    `MovePayload` (P13, P15, P39, P45, R5)
- * - `PATCH /projetos/{id}/cards/{chave}`                          `{ priority }` ou `{ area_id }` (P18, P19)
+ * - `PATCH /projetos/{id}/cards/{chave}`                          `{ priority }`, `{ area_id }` ou `{ type_id }` (P18, P19)
  * - `POST  /projetos/{id}/cards/{chave}/participantes`            `{ user_id, add }` (P58)
- * - `PATCH /projetos/{id}/cards/{chave}`                          `{ type_id }` ao trocar o tipo pela etiqueta (14/10)
- * - `POST  /projetos/{id}/tipos`, `PATCH /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
- * - `POST  /projetos/{id}/areas`, `PATCH /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
+ * - `POST  /projetos/{id}/tipos`, `PUT /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
+ * - `POST  /projetos/{id}/tipos/{tid}/deactivate`, `POST /projetos/{id}/areas/{aid}/deactivate`  *Desativar* no formulário da etiqueta (G7; reativar e excluir ficam na configuração / na API)
+ * - `POST  /projetos/{id}/areas`, `PUT /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, as mesmas rotas da configuração (B2), agora com a cor
  * - `POST  /projetos/{id}/sprint-aberta/tarefas/lote`             `SprintBatchPayload`: *Montar sprint* já planejado (D-GER-35). **Já existe no
  *                                                                  backend** (B5b), volta para o quadro com o toast; o lote recusado vem em `tasks`.
  *                                                                  A prop `planning` é o `SprintPlanningQuery::forProject()`, só com `manage_sprint`
@@ -300,7 +300,7 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
     const updateTag = (path: string, payload: TagPayload, what: string, apply: (card: BoardCard) => BoardCard) => {
         const before = local;
         setLocal((list) => list.map(apply));
-        router.patch(
+        router.put(
             `${base}/${path}`,
             { ...payload },
             {
@@ -312,6 +312,16 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             },
         );
     };
+    // Desativar pela etiqueta (CR-1-02 da revisão do B3 PR 1): a mesma rota da configuração; o servidor devolve o
+    // quadro com `options` sem a etiqueta e o toast. Os tipos de nome interno ele recusa, com o motivo no toast.
+    const deactivateTag = (path: string, what: string) =>
+        router.post(
+            `${base}/${path}/deactivate`,
+            {},
+            { preserveScroll: true, onError: () => toast.error(`Não foi possível desativar ${what}`) },
+        );
+    const deactivateType = (type: TaskTypeRef) => deactivateTag(`tipos/${type.id}`, `o tipo ${type.label}`);
+    const deactivateArea = (area: AreaRef) => deactivateTag(`areas/${area.id}`, `a área ${area.name}`);
     const createType = (payload: TagPayload) => createTag('tipos', payload, 'o tipo');
     const updateType = (type: TaskTypeRef, payload: TagPayload) =>
         updateTag(`tipos/${type.id}`, payload, `o tipo ${type.label}`, (item) =>
@@ -433,8 +443,10 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                         onChangeType={changeType}
                         onCreateType={abilities.manage_types ? createType : undefined}
                         onUpdateType={abilities.manage_types ? updateType : undefined}
+                        onDeactivateType={abilities.manage_types ? deactivateType : undefined}
                         onCreateArea={abilities.manage_areas ? createArea : undefined}
                         onUpdateArea={abilities.manage_areas ? updateArea : undefined}
+                        onDeactivateArea={abilities.manage_areas ? deactivateArea : undefined}
                         selection={batch ? { selected: new Set(batch), onChange: setBatch } : undefined}
                     />
                 )}

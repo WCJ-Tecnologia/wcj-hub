@@ -92,8 +92,8 @@ export function createUser(name: string, roleId: 1 | 2 | 3 | 4, password?: strin
 }
 
 /**
- * Projeto do B5 com o quadro padrão, o dev alocado e duas tarefas no Backlog (o card é do B3: as
- * tarefas são gravadas direto, com o número pelo contador). Devolve os ids.
+ * Projeto do B5 com o quadro padrão e os 5 tipos, o dev alocado e duas tarefas no Backlog (gravadas
+ * direto, com o número pelo contador, sem tipo nem prioridade, como o card rápido do B3). Devolve os ids.
  */
 export function createSprintProject(prefix: string, devId: number): { projectId: number; taskIds: number[] } {
     const out = tinker(`
@@ -104,6 +104,7 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
             'name' => ${JSON.stringify(`Sprints ${prefix}`)}, 'starts_on' => now('America/Sao_Paulo')->toDateString(),
         ]);
         app(App\\Domains\\Projetos\\Services\\BoardStageService::class)->createDefaultBoard($project);
+        app(App\\Domains\\Projetos\\Services\\TaskTypeService::class)->createDefaults($project);
         $project->members()->create(['user_id' => ${devId}]);
         $queue = $project->boardStages()->where('stage_role_id', 1)->value('id');
         $ids = [];
@@ -112,9 +113,6 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
             $ids[] = App\\Domains\\Projetos\\Models\\Task::query()->create([
                 'project_id' => $project->id, 'number' => $project->last_task_number, 'board_stage_id' => $queue,
                 'title' => $title, 'developer_id' => ${devId}, 'estimated_hours' => $hours,
-                // Tipo e prioridade ainda são obrigatórios no banco até a migração do B3 (14/10).
-                'task_type_id' => App\\Domains\\Projetos\\Models\\TaskType::query()->where('slug', 'improvement')->value('id'),
-                'task_priority_id' => App\\Domains\\Projetos\\Models\\TaskPriority::NORMAL,
             ])->id;
         }
         echo $project->id.','.implode(',', $ids);
