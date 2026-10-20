@@ -3,6 +3,7 @@
  * (`resources/js/types/quadro.ts`). Projeto e nomes no padrão do ExemploSeeder.
  */
 import type {
+    ArchivedCard,
     BoardAbilities,
     BoardCard,
     BoardFilters,
@@ -301,6 +302,37 @@ export const CARDS: BoardCard[] = [
 
 /** O quadro de um projeto novo: nenhum card (F3 §03, estado vazio). */
 export const CARDS_VAZIO: BoardCard[] = [];
+
+/** A lista de arquivados (F3 §03), do mais recente para o mais antigo, como o `TaskPresenter::archivedRow` manda. */
+export const ARCHIVED_CARDS: ArchivedCard[] = [
+    {
+        id: 41,
+        key: 'SGM-41',
+        title: 'Exportar multas em planilha',
+        type: MELHORIA,
+        archived_at: '2026-10-19 16:42',
+        archive_reason: 'O cliente desistiu: o relatório do ERP já atende.',
+        url: '/projetos/1/cards/SGM-41',
+    },
+    {
+        id: 37,
+        key: 'SGM-37',
+        title: 'Login pelo gov.br',
+        type: null,
+        archived_at: '2026-10-14 09:05',
+        archive_reason: 'Duplicado do SGM-12.',
+        url: '/projetos/1/cards/SGM-37',
+    },
+    {
+        id: 9,
+        key: 'SGM-9',
+        title: 'Corrigir o cálculo de juros do recurso de multa quando a notificação chega depois do prazo legal de defesa prévia',
+        type: BUG,
+        archived_at: '2026-09-30 11:20',
+        archive_reason: 'Coberto pelo SGM-17, que refez a tela de recurso inteira.',
+        url: '/projetos/1/cards/SGM-9',
+    },
+];
 
 /** Quadro sem filtro nenhum: o que o controller manda na primeira visita (F3 §05). */
 export const BOARD_FILTERS_VAZIO: BoardFilters = {

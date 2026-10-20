@@ -162,7 +162,12 @@ export function WBoardFiltersOrganism({ filters, onChange, options, order, onOrd
                         )}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-80" aria-label="Filtros do quadro">
+                {/* Rola dentro da altura que sobra na tela: num notebook de 768 px, Arquivados ficava fora do alcance. */}
+                <PopoverContent
+                    align="end"
+                    className="max-h-(--radix-popover-content-available-height) w-80 overflow-y-auto"
+                    aria-label="Filtros do quadro"
+                >
                     <div className="grid gap-4">
                         <div className="grid gap-3">
                             {tagSelects.map(renderSelect)}

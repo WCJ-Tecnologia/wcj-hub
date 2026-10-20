@@ -10,16 +10,18 @@
  * - `POST  /projetos/{id}/tipos`, `PUT /projetos/{id}/tipos/{tid}`  `{ name, color }`: tipo do projeto, criar e editar pelo quadro (gestor e Administrador; 14/10)
  * - `POST  /projetos/{id}/tipos/{tid}/deactivate`, `POST /projetos/{id}/areas/{aid}/deactivate`  *Desativar* no formulário da etiqueta (G7; reativar e excluir ficam na configuração / na API)
  * - `POST  /projetos/{id}/areas`, `PUT /projetos/{id}/areas/{aid}`  `{ name, color }`: área do projeto, as mesmas rotas da configuração (B2), agora com a cor
+ * - `GET   /projetos/{id}/quadro?archived=1`                      a lista de arquivados (F3 §03; B3, PR 3): vem em `archived`, com `cards` vazio
  * - `POST  /projetos/{id}/sprint-aberta/tarefas/lote`             `SprintBatchPayload`: *Montar sprint* já planejado (D-GER-35). **Já existe no
  *                                                                  backend** (B5b), volta para o quadro com o toast; o lote recusado vem em `tasks`.
  *                                                                  A prop `planning` é o `SprintPlanningQuery::forProject()`, só com `manage_sprint`
  */
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Archive, CalendarRange, ListChecks, Settings, X } from 'lucide-react';
+import { Archive, CalendarRange, ListChecks, SearchX, Settings, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { WEmptyStateMolecule } from '@/components/molecules/w-empty-state-molecule/w-empty-state-molecule';
+import { WArchivedCardsTableOrganism } from '@/components/organisms/w-archived-cards-table-organism/w-archived-cards-table-organism';
 import type { TagPayload } from '@/components/organisms/w-tag-popover-organism/w-tag-popover-organism';
 import { WBoardFiltersOrganism } from '@/components/organisms/w-board-filters-organism/w-board-filters-organism';
 import { WKanbanBoardOrganism } from '@/components/organisms/w-kanban-board-organism/w-kanban-board-organism';
@@ -35,6 +37,7 @@ import { useBoardMove } from '@/hooks/use-board-move';
 import { applyFilters, hasActiveFilters, sprintBatchLabel } from '@/lib/quadro';
 import type { SharedProps } from '@/types';
 import type {
+    ArchivedCard,
     AreaRef,
     BoardAbilities,
     BoardCard,
@@ -66,6 +69,8 @@ export interface WProjectBoardPageProps {
     today: string;
     /** *Montar sprint* (D-GER-35): pessoas alocadas e a sprint aberta (`SprintPlanningQuery`); só com `abilities.manage_sprint`. */
     planning?: SprintPlanning | null;
+    /** Com o filtro *Arquivados* (F3 §03, P26): a lista, e `cards` vem vazio. Sem o filtro, vazio. */
+    archived?: ArchivedCard[];
 }
 
 /** A ordem do quadro é de cada pessoa, lembrada no navegador (P13). */
@@ -138,7 +143,7 @@ function moveLocally(cards: BoardCard[], card: BoardCard, payload: MovePayload):
  * filtros, colunas com arrastar e soltar, criar rápido, card de suporte e os diálogos de movimento
  * (`useBoardMove`). Mover é otimista: o card muda de coluna antes da resposta e volta se der erro.
  */
-export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today, planning }: WProjectBoardPageProps) {
+export function WProjectBoardPage({ project, stages, cards, abilities, options, filters, today, planning, archived = [] }: WProjectBoardPageProps) {
     const currentUserId = usePage<SharedProps>().props.auth.user?.id ?? null;
     const base = `/projetos/${project.id}`;
 
@@ -184,7 +189,8 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['cards', 'filters'],
+            // `archived`: a lista do filtro *Arquivados* (B3, PR 3) também vem dos filtros.
+            only: ['cards', 'filters', 'archived'],
         });
 
     const changeFilters = (next: BoardFilters) => {
@@ -416,11 +422,24 @@ export function WProjectBoardPage({ project, stages, cards, abilities, options, 
                 />
 
                 {current.archived ? (
-                    // A lista de arquivados (Chave, Título, Tipo, Arquivado em, Motivo) vem do B3; o kit só tem o vazio (F3 §03).
-                    <WEmptyStateMolecule
-                        icon={<Archive className="size-5" aria-hidden />}
-                        title="Nenhum card arquivado"
-                        description="Arquivar fica na ficha do card, com motivo."
+                    // A lista de arquivados (F3 §03): os outros filtros valem nela, pelo servidor.
+                    <WArchivedCardsTableOrganism
+                        rows={archived}
+                        emptyState={
+                            hasActiveFilters(current) ? (
+                                <WEmptyStateMolecule
+                                    icon={<SearchX className="size-5" aria-hidden />}
+                                    title="Nenhum card com esses filtros"
+                                    description="Limpe ou troque os filtros para ver os cards arquivados."
+                                />
+                            ) : (
+                                <WEmptyStateMolecule
+                                    icon={<Archive className="size-5" aria-hidden />}
+                                    title="Nenhum card arquivado"
+                                    description="Arquivar fica na ficha do card, com motivo."
+                                />
+                            )
+                        }
                     />
                 ) : (
                     <WKanbanBoardOrganism

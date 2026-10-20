@@ -1,6 +1,6 @@
 /**
- * Rotas que esta tela chama (confirmadas no B3, PR 2; `routes/web.php`, grupo do quadro). Arquivar,
- * desarquivar e excluir são do PR 3: até lá, `abilities.archive` e `abilities.delete` vêm `false`.
+ * Rotas que esta tela chama (confirmadas no B3, PR 2 e PR 3; `routes/web.php`, grupo do quadro).
+ * `abilities.archive` serve para arquivar e desarquivar; `abilities.delete` só vem no card nunca usado.
  * `{chave}` = `SGM-17`. Toda escrita volta com a ficha inteira (`task`) e, na ficha, o Inertia
  * troca as props; a tela não guarda cópia otimista (cada seção é pequena e o retorno é rápido).
  *
