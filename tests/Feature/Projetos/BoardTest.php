@@ -224,10 +224,20 @@ class BoardTest extends TestCase
         $saiu->forceFill(['deactivated_at' => now()])->save();
         $this->alocar($this->project, $saiu);
 
+        $contato = Contact::factory()->create(['client_id' => $this->project->client_id, 'name' => 'Carla Cliente']);
+        Contact::factory()->create(['client_id' => $this->projeto()->client_id, 'name' => 'De outro cliente']);
+
         $options = $this->quadro()['options'];
         $this->assertSame([['id' => $this->project->areas()->where('name', 'Ativa')->value('id'), 'name' => 'Ativa', 'color' => 'blue']], $options['areas']);
         $this->assertSame(['Melhoria', 'Correção de bug', 'Suporte', 'Mudança (GMUD)', 'Desenvolvimento'], array_column($options['types'], 'label'));
         $this->assertSame([['id' => $this->dev->id, 'name' => 'Bruno Dev']], $options['members']);
+        $this->assertSame([['id' => $contato->id, 'name' => 'Carla Cliente']], $options['contacts'], 'só os contatos ativos do cliente do projeto');
+        $this->assertNotEmpty($options['channels']);
+
+        // CR-1-01: contatos e canais só servem ao card de suporte, que o dev não cria; ele não recebe a lista.
+        $doDev = $this->quadro([], $this->dev)['options'];
+        $this->assertSame([[], []], [$doDev['contacts'], $doDev['channels']]);
+        $this->assertSame(array_column($options['types'], 'label'), array_column($doDev['types'], 'label'), 'o resto das opções é igual');
     }
 
     public function test_the_number_of_queries_does_not_grow_with_the_cards(): void

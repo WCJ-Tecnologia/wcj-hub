@@ -38,6 +38,14 @@ function TagPopoverDemo(props: WTagPopoverOrganismProps) {
                     if (value?.id === option.id) setValue(updated);
                 })
             }
+            onDeactivate={
+                props.onDeactivate &&
+                ((option) => {
+                    action('onDeactivate')(option);
+                    // Sai da lista de escolha; o card que já a tem continua com ela (G7).
+                    setOptions((list) => list.filter((item) => item.id !== option.id));
+                })
+            }
         />
     );
 }
@@ -61,6 +69,7 @@ const meta = {
         onChange: () => undefined,
         onCreate: () => undefined,
         onUpdate: () => undefined,
+        onDeactivate: () => undefined,
     },
     decorators: [
         (Story) => (
@@ -81,7 +90,7 @@ export const TipoGestor: Story = { args: { kind: 'type', options: TYPES, value: 
 /** Card sem área: o chip "+ Área". */
 export const SemArea: Story = { args: { value: null, size: 'sm' } };
 /** Dev: só escolhe; sem lápis nem *Novo…*. */
-export const SoEscolhe: Story = { args: { onCreate: undefined, onUpdate: undefined } };
+export const SoEscolhe: Story = { args: { onCreate: undefined, onUpdate: undefined, onDeactivate: undefined } };
 /** Projeto sem área e sem permissão: "Nenhuma área no projeto". */
 export const ProjetoSemArea: Story = { args: { options: [], value: null, onCreate: undefined, onUpdate: undefined } };
 export const Gravando: Story = { args: { busy: true } };

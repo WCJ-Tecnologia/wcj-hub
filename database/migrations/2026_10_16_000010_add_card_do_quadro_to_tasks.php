@@ -59,19 +59,28 @@ return new class extends Migration
         }
     }
 
-    /** Em dev: volta o schema. Card sem tipo ou sem prioridade impede a volta ao not null (o MySQL recusa). */
+    /**
+     * Em dev: volta o schema. A volta a not null de task_type_id e task_priority_id só passa com a
+     * checagem de FK desligada na sessão (o MySQL recusa mudar coluna que está numa FK, erro 1832;
+     * a FK fica como está). Card sem tipo ou sem prioridade impede a volta (o not null recusa).
+     * DDL não é transacional: o change() vem primeiro, para uma recusa deixar o banco como estava,
+     * e as cores e a tabela saem por último (Verifier do B3 PR 1, rodada 1, Fix 1).
+     */
     public function down(): void
     {
-        Schema::table('project_areas', fn (Blueprint $table) => $table->dropColumn('color'));
-        Schema::table('task_types', fn (Blueprint $table) => $table->dropColumn('color'));
-        Schema::dropIfExists('task_participants');
-
-        Schema::table('tasks', function (Blueprint $table) {
+        Schema::withoutForeignKeyConstraints(fn () => Schema::table('tasks', function (Blueprint $table) {
             $table->unsignedBigInteger('task_type_id')->nullable(false)->change();
             $table->unsignedBigInteger('task_priority_id')->nullable(false)->change();
+        }));
+
+        Schema::table('tasks', function (Blueprint $table) {
             $table->dropForeign(['parent_task_id']);
             $table->dropIndex(['parent_task_id']);
             $table->dropColumn('parent_task_id');
         });
+
+        Schema::dropIfExists('task_participants');
+        Schema::table('task_types', fn (Blueprint $table) => $table->dropColumn('color'));
+        Schema::table('project_areas', fn (Blueprint $table) => $table->dropColumn('color'));
     }
 };

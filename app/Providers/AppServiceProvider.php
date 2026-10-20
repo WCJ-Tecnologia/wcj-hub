@@ -113,12 +113,6 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Alias de cada Model em audit_logs.auditable_type e notifications.notifiable_type
-     * (docs/banco.md, audit_logs; ADR-001). enforce: Model fora do mapa falha em vez de
-     * gravar o nome da classe, que muda quando o código muda de pasta. Model novo entra aqui
-     * no mesmo commit.
-     */
-    /**
      * {card} nas rotas do quadro (B3) é a chave do card, "SGM-17" (P16), procurada só entre os
      * cards do projeto da rota: chave de outro projeto, prefixo errado ou número inexistente é 404,
      * antes da Policy.
@@ -137,6 +131,12 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Alias de cada Model em audit_logs.auditable_type e notifications.notifiable_type
+     * (docs/banco.md, audit_logs; ADR-001). enforce: Model fora do mapa falha em vez de
+     * gravar o nome da classe, que muda quando o código muda de pasta. Model novo entra aqui
+     * no mesmo commit.
+     */
     private function registerMorphMap(): void
     {
         Relation::enforceMorphMap([

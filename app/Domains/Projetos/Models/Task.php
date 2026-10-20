@@ -205,9 +205,12 @@ class Task extends Model
         return "{$this->project->key_prefix}-{$this->number}";
     }
 
-    /** O endereço da ficha (`/projetos/{id}/cards/{chave}`): *Abrir ficha*, *Copiar link* e os avisos. */
+    /**
+     * O endereço da ficha (`/projetos/{id}/cards/{chave}`): *Abrir ficha*, *Copiar link* e os avisos.
+     * Pela rota nomeada: o link vai para o e-mail e o sino, que ficam gravados (CR-1-05).
+     */
     public function url(): string
     {
-        return url("/projetos/{$this->project_id}/cards/{$this->key()}");
+        return route('projects.cards.show', [$this->project_id, $this->key()]);
     }
 }

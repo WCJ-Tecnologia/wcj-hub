@@ -8,7 +8,11 @@
 
 Corroborated across multiple features. Safe to apply as guidance.
 
-_none_
+### L-016 - Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.
+- signal: `ac_gap` · recurrence: 2 feature(s) · scope: `tests/policy` · harmful: 0
+- features: b5-sprint-e-horas, b3-quadro-e-card
+- evidence: SPR-01 AC1 / DEL-01 AC1 (tests/policy) (+1 more)
+- last seen: 2026-10-19T18:13:49Z
 
 ## Candidates (under observation - do NOT load as guidance yet)
 
@@ -104,17 +108,47 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tests/Feature/Projetos/SprintPolicyTest.php:191 (tests/negacao)
 - last seen: 2026-10-15T15:29:13Z
 
-### L-016 - Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.
-- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `tests/policy` · harmful: 0
-- features: b5-sprint-e-horas
-- evidence: SPR-01 AC1 / DEL-01 AC1 (tests/policy)
-- last seen: 2026-10-15T15:29:13Z
-
 ### L-017 - Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/transacao` · harmful: 0
 - features: b5-sprint-e-horas
 - evidence: SprintService::delete sem DB::transaction (tests/transacao)
 - last seen: 2026-10-15T15:29:13Z
+
+### L-018 - Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/policy` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md p4 p16 p7 p8 p9 p10 (TaskPolicy view/comment/attach/archive/delete) (tests/policy)
+- last seen: 2026-10-19T18:13:37Z
+
+### L-019 - Toda migração cujo down() a spec promete precisa de um teste que rode o down() e o up() de novo no MySQL, porque o MySQL recusa voltar a not null uma coluna com FK que o up() deixou nula.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `migrations` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md MIG-01 AC 5; 2026_10_16_000010 down() erro 1832 (migrations)
+- last seen: 2026-10-19T18:13:37Z
+
+### L-020 - Para provar que um passo roda na transação de quem chama, faça o próprio passo falhar e afirme que as escritas anteriores voltaram; uma falha depois dele não distingue.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/transacao` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md s3 (ProjectService::create, createDefaults fora da transação) (tests/transacao)
+- last seen: 2026-10-19T18:13:37Z
+
+### L-021 - Quando a spec diz o auditable_type da linha denied, o helper de negação afirma tipo e id, e a spec fecha qual tipo grava a ability que recebe a classe e o projeto.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `tests/negacao` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md TSK-04 AC 1, sonda pd1 (tests/negacao)
+- last seen: 2026-10-19T18:13:37Z
+
+### L-022 - Recusa de duplicado por escopo precisa de teste pela rota com o repetido no mesmo escopo (mensagem e nada gravado) e o mesmo valor em outro escopo (aceito), porque o unique do banco esconde a falta da checagem.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/duplicado` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md rodada 2 u2, u3, u4 (TaskTypeService::create/update) (tests/duplicado)
+- last seen: 2026-10-19T19:28:45Z
+
+### L-023 - Porta nova que entra em par (desativar e reativar) ganha negação no teste de comportamento para as duas; a que ficar de fora só morre no teste de arquitetura.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/negacao` · harmful: 0
+- features: b3-quadro-e-card
+- evidence: validation.md rodada 2 ac2 (TaskTypeController::reactivate) (tests/negacao)
+- last seen: 2026-10-19T19:28:45Z
 
 ## Quarantined (failed when applied - ignore)
 

@@ -21,18 +21,16 @@ function column(page: Page, name: string) {
 
 /**
  * *Mover para…* pelo teclado, como o aviso do quadro ensina: o mouse indo do submenu ao item passa
- * por cima dos outros itens e fecha o submenu.
+ * por cima dos outros itens e fecha o submenu. O foco vai direto ao item e o Enter o escolhe: ler o
+ * `activeElement` entre as setas era corrida (no CI a leitura atrasava, descia uma a mais e caía
+ * em Paused, logo abaixo de To do).
  */
 async function moveTo(page: Page, key: string, stage: string) {
     await page.getByRole('button', { name: `Ações de ${key}` }).click();
     await page.getByRole('menuitem', { name: 'Mover para…' }).click();
-    await page.keyboard.press('ArrowRight');
-    for (let step = 0; step < 10; step++) {
-        const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
-        if (focused === stage) break;
-        await page.keyboard.press('ArrowDown');
-    }
-    await page.keyboard.press('Enter');
+    const item = page.getByRole('menuitem', { name: stage, exact: true });
+    await expect(item).toBeVisible();
+    await item.press('Enter');
 }
 
 test('@smoke @critical o gestor cria card rápido, põe na sprint nova e pausa com motivo', async ({ page, axe }) => {

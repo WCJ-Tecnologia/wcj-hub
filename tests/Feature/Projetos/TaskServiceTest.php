@@ -259,6 +259,20 @@ class TaskServiceTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    /** CR-1-06: o dev desativado segue no card (G2), mas o e-mail não vai para quem saiu. */
+    public function test_a_deactivated_developer_is_not_warned_about_the_return(): void
+    {
+        Notification::fake();
+        $this->dev->forceFill(['deactivated_at' => now()])->save();
+        $task = $this->tarefa($this->project, $this->etapa($this->project, StageRole::TEST), ['developer_id' => $this->dev->id]);
+
+        $this->mover($task, StageRole::DEVELOPMENT, ['rework_origin_id' => ValidationType::QA, 'rework_reason_id' => ReworkReason::query()->whereNull('slug')->value('id')])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(StageRole::DEVELOPMENT, $task->fresh()->boardStage->stage_role_id, 'o movimento acontece');
+        Notification::assertNothingSent();
+    }
+
     public function test_first_entry_in_development_sets_the_due_date(): void
     {
         $task = $this->tarefa($this->project, $this->etapa($this->project, StageRole::SPRINT), ['developer_id' => $this->dev->id, 'estimated_hours' => 16]);

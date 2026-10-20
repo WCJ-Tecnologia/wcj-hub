@@ -10,8 +10,10 @@ use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -110,13 +112,25 @@ class TaskPolicyTest extends TestCase
         ];
     }
 
-    private function assertNegado(User $user, string $action): void
+    /**
+     * TSK-04 AC 1 e 2 (Verifier rodada 1, Fix 4; L-015): a requisição grava exatamente uma linha nova
+     * de auditoria, `denied`, desta pessoa, com a ação e o alvo que a spec fecha (`task` com o id do
+     * card; `task` com id nulo antes de o card existir; `project` em tipo e área). Nenhuma `success`.
+     */
+    private function assertOneDenied(User $user, Closure $request, string $action, string $type, ?int $id, string $caso): TestResponse
     {
-        $this->assertTrue(
-            AuditLog::query()->where('user_id', $user->id)->where('outcome', 'denied')->where('action', $action)->exists(),
-            "faltou a linha denied '{$action}'",
+        $before = AuditLog::query()->max('id') ?? 0;
+        $response = $request();
+        $rows = AuditLog::query()->where('id', '>', $before)->get();
+
+        $this->assertCount(1, $rows, "{$caso}: exatamente uma linha nova de auditoria");
+        $this->assertSame(
+            ['denied', $action, $type, $id, $user->id],
+            [$rows[0]->outcome, $rows[0]->action, $rows[0]->auditable_type, $rows[0]->auditable_id, $rows[0]->user_id],
+            $caso,
         );
-        $this->assertFalse(AuditLog::query()->where('user_id', $user->id)->where('outcome', 'success')->exists(), 'nada de success');
+
+        return $response;
     }
 
     public function test_allocated_developer_sees_the_board_with_dev_abilities(): void
@@ -148,18 +162,59 @@ class TaskPolicyTest extends TestCase
     {
         $user = $this->estranho($papel);
         $antes = $this->retrato();
+        $todo = $this->todo->id;
 
-        $this->actingAs($user)->get($this->url('/quadro'))->assertForbidden();
-        $this->actingAs($user)->post($this->url('/cards'), ['title' => 'Intruso'])->assertForbidden();
-        $this->mover($user, $this->todo, StageRole::DEVELOPMENT)->assertForbidden();
-        $this->actingAs($user)->patch($this->card($this->todo), ['priority' => 'urgent'])->assertForbidden();
-        $this->actingAs($user)->post($this->card($this->todo, '/participantes'), ['user_id' => $this->dev->id, 'add' => true])->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->actingAs($user)->get($this->url('/quadro')), 'viewed', 'project', $this->project->id, 'quadro')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->actingAs($user)->get($this->card($this->todo)), 'viewed', 'task', $todo, 'ficha')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->actingAs($user)->post($this->url('/cards'), ['title' => 'Intruso']), 'created', 'task', null, 'card rápido')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->mover($user, $this->todo, StageRole::DEVELOPMENT), 'moved', 'task', $todo, 'mover')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->actingAs($user)->patch($this->card($this->todo), ['priority' => 'urgent']), 'updated', 'task', $todo, 'etiqueta')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $this->actingAs($user)->post($this->card($this->todo, '/participantes'), ['user_id' => $this->dev->id, 'add' => true]), 'updated', 'task', $todo, 'participante')->assertForbidden();
 
         $this->assertSame($antes, $this->retrato());
-        $this->assertNegado($user, 'viewed');
-        $this->assertNegado($user, 'created');
-        $this->assertNegado($user, 'moved');
-        $this->assertNegado($user, 'updated');
+    }
+
+    /** TSK-01 (Verifier rodada 1, Fix 2): `view(Task)` pela rota do card, que até o PR 2 volta ao quadro com o aviso. */
+    public function test_who_sees_the_project_opens_the_card_link_and_lands_on_the_board_with_the_notice(): void
+    {
+        $chave = "{$this->project->key_prefix}-{$this->todo->number}";
+
+        foreach ([$this->dev, $this->quemGereNo('admin'), $this->gestor, $this->quemGereNo('alocado')] as $user) {
+            $this->actingAs($user)->get($this->card($this->todo))
+                ->assertRedirect($this->url('/quadro'))
+                ->assertSessionHas('warning', "A ficha de {$chave} ainda não está pronta: chega no próximo PR do quadro.");
+        }
+        $this->assertSame(0, AuditLog::query()->where('outcome', 'denied')->count());
+
+        $outro = $this->projeto();
+        $deOutro = $this->tarefa($outro);
+        $this->actingAs($this->gestor)->get($this->url("/cards/{$outro->key_prefix}-{$deOutro->number}"))->assertNotFound();
+        $this->actingAs($this->gestor)->get($this->url("/cards/{$this->project->key_prefix}-999"))->assertNotFound();
+    }
+
+    /**
+     * Premissa "Abilities da TaskPolicy" (Verifier rodada 1, Fix 3): comentar, anexar, arquivar e
+     * excluir ainda não têm rota (PR 2 e 3), mas já decidem pela ProjectPolicy: vê × gere × de fora.
+     */
+    public function test_comment_attach_archive_and_delete_decide_by_the_project_policy_before_their_routes_exist(): void
+    {
+        $pessoas = [
+            'dev alocado' => $this->dev,
+            'administrador' => $this->quemGereNo('admin'),
+            'gestor responsável' => $this->gestor,
+            'gestor alocado' => $this->quemGereNo('alocado'),
+            'dev de fora' => $this->estranho('dev'),
+            'gestor de fora' => $this->estranho('gestor'),
+            'comercial' => $this->estranho('comercial'),
+        ];
+        $decide = fn (string $ability) => array_map(fn (User $user) => Gate::forUser($user)->allows($ability, $this->todo), $pessoas);
+
+        foreach (['comment', 'attach'] as $ability) {
+            $this->assertSame(array_combine(array_keys($pessoas), [true, true, true, true, false, false, false]), $decide($ability), $ability);
+        }
+        foreach (['archive', 'delete'] as $ability) {
+            $this->assertSame(array_combine(array_keys($pessoas), [false, true, true, true, false, false, false]), $decide($ability), $ability);
+        }
     }
 
     public function test_allocated_developer_creates_moves_reorders_and_tags(): void
@@ -183,29 +238,32 @@ class TaskPolicyTest extends TestCase
     {
         $antes = $this->retrato();
 
-        $this->mover($this->dev, $this->backlog, StageRole::SPRINT)->assertForbidden();
-        $this->mover($this->dev, $this->backlog, StageRole::DEVELOPMENT)->assertForbidden();
-        $this->mover($this->dev, $this->todo, StageRole::QUEUE)->assertForbidden();
+        foreach ([[$this->backlog, StageRole::SPRINT, 'Backlog → To do'], [$this->backlog, StageRole::DEVELOPMENT, 'Backlog → Doing'], [$this->todo, StageRole::QUEUE, 'To do → Backlog']] as [$task, $role, $caso]) {
+            $this->assertOneDenied($this->dev, fn () => $this->mover($this->dev, $task, $role), 'moved', 'task', $task->id, $caso)->assertForbidden();
+        }
 
         $this->assertSame($antes, $this->retrato());
-        $this->assertNegado($this->dev, 'moved');
     }
 
     public function test_developer_does_not_create_support_card_nor_types_nor_areas(): void
     {
         $contato = Contact::factory()->create(['client_id' => $this->project->client_id]);
         $area = $this->project->areas()->create(['name' => 'Financeiro']);
+        $bug = $this->project->taskTypes()->where('label', 'Correção de bug')->value('id');
         $antes = $this->retrato();
+        $dev = $this->dev;
+        $projeto = $this->project->id;
 
-        $this->actingAs($this->dev)->post($this->url('/cards/suporte'), $this->suporte($contato))->assertForbidden();
-        $this->actingAs($this->dev)->post($this->url('/tipos'), ['name' => 'Pesquisa', 'color' => 'pink'])->assertForbidden();
-        $this->actingAs($this->dev)->put($this->url("/tipos/{$this->tipo($this->project, 'improvement')}"), ['name' => 'X', 'color' => null])->assertForbidden();
-        $this->actingAs($this->dev)->post($this->url('/areas'), ['name' => 'Vendas', 'color' => 'red'])->assertForbidden();
-        $this->actingAs($this->dev)->put($this->url("/areas/{$area->id}"), ['name' => 'Fin', 'color' => 'red'])->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/cards/suporte'), $this->suporte($contato)), 'created', 'task', null, 'suporte')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/tipos'), ['name' => 'Pesquisa', 'color' => 'pink']), 'updated', 'project', $projeto, 'tipo novo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->put($this->url("/tipos/{$this->tipo($this->project, 'improvement')}"), ['name' => 'X', 'color' => null]), 'updated', 'project', $projeto, 'editar tipo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url("/tipos/{$bug}/deactivate")), 'updated', 'project', $projeto, 'desativar tipo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url("/tipos/{$bug}/reactivate")), 'updated', 'project', $projeto, 'reativar tipo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->delete($this->url("/tipos/{$bug}")), 'updated', 'project', $projeto, 'excluir tipo')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/areas'), ['name' => 'Vendas', 'color' => 'red']), 'updated', 'project', $projeto, 'área nova')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->put($this->url("/areas/{$area->id}"), ['name' => 'Fin', 'color' => 'red']), 'updated', 'project', $projeto, 'editar área')->assertForbidden();
 
         $this->assertSame($antes, $this->retrato());
-        $this->assertNegado($this->dev, 'created');
-        $this->assertNegado($this->dev, 'updated');
     }
 
     #[DataProvider('quemGere')]

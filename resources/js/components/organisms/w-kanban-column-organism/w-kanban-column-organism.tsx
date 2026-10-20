@@ -40,8 +40,10 @@ export type ColumnCardCallbacks = Pick<
     | 'onChangeType'
     | 'onCreateType'
     | 'onUpdateType'
+    | 'onDeactivateType'
     | 'onCreateArea'
     | 'onUpdateArea'
+    | 'onDeactivateArea'
     | 'onOpen'
 >;
 
