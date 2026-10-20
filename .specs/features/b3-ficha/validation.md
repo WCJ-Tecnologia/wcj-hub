@@ -1,8 +1,116 @@
 # B3 PR 2 (a ficha do card: horas, comentário do autor, exclusões de verdade e as colunas de "quem") Validation
 
-## Validation: FAIL
+## Validation: PASS
 
-**Result**: FAIL na rodada 1 (20/10). Nenhum defeito de comportamento achado; cinco lacunas de teste em FCH-03 e MIG-04.
+**Result**: PASS na rodada 2 (20/10). Os 15 sobreviventes da rodada 1 morrem com os testes do commit `ff9b23e`, os 3 de confirmação seguem mortos, e o gate está verde na árvore real.
+
+O que a rodada 2 acrescenta ao que a rodada 1 já provou: a linha `deleted` do link de PR e do anexo, com o antes; a exclusão e a auditoria num commit só nas quatro exclusões (critério com subitens, PR, comentário, anexo), e o arquivo do anexo só depois do commit; o nome de quem colou, enviou e propôs na ficha, e o nulo das linhas de antes; o `down()` da 000040 com as FKs, a volta e a idempotência; o 404 do PR e do anexo de outro card pelo vínculo, com o arquivo no disco. FCH-01 a FCH-04 e MIG-04 estão ✅ Verified.
+
+Sensor: rodada 1, 48/63 contados (15 sobreviventes); rodada 2, os 15 + 3 de confirmação = 18 aplicados, 18 mortos, 0 sobreviventes. Consolidado: 63/63 contados mortos, 11 equivalentes (os da rodada 1, com a guarda nomeada).
+
+---
+
+## Rodada 2 (20/10)
+
+**Date**: 2026-10-20
+**Spec**: `.specs/features/b3-ficha/spec.md` (FCH-01 a FCH-04, MIG-04), a mesma da rodada 1
+**Diff range**: `bd33e54..ff9b23e` (só testes: `B3FichaTransacaoTest.php` e `MigracaoQuemTest.php` novos; `TaskDetailTest.php` e `TaskDetailPolicyTest.php` com as asserções dos Fix 1, 3 e 5). Código de produção igual ao da rodada 1.
+**Verifier**: sessão separada de quem implementou e de quem aplicou os Fix, sem acesso ao raciocínio delas
+
+### Gate Check (árvore real, HEAD `ff9b23e`, sem edição)
+
+| Comando | Saída |
+|---|---|
+| `composer lint` (`pint --test`) | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test --compact` (MySQL 8, `wcj-hub-mysql-1`, `wcj_hub_test`) | **665 passed (5541 assertions)**, 143,74 s, exit 0 (659 da rodada 1 + os 5 do `B3FichaTransacaoTest` + 1 do `MigracaoQuemTest`; nenhum pulado) |
+| `npm run typecheck` (`tsc --noEmit`) | exit 0 |
+| `npm run lint` (`eslint .`) | exit 0 |
+| `npm run specs:check` (antes deste relatório) | 1 problema, só o FAIL da rodada 1 do `b3-ficha` (esperado); as outras 4 features ok |
+| Base do sensor | `B3FichaTransacaoTest` + `MigracaoQuemTest` + `TaskDetailPolicyTest` + `TaskDetailTest`: 30 passed (380 assertions), antes e de novo depois dos 18 mutantes |
+
+### Os critérios que estavam em lacuna
+
+| Critério | Evidência (`arquivo:linha` + asserção) | Saída |
+|---|---|---|
+| FCH-03 AC 5, linha `deleted` do PR | `TaskDetailTest.php:321-322`: `sole()` de `task_pull_request`/`deleted`/`success` e `assertSame([$pr->id, $url, $this->dev->id], [auditable_id, changes['url'][0], user_id])` (e6b morto em `:321`) | PASS |
+| FCH-03 AC 5, linha `deleted` do anexo | `TaskDetailTest.php:222-223`: `sole()` de `task_attachment` com `original_name`, `path` e quem (e6d morto em `:222`) | PASS |
+| FCH-03 AC 5, "na mesma transação" (as quatro) | `B3FichaTransacaoTest.php` (`DatabaseTruncation` + `UsaBancoDeVerdade`, `transactionLevel()` = 0 no início, `AuditService` que lança no `log`): critério e subitem continuam `:93`; PR `:104`; comentário `:115`; anexo, linha `:129` e arquivo no disco `:130` (e7a a e7d mortos nessas linhas) | PASS |
+| FCH-03 AC 1, arquivo só depois do commit | `B3FichaTransacaoTest.php:134-150`: dentro de uma transação de fora, a linha já saiu `:144` e o arquivo ainda existe `:145`; depois do commit, `assertMissing` `:148` e uma linha `deleted` `:149` (e4 morto em `:145`; e4b em `:130`) | PASS |
+| MIG-04 AC 2, a ficha mostra quem | `TaskDetailTest.php:89-93`: `pull_requests.0.added_by.name`, `attachments.0.uploaded_by.name` e `proposed_by.name` = `'Bruno Dev'`; `pull_requests.1.added_by` e `attachments.1.uploaded_by` nulos (linhas sem `user_id`) (k1 morto em `:89`, k2 em `:91`, k3 em `:93`) | PASS |
+| MIG-04, `down()` da 000040 | `MigracaoQuemTest.php:48-72`: com PR, anexo e proposta preenchidos, `down()` tira as 4 colunas e as 4 FKs (`:59-60`, o link continua `:62`), `up()` duas vezes devolve colunas e FKs (`:68-69`) e o nulo nas linhas de antes (`:71`). O h1 morre com `SQLSTATE[HY000]: General error: 1828 Cannot drop column 'user_id': needed in a foreign key constraint 'task_pull_requests_user_id_foreign'`; o `tearDown` repõe o schema se precisar | PASS |
+| Filho de outro card, PR e anexo | `TaskDetailPolicyTest.php:185-204`: `tasks/b.pdf` gravado no disco antes; baixar anexo `:196`, excluir anexo `:197`, excluir PR `:198` dão 404; anexo, arquivo e PR do outro card continuam `:201-203` (d10e morto em `:196` com 200, d10d em `:197` com 302, d10c em `:198` com 302) | PASS |
+
+Os demais critérios (FCH-01, FCH-02, FCH-03 AC 1 a 4 e 6, FCH-04, MIG-04 AC 1, edge cases) seguem como na rodada 1: o código de produção não mudou e a base do sensor passou. As linhas citadas na rodada 1 para o `TaskDetailTest.php` andaram com as asserções novas (+13 depois de `:76`, +16 depois de `:207`, +19 depois de `:303`); a rastreabilidade abaixo já usa as linhas de agora.
+
+### Discrimination Sensor
+
+**Método.** O mesmo da rodada 1, pelo script `/tmp/b3-ficha-sensor-r2/run2.py` (cópia do `run.py` da rodada 1 com os mesmos trechos de troca; resultados em `results.json`, saída em `out-<id>.txt`): para cada mutante, confere o arquivo limpo, aplica a troca exata (falha se o trecho não for único), roda `php artisan test --compact --stop-on-failure <testes>`, reverte com `git checkout -- <arquivo>` e confere limpo de novo. Sem `git reset` nem `stash`. `git status --porcelain` saiu vazio no fim.
+
+Conjuntos: **TRANS** = `B3FichaTransacaoTest`; **MIGQ** = `MigracaoQuemTest`; **POL** = `TaskDetailPolicyTest`; **DET** = `TaskDetailTest`.
+
+| # | Mutante | Testes | Saída | Quem matou |
+|---|---|---|---|---|
+| e6b | `TaskPullRequestService::remove` sem a auditoria `deleted` | POL+DET | morto | `TaskDetailTest.php:321` (`sole()`, `ModelNotFoundException`) |
+| e6d | `AttachmentService::remove` sem a auditoria `deleted` | POL+DET | morto | `TaskDetailTest.php:222` (`sole()`) |
+| e7a | critério: auditoria em `DB::afterCommit` | TRANS | morto | `B3FichaTransacaoTest.php:93` (0 em vez de 2) |
+| e7b | PR, idem | TRANS | morto | `:104` |
+| e7c | comentário, idem | TRANS | morto | `:115` (nulo em vez de `'Meu'`) |
+| e7d | anexo, idem | TRANS | morto | `:129` |
+| e4 | anexo: arquivo apagado antes do commit (sem `afterCommit`) | TRANS | morto | `:145` (o arquivo sumiu dentro da transação) |
+| e4b | anexo: arquivo apagado antes da linha | TRANS | morto | `:130` (o arquivo sumiu e a auditoria desfez a linha) |
+| k1 | ficha: `added_by` sempre nulo | DET | morto | `TaskDetailTest.php:89` |
+| k2 | ficha: `uploaded_by` sempre nulo | DET | morto | `:91` |
+| k3 | ficha: `proposed_by` sempre nulo | DET | morto | `:93` |
+| h1 | 000040: `down()` sem `dropForeign` | MIGQ | morto | `MigracaoQuemTest.php` no `down()` (erro 1828) |
+| d10c | `destroyPullRequest` com `withoutScopedBindings()` e sem `belongsToCard` | POL+DET | morto | `TaskDetailPolicyTest.php:198` (302 em vez de 404) |
+| d10d | `destroyAttachment`, idem | POL+DET | morto | `:197` (302) |
+| d10e | `downloadAttachment`, idem | POL+DET | morto | `:196` (200) |
+| a1 | [confirma] `TaskPolicy::proposeHours` → `true` | POL+DET | morto | `TaskDetailPolicyTest.php:97` (`assertOneDenied`, "propor horas") |
+| b1 | [confirma] `TaskCommentPolicy::ownsAndSees` → `true` | POL+DET | morto | `:97` (`assertOneDenied`) |
+| c11 | [confirma] `destroyPullRequest` sem `authorize('update')` | POL | morto | `:97` (`assertOneDenied`, "excluir PR") |
+
+**Total da rodada 2**: 18 aplicados (15 sobreviventes da rodada 1 + 3 de confirmação), 18 mortos, 0 sobreviventes, 0 equivalentes novos.
+**Consolidado**: 74 mutantes nas duas rodadas; 11 equivalentes; 63/63 contados mortos.
+**Sensor depth**: P0, manual.
+
+### Code Quality (só o diff da rodada 2)
+
+| Princípio | Status |
+|---|---|
+| Every test maps to a spec requirement | ✅ Cada teste novo cita o requisito e o Fix no comentário (`B3FichaTransacaoTest` FCH-03 AC 5; `MigracaoQuemTest` MIG-04; as asserções novas do `TaskDetailTest` e do `TaskDetailPolicyTest`) |
+| Matches patterns | ✅ `DatabaseTruncation` + `UsaBancoDeVerdade` + `limparOQueFicou()` no molde do `B3TransacaoTest` (L-017); a migração carregada por `require` como no `MigracaoCardDoQuadroTest` |
+| Surgical changes | ✅ Só testes; nenhum código de produção tocado |
+
+⚠️ Nota que não bloqueia, mantida da rodada 1: `TaskPullRequestService::remove` apaga o `$pr` recebido sem relê-lo com `lockForUpdate`; sem corrida prática com o card travado antes.
+
+### Requirement Traceability Update
+
+| Requirement ID | Status | Teste |
+|---|---|---|
+| FCH-01 | ✅ Verified | `TaskDetailPolicyTest.php:141-160`; `TaskDetailTest.php:195-201`, `:228-243`; `DueDateTest.php:160`, `:182` |
+| FCH-02 | ✅ Verified | `TaskDetailPolicyTest.php:162-183`; `TaskDetailTest.php:325-338` |
+| FCH-03 | ✅ Verified (rodada 2) | `TaskDetailTest.php:203-224`, `:247-305`, `:308-338`; `TaskDetailPolicyTest.php:107-139`, `:185-204`; `B3FichaTransacaoTest.php:84-150` |
+| FCH-04 | ✅ Verified | `TaskDetailPolicyTest.php:90-104` (`assertOneDenied`), usado em `:120-135`, `:146-148`, `:157`, `:166-167`, `:179-180` |
+| MIG-04 | ✅ Verified (rodada 2) | `TaskDetailTest.php:89-93`, `:233`, `:238`, `:317`, `:360`; `MigracaoQuemTest.php:48-72` |
+
+### Summary
+
+**Overall**: ✅ Ready. Os cinco Fix Plans da rodada 1 fecharam as lacunas; nada de código de produção mudou.
+
+**Spec-anchored check**: 5 de 5 requisitos verificados.
+**Sensor**: rodada 2, 18/18 mortos; consolidado, 63/63 contados mortos, 11 equivalentes.
+**Gate**: 665 passed (5541 assertions); Pint, typecheck e lint verdes.
+
+**Lições** (`lessons.py`): nenhuma nova. As candidatas da rodada 1 (L-024 a L-027) e a L-017 foram as que guiaram os Fix e se mostraram certas.
+
+**Next steps**:
+1. O PR WCJ-Tecnologia/wcj-hub#18 recebe os commits locais quando o Lucas Scholz mandar subir (push em lote).
+
+---
+
+## Rodada 1 (20/10)
+
+**Veredito da rodada 1**: FAIL na rodada 1 (20/10). Nenhum defeito de comportamento achado; cinco lacunas de teste em FCH-03 e MIG-04.
 
 O que está provado: as duas Policies (horas e comentário), o `authorize()` de cada uma das 14 rotas da ficha (15 pernas), a negação com ação e alvo exatos, o "só A testar" do critério e o cascade dos subitens, o arquivo do anexo que sai, as regras de card pai, tarefa de origem e capa, a perna `manageSprint` do PATCH, o aviso a quem se define e o benchmark da ficha. FCH-01, FCH-02 e FCH-04 estão ✅ Verified.
 
@@ -14,10 +122,6 @@ As lacunas, todas só de teste (o código fez a coisa certa em toda checagem man
 - **Filho de outro card, PR e anexo** (sonda de 2ª ordem): sem o scoped binding e sem o `belongsToCard`, excluir PR, excluir anexo e baixar anexo de outro card passam sem teste que os pegue (d10c, d10d, d10e). O caso "baixar anexo de outro card" que existe dá 404 pelo motivo errado (o arquivo não está no disco).
 
 Sensor: 66 mutantes pedidos + 8 de confirmação = 74; 48 mortos, 11 equivalentes, 15 sobreviventes (48/63 contados).
-
----
-
-## Rodada 1 (20/10)
 
 **Date**: 2026-10-20
 **Spec**: `.specs/features/b3-ficha/spec.md` (FCH-01 a FCH-04, MIG-04), aprovada por Lucas Scholz em 20/10/2026, com todas as premissas confirmadas

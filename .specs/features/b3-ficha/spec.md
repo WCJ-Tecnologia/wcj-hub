@@ -101,13 +101,13 @@ A ficha do kit (PR #12) chama 20 rotas novas. Três grupos delas não são decis
 
 | Requirement ID | Story | Phase | Status | Teste |
 |---|---|---|---|---|
-| FCH-01 | Horas: propor, definir, decidir | Execute | ✅ Verified | `TaskDetailPolicyTest.php:141-160`; `TaskDetailTest.php:182-188`, `:212-227`; `DueDateTest.php:160`, `:182` (a data refeita ao aprovar) |
-| FCH-02 | Comentário só do autor | Execute | ✅ Verified | `TaskDetailPolicyTest.php:162-183`; `TaskDetailTest.php:306-319` |
-| FCH-03 | Exclusões de verdade (anexo, critério, PR, comentário) | Execute | ❌ Needs Fix: AC 1–4 e 6 PASS; AC 5 sem a linha `deleted` do PR e do anexo e sem prova da transação (Fix 1, Fix 2 do `validation.md`); filho de outro card no PR e no anexo (Fix 5) | `TaskDetailTest.php:190-208`, `:231-288`, `:292-319`; `TaskDetailPolicyTest.php:106-139`, `:185-196` |
+| FCH-01 | Horas: propor, definir, decidir | Execute | ✅ Verified | `TaskDetailPolicyTest.php:141-160`; `TaskDetailTest.php:195-201`, `:228-243`; `DueDateTest.php:160`, `:182` (a data refeita ao aprovar) |
+| FCH-02 | Comentário só do autor | Execute | ✅ Verified | `TaskDetailPolicyTest.php:162-183`; `TaskDetailTest.php:325-338` |
+| FCH-03 | Exclusões de verdade (anexo, critério, PR, comentário) | Execute | ✅ Verified (Verifier rodada 2) | `TaskDetailTest.php:203-224`, `:247-305`, `:308-338`; `TaskDetailPolicyTest.php:107-139`, `:185-204`; `B3FichaTransacaoTest.php:84-150` (a exclusão e a auditoria num commit só, o arquivo depois do commit) |
 | FCH-04 | Negação auditada com a ação certa | Execute | ✅ Verified | `TaskDetailPolicyTest.php:90-104` (`assertOneDenied`: uma linha, ação, `auditable_type`, `auditable_id`, `user_id`), usado em `:120-135`, `:146-148`, `:157`, `:166-167`, `:179-180`; `tests/Unit/AuditActionEnumTest.php:60` |
-| MIG-04 | As 4 colunas de "quem" | Execute | ❌ Needs Fix: AC 1 PASS; AC 2 sem asserção na ficha (Fix 3); `down()` da 000040 sem teste (Fix 4) | `TaskDetailTest.php:217`, `:222`, `:301`, `:341` |
+| MIG-04 | As 4 colunas de "quem" | Execute | ✅ Verified (Verifier rodada 2) | `TaskDetailTest.php:89-93` (o nome na ficha e o nulo das linhas de antes), `:233`, `:238`, `:317`, `:360`; `MigracaoQuemTest.php:48-72` (`down()` com as FKs, `up()` de novo, idempotente) |
 
-**Coverage:** 5 total, 5 mapped to tests, 0 unmapped; 3 verified, 2 needs fix (Verifier rodada 1, 20/10, `validation.md`). Sensor: 48/63 mortos, 11 equivalentes, 15 sobreviventes; os 5 Fix Plans são só de teste.
+**Coverage:** 5 total, 5 mapped to tests, 0 unmapped; 5 verified (Verifier rodada 2, 20/10, `validation.md`: PASS). Sensor: rodada 1, 48/63 mortos e 15 sobreviventes; rodada 2, os 15 + 3 de confirmação, 18/18 mortos; consolidado 63/63 contados, 11 equivalentes.
 
 ## Success Criteria
 
