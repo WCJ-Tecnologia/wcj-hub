@@ -1,8 +1,174 @@
 # B3 PR 3 (arquivar, desarquivar, excluir o card nunca usado e o sino de avisos) Validation
 
-## Validation: FAIL
+## Validation: PASS
 
-**Result**: FAIL na rodada 1 (20/10). Nenhum defeito no código de produção: em toda checagem, inclusive nas três sondas de banco de verdade (seção "Sondas"), o código fez o que a spec pede. O que falta é teste. Cinco mutantes não equivalentes sobrevivem, e dois critérios do P1 ficam sem prova completa.
+**Result**: PASS na rodada 2 (20/10). Os 5 sobreviventes da rodada 1 (d1, d6, d7, d8, w5) morrem com os testes do commit `7bfd010`, os 3 de confirmação seguem mortos, e o gate está verde na árvore real. A correção é só de teste: no código de produção, o diff `46cdea2..7bfd010` muda só o docblock de `TaskPolicy::delete`.
+
+O que a rodada 2 acrescenta ao que a rodada 1 já provou:
+- a linha do card travada da checagem ao delete, no banco de verdade: o comentário de outra requisição espera (1205) e não entra;
+- o card, o que sai junto, o link do aviso e a linha `deleted` num commit só;
+- o `TaskReturned` do card excluído também sem link, com o texto igual (`assertSame`);
+- o "10" do sino afirmado literal.
+
+EXC-01, EXC-02, AVI-01 e ARQ-01 estão ✅ Verified.
+
+Sensor: rodada 1, 50/55 contados (5 sobreviventes); rodada 2, os 5 + 3 de confirmação = 8 aplicados, 8 mortos, 0 sobreviventes. Consolidado: 55/55 contados mortos, 2 equivalentes (a6, b2, os da rodada 1, com a guarda nomeada).
+
+Fica para o humano, e não é Fix: a spec segue **sem aprovação do Lucas Scholz**, com a open question aberta. Por isso o `specs:check` continua vermelho (seção "Gate Check").
+
+---
+
+## Rodada 2 (20/10)
+
+**Date**: 2026-10-20
+**Spec**: `.specs/features/b3-arquivar-e-avisos/spec.md` (EXC-01, EXC-02, AVI-01, ARQ-01), a mesma da rodada 1. **Approved by: aguardando Lucas Scholz.**
+**Diff range**: `46cdea2..7bfd010` (1 commit, `test(projetos): os 4 Fix do Verifier do B3 PR 3 (rodada 1)`). Seis arquivos:
+- `tests/Feature/Projetos/B3ArquivarTransacaoTest.php`, novo, com 3 testes: Fix 1 e Fix 2;
+- `TaskArchiveTest.php`: Fix 3;
+- `NotificationsTest.php`: Fix 4;
+- `TaskUsageQueryTest.php`: só o nome de um teste (achado da rodada 1);
+- `AGENTS.md`: a exceção do desarquivar no "Um jeito só" (achado da rodada 1);
+- `app/Domains/Projetos/Policies/TaskPolicy.php`: só o docblock do `delete` (achado da rodada 1). O `git diff 46cdea2..7bfd010 -- app` tem uma linha `-` e uma `+`, as duas no comentário `/** Exclusão de verdade: … */`. Nenhum outro arquivo de `app/`, `resources/`, `routes/`, `database/`, `config/` ou `bootstrap/` mudou.
+
+**Verifier**: sessão separada de quem implementou e de quem aplicou os Fix, sem acesso ao raciocínio delas; julgado só pelo repositório.
+
+### Gate Check (árvore real, HEAD `7bfd010`, sem edição)
+
+| Comando | Saída |
+|---|---|
+| `./vendor/bin/pint --test` | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `php artisan test --compact` (MySQL 8, `wcj-hub-mysql-1`, `wcj_hub_test`) | **705 passed (5783 assertions)**, 150,99 s, exit 0, nenhum pulado. Os 702 da rodada 1 mais os 3 do `B3ArquivarTransacaoTest`; os outros arquivos mudaram asserções, não a contagem |
+| `npm run typecheck` (`tsc --noEmit`) | exit 0 |
+| `npm run lint` (`eslint .`) | exit 0 |
+| `npm run specs:check` (antes deste relatório) | `conferir-specs: 6 feature(s), 15 problema(s)`, exit 1, como a rodada 1 previu: 1) `validate_state.py`: "validation.md verdict is FAIL" (o da rodada 1); 2) `spec.md` sem `**Approved by**: <nome>, <AAAA-MM-DD>`; 3) 13 premissas sem `y` em *Confirmed?* (L38 a L51, menos a L42); mais o aviso "open questions do not read as resolved". As outras 5 features ok |
+| `npm run specs:check` (depois deste relatório) | 14 problemas, só a aprovação da spec (ver "Depois do relatório", no fim desta rodada) |
+| Base do sensor | `B3ArquivarTransacaoTest` + `TaskArchiveTest` + `TaskArchivePolicyTest` + `NotificationsTest`: 38 passed (229 assertions), antes dos mutantes |
+
+Não rodei Playwright nem Storybook, por instrução.
+
+### Cada Fix Plan da rodada 1 e o teste que o cumpre
+
+| Fix | O que a rodada 1 pediu | Evidência (`arquivo:linha` + asserção) | Prova de verdade? |
+|---|---|---|---|
+| **Fix 1**: trava da linha do card (d1) | Banco de verdade, no molde da s1. O gatilho é a consulta do `isUnused`. O comentário é gravado com o card **relido na outra conexão**. Afirmar `rodou`, `outroErro === null`, `bloqueada` (1205), o card excluído, e nenhum comentário nem auditoria `created` de comentário | `B3ArquivarTransacaoTest.php:104-123`, com `DatabaseTruncation` + `UsaBancoDeVerdade` (`:38`) e o `limparOQueFicou()` no `tearDown` (`:68`). Gatilho `str_contains($consulta->sql, 'movements_count')` (`:110`). A outra requisição faz `TaskCommentService::add(Task::query()->findOrFail($taskId), User::query()->findOrFail($devId), …)` (`:112`): relê o card e o usuário pelo id dentro do closure, que o `Concorrencia` roda com a conexão padrão trocada (`Concorrencia.php:87`). As asserções: `:117` `assertTrue($corrida->rodou)`, `:118` `assertNull($corrida->outroErro)`, `:119` `assertTrue($corrida->bloqueada)`, `:120` `assertNull(Task::find)`, `:121` 0 em `task_comments`, `:122` 0 auditorias `task_comment` | **Sim.** A sonda `SondaFix1Test.php` (abaixo) mostra no código real: o gatilho casa uma vez só, com a consulta do `withCount('movements')`/`withExists` do `isUnused`, dentro da transação (`transactionLevel` 1); o card relido está na conexão `wcj_outra_requisicao`; `codigo=1205`. O d1 morre em `:119`. Detalhe que não bloqueia: o teste afirma `bloqueada`, que aceita 1205, 1213 e 3572 (`Concorrencia.php:26`), e não o código 1205. O próprio helper explica que o deadlock não se forma nesse arranjo (`:66-69`) |
+| **Fix 2**: "na mesma transação" (d6, d7) | Com `DatabaseTruncation`, sem `RefreshDatabase`, e `transactionLevel()` 0 no início: um `AuditService` que lança no `log`; o card, os critérios, as participações, o movimento de criação e o `url` do aviso continuam. Dentro de uma transação de fora, o `url` já nulo antes do commit | Auditoria que falha: `B3ArquivarTransacaoTest.php:126-140`. `:128` `assertSame(0, DB::transactionLevel())`; `:129` o `TaskArchiveService` montado com o `failingAudit()` (`:72-81`); `:131` a falha é a da auditoria; `:133` o card continua; `:134-138` `[1, 1, 1]` de critério, participação e movimento de criação (montados no `setUp`, `:58-63`); `:139` `assertSame($this->task->url(), noticeUrl())`. Transação de fora: `:143-154`, com `:148` card fora, `:149` `assertNull(noticeUrl())` e `:150` uma linha `deleted` antes do commit, e `:153` o nulo depois | **Sim.** O d6 morre em `:133` (o card saiu antes da auditoria) e o d7 em `:149` (`'http://localhost/projetos/1/cards/…-1' is null`) |
+| **Fix 3**: `TaskReturned` e o mesmo texto (d8) | Um `TaskReturned` do card excluído e um de outro card: `url` nula no primeiro, link no segundo. `assertSame` com o `text` gravado antes, nos dois tipos | `TaskArchiveTest.php:279-297`: `TaskAssigned` + `TaskReturned` para cada um dos dois cards (`:284-287`); o retrato `[tipo, key, text, url]` de todos os avisos antes da exclusão (`:288-289`); `:295` `assertSame($esperado, $avisos())`, em que `$esperado` é o retrato de antes com só a `url` do SGM-1 nula (`:294`); `:296` garante que o esperado tem exatamente um `TaskAssigned` e um `TaskReturned` sem link | **Sim.** Texto, tipo e chave comparados por `assertSame` com o gravado antes, nos dois tipos e nos dois cards. O d8 morre em `:295`: o `TaskReturned` do SGM-1 fica com `'http://localhost/projetos/22/cards/SGM-1'`. O `:296` é guarda da montagem, porque roda sobre o `$esperado`; quem prova o resultado é o `:295` |
+| **Fix 4**: o sino mostra 10 (w5) | `assertCount(10, …)`, com o número da spec, e `Aviso 2` fora da lista | `NotificationsTest.php:79` `assertCount(10, $sino['items'])`; `:81` `assertNotContains('Aviso 2', …)`; `:80` primeiro `Aviso 12` e décimo `Aviso 3`. O `use NotificationPresenter` saiu do arquivo | **Sim.** O w5 morre em `:79` ("actual size 11 matches expected size 10") |
+
+Os achados da rodada 1 que não bloqueavam também foram atendidos:
+- o teste do cascade agora se chama `test_what_goes_along_is_cascade` (`TaskUsageQueryTest.php:36`);
+- o docblock de `TaskPolicy::delete` cita o `TaskArchiveService` e o `TaskUsageQuery` (`TaskPolicy.php:98`);
+- o "Um jeito só" do `AGENTS.md` nomeia o desarquivar como a outra porta que muda etapa e posição.
+
+### Os critérios que estavam em lacuna
+
+| Critério | Evidência (`arquivo:linha` + asserção) | Saída |
+|---|---|---|
+| EXC-01, Goal "conferido com a linha travada" | `B3ArquivarTransacaoTest.php:117-122` (Fix 1) | PASS (d1 morto em `:119`) |
+| EXC-01 AC 1, "na mesma transação" | `B3ArquivarTransacaoTest.php:128-139` (a auditoria falha e nada sai); `:150` a linha `deleted` dentro da transação de fora | PASS (d6 morto em `:133`) |
+| EXC-02 AC 1, `TaskAssigned` **e** `TaskReturned`, `url` nula, **mesmo texto** | `TaskArchiveTest.php:295` (`assertSame` do retrato inteiro) | PASS (d8 morto em `:295`) |
+| EXC-02 AC 1, "na mesma transação" | `B3ArquivarTransacaoTest.php:139` (o link fica se a auditoria falha); `:149` (o link sai antes do commit de fora) | PASS (d7 morto em `:149`) |
+| Premissa "O sino": os 10 mais recentes | `NotificationsTest.php:79`, `:81` | PASS (w5 morto em `:79`) |
+
+Os demais critérios seguem como na rodada 1, porque o código de produção não mudou e a base do sensor passou: EXC-01 AC 2 a 7, EXC-02 AC 2, AVI-01 AC 1 a 4, ARQ-01 AC 1 a 6 e os edge cases.
+
+As linhas da rodada 1 andaram com o diff:
+- `TaskArchiveTest.php`: +2 depois de `:13` (os `use` de `ValidationType` e `TaskReturned`) e +7 depois de `:290`;
+- `NotificationsTest.php`: −1 depois de `:6`, porque saiu o `use NotificationPresenter`; +1 em `:77` e +1 em `:81`.
+
+Exemplos: o EXC-01 AC 2 está agora em `TaskArchiveTest.php:262` (era `:260`); a ordem da lista de arquivados, em `:311` (era `:304`); o 404 do aviso da Bia, em `NotificationsTest.php:99` (era `:98`). `TaskArchivePolicyTest.php`, `TaskUsageQueryTest.php` (fora o nome em `:36`) e `BoardTest.php` não mudaram de linha. A rastreabilidade abaixo já usa as linhas de agora.
+
+### Discrimination Sensor
+
+**Método.** O mesmo da rodada 1, pelo script `/tmp/verifier-b3-pr3-r2/run2.py`. É cópia do `run.py` da rodada 1 com os mesmos trechos de troca; os resultados ficam em `results.json`, a saída em `out-<id>.txt` e o log em `run-log.txt`. Para cada mutante, o script:
+1. confere o arquivo limpo;
+2. aplica a troca exata (falha se o trecho não for único; os 8 apareciam uma vez só);
+3. roda `php -l` e `php artisan test --compact --stop-on-failure <testes>`;
+4. reverte com `git checkout -- <arquivo>` e confere limpo de novo.
+
+Não usei `git reset` nem `stash`. `git status --porcelain` estava vazio antes (`baseline-porcelain.txt`) e saiu vazio no fim (`porcelain final: ''`).
+
+Conjuntos: **TRANS** = `B3ArquivarTransacaoTest`; **ARCH** = `TaskArchiveTest`; **POL** = `TaskArchivePolicyTest`; **NOT** = `NotificationsTest`. O TRANS vai primeiro nos mutantes de trava e transação, para o crédito ir ao teste do Fix.
+
+| # | Mutante (o mesmo trecho da rodada 1) | `arquivo:linha` | Testes | Saída | Quem matou |
+|---|---|---|---|---|---|
+| d1 | `delete` sem `lockForUpdate` da linha do card | `TaskArchiveService.php:97` | TRANS+ARCH+POL | morto | `B3ArquivarTransacaoTest.php:119` ("o comentário esperou a linha do card": `false is true`) |
+| d6 | auditoria `deleted` em `DB::afterCommit` | `TaskArchiveService.php:116` | TRANS+ARCH+POL | morto | `B3ArquivarTransacaoTest.php:133` ("o card continua": `null is not null`) |
+| d7 | update dos avisos em `DB::afterCommit` | `TaskArchiveService.php:110-113` | TRANS+ARCH | morto | `B3ArquivarTransacaoTest.php:149` ("o link já saiu na mesma transação") |
+| d8 | `whereIn` sem `TaskReturned` | `TaskArchiveService.php:111` | ARCH+TRANS | morto | `TaskArchiveTest.php:295` (o `TaskReturned` do SGM-1 com o link) |
+| w5 | `LIMIT` 10 → 11 | `NotificationPresenter.php:17` | NOT | morto | `NotificationsTest.php:79` (11 em vez de 10) |
+| d2 | [confirma] `delete` sem a checagem de uso | `TaskArchiveService.php:99` | ARCH+POL+TRANS | morto | `TaskArchiveTest.php:262` (`null` em vez de "SGM-1 já foi usado: arquive em vez de excluir.", 1º caso do provider) |
+| w1 | [confirma] `read` em `DatabaseNotification::query()` (sem o escopo da pessoa) | `NotificationController.php:18` | NOT | morto | `NotificationsTest.php:99` (302 em vez de 404) |
+| z3 | [confirma] `destroy` sem `authorize('delete')` | `TaskController.php:103` | POL | morto | `TaskArchivePolicyTest.php:78` ("excluir": `success` em vez de `denied`) |
+
+**Total da rodada 2**: 8 aplicados (5 sobreviventes da rodada 1 + 3 de confirmação), 8 mortos, 0 sobreviventes, 0 equivalentes novos.
+**Consolidado**: 57 mutantes nas duas rodadas; 2 equivalentes (a6, b2); 55/55 contados mortos.
+**Sensor depth**: P0, manual.
+
+### Sonda (rascunho em `/tmp/verifier-b3-pr3-r2/`, fora do repositório)
+
+`SondaFix1Test.php` é o cenário do Fix 1 com impressão do que o teste do repositório não afirma. Rodou com `php artisan test --compact /tmp/verifier-b3-pr3-r2/SondaFix1Test.php` contra o código real (1 passed). O que imprimiu:
+- `sql=select tasks.*, (select count(*) from task_stage_movements …) as movements_count, exists(… time_entries …), … exists(… parent_task_id …) as children_exists from tasks where tasks.id = ? limit 1`;
+- `level=1`, `matches=1`: a consulta do `isUnused`, dentro da transação do `delete`, depois do `lockForUpdate`, e só ela casa com o gatilho;
+- `conn='wcj_outra_requisicao'`;
+- `rodou=true bloqueada=true codigo=1205 outroErro=NULL card_existe=false comentarios=0 audit_task_comment=0`.
+
+### Code Quality (só o diff da rodada 2)
+
+| Princípio | Status |
+|---|---|
+| Surgical changes | ✅ Só testes, mais os três achados de texto da rodada 1 (nome de teste, docblock da Policy, uma linha do `AGENTS.md`). Nenhuma linha executável de produção |
+| Matches patterns | ✅ `DatabaseTruncation` + `UsaBancoDeVerdade` + `exigirBancoDeVerdade()` antes do `parent::setUp()` + `limparOQueFicou()` no `tearDown`, no molde do `B3FichaTransacaoTest` (L-017). `Concorrencia::intercalarDepoisDe` com as três conferências que o helper pede (`Concorrencia.php:63-64`) |
+| Every test maps to a spec requirement | ✅ O docblock do `B3ArquivarTransacaoTest` cita a spec, o Fix 1 e o Fix 2 e a L-017; cada teste cita o seu Fix; as asserções novas do `TaskArchiveTest` e do `NotificationsTest` têm comentário com o porquê |
+| Spec-anchored outcome check | ✅ O 10 literal; o texto por `assertSame`; o card na outra conexão |
+
+Notas que não bloqueiam:
+- O Fix 1 afirma `bloqueada` e não `codigo === 1205` (ver a tabela dos Fix). A sonda mostra 1205.
+- Seguem sem teste, como na rodada 1, as duas premissas que não são AC: "card excluído com o projeto encerrado: pode" e "desarquivar vale para o card de suporte".
+
+### Depois do relatório
+
+`npm run specs:check` depois de gravar esta rodada: `conferir-specs: 6 feature(s), 14 problema(s)`, exit 1.
+- O `[b3-arquivar-e-avisos] validate_state.py` passou a `ok`: o veredito PASS foi lido, com citação `arquivo:linha`.
+- Os 14 que sobram são só a aprovação: o `spec.md` sem `**Approved by**: <nome>, <AAAA-MM-DD>` e as 13 premissas sem `y` em *Confirmed?*, além do aviso da open question.
+- As outras 5 features seguem ok.
+
+O `specs:check` fica vermelho até o Lucas Scholz aprovar a spec. Isso é decisão humana, não Fix.
+
+### Requirement Traceability Update
+
+| Requirement ID | Status | Teste |
+|---|---|---|
+| EXC-01 | ✅ Verified (rodada 2) | `TaskArchiveTest.php:195-275`; `TaskArchivePolicyTest.php:71-120`; `TaskUsageQueryTest.php:33`, `:48`; `B3ArquivarTransacaoTest.php:104-140`, `:150` |
+| EXC-02 | ✅ Verified (rodada 2) | `TaskArchiveTest.php:279-297`; `B3ArquivarTransacaoTest.php:126-154` |
+| AVI-01 | ✅ Verified (o "10" do sino literal desde a rodada 2) | `NotificationsTest.php:51-127` |
+| ARQ-01 | ✅ Verified | `TaskArchiveTest.php:78-191`, `:301-319`; `TaskArchivePolicyTest.php:98-104`; `BoardTest.php:141-142` |
+
+O `spec.md` não foi editado: o Verifier só reporta. A coluna *Status* da tabela de rastreabilidade dele ainda diz "Implementing".
+
+### Summary
+
+**Overall**: ✅ Ready, do lado do Verifier. Os quatro Fix Plans da rodada 1 fecharam as lacunas, e nada de código de produção mudou.
+
+**Spec-anchored check**: 4 de 4 requisitos verificados.
+**Sensor**: rodada 2, 8/8 mortos; consolidado, 55/55 contados mortos, 2 equivalentes.
+**Gate**: 705 passed (5783 assertions), e de novo 705 passed (116,86 s, exit 0) depois do sensor, da sonda e da gravação deste relatório; Pint, typecheck e lint verdes. O `specs:check` fica vermelho só pela aprovação da spec (ver "Depois do relatório").
+
+**Lições** (`lessons.py`): não gravei, porque a instrução desta rodada era deixar só este arquivo modificado na árvore. As candidatas da rodada 1 se mostraram certas, e o Fix 1 aplicou a da conexão. Quem conduzir o fechamento pode gravar:
+- a L-017 de novo;
+- "relê o model na outra conexão";
+- "o número da spec se afirma literal";
+- "dois tipos nomeados pedem um caso de cada".
+
+**Next steps**:
+1. Lucas Scholz aprova a spec (`**Approved by**: <nome>, <AAAA-MM-DD>` e o `y` nas 13 premissas) e responde à open question. Se a resposta for "os avisos saem junto", o EXC-02 muda e o d9 deixa de ser mutante.
+2. Depois da aprovação, o PR do B3 PR 3.
+
+---
+
+## Rodada 1 (20/10)
+
+**Veredito da rodada 1**: FAIL na rodada 1 (20/10). Nenhum defeito no código de produção: em toda checagem, inclusive nas três sondas de banco de verdade (seção "Sondas"), o código fez o que a spec pede. O que falta é teste. Cinco mutantes não equivalentes sobrevivem, e dois critérios do P1 ficam sem prova completa.
 
 O que está provado:
 - as nove condições do "nunca usado", uma por uma;
@@ -242,6 +408,8 @@ Todos só de teste. Nenhum código de produção precisa mudar.
 - Duas premissas sem teste, que não são AC: "card excluído com o projeto encerrado: pode" e "desarquivar vale para o card de suporte". O código as cumpre: não confere encerramento e não distingue o tipo.
 
 ### Requirement Traceability Update
+
+Substituída pela tabela da rodada 2, acima; fica aqui como estava na rodada 1.
 
 | Requirement ID | Status | Teste |
 |---|---|---|

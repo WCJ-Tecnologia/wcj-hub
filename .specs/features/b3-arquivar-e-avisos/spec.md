@@ -101,16 +101,16 @@ O kit da ficha (PR #12) já tem os botões *Arquivar*, *Desarquivar* e *Excluir*
 
 | Requirement ID | Story | Phase | Status | Teste |
 |---|---|---|---|---|
-| EXC-01 | Só o card nunca usado se exclui | Execute | Implementing | `TaskArchiveTest`, `TaskArchivePolicyTest`, `TaskUsageQueryTest` |
-| EXC-02 | Os avisos do card excluído ficam sem link | Execute | Implementing | `TaskArchiveTest` |
-| AVI-01 | Só os próprios avisos | Execute | Implementing | `NotificationsTest` |
-| ARQ-01 | Arquivar e desarquivar | Execute | Implementing | `TaskArchiveTest`, `TaskArchivePolicyTest`, `BoardTest` |
+| EXC-01 | Só o card nunca usado se exclui | Execute | ✅ Verified (Verifier rodada 2) | `TaskArchiveTest.php:195-275`; `TaskArchivePolicyTest.php:71-120`; `TaskUsageQueryTest.php:33`, `:48`; `B3ArquivarTransacaoTest.php:104-140`, `:150` (a trava da linha e a exclusão num commit só) |
+| EXC-02 | Os avisos do card excluído ficam sem link | Execute | ✅ Verified (Verifier rodada 2) | `TaskArchiveTest.php:279-297` (`TaskAssigned` e `TaskReturned`, o texto igual); `B3ArquivarTransacaoTest.php:126-154` (na mesma transação) |
+| AVI-01 | Só os próprios avisos | Execute | ✅ Verified | `NotificationsTest.php:51-127` |
+| ARQ-01 | Arquivar e desarquivar | Execute | ✅ Verified | `TaskArchiveTest.php:78-191`, `:301-319`; `TaskArchivePolicyTest.php:98-104`; `BoardTest.php:141-142` |
 
-**Coverage:** 4 total, 4 mapped to tests, 0 unmapped.
+**Coverage:** 4 total, 4 mapped to tests, 0 unmapped; 4 verified (Verifier rodada 2, 20/10, `validation.md`: PASS). Sensor: rodada 1, 50/55 contados mortos e 5 sobreviventes; rodada 2, os 5 + 3 de confirmação, 8/8 mortos; consolidado 55/55 contados, 2 equivalentes.
 
 ## Success Criteria
 
-- [ ] `TaskArchiveTest`, `TaskArchivePolicyTest`, `TaskUsageQueryTest` e `NotificationsTest` verdes no MySQL 8.
-- [ ] Um teste que falha quando uma FK nova aponta para `tasks` sem ser classificada como uso ou como "sai junto" (B4 e B6 vão criar tabelas ligadas ao card).
-- [ ] Verifier em agente separado com mutação na regra de "nunca usado" (cada condição), na trava da linha, no escopo por dono do aviso e no `authorize()` de cada rota.
-- [ ] e2e de fumaça: arquivar pela ficha, achar no filtro *Arquivados*, desarquivar; excluir o card novo.
+- [x] `TaskArchiveTest`, `TaskArchivePolicyTest`, `TaskUsageQueryTest`, `B3ArquivarTransacaoTest` e `NotificationsTest` verdes no MySQL 8.
+- [x] Um teste que falha quando uma FK nova aponta para `tasks` sem ser classificada como uso ou como "sai junto" (B4 e B6 vão criar tabelas ligadas ao card).
+- [x] Verifier em agente separado com mutação na regra de "nunca usado" (cada condição), na trava da linha, no escopo por dono do aviso e no `authorize()` de cada rota.
+- [x] e2e de fumaça: arquivar pela ficha, achar no filtro *Arquivados*, desarquivar; excluir o card novo.
