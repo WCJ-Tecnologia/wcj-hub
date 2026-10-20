@@ -5,7 +5,7 @@
 >
 > Esta cópia, na `feat/b2-projeto-e-configuracao`, é a da `main` mais o que os ciclos 1 (do lado do Vitinho) e 2 do PR-6 anotaram (CV-13, AP-05 ocorrência, DA-11, DA-12, FP-07 e o bloco do PR-6); a versão própria que a branch trazia (30 linhas) foi absorvida aqui. O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
 
-**Última atualização:** 2026-10-19 · **Reviews acumulados:** 10 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; b3-quadro-e-card ciclo 1 (PR-17); a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-20 · **Reviews acumulados:** 11 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; b3-quadro-e-card ciclo 1 (PR-17); b3-ficha ciclo 1 (PR-18); a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -95,6 +95,16 @@
 - **Evidência:** `TaskService.php:119-122` (`typeOfSlug`), `ProjectService.php:46`, `ProjectFactory::withBoard()`, `tests/Support/CriaProjeto::tipo()`
 - **Visto em:** b3-quadro-e-card ciclo 1. `TaskType::where('slug', …)` solto é desvio (acharia o tipo de outro projeto). Não há `TaskTypeSeeder` geral; teste que precisa de tipo chama `createDefaults` (ou `withBoard()`)
 
+### CV-17 — Negação auditada se prova com exatamente uma linha nova por requisição, com ação e alvo
+- **Escopo:** testes de Policy de Projetos (`TaskPolicyTest::assertOneDenied`, `SprintPolicyTest::assertOneDenied`)
+- **Evidência:** `tests/Feature/Projetos/TaskPolicyTest.php` (helper do Fix 4 do Verifier do B3 PR 1); spec b3-quadro-e-card, TSK-04 AC 1 (o alvo: `task` com id do card; `task` com id nulo antes de o card existir; `project` em tipo, área e `manageSprint`)
+- **Visto em:** b3-quadro-e-card ciclo 1 e Verifier (mutante pd1); b3-ficha ciclo 1 (CR-1-02). `exists()`, `>= N` ou `latest('id')` são desvio: passam com linha errada, dupla ou ação trocada (L-015)
+
+### CV-18 — O Specs gate do CI é literal: `**Approved by**: Nome, AAAA-MM-DD` sem nada depois, `y` exato em Confirmed?, `**Acceptance Criteria**:` antes da lista numerada, e um veredito só no `validation.md`
+- **Escopo:** `.specs/features/*/spec.md` e `validation.md`; `npm run specs:check` (`.ai/skills/conferir-specs.mjs` → `validate_spec.py`, `validate_state.py`)
+- **Evidência:** CI do #17 em 19/10 (run 39312637589) vermelho por formato; `validate_state.py::_verdict` junta todas as linhas `## Validation`/`**Result**:` e, com PASS e FAIL juntos, devolve "placeholder"
+- **Visto em:** b3-quadro-e-card (correção `f41436f`), b3-ficha ciclo 1 (CR-1-05). Histórico de rodadas no `validation.md` sem a palavra `Result:` (`Sensor da rodada N`, `Veredito da rodada N`)
+
 ## Anti-padrões recorrentes
 
 ### AP-01 — Check-then-act fora da transação, e a correção que inverte a ordem das travas
@@ -117,6 +127,7 @@
 - **Sinal:** commit de decisão que lista os documentos tocados; a porta de leitura (`00-COMECE-AQUI.md`) e o plano ficam de fora; **correção de review que muda um padrão citado no "Um jeito só" do `AGENTS.md`** sem tocar o `AGENTS.md`
 - **Ação sugerida:** em commit de decisão, `git grep` do termo antigo ("dono do módulo", o nome da regra) em `docs/` e `.specs/` antes de fechar
 - **Ocorrência (b3-quadro-e-card ciclo 1, CR-1-04):** a spec e o `AGENTS.md` dizem que lançar horas fica na `TimeEntryPolicy` (sem `logTime` na `TaskPolicy`) e que as queries ficam em `Services/`; o `docs/escopo.md` B3 seguiu com `logTime` e `Queries/`
+- **Ocorrência (b3-ficha ciclo 1, CR-1-06):** o `TaskEditService` virou a porta do `PATCH` da ficha e o `AGENTS.md` ainda diz que etiquetas e participante entram pelo `TaskTagService`; as 4 colunas de "quem" não estão no `docs/banco.md`
 
 ### AP-05 — Fundação de front aberta em paralelo a blocos funcionais, renomeando o que eles editam
 - **Ocorrências:** pr-8 ciclo 1 (CR-1-02): o #8 parte do B0 e move/renomeia `components/ui/*`, `layouts/`, `data-table`, `row-actions`, `search-input`, `status-pill`, `user-form-dialog`, `app-sidebar`, que o #5 (B1) e o #6 (B2) editam; `git merge-tree` dá 9 conflitos com o #5 e 1 com o #6; 30 arquivos do B1 e 21 do B2 importam `@/components/ui/` ou `@/layouts/`; os componentes e hooks do B1 (CV-07, CV-09, `StatusPill` contact/audit, `DataTable rowClassName`, `SearchInput` do CR-1-10) não existem no #8
@@ -288,3 +299,11 @@
 - `TaskController::show` que redireciona ao quadro com aviso: provisório declarado, sai no PR 2 do B3.
 - Spec do B3 só com `spec.md` e "Approved by: aguardando": o PR declara o Verifier depois da aprovação; é condição do trilho completo (recomendação do relatório), não achado de código.
 - Contatos do cliente nas props do quadro (CR-1-01) e tipo sem desfazer (CR-1-02) foram apontados como Médio; se o Lucas decidir que ficam assim, registrar aqui como FP com o motivo.
+
+### Registrado sem achado no ciclo 1 do PR-18 (b3-ficha; não é FP: o Lucas não foi consultado)
+- Card pai ou tarefa de origem arquivado aceito pela API (`TaskEditService::assertRelations` não lê `archived_at`; a busca esconde): fluxo aberto; o PR 3 decide.
+- Comentar card arquivado é permitido de propósito (F3 §11 item 12).
+- `TaskTagService` delegando prioridade ao `TaskAssignmentService` gera duas linhas de auditoria no mesmo `PATCH`: preço do "um jeito só" do #16.
+- Anexo de 20 MB pede `upload_max_filesize`/`post_max_size` no servidor: `docs/DEPLOY.md` no B10.
+- Quem não vê o projeto recebe 404 num filho alheio pela edição (premissa 4 do PR): só a coerência entre rotas foi apontada (CR-1-04).
+- As duas perguntas da spec (4 colunas de "quem"; número do critério após excluir o último) são decisão do Lucas, não achado; o código segue o recomendado (migração aditiva; "maior + 1" do banco.md).
