@@ -14,6 +14,12 @@ Corroborated across multiple features. Safe to apply as guidance.
 - evidence: SPR-01 AC1 / DEL-01 AC1 (tests/policy) (+1 more)
 - last seen: 2026-10-19T18:13:49Z
 
+### L-017 - Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.
+- signal: `surviving_mutant` · recurrence: 2 feature(s) · scope: `tests/transacao` · harmful: 0
+- features: b5-sprint-e-horas, b3-ficha
+- evidence: SprintService::delete sem DB::transaction (tests/transacao) (+1 more)
+- last seen: 2026-10-20T14:22:17Z
+
 ## Candidates (under observation - do NOT load as guidance yet)
 
 Seen once or not yet corroborated. Tracked, not trusted.
@@ -108,12 +114,6 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tests/Feature/Projetos/SprintPolicyTest.php:191 (tests/negacao)
 - last seen: 2026-10-15T15:29:13Z
 
-### L-017 - Escrita mais auditoria 'na mesma transação' só se prova com DatabaseTruncation e um AuditService que lança; RefreshDatabase esconde a falta da transação.
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/transacao` · harmful: 0
-- features: b5-sprint-e-horas
-- evidence: SprintService::delete sem DB::transaction (tests/transacao)
-- last seen: 2026-10-15T15:29:13Z
-
 ### L-018 - Toda ability da Policy, inclusive a sem chamador (view por registro) e a exclusão, precisa de um teste positivo por quem pode, não só de negação.
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/policy` · harmful: 0
 - features: b3-quadro-e-card
@@ -149,6 +149,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - features: b3-quadro-e-card
 - evidence: validation.md rodada 2 ac2 (TaskTypeController::reactivate) (tests/negacao)
 - last seen: 2026-10-19T19:28:45Z
+
+### L-024 - O down() que tira coluna com FK precisa de teste que o rode, porque o MySQL recusa o dropColumn sem o dropForeign antes (erro 1828) e a suíte só sobe migrações.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `migrations` · harmful: 0
+- features: b3-ficha
+- evidence: validation.md rodada 1 h1 (000040 down sem dropForeign, erro 1828) (migrations)
+- last seen: 2026-10-20T14:22:17Z
+
+### L-025 - Cada exclusão de verdade afirma a própria linha deleted com o antes; provar a linha em dois Services não cobre os outros.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `auditoria` · harmful: 0
+- features: b3-ficha
+- evidence: validation.md rodada 1 e6b, e6d (TaskPullRequestService::remove, AttachmentService::remove) (auditoria)
+- last seen: 2026-10-20T14:22:17Z
+
+### L-026 - Coluna nova que a tela mostra precisa de asserção no contrato da página, com o valor e com o nulo da linha antiga; gravar a coluna não prova que ela aparece.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/contrato` · harmful: 0
+- features: b3-ficha
+- evidence: validation.md rodada 1 k1-k3 (TaskDetailPresenter added_by, uploaded_by, proposed_by) (tests/contrato)
+- last seen: 2026-10-20T14:22:17Z
+
+### L-027 - O 404 de filho de outro card tem teste por rota, e com o arquivo no disco quando o 404 também pode vir do arquivo ausente.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests/escopo-id` · harmful: 0
+- features: b3-ficha
+- evidence: validation.md rodada 1 d10c-d10e (PR e anexo de outro card) (tests/escopo-id)
+- last seen: 2026-10-20T14:22:18Z
 
 ## Quarantined (failed when applied - ignore)
 
