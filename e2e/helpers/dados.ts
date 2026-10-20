@@ -123,3 +123,22 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
     const [projectId, ...taskIds] = last.split(',').map(Number);
     return { projectId, taskIds };
 }
+
+/**
+ * Um aviso não lido para o admin do e2e, como os de Projetos gravam (`text`, `url`, `key`), para o
+ * spec do sino começar com algo a marcar. Devolve o id.
+ */
+export function createNoticeForAdmin(text: string, url: string): string {
+    const out = tinker(`
+        $admin = App\\Platform\\Models\\User::query()->where('email', 'like', '%e2e%')->where('role_id', 1)->orderBy('id')->firstOrFail();
+        $notice = $admin->notifications()->create([
+            'id' => (string) Illuminate\\Support\\Str::uuid(),
+            'type' => 'App\\\\Domains\\\\Projetos\\\\Notifications\\\\TaskAssigned',
+            'data' => ['text' => ${JSON.stringify(text)}, 'url' => ${JSON.stringify(url)}, 'key' => 'E2E-1'],
+        ]);
+        echo $notice->id;
+    `);
+    const last = out.split(/\s+/).pop() ?? '';
+    if (!/^[0-9a-f-]{36}$/.test(last)) throw new Error(`createNoticeForAdmin falhou: ${out}`);
+    return last;
+}
