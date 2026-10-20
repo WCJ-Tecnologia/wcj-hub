@@ -33,7 +33,7 @@ class TaskUsageQueryTest extends TestCase
         $this->assertSame($classified, $fks, 'FK para tasks sem decisão: entra em TaskUsageQuery::USES ou ::GOES_ALONG');
     }
 
-    public function test_what_goes_along_is_cascade_and_nothing_else_is(): void
+    public function test_what_goes_along_is_cascade(): void
     {
         $rules = DB::table('information_schema.REFERENTIAL_CONSTRAINTS as r')
             ->join('information_schema.KEY_COLUMN_USAGE as k', fn ($join) => $join

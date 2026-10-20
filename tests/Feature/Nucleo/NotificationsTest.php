@@ -3,7 +3,6 @@
 namespace Tests\Feature\Nucleo;
 
 use App\Platform\Models\User;
-use App\Platform\Services\NotificationPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
@@ -75,9 +74,11 @@ class NotificationsTest extends TestCase
 
         $sino = $this->sino($this->ana);
 
+        // O 10 da spec (contrato do kit, `NotificationsPayload`), não a constante: mudar o limite é decisão.
         $this->assertSame(12, $sino['unread_count']);
-        $this->assertCount(NotificationPresenter::LIMIT, $sino['items']);
+        $this->assertCount(10, $sino['items']);
         $this->assertSame(['Aviso 12', 'Aviso 3'], [$sino['items'][0]['text'], $sino['items'][9]['text']]);
+        $this->assertNotContains('Aviso 2', array_column($sino['items'], 'text'));
     }
 
     public function test_marking_one_as_read_touches_only_that_one(): void

@@ -8,7 +8,9 @@ use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TestResult;
+use App\Domains\Projetos\Models\ValidationType;
 use App\Domains\Projetos\Notifications\TaskAssigned;
+use App\Domains\Projetos\Notifications\TaskReturned;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use Closure;
@@ -278,15 +280,20 @@ class TaskArchiveTest extends TestCase
     {
         $task = $this->novo();
         $outro = $this->novo();
-        $this->dev->notify(new TaskAssigned($task->load('project'), $this->gestor, 'dev'));
-        $this->dev->notify(new TaskAssigned($outro->load('project'), $this->gestor, 'dev'));
+        $volta = ['rework_origin_id' => ValidationType::query()->value('id'), 'rework_reason_id' => null, 'reason_text' => 'Ajuste no layout'];
+        foreach ([$task, $outro] as $card) {
+            $this->dev->notify(new TaskAssigned($card->load('project'), $this->gestor, 'dev'));
+            $this->dev->notify(new TaskReturned($card, $this->gestor, 'Doing', $volta));
+        }
+        $avisos = fn () => DatabaseNotification::query()->orderBy('id')->get()->map(fn (DatabaseNotification $n) => [class_basename($n->type), $n->data['key'], $n->data['text'], $n->data['url']])->all();
+        $antes = $avisos();
 
         $this->actingAs($this->gestor)->delete($this->card($task))->assertSessionHasNoErrors();
 
-        $data = DatabaseNotification::query()->orderBy('created_at')->get()->keyBy(fn (DatabaseNotification $n) => $n->data['key'])->map->data;
-        $this->assertNull($data['SGM-1']['url']);
-        $this->assertStringContainsString('Você é o dev de SGM-1', $data['SGM-1']['text']);
-        $this->assertSame($outro->url(), $data['SGM-2']['url']);
+        // Os dois tipos do card excluído ficam com o mesmo texto e sem o link; os do outro card, iguais.
+        $esperado = array_map(fn (array $aviso) => $aviso[1] === 'SGM-1' ? [$aviso[0], $aviso[1], $aviso[2], null] : $aviso, $antes);
+        $this->assertSame($esperado, $avisos());
+        $this->assertEqualsCanonicalizing(['TaskAssigned', 'TaskReturned'], array_column(array_filter($esperado, fn (array $aviso) => $aviso[3] === null), 0));
     }
 
     /* ---------------------------------------------------------------- lista de arquivados */
