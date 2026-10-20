@@ -36,9 +36,7 @@ class TaskPresenter
 
         return [
             'project' => $this->project($project),
-            'stages' => $project->boardStages()->with('stageRole:id,slug')->whereNull('archived_at')->orderBy('position')->get()
-                ->map(fn ($stage) => ['id' => $stage->id, 'name' => $stage->name, 'role' => $stage->stageRole->slug, 'position' => $stage->position])
-                ->all(),
+            'stages' => $this->stages($project),
             'cards' => $cards->map(fn (Task $card) => $this->card($card))->values()->all(),
             'abilities' => $abilities,
             'options' => $this->options($project, $abilities['create_support']),
@@ -69,7 +67,7 @@ class TaskPresenter
                 'id' => $task->parent->id, 'key' => $task->parent->key(), 'title' => $task->parent->title, 'url' => $task->parent->url(),
             ],
             // A capa (P59): o anexo de imagem escolhido na ficha, pela rota de download.
-            'cover_url' => $task->cover_attachment_id === null ? null : url("/projetos/{$task->project_id}/cards/{$task->key()}/anexos/{$task->cover_attachment_id}"),
+            'cover_url' => $task->cover_attachment_id === null ? null : route('projects.cards.attachments.show', [$task->project_id, $task->key(), $task->cover_attachment_id]),
             'estimated_hours' => $task->estimated_hours === null ? null : (float) $task->estimated_hours,
             'proposed_hours' => $task->proposed_hours === null ? null : (float) $task->proposed_hours,
             'developer' => $task->developer === null ? null : ['id' => $task->developer->id, 'name' => $task->developer->name],
@@ -89,8 +87,21 @@ class TaskPresenter
         ];
     }
 
-    /** @return array<string, mixed> */
-    private function project(Project $project): array
+    /**
+     * As etapas ativas do projeto, na ordem de F2 (`BoardStage` do kit). Público porque a ficha
+     * (TaskDetailPresenter) reaproveita sem montar o quadro (CR-1-01 da revisão do B3 PR 2).
+     *
+     * @return list<array{id: int, name: string, role: string, position: int}>
+     */
+    public function stages(Project $project): array
+    {
+        return $project->boardStages()->with('stageRole:id,slug')->whereNull('archived_at')->orderBy('position')->get()
+            ->map(fn ($stage) => ['id' => $stage->id, 'name' => $stage->name, 'role' => $stage->stageRole->slug, 'position' => $stage->position])
+            ->all();
+    }
+
+    /** O `BoardProject` do kit; público pelo mesmo motivo de `stages()`. @return array<string, mixed> */
+    public function project(Project $project): array
     {
         $open = Sprint::query()->where('project_id', $project->id)->whereNull('closed_at')->first(['id', 'name']);
 
@@ -128,9 +139,11 @@ class TaskPresenter
      * pode criá-lo. O dev alocado não vê a lista de contatos no Núcleo (ContactPolicy::viewAny) e
      * não a recebe aqui (CR-1-01 da revisão do B3 PR 1).
      *
+     * Público pelo mesmo motivo de `stages()`: a ficha chama com `false`.
+     *
      * @return array<string, mixed>
      */
-    private function options(Project $project, bool $canCreateSupport): array
+    public function options(Project $project, bool $canCreateSupport): array
     {
         return [
             'areas' => $project->areas()->active()->orderBy('name')->get(['id', 'name', 'color'])

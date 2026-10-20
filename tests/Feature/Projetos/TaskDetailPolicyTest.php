@@ -10,10 +10,12 @@ use App\Domains\Projetos\Models\TaskComment;
 use App\Domains\Projetos\Models\TestResult;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
+use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CriaProjeto;
 use Tests\TestCase;
@@ -80,6 +82,27 @@ class TaskDetailPolicyTest extends TestCase
         ];
     }
 
+    /**
+     * FCH-04 (como o TSK-04 do PR 1, L-015; CR-1-02 da revisão): a requisição grava exatamente uma
+     * linha nova de auditoria, `denied`, desta pessoa, com a ação e o alvo (`task` com o id do card;
+     * `task_comment` com o id do comentário; `task` com id nulo em `manageSprint`, que recebe a classe e o projeto). Nenhuma `success`.
+     */
+    private function assertOneDenied(User $user, Closure $request, string $action, string $type, ?int $id, string $caso): TestResponse
+    {
+        $before = AuditLog::query()->max('id') ?? 0;
+        $response = $request();
+        $rows = AuditLog::query()->where('id', '>', $before)->get();
+
+        $this->assertCount(1, $rows, "{$caso}: exatamente uma linha nova de auditoria");
+        $this->assertSame(
+            ['denied', $action, $type, $id, $user->id],
+            [$rows[0]->outcome, $rows[0]->action, $rows[0]->auditable_type, $rows[0]->auditable_id, $rows[0]->user_id],
+            $caso,
+        );
+
+        return $response;
+    }
+
     #[DataProvider('quemNaoVe')]
     public function test_who_does_not_see_the_project_gets_403_on_every_detail_route_and_nothing_changes(string $papel): void
     {
@@ -91,52 +114,57 @@ class TaskDetailPolicyTest extends TestCase
         $antes = $this->retrato();
         $criterio = $this->task->acceptanceCriteria()->value('id');
         $pr = $this->task->pullRequests()->value('id');
+        [$t, $tid, $c] = ['task', $this->task->id, $this->comment->id];
+        $as = fn () => $this->actingAs($user);
 
-        $this->actingAs($user)->get($this->url())->assertForbidden();
-        $this->actingAs($user)->patch($this->url(), ['title' => 'Intruso'])->assertForbidden();
-        $this->actingAs($user)->post($this->url('/horas/propor'), ['hours' => 1])->assertForbidden();
-        $this->actingAs($user)->post($this->url('/horas/aprovar'))->assertForbidden();
-        $this->actingAs($user)->post($this->url('/criterios'), ['description' => 'X'])->assertForbidden();
-        $this->actingAs($user)->patch($this->url("/criterios/{$criterio}"), ['description' => 'X'])->assertForbidden();
-        $this->actingAs($user)->delete($this->url("/criterios/{$criterio}"))->assertForbidden();
-        $this->actingAs($user)->post($this->url('/prs'), ['url' => 'https://github.com/x/y/pull/2'])->assertForbidden();
-        $this->actingAs($user)->delete($this->url("/prs/{$pr}"))->assertForbidden();
-        $this->actingAs($user)->post($this->url('/comentarios'), ['body' => 'X'])->assertForbidden();
-        $this->actingAs($user)->post($this->url('/anexos'), ['files' => [UploadedFile::fake()->create('b.pdf', 1, 'application/pdf')]])->assertForbidden();
-        $this->actingAs($user)->get($this->url("/anexos/{$this->attachment->id}"))->assertForbidden();
-        $this->actingAs($user)->delete($this->url("/anexos/{$this->attachment->id}"))->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->get($this->url()), 'viewed', $t, $tid, 'ficha')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->patch($this->url(), ['title' => 'Intruso']), 'updated', $t, $tid, 'editar')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/horas/propor'), ['hours' => 1]), 'updated', $t, $tid, 'propor horas')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/horas/aprovar')), 'updated', $t, null, 'aprovar horas')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/horas/recusar')), 'updated', $t, null, 'recusar horas')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/criterios'), ['description' => 'X']), 'updated', $t, $tid, 'critério novo')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->patch($this->url("/criterios/{$criterio}"), ['description' => 'X']), 'updated', $t, $tid, 'editar critério')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->delete($this->url("/criterios/{$criterio}")), 'updated', $t, $tid, 'excluir critério')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/prs'), ['url' => 'https://github.com/x/y/pull/2']), 'updated', $t, $tid, 'PR novo')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->delete($this->url("/prs/{$pr}")), 'updated', $t, $tid, 'excluir PR')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/comentarios'), ['body' => 'X']), 'updated', $t, $tid, 'comentar')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->patch($this->url("/comentarios/{$c}"), ['body' => 'X']), 'updated', 'task_comment', $c, 'editar comentário')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->delete($this->url("/comentarios/{$c}")), 'deleted', 'task_comment', $c, 'excluir comentário')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->post($this->url('/anexos'), ['files' => [UploadedFile::fake()->create('b.pdf', 1, 'application/pdf')]]), 'updated', $t, $tid, 'anexar')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->get($this->url("/anexos/{$this->attachment->id}")), 'viewed', $t, $tid, 'baixar anexo')->assertForbidden();
+        $this->assertOneDenied($user, fn () => $as()->delete($this->url("/anexos/{$this->attachment->id}")), 'updated', $t, $tid, 'excluir anexo')->assertForbidden();
 
         $this->assertSame($antes, $this->retrato());
         Storage::disk('local')->assertExists('tasks/a.pdf');
-        $this->assertSame(0, AuditLog::query()->where('user_id', $user->id)->where('outcome', 'success')->count());
-        $this->assertGreaterThanOrEqual(13, AuditLog::query()->where('user_id', $user->id)->where('outcome', 'denied')->count());
     }
 
     public function test_the_developer_proposes_but_does_not_set_nor_decide_hours(): void
     {
         $antes = $this->retrato();
+        $dev = $this->dev;
 
-        $this->actingAs($this->dev)->patch($this->url(), ['estimated_hours' => 9])->assertForbidden();
-        $this->actingAs($this->dev)->post($this->url('/horas/aprovar'))->assertForbidden();
-        $this->actingAs($this->dev)->post($this->url('/horas/recusar'))->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->patch($this->url(), ['estimated_hours' => 9]), 'updated', 'task', null, 'definir horas')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/horas/aprovar')), 'updated', 'task', null, 'aprovar')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->post($this->url('/horas/recusar')), 'updated', 'task', null, 'recusar')->assertForbidden();
 
         $this->assertSame($antes, $this->retrato());
-        $this->assertTrue(AuditLog::query()->where('user_id', $this->dev->id)->where('outcome', 'denied')->where('action', 'updated')->exists());
     }
 
     public function test_who_manages_does_not_propose_and_the_denial_is_audited(): void
     {
-        $this->actingAs($this->gestor)->post($this->url('/horas/propor'), ['hours' => 1])->assertForbidden();
+        $gestor = $this->gestor;
+
+        $this->assertOneDenied($gestor, fn () => $this->actingAs($gestor)->post($this->url('/horas/propor'), ['hours' => 1]), 'updated', 'task', $this->task->id, 'gestor propõe')->assertForbidden();
 
         $this->assertSame('5.00', $this->task->fresh()->proposed_hours);
-        $this->assertTrue(AuditLog::query()->where('user_id', $this->gestor->id)->where('outcome', 'denied')->where('action', 'updated')->exists());
     }
 
     public function test_admin_and_manager_do_not_touch_someone_elses_comment(): void
     {
-        foreach ([User::factory()->admin()->create(), $this->gestor] as $user) {
-            $this->actingAs($user)->patch($this->url("/comentarios/{$this->comment->id}"), ['body' => 'Editado'])->assertForbidden();
-            $this->actingAs($user)->delete($this->url("/comentarios/{$this->comment->id}"))->assertForbidden();
+        $c = $this->comment->id;
+        foreach (['admin' => User::factory()->admin()->create(), 'gestor' => $this->gestor] as $papel => $user) {
+            $this->assertOneDenied($user, fn () => $this->actingAs($user)->patch($this->url("/comentarios/{$c}"), ['body' => 'Editado']), 'updated', 'task_comment', $c, "{$papel} edita")->assertForbidden();
+            $this->assertOneDenied($user, fn () => $this->actingAs($user)->delete($this->url("/comentarios/{$c}")), 'deleted', 'task_comment', $c, "{$papel} exclui")->assertForbidden();
         }
 
         $this->assertSame('Meu', $this->comment->fresh()->body);
@@ -145,9 +173,11 @@ class TaskDetailPolicyTest extends TestCase
     public function test_the_author_who_left_the_project_no_longer_touches_the_comment(): void
     {
         $this->project->members()->where('user_id', $this->dev->id)->delete();
+        $dev = $this->dev;
+        $c = $this->comment->id;
 
-        $this->actingAs($this->dev)->patch($this->url("/comentarios/{$this->comment->id}"), ['body' => 'Editado'])->assertForbidden();
-        $this->actingAs($this->dev)->delete($this->url("/comentarios/{$this->comment->id}"))->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->patch($this->url("/comentarios/{$c}"), ['body' => 'Editado']), 'updated', 'task_comment', $c, 'autor que saiu edita')->assertForbidden();
+        $this->assertOneDenied($dev, fn () => $this->actingAs($dev)->delete($this->url("/comentarios/{$c}")), 'deleted', 'task_comment', $c, 'autor que saiu exclui')->assertForbidden();
 
         $this->assertSame('Meu', $this->comment->fresh()->body);
     }

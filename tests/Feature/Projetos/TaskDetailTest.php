@@ -13,6 +13,7 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
@@ -85,6 +86,45 @@ class TaskDetailTest extends TestCase
             ->where('task.abilities.delete', false)
             ->has('options.stages', 8)
             ->has('options.cards', 0));
+    }
+
+    /** Benchmark da ficha (CR-1-01 da revisão; escopo §10): o número de consultas não cresce com os itens do card. */
+    public function test_the_number_of_queries_to_open_the_detail_does_not_grow_with_its_items(): void
+    {
+        $contar = function (User $as): int {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->actingAs($as)->get($this->url())->assertOk();
+            $total = count(DB::getQueryLog());
+            DB::disableQueryLog();
+
+            return $total;
+        };
+        $this->semeiaItens(2);
+        [$dev, $gestor] = [$contar($this->dev), $contar($this->gestor)];
+        $this->semeiaItens(30);
+
+        $this->assertSame($dev, $contar($this->dev), 'a ficha consulta por item para o dev');
+        $this->assertSame($gestor, $contar($this->gestor), 'a ficha consulta por item para quem gere');
+    }
+
+    /** Critério com subitem, comentário, PR, anexo, filho, bug de produção e participante, direto no banco. */
+    private function semeiaItens(int $quantos): void
+    {
+        $outro = User::factory()->developer()->create();
+        $this->alocar($this->project, $outro);
+        $base = (int) $this->task->acceptanceCriteria()->whereNull('parent_id')->max('number');
+        for ($i = 1; $i <= $quantos; $i++) {
+            $criterio = $this->task->acceptanceCriteria()->create(['number' => $base + $i, 'description' => "CA {$i}", 'test_result_id' => TestResult::PENDING]);
+            $criterio->children()->create(['task_id' => $this->task->id, 'number' => 1, 'description' => 'Sub', 'test_result_id' => TestResult::PASSED]);
+            $this->task->comments()->create(['user_id' => $i % 2 ? $this->dev->id : $outro->id, 'body' => "Comentário {$i}"]);
+            $this->task->pullRequests()->create(['url' => "https://github.com/x/y/pull/{$base}{$i}", 'user_id' => $outro->id]);
+            Storage::disk('local')->put("tasks/{$this->task->id}/{$base}-{$i}.png", 'png');
+            $this->task->attachments()->create(['path' => "tasks/{$this->task->id}/{$base}-{$i}.png", 'original_name' => "{$i}.png", 'mime_type' => 'image/png', 'user_id' => $outro->id]);
+            $this->tarefa($this->project, null, ['parent_task_id' => $this->task->id, 'developer_id' => $outro->id]);
+            $this->tarefa($this->project, null, ['origin_task_id' => $this->task->id]);
+        }
+        $this->task->participants()->syncWithoutDetaching([$outro->id]);
     }
 
     /* ---------------------------------------------------------------- editar */

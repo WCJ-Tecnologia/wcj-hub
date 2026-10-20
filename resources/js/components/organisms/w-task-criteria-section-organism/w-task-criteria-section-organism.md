@@ -11,7 +11,7 @@ O conteúdo da seção _Critérios de aceite_ da ficha do card (F3 §02 "Critér
 - Com `canEdit`, em cada item:
     - _Editar_: troca a descrição por um campo em linha, com _Salvar_ e _Cancelar_. Critério já testado mostra antes do _Salvar_ o aviso "Este critério volta para A testar" (`CRITERION_RETEST_TEXT`, `role="status"`, P37);
     - _Subitem_: só no critério de 1º nível; abre o campo no fim dos subitens dele (T9);
-    - _Excluir_: só quando `criterionDeletable(criterion)` (o critério e cada subitem A testar, T1); testado, o botão não aparece (10.9). Confirma pelo `WConfirmDialogMolecule` destrutivo: "Excluir CA_3? O número não será reaproveitado." e, quando há subitens, "Os subitens saem junto.".
+    - _Excluir_: só quando `criterionDeletable(criterion)` (o critério e cada subitem A testar, T1); testado, o botão não aparece (10.9). Confirma pelo `WConfirmDialogMolecule` destrutivo: "Excluir CA_3? Os outros critérios não mudam de número." e, quando há subitens, "Os subitens saem junto.".
 - Abaixo da lista, _Adicionar critério_ abre o campo do `CA_n` novo no fim.
 - Vazio: "Nenhum critério." e, com `canEdit`, o link _Adicionar critério_ (F3 §03).
 - No campo: Enter salva, Shift+Enter quebra a linha, Esc cancela. Descrição vazia: "Informe a descrição do critério.".

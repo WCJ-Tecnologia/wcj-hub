@@ -175,7 +175,7 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 | Aprovar ou recusar a proposta | Gestor do projeto, Administrador | Aprovar passa a proposta a valer e recalcula a data prevista; recusar só limpa a proposta. O antes fica no histórico (P27, P28). | |
 | Adicionar critério / subitem | Qualquer alocado | Novo `CA_n` no fim, ou `CA_n.m` no fim do pai (P17, T9). | |
 | Editar critério | Qualquer alocado | Muda a descrição. | Já testado: "Este critério volta para A testar" (P37). |
-| Excluir critério | Qualquer alocado | Só enquanto o critério, e cada subitem dele, está A testar (T1). Os subitens saem junto. O número não volta a ser usado. | "Excluir CA_3? O número não será reaproveitado." Testado: o botão não aparece (ver 10.9). |
+| Excluir critério | Qualquer alocado | Só enquanto o critério, e cada subitem dele, está A testar (T1). Os subitens saem junto. Os outros critérios não mudam de número; o próximo nasce com o maior número + 1 (`banco.md`), então excluir o último libera o número dele (decisão de 20/10, spec `b3-ficha`). | "Excluir CA_3? Os outros critérios não mudam de número." Testado: o botão não aparece (ver 10.9). |
 | Adicionar / remover PR | Qualquer alocado | Cola ou remove o link (P23). | Link repetido no card: "Este PR já está no card". |
 | Comentar | Qualquer alocado | Adiciona comentário com autor e data (P24). Pela IA: `comentar_tarefa`. | |
 | Editar / excluir comentário | O autor | Proposta: só o próprio comentário (ver 10.10). | Excluir: "Excluir o comentário?" |

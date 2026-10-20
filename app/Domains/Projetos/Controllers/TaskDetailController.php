@@ -28,7 +28,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * O que a ficha do card grava além dos campos (F3 §04 "Na ficha"; escopo B3, PR 2): horas
  * propostas e decididas (P27), critérios (P17, P37, T1, T9), links de PR (P23), comentários (P24) e
  * anexos (P24, P59). O filho da rota (critério, PR, comentário, anexo) tem de ser do card da rota:
- * de outro card é 404. Escritas autorizadas nos FormRequests ou aqui, antes de qualquer leitura.
+ * de outro card é 404, antes da Policy, em toda rota (premissa 4 do PR; CR-1-04 da revisão).
+ * Escritas autorizadas nos FormRequests ou aqui, antes de qualquer leitura.
  */
 class TaskDetailController extends Controller
 {
@@ -78,8 +79,8 @@ class TaskDetailController extends Controller
 
     public function destroyCriterion(Request $request, Project $project, Task $card, TaskAcceptanceCriterion $acceptanceCriterion): RedirectResponse
     {
-        $this->authorize('update', $card);
         $this->belongsToCard($acceptanceCriterion, $card);
+        $this->authorize('update', $card);
 
         return $this->attempt(fn () => $this->criteria->delete($acceptanceCriterion, $request->user()), fn () => back());
     }
@@ -91,8 +92,8 @@ class TaskDetailController extends Controller
 
     public function destroyPullRequest(Request $request, Project $project, Task $card, TaskPullRequest $pullRequest): RedirectResponse
     {
-        $this->authorize('update', $card);
         $this->belongsToCard($pullRequest, $card);
+        $this->authorize('update', $card);
 
         return $this->attempt(fn () => $this->pullRequests->remove($pullRequest, $request->user()), fn () => back());
     }
@@ -124,8 +125,8 @@ class TaskDetailController extends Controller
 
     public function destroyAttachment(Request $request, Project $project, Task $card, TaskAttachment $attachment): RedirectResponse
     {
-        $this->authorize('attach', $card);
         $this->belongsToCard($attachment, $card);
+        $this->authorize('attach', $card);
 
         return $this->attempt(fn () => $this->attachments->remove($attachment, $request->user()), fn () => back());
     }
@@ -136,8 +137,8 @@ class TaskDetailController extends Controller
      */
     public function downloadAttachment(Request $request, Project $project, Task $card, TaskAttachment $attachment): StreamedResponse
     {
-        $this->authorize('view', $card);
         $this->belongsToCard($attachment, $card);
+        $this->authorize('view', $card);
         abort_unless(Storage::disk(TaskDetailPresenter::DISK)->exists($attachment->path), 404);
 
         $headers = ['Content-Type' => $attachment->mime_type, 'X-Content-Type-Options' => 'nosniff'];

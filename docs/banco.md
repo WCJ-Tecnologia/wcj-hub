@@ -1143,6 +1143,18 @@ APROVADO por Lucas Scholz em 15/10/2026 (sem esperar a conferência do Lucas Ale
   tipos e edita nome e cor dos seus pelo próprio quadro (clicando na etiqueta), sem propagar a outros
   projetos; o mesmo para project_areas (criar e editar nome e cor pelo quadro). O código continua
   achando support, improvement e development pelo slug, agora dentro do projeto.
+
+Diferença de 16/10 (B3 PR 2, a ficha do card; spec `b3-ficha`). APROVADA por Lucas Scholz em 20/10/2026;
+migração aditiva `2026_10_16_000040`, tudo nulo (as linhas de antes não têm o dado; a tela mostra "—"):
+- task_pull_requests.user_id (fk users, null, restrict): quem colou o link do PR.
+- task_attachments.user_id (fk users, null, restrict): quem enviou o anexo.
+- tasks.proposed_by (fk users, null, restrict): quem propôs a reestimativa (P27); sai junto com
+  proposed_hours ao aprovar ou recusar.
+- tasks.archived_by (fk users, null, restrict): quem arquivou (P26); o PR 3 grava.
+Motivo: o kit da ficha mostra o "quem" e o módulo não lê audit_logs (teste A9).
+Decisão do mesmo dia sobre task_acceptance_criteria.number: segue "maior number no mesmo pai + 1"
+(esta seção); excluir o último critério libera o número dele, e o diálogo do F3 §04 diz "Os outros
+critérios não mudam de número", sem prometer que o número não volta.
 - tasks.task_type_id e tasks.task_priority_id passam a aceitar NULO (decisão final de 14/10): o card
   criado só com o título nasce sem tipo e sem prioridade (P17), e quem edita define na ficha ou pela
   etiqueta. A ordem por prioridade põe os sem prioridade no fim. O card de suporte continua nascendo

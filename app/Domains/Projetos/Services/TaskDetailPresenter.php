@@ -39,14 +39,14 @@ class TaskDetailPresenter
      */
     public function page(Project $project, Task $task, User $viewer): array
     {
-        $boardProps = $this->board->board($project, $viewer, new Collection, $this->noFilters());
-
+        // Só os pedaços do quadro que a ficha usa (CR-1-01 da revisão): sem abilities do quadro, sem
+        // contatos de suporte e sem o planejamento da sprint.
         return [
-            'project' => $boardProps['project'],
+            'project' => $this->board->project($project),
             'task' => $this->detail($task, $viewer),
             'options' => [
-                ...collect($boardProps['options'])->only(['areas', 'types', 'members', 'rework_origins', 'rework_reasons'])->all(),
-                'stages' => $boardProps['stages'],
+                ...collect($this->board->options($project, false))->only(['areas', 'types', 'members', 'rework_origins', 'rework_reasons'])->all(),
+                'stages' => $this->board->stages($project),
                 'cards' => $this->pickable($task),
             ],
             'today' => DiasUteis::today(),
@@ -63,6 +63,10 @@ class TaskDetailPresenter
             'requesterContact', 'contactChannel', 'pullRequests.user', 'comments.user', 'attachments.user',
             'acceptanceCriteria.testResult',
         ]);
+        // As Policies perguntam "alocado?" linha a linha (cada comentário tem o `can`): a alocação
+        // carregada uma vez, e cada comentário apontando para este card, sem consulta por item.
+        $task->project->loadMissing('members');
+        $task->comments->each(fn (TaskComment $comment) => $comment->setRelation('task', $task));
         $this->late->fill(new Collection([$task]));
         $creation = TaskStageMovement::query()->with('movedBy:id,name')->where('task_id', $task->id)
             ->whereNull('from_board_stage_id')->orderBy('id')->first();
@@ -161,9 +165,10 @@ class TaskDetailPresenter
         ];
     }
 
+    /** Pela rota nomeada (CR-1-03): a miniatura vai à ficha e a capa ao quadro; a rota muda num lugar só. */
     public function attachmentUrl(Task $task, TaskAttachment $file): string
     {
-        return url("/projetos/{$task->project_id}/cards/{$task->key()}/anexos/{$file->id}");
+        return route('projects.cards.attachments.show', [$task->project_id, $task->key(), $file->id]);
     }
 
     /**
@@ -209,7 +214,7 @@ class TaskDetailPresenter
                 'id' => $card->id,
                 'key' => "{$task->project->key_prefix}-{$card->number}",
                 'title' => $card->title,
-                'url' => url("/projetos/{$task->project_id}/cards/{$task->project->key_prefix}-{$card->number}"),
+                'url' => route('projects.cards.show', [$task->project_id, "{$task->project->key_prefix}-{$card->number}"]),
                 'parent_key' => $card->parent_task_id === null ? null : "{$task->project->key_prefix}-{$keys[$card->parent_task_id]}",
                 'has_children' => $withChildren->has($card->id),
             ])->all();
@@ -231,11 +236,5 @@ class TaskDetailPresenter
     private function person(?User $user): ?array
     {
         return $user === null ? null : ['id' => $user->id, 'name' => $user->name];
-    }
-
-    /** @return array<string, mixed> */
-    private function noFilters(): array
-    {
-        return ['search' => '', 'mine' => false, 'developer_id' => null, 'qa_id' => null, 'type_id' => null, 'area_id' => null, 'priority' => null, 'marks' => [], 'old_done' => false, 'archived' => false];
     }
 }
