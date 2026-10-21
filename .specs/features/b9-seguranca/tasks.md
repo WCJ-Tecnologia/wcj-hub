@@ -339,10 +339,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Toda variável que produção usa listada com onde buscar; nenhum valor
-- [ ] A ordem do AC 7 de SEC-14 e o bloco de nginx do AC 8
-- [ ] "Ambientes" aponta para o `DEPLOY.md` e diz o que falta no B10
-- [ ] Gate check passes: `npm run test:guard`
+- [x] Toda variável que produção usa listada com onde buscar; nenhum valor
+- [x] A ordem do AC 7 de SEC-14 e o bloco de nginx do AC 8
+- [x] "Ambientes" aponta para o `DEPLOY.md` e diz o que falta no B10
+- [x] Gate check passes: `npm run test:guard`
 
 **Tests**: none
 **Gate**: build

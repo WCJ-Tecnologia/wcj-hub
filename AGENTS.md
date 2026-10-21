@@ -194,6 +194,8 @@ Sem Docker: um MySQL 8 local com os bancos `wcj_hub`, `wcj_hub_test` e `wcj_hub_
 | produção    | `https://hub.wcjtecnologia.com.br` (a criar, B10) | `main` | `docs/DEPLOY.md` |
 | homologação | a definir com Alaor Rodrigues (B10)               | `main` | `docs/DEPLOY.md` |
 
+Nenhum dos dois existe ainda. O runbook (`docs/DEPLOY.md`, B9) tem as variáveis por nome e onde buscar cada valor, a conferência `php artisan app:conferir-producao` (passo zero: sai com 1 se `APP_DEBUG` estiver ligado, o cookie sem `secure`, o e-mail no log ou a fila em `sync`), o passo a passo, a fila, o bloco do Nginx, a verificação pós-deploy, o backup e como voltar atrás. Falta definir no B10, com Alaor Rodrigues: a URL da homologação (HTTPS público, por causa do MCP), a imagem e os containers na VPS do DaaS, o worker da fila sob supervisão, o destino e a retenção do backup (com uma restauração testada) e o disparo automático por merge na `main`.
+
 ## Autorização
 
 Papéis em `roles` (`RoleEnum`, ids fixos 1 a 4); quadro completo em `docs/escopo.md` §4.

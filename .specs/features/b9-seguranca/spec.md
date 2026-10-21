@@ -245,8 +245,8 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-11 | P1: Anexo (AC 1 a 6) | Tasks | Implementing |
 | SEC-12 | P1: Produção (AC 1 a 4, `app:conferir-producao`) | Tasks | Implementing |
 | SEC-13 | P1: Produção (AC 5, 500 sem stack) | Tasks | Implementing |
-| SEC-14 | P1: Produção (AC 6 a 8, `DEPLOY.md`) | Tasks | Pending |
-| SEC-15 | P1: Produção (AC 9, `AGENTS.md` Ambientes) | Tasks | Pending |
+| SEC-14 | P1: Produção (AC 6 a 8, `DEPLOY.md`) | Tasks | Implementing |
+| SEC-15 | P1: Produção (AC 9, `AGENTS.md` Ambientes) | Tasks | Implementing |
 | SEC-16 | P1: Dependências (AC 1, 2, 5, SCA e `npm audit fix`) | Tasks | Pending |
 | SEC-17 | P1: Dependências (AC 3, CI) | Tasks | Implementing |
 | SEC-18 | P1: Dependências (AC 4, revisão dirigida) | Tasks | Pending |
