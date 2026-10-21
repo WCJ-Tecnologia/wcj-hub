@@ -69,4 +69,36 @@ class HostDoHubTest extends TestCase
     {
         $this->get('http://outro-host.exemplo/up')->assertOk();
     }
+
+    /** Host parecido com o do APP_URL também é recusado (Verifier do B9, rodada 1: M05 e M06). */
+    public function test_a_subdomain_or_a_lookalike_host_is_refused_in_production(): void
+    {
+        $this->emProducao();
+
+        foreach (['http://x.hub.exemplo.wcj.test', 'http://hub.exemplo.wcj.test.atacante.exemplo'] as $root) {
+            $this->post($root.'/admin/forgot-password', ['email' => 'ana@exemplo.wcj.test'])->assertBadRequest();
+        }
+
+        Mail::assertNothingOutgoing();
+    }
+
+    /** A raiz é a do APP_URL, sem a porta da requisição (Verifier do B9, rodada 1: M11). */
+    public function test_a_request_on_another_port_still_generates_app_url_links(): void
+    {
+        $this->emProducao();
+        Route::get('/_test/url', fn () => route('login'));
+
+        $this->get('http://hub.exemplo.wcj.test:8080/_test/url')->assertOk()->assertSeeText(self::APP_URL.'/admin/login');
+
+        $this->post('http://hub.exemplo.wcj.test:8080/admin/forgot-password', ['email' => 'ana@exemplo.wcj.test'])->assertRedirect();
+        Mail::assertQueued(ResetPasswordMail::class, fn (ResetPasswordMail $mail) => str_starts_with($mail->resetUrl, self::APP_URL.'/admin/reset-password/'));
+    }
+
+    /** Fora de produção, a URL gerada segue o host da requisição (premissa "nada muda"; Verifier do B9, rodada 1: M10). */
+    public function test_outside_production_generated_urls_follow_the_request_host(): void
+    {
+        Route::get('/_test/url', fn () => route('login'));
+
+        $this->get('http://outro-host.exemplo/_test/url')->assertOk()->assertSeeText('http://outro-host.exemplo/admin/login');
+    }
 }

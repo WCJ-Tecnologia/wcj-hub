@@ -164,7 +164,8 @@ server {
         return 404;
     }
 
-    # Assets: add_header dentro de um location descarta os herdados; repita o bloco inteiro
+    # Assets: add_header dentro de um location descarta os herdados; repita o bloco inteiro. CSP e
+    # Permissions-Policy valem para documento HTML, que sai do PHP com os dois; aqui não entram.
     location ~* ^/(build|fonts|brand)/ {
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
         add_header X-Content-Type-Options "nosniff" always;

@@ -22,6 +22,8 @@ class EntradaEmArrayTest extends TestCase
         parent::setUp();
 
         config(['auth.timebox_duration' => 0]);
+        // O contador do limitador expira pelo relógio de parede (ver LoginThrottleTest).
+        $this->freezeTime();
     }
 
     public function test_the_public_credential_forms_refuse_an_email_array_without_500(): void
@@ -63,5 +65,21 @@ class EntradaEmArrayTest extends TestCase
         $this->actingAs($admin)->get('/minhas-horas?from[]=2026-01-01&to[]=2026-01-31')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page->where('filters.from', $default['from'])->where('filters.to', $default['to']));
+    }
+
+    /** O 429 do redefinir também aguenta `email[]` (Verifier do B9, rodada 1: M32). */
+    public function test_the_throttled_reset_with_an_email_array_answers_429_with_an_empty_email(): void
+    {
+        $attempt = ['token' => 'abc', 'email' => ['x@exemplo.wcj.test'], 'password' => 'senha-nova-123', 'password_confirmation' => 'senha-nova-123'];
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/admin/reset-password', $attempt)->assertStatus(302);
+        }
+
+        $this->withHeaders(['X-Inertia' => 'true'])
+            ->post('/admin/reset-password', $attempt)
+            ->assertStatus(429)
+            ->assertJsonPath('component', 'auth/reset-password')
+            ->assertJsonPath('props.email', '');
     }
 }

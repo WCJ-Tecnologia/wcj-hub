@@ -11,6 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Routing\Route;
+use Illuminate\Routing\RouteCollection;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
@@ -117,29 +118,54 @@ class RotasAutorizadasTest extends TestCase
     public function test_a10_escrita_valida_a_entrada_em_form_request(): void
     {
         $this->app->make(Kernel::class);
-        $roteador = $this->app->make('router');
 
-        $violacoes = [];
-        foreach ($roteador->getRoutes() as $rota) {
-            if (array_diff($rota->methods(), ['GET', 'HEAD']) === []) {
-                continue;
-            }
-            $funcao = self::funcaoDaRota($rota);
-            if ($funcao !== null && self::validaNaMao($funcao)) {
-                $violacoes[] = self::verbo($rota).' /'.ltrim($rota->uri(), '/').' -> '.$rota->getActionName();
-            }
-        }
+        $violacoes = self::violacoesA10($this->app->make('router')->getRoutes(), self::funcaoDaRota(...));
 
         $this->semViolacoes('A10', 'Validação fora de FormRequest', $violacoes,
             'a escrita valida a entrada num FormRequest (regras explícitas, autoriza antes de validar), '
             .'nunca com $request->validate() ou Validator::make() na ação.');
     }
 
-    public function test_a10_o_detector_pega_a_validacao_na_mao(): void
+    /** O detector pega as duas formas e só olha a escrita (Verifier do B9, rodada 1: M36 e M38). */
+    public function test_a10_o_detector_pega_a_validacao_na_mao_e_so_na_escrita(): void
     {
         $this->assertTrue(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'validaNoRequest')));
         $this->assertTrue(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'validaComValidator')));
         $this->assertFalse(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'usaOValidado')));
+
+        // A mesma varredura do teste acima, sobre rotas de mentira: a ação de exemplo não é App\,
+        // então o resolvedor aqui aceita a classe dela.
+        $acao = AcoesDeExemploA10::class.'@validaNoRequest';
+        $rotas = new RouteCollection;
+        $rotas->add(new Route(['POST'], '_a10/escrita', ['uses' => $acao, 'controller' => $acao]));
+        $rotas->add(new Route(['GET', 'HEAD'], '_a10/leitura', ['uses' => $acao, 'controller' => $acao]));
+        $resolve = fn (Route $rota) => new ReflectionMethod(...explode('@', $rota->getActionName(), 2));
+
+        $this->assertSame(
+            ['POST /_a10/escrita -> '.AcoesDeExemploA10::class.'@validaNoRequest'],
+            self::violacoesA10($rotas, $resolve),
+        );
+    }
+
+    /**
+     * @param  iterable<Route>  $rotas
+     * @param  callable(Route): ?ReflectionFunctionAbstract  $funcaoDaRota
+     * @return list<string>
+     */
+    private static function violacoesA10(iterable $rotas, callable $funcaoDaRota): array
+    {
+        $violacoes = [];
+        foreach ($rotas as $rota) {
+            if (array_diff($rota->methods(), ['GET', 'HEAD']) === []) {
+                continue;
+            }
+            $funcao = $funcaoDaRota($rota);
+            if ($funcao !== null && self::validaNaMao($funcao)) {
+                $violacoes[] = self::verbo($rota).' /'.ltrim($rota->uri(), '/').' -> '.$rota->getActionName();
+            }
+        }
+
+        return $violacoes;
     }
 
     private static function validaNaMao(ReflectionFunctionAbstract $funcao): bool

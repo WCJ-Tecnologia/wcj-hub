@@ -18,7 +18,10 @@ final class AcoesDeExemploA10
 
     public function validaComValidator(Request $request): void
     {
-        Validator::make($request->all(), ['name' => ['required']])->validate();
+        // Sem ->validate(): só o Validator::make( pode denunciar esta ação.
+        if (Validator::make($request->all(), ['name' => ['required']])->fails()) {
+            abort(422);
+        }
     }
 
     public function usaOValidado(Request $request): void

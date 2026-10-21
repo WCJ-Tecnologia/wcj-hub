@@ -415,4 +415,23 @@ class TaskDetailTest extends TestCase
         $this->assertStringNotContainsString('Storage::', $source);
         $this->assertStringContainsString('$this->attachments->download(', $source);
     }
+
+    /**
+     * Um .txt com HTML dentro sai como o tipo gravado, em download, nunca como text/html na página
+     * (spec, caso de borda do SEC-11; Verifier do B9, rodada 1: M42). O arquivo é gravado direto: o
+     * envio pela rota recusaria o HTML pelos bytes.
+     */
+    public function test_a_text_attachment_with_html_inside_downloads_with_the_stored_type(): void
+    {
+        Storage::disk('local')->put('tasks/nota.txt', '<!DOCTYPE html><html><body><script>alert(1)</script></body></html>');
+        $file = $this->task->attachments()->create([
+            'path' => 'tasks/nota.txt', 'original_name' => 'nota.txt', 'mime_type' => 'text/plain', 'user_id' => $this->dev->id,
+        ]);
+
+        $response = $this->actingAs($this->dev)->get($this->url("/anexos/{$file->id}"))
+            ->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+
+        $this->assertStringStartsWith('text/plain', (string) $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('attachment', (string) $response->headers->get('Content-Disposition'));
+    }
 }

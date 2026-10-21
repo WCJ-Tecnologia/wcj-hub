@@ -98,7 +98,7 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 
 **Acceptance Criteria**:
 
-1. IF o usuário logado envia a troca de senha pelo perfil com a senha atual errada THEN o sistema SHALL recusar com "A senha atual não confere" no campo `current_password`.
+1. IF o usuário logado envia a troca de senha pelo perfil com a senha atual errada THEN o sistema SHALL recusar com "A senha atual não confere." no campo `current_password`.
 2. IF o usuário logado envia a troca de senha pelo perfil com a senha atual errada THEN o sistema SHALL manter a senha gravada sem mudança e as outras sessões abertas.
 3. WHEN o usuário logado envia a troca de senha pelo perfil com a senha atual certa e uma senha nova válida THEN o sistema SHALL gravar a senha nova e encerrar as outras sessões da conta.
 4. WHEN o usuário logado salva só o nome no perfil, sem preencher senha THEN o sistema SHALL gravar o nome sem pedir a senha atual.
@@ -165,7 +165,7 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 5. WHILE `app.debug` = `false`, WHEN uma ação lança exceção não tratada THEN o sistema SHALL responder 500 sem o nome da classe da exceção, sem caminho de arquivo e sem stack.
 6. The `docs/DEPLOY.md` SHALL listar toda variável do `.env.example` que produção usa, com onde buscar o valor, e nenhum valor de segredo.
 7. The `docs/DEPLOY.md` SHALL ter, em ordem: conferência (`app:conferir-producao`), backup, código, dependências e build, migração, sementes, caches, reinício do php-fpm e do worker, verificação pós-deploy e voltar atrás (código e banco).
-8. The `docs/DEPLOY.md` SHALL ter o bloco de nginx que o B10 aplica: `server_tokens off`, os headers repetidos no `location` dos assets, bloqueio de todo caminho começado por ponto, de backup e de diagnóstico, e `real_ip` com o proxy da VPS.
+8. The `docs/DEPLOY.md` SHALL ter o bloco de nginx que o B10 aplica: `server_tokens off`, os headers repetidos no `location` dos assets (`Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy`; CSP e `Permissions-Policy` só valem para documento HTML, que sai do PHP com os dois), bloqueio de todo caminho começado por ponto, de backup e de diagnóstico, e `real_ip` com o proxy da VPS.
 9. The seção "Ambientes" do `AGENTS.md` SHALL apontar para o `DEPLOY.md` e dizer o que falta definir no B10 (URL da homologação, servidor, disparo).
 
 **Independent Test**: rodar `php artisan app:conferir-producao` no `.env` de dev lista os itens errados e sai com 1; o teste de feature cobre o caminho certo.

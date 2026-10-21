@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use App\Platform\Models\User;
-use App\Platform\Requests\Admin\UpdateProfileRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -41,7 +40,7 @@ class ProfilePasswordTest extends TestCase
                 'password_confirmation' => 'senha-nova-123',
             ])
             ->assertRedirect('/admin/profile')
-            ->assertSessionHasErrors(['current_password' => UpdateProfileRequest::WRONG_CURRENT_PASSWORD]);
+            ->assertSessionHasErrors(['current_password' => 'A senha atual não confere.']);
 
         $this->assertTrue(Hash::check('senha-atual-1', $user->fresh()->password));
         $this->assertDatabaseHas('sessions', ['id' => 'outro-aparelho']);

@@ -73,7 +73,7 @@ T12 → T13
 ### Phase 6: Correções da revisão dirigida (aprovadas por Lucas Scholz em 21/10/2026)
 
 ```
-T14 → T15 → T16 → T17 → T18 → T19
+T14 → T15 → T16 → T17 → T18 → T19 → T20
 ```
 
 ---
@@ -594,4 +594,30 @@ T14 → T15 → T16 → T17 → T18 → T19
 **Gate**: build
 
 **Commit**: `docs(deploy): trusted_proxies com fastcgi e o tempo do timebox`
+
+---
+
+### T20: Correções da rodada 1 do Verifier
+
+**What**: os 9 mutantes vivos da rodada 1 viram teste (A10 sobre rota de mentira POST e GET e fixture só com `Validator::make(`; `.txt` com HTML servido com o tipo gravado; `trustHosts` com subdomínio e host com sufixo; `forceRootUrl` com outra porta; `UseAppUrl` fora de produção; 429 do redefinir com `email[]`; o texto literal da senha atual) e as 2 lacunas de precisão da spec (SEC-04 AC 1 com ponto final; SEC-14 AC 8 com os headers dos assets).
+**Where**: `tests/Arch/RotasAutorizadasTest.php`, `tests/Arch/Support/AcoesDeExemploA10.php`, `tests/Feature/{HostDoHubTest,EntradaEmArrayTest,ProfilePasswordTest}.php`, `tests/Feature/Projetos/TaskDetailTest.php`, `spec.md`, `docs/DEPLOY.md`
+**Depends on**: T19
+**Reuses**: a varredura do A10, extraída para `violacoesA10()`
+**Requirement**: SEC-04, SEC-09, SEC-11, SEC-14, SEC-21, SEC-23
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] M05, M06, M10, M11, M24, M32, M36, M38 e M42 morrem (conferido à mão, cada um numa cópia restaurada)
+- [x] As duas lacunas de precisão fechadas na spec
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test`
+
+**Tests**: arch, integration
+**Gate**: full
+
+**Commit**: `test(seguranca): correções da rodada 1 do Verifier do B9`
 
