@@ -240,8 +240,8 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-06 | P1: Senha (AC 6, 7, hash descartável) | Tasks | Implementing |
 | SEC-07 | P1: Senha (AC 8, 9, e-mail na fila) | Tasks | Implementing |
 | SEC-08 | P1: FormRequest (AC 1) | Tasks | Implementing |
-| SEC-09 | P1: FormRequest (AC 2, 4, A10) | Tasks | Pending |
-| SEC-10 | P1: FormRequest (AC 3, teto da busca) | Tasks | Pending |
+| SEC-09 | P1: FormRequest (AC 2, 4, A10) | Tasks | Implementing |
+| SEC-10 | P1: FormRequest (AC 3, teto da busca) | Tasks | Implementing |
 | SEC-11 | P1: Anexo (AC 1 a 6) | Tasks | Pending |
 | SEC-12 | P1: Produção (AC 1 a 4, `app:conferir-producao`) | Tasks | Pending |
 | SEC-13 | P1: Produção (AC 5, 500 sem stack) | Tasks | Pending |

@@ -9,6 +9,7 @@ use App\Platform\Requests\Admin\AnonymizeContactRequest;
 use App\Platform\Requests\Admin\StoreContactRequest;
 use App\Platform\Services\ContactPresenter;
 use App\Platform\Services\ContactService;
+use App\Support\Busca;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +31,7 @@ class ContactController extends Controller
         $clients = $this->contacts->clientOptions($user);
         $clientId = $request->integer('client_id');
         $filters = [
-            'search' => (string) $request->string('search'),
+            'search' => Busca::termo($request),
             // Só os clientes que a pessoa vê (F1 §09): outro id não filtra.
             'client_id' => in_array($clientId, array_column($clients, 'id'), true) ? $clientId : null,
             'show_inactive' => $request->boolean('show_inactive'),

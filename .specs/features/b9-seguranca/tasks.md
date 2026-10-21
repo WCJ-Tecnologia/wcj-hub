@@ -229,10 +229,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] A10 verde na árvore e vermelho contra uma ação de mentira com `$request->validate(` (teste do próprio verificador do A10)
-- [ ] Busca de 201 caracteres nas seis listas devolve a lista sem filtro de texto; 200 caracteres filtra
-- [ ] A5 verde, sem exceção nova
-- [ ] Gate check passes: `composer lint && php artisan test tests/Arch && php artisan test --filter=BuscaTeto`
+- [x] A10 verde na árvore e vermelho contra uma ação de mentira com `$request->validate(` (teste do próprio verificador do A10)
+- [x] Busca de 201 caracteres nas seis listas devolve a lista sem filtro de texto; 200 caracteres filtra
+- [x] A5 verde, sem exceção nova
+- [x] Gate check passes: `composer lint && php artisan test tests/Arch && php artisan test --filter=BuscaTeto`
 
 **Tests**: arch, integration
 **Gate**: quick

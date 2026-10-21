@@ -15,6 +15,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
+use Tests\Arch\Support\AcoesDeExemploA10;
 use Tests\Arch\Support\VerificaArquitetura;
 
 /**
@@ -105,6 +106,45 @@ class RotasAutorizadasTest extends TestCase
             'rota logada: chame $this->authorize() com a Policy do recurso, ou ponha num grupo com can:. '
             .'Rota pública de propósito: declare em ROTAS_PUBLICAS, com o motivo. '
             .'Ação que só mexe na conta de quem está logado: ACOES_DA_PROPRIA_CONTA, com o motivo.');
+    }
+
+    /**
+     * Validação na própria ação, fora de FormRequest (B9, SEC-09; seguranca.md §7). O
+     * `validated()` do FormRequest não casa: o parêntese vem logo depois de "validate".
+     */
+    private const VALIDA_NA_MAO = '/->validate\(|\bValidator::make\(|\bvalidator\(/';
+
+    public function test_a10_escrita_valida_a_entrada_em_form_request(): void
+    {
+        $this->app->make(Kernel::class);
+        $roteador = $this->app->make('router');
+
+        $violacoes = [];
+        foreach ($roteador->getRoutes() as $rota) {
+            if (array_diff($rota->methods(), ['GET', 'HEAD']) === []) {
+                continue;
+            }
+            $funcao = self::funcaoDaRota($rota);
+            if ($funcao !== null && self::validaNaMao($funcao)) {
+                $violacoes[] = self::verbo($rota).' /'.ltrim($rota->uri(), '/').' -> '.$rota->getActionName();
+            }
+        }
+
+        $this->semViolacoes('A10', 'Validação fora de FormRequest', $violacoes,
+            'a escrita valida a entrada num FormRequest (regras explícitas, autoriza antes de validar), '
+            .'nunca com $request->validate() ou Validator::make() na ação.');
+    }
+
+    public function test_a10_o_detector_pega_a_validacao_na_mao(): void
+    {
+        $this->assertTrue(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'validaNoRequest')));
+        $this->assertTrue(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'validaComValidator')));
+        $this->assertFalse(self::validaNaMao(new ReflectionMethod(AcoesDeExemploA10::class, 'usaOValidado')));
+    }
+
+    private static function validaNaMao(ReflectionFunctionAbstract $funcao): bool
+    {
+        return preg_match(self::VALIDA_NA_MAO, self::corpoSemComentario($funcao)) === 1;
     }
 
     /** A função que atende a rota, se ela é do projeto (App\ ou closure em routes/). */

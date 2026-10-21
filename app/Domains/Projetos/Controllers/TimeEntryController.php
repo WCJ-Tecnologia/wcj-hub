@@ -10,6 +10,7 @@ use App\Domains\Projetos\Services\TimeEntryPresenter;
 use App\Domains\Projetos\Services\TimeEntryQuery;
 use App\Domains\Projetos\Services\TimeEntryService;
 use App\Http\Controllers\Controller;
+use App\Support\Busca;
 use App\Support\DiasUteis;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -82,7 +83,7 @@ class TimeEntryController extends Controller
             'from' => min($from, $to),
             'to' => max($from, $to),
             'project_id' => $request->integer('project_id') > 0 ? $request->integer('project_id') : null,
-            'search' => trim((string) $request->query('search', '')),
+            'search' => Busca::termo($request),
         ];
     }
 }

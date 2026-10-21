@@ -10,6 +10,7 @@ use App\Platform\Requests\Admin\StoreClientRequest;
 use App\Platform\Services\ClientPresenter;
 use App\Platform\Services\ClientService;
 use App\Platform\Services\ContactPresenter;
+use App\Support\Busca;
 use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class ClientController extends Controller
 
         $country = strtoupper((string) $request->string('country'));
         $filters = [
-            'search' => (string) $request->string('search'),
+            'search' => Busca::termo($request),
             'country' => in_array($country, Paises::codigos(), true) ? $country : null,
             'show_inactive' => $request->boolean('show_inactive'),
         ];
