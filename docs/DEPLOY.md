@@ -121,43 +121,63 @@ Saem pela fila o "esqueci a senha" (B9: a resposta não espera o SMTP, para o te
 Os headers de segurança saem da própria aplicação, em toda resposta do PHP (`app/Http/Middleware/SecurityHeaders.php`, global desde o B9). O Nginx cuida do que não passa pelo PHP: os arquivos de `public/` (build do front, fontes, logo). Bloco de referência, ajustado no B10 com o Alaor:
 
 ```nginx
-server_tokens off;
-client_max_body_size 210m;      # HUB_ATTACHMENT_MAX_KB x HUB_ATTACHMENT_MAX_FILES, com folga
-
-# IP real, se houver proxy ou balanceador na frente do Nginx (seguranca.md §8)
-# set_real_ip_from <IP ou faixa do proxy>;
-# real_ip_header X-Forwarded-For;
-
-location / {
-    try_files $uri $uri/ /index.php?$query_string;
+# Qualquer Host que não seja o do Hub fecha a conexão sem resposta (B9, SEC-21). A aplicação
+# também recusa (trustHosts, 400) e gera todo link a partir do APP_URL; o Nginx é a primeira porta.
+server {
+    listen 80 default_server;
+    server_name _;
+    return 301 https://hub.wcjtecnologia.com.br$request_uri;   # o host do APP_URL do ambiente
 }
 
-# Todo caminho começado por ponto (.env, .git), menos o .well-known (certificado; metadados OAuth do B8)
-location ~ /\.(?!well-known) {
-    deny all;
-    return 404;
+server {
+    listen 443 ssl default_server;
+    server_name _;
+    # ssl_certificate e ssl_certificate_key: os mesmos do Hub (ou ssl_reject_handshake on;)
+    return 444;
 }
 
-# Backup, dump e diagnóstico nunca são servidos
-location ~* \.(bak|old|orig|swp|sql|sqlite|log|tar|gz|zip|dist)$ {
-    deny all;
-    return 404;
-}
+server {
+    listen 443 ssl;
+    server_name hub.wcjtecnologia.com.br;   # o host do APP_URL do ambiente
 
-# Assets: add_header dentro de um location descarta os herdados; repita o bloco inteiro
-location ~* ^/(build|fonts|brand)/ {
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    expires 1y;
-    access_log off;
-    try_files $uri =404;
-}
+    server_tokens off;
+    client_max_body_size 210m;      # HUB_ATTACHMENT_MAX_KB x HUB_ATTACHMENT_MAX_FILES, com folga
 
-location ~ \.php$ {
-    fastcgi_hide_header X-Powered-By;
-    # fastcgi_pass, include fastcgi_params, SCRIPT_FILENAME: do container do B10
+    # IP real, se houver proxy ou balanceador na frente do Nginx (seguranca.md §8)
+    # set_real_ip_from <IP ou faixa do proxy>;
+    # real_ip_header X-Forwarded-For;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # Todo caminho começado por ponto (.env, .git), menos o .well-known (certificado; metadados OAuth do B8)
+    location ~ /\.(?!well-known) {
+        deny all;
+        return 404;
+    }
+
+    # Backup, dump e diagnóstico nunca são servidos
+    location ~* \.(bak|old|orig|swp|sql|sqlite|log|tar|gz|zip|dist)$ {
+        deny all;
+        return 404;
+    }
+
+    # Assets: add_header dentro de um location descarta os herdados; repita o bloco inteiro
+    location ~* ^/(build|fonts|brand)/ {
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        expires 1y;
+        access_log off;
+        try_files $uri =404;
+    }
+
+    location ~ \.php$ {
+        fastcgi_hide_header X-Powered-By;
+        # fastcgi_pass, include fastcgi_params, SCRIPT_FILENAME: do container do B10
+    }
 }
 ```
 
@@ -177,6 +197,7 @@ Cada item com o comando e a resposta esperada. Qualquer um diferente: voltar atr
 - [ ] nenhuma das respostas acima traz `X-Powered-By` nem a versão do Nginx em `Server`
 - [ ] `curl -s -o /dev/null -w '%{http_code}' https://<url>/.env` responde 403 ou 404, nunca 200; o mesmo para `/.git/HEAD`, `/storage/qualquer-coisa` e `/index.php.bak`
 - [ ] `curl -s -o /dev/null -w '%{http_code}' http://<url>/` redireciona para `https://`
+- [ ] `curl -sk -o /dev/null -w '%{http_code}' -H 'Host: outro.exemplo' https://<IP do servidor>/admin/login` não responde 200 (o Nginx fecha com 444; se chegar à aplicação, ela responde 400)
 - [ ] login com uma conta de verdade e o fluxo que mudou usados no navegador
 - [ ] fila processando: `php artisan queue:monitor database:default` e um "esqueci a senha" de teste chegando na caixa (é o e-mail que passa pela fila)
 - [ ] log do Nginx mostra o IP real de quem acessa, não o do proxy

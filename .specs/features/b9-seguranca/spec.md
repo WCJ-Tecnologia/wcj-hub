@@ -59,7 +59,7 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 | Avisos do `npm audit` de 21/10 | `follow-redirects` (via axios) e `launch-editor` (via vite) sobem de versão pelo `npm audit fix`, sem `--force`; a classificação de alcance vai no relatório do SCA | Os dois têm correção sem quebra; o axios no navegador usa XHR e não carrega o `follow-redirects`, e o `launch-editor` só roda no `vite dev`: alcance baixo, mas a correção é barata | y |
 | SAST junto do SCA | O `scan.sh <repo> sast` (Semgrep) roda junto do `sca`, e os achados entram no mesmo relatório, triados | Custa minutos, local, e responde parte da pergunta 4 e 5 da revisão dirigida | y |
 | Revisão dirigida | Um subagente de contexto zerado (Opus) responde as seis perguntas de `seguranca.md` §11 arquivo por arquivo em `revisao-seguranca.md`, depois do código e antes do Verifier; achado novo vira tarefa de correção ou fica "em aberto com correção proposta" com dono | `seguranca.md` §11: "feita por subagente com contexto zerado antes do humano" | y |
-| **PARADA (autenticação).** Domínio dos links (achado 1, alto) | Em produção, um middleware global fixa a raiz de toda URL gerada no `APP_URL` (`URL::forceRootUrl` e o esquema dele) e o `trustHosts` aceita só o host do `APP_URL`; fora de produção, nada muda. O `DEPLOY.md` ganha `server_name` e um servidor padrão que responde 444 | O link do e-mail de redefinição, o logo do e-mail e o link dos avisos saíam do `Host` da requisição: um pedido sem login com `Host` falso mandava à vítima um link para o domínio do atacante. Só em produção, para não mexer no dev nem no e2e | y |
+| **PARADA (autenticação).** Domínio dos links (achado 1, alto) | Em produção, um middleware global fixa a raiz de toda URL gerada no `APP_URL` (`URL::forceRootUrl` e o esquema dele) e o `trustHosts` aceita só o host do `APP_URL` (outro host recebe 400); fora de produção, nada muda. O `DEPLOY.md` ganha `server_name` e um servidor padrão que responde 444 | O link do e-mail de redefinição, o logo do e-mail e o link dos avisos saíam do `Host` da requisição: um pedido sem login com `Host` falso mandava à vítima um link para o domínio do atacante. Só em produção, para não mexer no dev nem no e2e | y |
 | **PARADA (autenticação).** Conta desativada com a senha certa (achado 4) | `Auth::attemptWhen` com o callback "ativa e de backoffice": a conta recusada não chega a logar, e o cookie de sessão não muda | Antes, o `Auth::attempt` logava e o controller deslogava: o id da sessão trocado revelava a senha certa | y |
 | **PARADA (limitador).** Parâmetro em array (achado 5) | `Busca::termo`, a chave do limitador `login`, a tela de redefinir, o filtro de país dos clientes e as datas de *Minhas horas* só aceitam texto; array vira vazio (ou o padrão do filtro), sem 500 | `(string)` de array dava 500 antes da validação, inclusive no login público | y |
 | Recusa de dev ou QA fora do projeto (achado 6) | A mensagem passa a "A pessoa escolhida não está alocada neste projeto.", sem o nome | Percorrendo `developer_id`, um dev listava o nome de todos os usuários | y |
@@ -198,12 +198,12 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 
 **Acceptance Criteria**:
 
-1. WHILE `APP_ENV` = `production`, IF uma requisição chega com um `Host` diferente do host do `APP_URL` THEN o sistema SHALL responder 404 e não pôr e-mail na fila.
+1. WHILE `APP_ENV` = `production`, IF uma requisição chega com um `Host` diferente do host do `APP_URL` THEN o sistema SHALL responder 400 e não pôr e-mail na fila (o `trustHosts` do Laravel recusa o host antes da rota).
 2. WHILE `APP_ENV` = `production`, WHEN alguém pede "esqueci a senha" para uma conta ativa THEN o link do e-mail SHALL começar com o `APP_URL`, com o esquema dele, mesmo que a requisição tenha chegado por `http`.
 3. WHILE `APP_ENV` = `production`, WHEN o sistema gera uma URL durante uma requisição THEN a URL SHALL começar com o `APP_URL`.
 4. The `docs/DEPLOY.md` SHALL ter `server_name` no bloco do Nginx e um servidor padrão que responde 444 a qualquer outro host.
 
-**Independent Test**: teste de feature em `production` com `Host` estranho (404, nada na fila) e com `http` (link em `https`).
+**Independent Test**: teste de feature em `production` com `Host` estranho (400, nada na fila) e com `http` (link em `https`).
 
 ---
 
@@ -292,7 +292,7 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-18 | P1: Dependências (AC 4, revisão dirigida) | Tasks | Implementing |
 | SEC-19 | P2: B8 (AC 1, nota) | Tasks | Implementing |
 | SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Implementing |
-| SEC-21 | P1: Links (AC 1 a 4, host e raiz das URLs) | Tasks | Pending |
+| SEC-21 | P1: Links (AC 1 a 4, host e raiz das URLs) | Tasks | Implementing |
 | SEC-22 | P1: Senha (AC 11, `attemptWhen`) | Tasks | Pending |
 | SEC-23 | P2: Entrada em array (AC 1 a 3) | Tasks | Pending |
 | SEC-24 | P2: Recusa sem nome (AC 4) | Tasks | Pending |

@@ -453,11 +453,11 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] Em produção, `Host` estranho: 404 e nada na fila
-- [ ] Em produção, pedido por `http`: o link do e-mail começa com o `APP_URL` em `https`
-- [ ] Em produção, URL gerada na requisição começa com o `APP_URL`
-- [ ] `server_name` e `default_server` 444 no `DEPLOY.md`
-- [ ] Gate check passes: `composer lint && php artisan test --filter='HostDoHub|PasswordFlow|SecurityHeaders'`
+- [x] Em produção, `Host` estranho: 400 e nada na fila
+- [x] Em produção, pedido por `http`: o link do e-mail começa com o `APP_URL` em `https`
+- [x] Em produção, URL gerada na requisição começa com o `APP_URL`
+- [x] `server_name` e `default_server` 444 no `DEPLOY.md`
+- [x] Gate check passes: `composer lint && php artisan test --filter='HostDoHub|PasswordFlow|SecurityHeaders'`
 
 **Tests**: integration
 **Gate**: quick
