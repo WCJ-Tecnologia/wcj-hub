@@ -70,6 +70,12 @@ T8 → T9 → T10 → T11
 T12 → T13
 ```
 
+### Phase 6: Correções da revisão dirigida (aprovadas por Lucas Scholz em 21/10/2026)
+
+```
+T14 → T15 → T16 → T17 → T18 → T19
+```
+
 ---
 
 ## Task Breakdown
@@ -427,3 +433,165 @@ T12 → T13
 **Gate**: build
 
 **Commit**: `docs(seguranca): revisao de seguranca dirigida do b9`
+
+### Phase 6: Correções da revisão dirigida
+
+---
+
+### T14: Links no domínio do Hub (achado 1)
+
+**What**: Middleware global que, em produção, fixa a raiz das URLs no `APP_URL` (`URL::forceRootUrl` + esquema); `trustHosts` com o host do `APP_URL` só em produção; `server_name` e servidor padrão 444 no `DEPLOY.md`.
+**Where**: `app/Http/Middleware/UseAppUrl.php` (novo), `bootstrap/app.php`, `tests/Feature/HostDoHubTest.php` (novo), `docs/DEPLOY.md`
+**Depends on**: T13
+**Reuses**: `TrustHosts` do Laravel
+**Requirement**: SEC-21
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Em produção, `Host` estranho: 404 e nada na fila
+- [ ] Em produção, pedido por `http`: o link do e-mail começa com o `APP_URL` em `https`
+- [ ] Em produção, URL gerada na requisição começa com o `APP_URL`
+- [ ] `server_name` e `default_server` 444 no `DEPLOY.md`
+- [ ] Gate check passes: `composer lint && php artisan test --filter='HostDoHub|PasswordFlow|SecurityHeaders'`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(seguranca): links e host presos ao APP_URL em produção`
+
+---
+
+### T15: Login por attemptWhen, dentro do Timebox de 500 ms (achados 2 e 4)
+
+**What**: Tira o hash descartável; `Auth::attemptWhen` com o callback de conta ativa e de backoffice; `auth.timebox_duration` em `config/auth.php` por `AUTH_TIMEBOX_MS` (500), no `.env.example`.
+**Where**: `app/Platform/Controllers/Auth/AuthenticatedSessionController.php`, `config/auth.php`, `.env.example`, `tests/Feature/LoginTimingTest.php`
+**Depends on**: T14
+**Reuses**: `SessionGuard::attemptWhen` e o `Timebox` do Laravel
+**Requirement**: SEC-06, SEC-22
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] E-mail sem conta, senha errada e conta desativada: resposta recusada só depois de `auth.timebox_duration` (medido com o valor do teste)
+- [ ] Conta desativada com a senha certa: `INVALID_CREDENTIALS` e o id da sessão não muda
+- [ ] Login certo continua entrando
+- [ ] Gate check passes: `composer lint && php artisan test --filter='Login|BackofficeAccess'`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(seguranca): login recusado leva sempre o tempo do Timebox`
+
+---
+
+### T16: Esqueci e redefinir dentro do Timebox (achado 3)
+
+**What**: A action inteira do "esqueci a senha" e do "redefinir" roda num `Timebox` de `auth.timebox_duration`; ajusta o comentário do `ResetPasswordMail`.
+**Where**: `ForgotPasswordController.php`, `NewPasswordController.php`, `app/Mail/ResetPasswordMail.php`, `tests/Feature/PasswordFlowTest.php`
+**Depends on**: T15
+**Reuses**: `Illuminate\Support\Timebox`
+**Requirement**: SEC-07
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] "Esqueci" para conta ativa, inativa e inexistente: resposta só depois de `auth.timebox_duration`
+- [ ] "Redefinir" com conta inexistente e com token errado: idem
+- [ ] Gate check passes: `composer lint && php artisan test --filter=PasswordFlow`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(seguranca): esqueci e redefinir respondem no tempo do Timebox`
+
+---
+
+### T17: Parâmetro em array não dá 500 (achado 5)
+
+**What**: `Busca::termo`, a chave do limitador `login`, a tela de redefinir, o país dos clientes e as datas de *Minhas horas* só aceitam texto.
+**Where**: `app/Support/Busca.php`, `app/Providers/AppServiceProvider.php`, `NewPasswordController.php`, `ClientController.php`, `TimeEntryController.php`, `tests/Feature/EntradaEmArrayTest.php` (novo)
+**Depends on**: T16
+**Reuses**: NONE
+**Requirement**: SEC-23
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Login, esqueci e redefinir com `email[]`: erro de validação, sem 500
+- [ ] `GET reset-password/x?email[]=y`: 200 com e-mail vazio
+- [ ] `search[]`, `country[]`, `from[]`, `to[]`: 200 com o filtro no padrão
+- [ ] Gate check passes: `composer lint && php artisan test --filter='EntradaEmArray|BuscaTeto'`
+
+**Tests**: integration
+**Gate**: quick
+
+**Commit**: `fix(seguranca): parametro em array nao derruba a requisicao`
+
+---
+
+### T18: Recusa de alocação sem o nome (achado 6)
+
+**What**: A recusa de dev ou QA fora do projeto passa a "A pessoa escolhida não está alocada neste projeto.".
+**Where**: `app/Domains/Projetos/Services/TaskAssignmentService.php`, testes que conferem a mensagem
+**Depends on**: T17
+**Reuses**: `NOT_ALLOCATED`
+**Requirement**: SEC-24
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] `developer_id` de quem não está alocado: a mensagem nova, sem o nome
+- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test`
+
+**Tests**: integration
+**Gate**: full
+
+**Commit**: `fix(projetos): recusa de alocacao sem o nome da pessoa`
+
+---
+
+### T19: `TRUSTED_PROXIES` e o tempo no `DEPLOY.md`
+
+**What**: Reescreve a orientação de `TRUSTED_PROXIES` para FastCGI; acerta a frase da fila (quem iguala o tempo é o Timebox); `AUTH_TIMEBOX_MS` na tabela de variáveis.
+**Where**: `docs/DEPLOY.md`
+**Depends on**: T18
+**Reuses**: NONE
+**Requirement**: SEC-25
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] A frase nova sobre FastCGI e nunca `*`
+- [ ] `AUTH_TIMEBOX_MS` na tabela
+- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test && npm run typecheck && npm run lint && npm run build && npm run test:guard`
+
+**Tests**: none
+**Gate**: build
+
+**Commit**: `docs(deploy): trusted_proxies com fastcgi e o tempo do timebox`
+

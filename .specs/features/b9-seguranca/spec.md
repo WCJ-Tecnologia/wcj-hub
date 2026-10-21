@@ -4,7 +4,7 @@ Feature `b9-seguranca` · trilho completo (D-GER-25) · fonte: [`docs/escopo.md`
 
 **Approved by**: Lucas Scholz, 2026-10-21
 
-**Aprovada por Lucas Scholz em 21/10/2026**, com as 8 PARADAS (headers globais, `X-Powered-By`, `storage/{path}`, senha atual no perfil, limitador `senha-atual`, hash descartável, e-mail de redefinição na fila, download pelo Service) confirmadas uma a uma.
+**Aprovada por Lucas Scholz em 21/10/2026**, com as 8 PARADAS (headers globais, `X-Powered-By`, `storage/{path}`, senha atual no perfil, limitador `senha-atual`, hash descartável, e-mail de redefinição na fila, download pelo Service) confirmadas uma a uma. **Revisada em 21/10/2026** com os 6 achados da revisão dirigida ([`revisao-seguranca.md`](revisao-seguranca.md)), correções A a F aprovadas por Lucas Scholz no mesmo dia: o tempo do login e do "esqueci a senha" passa a ser igualado pelo Timebox do Laravel, não por hash descartável (SEC-06, SEC-07 reescritos), e entram SEC-21 a SEC-25.
 
 ## Problem Statement
 
@@ -47,8 +47,8 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 | **PARADA (upload).** Rota `storage/{path}` | `'serve' => false` no disco `local` (`config/filesystems.php:36`) | A rota existe só porque o padrão do Laravel 12 liga; o Hub não usa `temporaryUrl` (grep de 21/10). Superfície pública sem uso | y |
 | **PARADA (autenticação).** Trocar a senha pelo perfil | Passa a pedir a senha atual (`current_password`), com mensagem "A senha atual não confere" | Hoje quem pega uma sessão aberta troca a senha e toma a conta (`ProfileController.php:41-56`). F1 §02 "Perfil (do template)" não fala da senha atual; é o padrão da casa | y |
 | **PARADA (autenticação).** Limite na troca de senha pelo perfil | Limitador novo `senha-atual`: 5 tentativas por minuto por usuário logado, com a mesma resposta 429 do login (`ThrottledAuthResponse`) | Com a senha atual exigida, o perfil vira um lugar de adivinhar senha; o limitador do login usa o e-mail do formulário, que o perfil não tem | y |
-| **PARADA (autenticação).** Tempo do login com e-mail que não existe | Quando não há usuário com o e-mail, o login confere a senha contra um hash descartável (`Hash::check` num hash fixo gerado com o custo atual), antes de responder `INVALID_CREDENTIALS` | `seguranca.md` §3: mesma mensagem **e** mesmo tempo. O `EloquentUserProvider` não faz isso sozinho | y |
-| **PARADA (autenticação).** Tempo do "esqueci a senha" | `ResetPasswordMail` passa a `ShouldQueue`: a resposta não espera o SMTP, exista a conta ou não | Hoje só o e-mail que existe paga o envio síncrono (`User.php:68`). Efeito colateral: sem o worker da fila, o e-mail atrasa. O `DEPLOY.md` já põe o worker no passo a passo e a verificação pós-deploy confere a fila | y |
+| **PARADA (autenticação).** Tempo do login com e-mail que não existe | O login entra por `Auth::attemptWhen` (conta ativa e de backoffice), que roda dentro do Timebox do Laravel; `auth.timebox_duration` sobe de 200 para 500 ms (`AUTH_TIMEBOX_MS`), acima do custo do bcrypt 12. Sem hash descartável | Revisado em 21/10 (achado 2): o hash descartável depois do `Auth::attempt` somava ao Timebox e invertia a diferença (480 ms × 280 ms). Com o Timebox maior que o bcrypt, todo login recusado leva o mesmo tempo mínimo | y |
+| **PARADA (autenticação).** Tempo do "esqueci a senha" | `ResetPasswordMail` passa a `ShouldQueue` (a resposta não espera o SMTP), e a action inteira do "esqueci a senha" e do "redefinir" roda dentro de um Timebox de `auth.timebox_duration`, para todo e-mail | Revisado em 21/10 (achado 3): o controller só chamava o broker (Timebox e bcrypt do token) para conta ativa; a fila sozinha não igualava. Sem o worker da fila, o e-mail atrasa (o `DEPLOY.md` confere a fila) | y |
 | **PARADA (upload).** Download do anexo | Sai do controller e vai para `AttachmentService::download(TaskAttachment): StreamedResponse`, com o mesmo comportamento de hoje (imagem na página, resto baixa, `Content-Type` gravado, `nosniff`, nome original) | O escopo do B9 pede "download pelo Service"; hoje o controller usa o `Storage` direto (`TaskDetailController.php:138-149`) | y |
 | `FormRequest` na escrita | As cinco escritas com `$request->validate` inline viram `FormRequest`: login, esqueci a senha, redefinir senha, primeiro acesso e perfil. As regras não mudam (fora o `current_password` da linha acima) | `seguranca.md` §7; as outras 27 escritas já usam `FormRequest` | y |
 | Filtros das listas (GET) | Ficam como estão (coerção, valor inválido cai no padrão, sem 422), mas toda busca por texto ganha teto de 200 caracteres, o mesmo do quadro e dos indicadores. A obrigação de `FormRequest` vale para escrita | Trocar filtro por `FormRequest` muda o comportamento da tela (erro em vez de padrão) sem ganho de segurança; o que falta é o teto (`ClientController.php:34`, `UserController.php:30`, `ContactController.php:33`, `ProjectController.php:40`, `SprintController.php:95`, `TimeEntryController.php:85`) | y |
@@ -59,6 +59,11 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 | Avisos do `npm audit` de 21/10 | `follow-redirects` (via axios) e `launch-editor` (via vite) sobem de versão pelo `npm audit fix`, sem `--force`; a classificação de alcance vai no relatório do SCA | Os dois têm correção sem quebra; o axios no navegador usa XHR e não carrega o `follow-redirects`, e o `launch-editor` só roda no `vite dev`: alcance baixo, mas a correção é barata | y |
 | SAST junto do SCA | O `scan.sh <repo> sast` (Semgrep) roda junto do `sca`, e os achados entram no mesmo relatório, triados | Custa minutos, local, e responde parte da pergunta 4 e 5 da revisão dirigida | y |
 | Revisão dirigida | Um subagente de contexto zerado (Opus) responde as seis perguntas de `seguranca.md` §11 arquivo por arquivo em `revisao-seguranca.md`, depois do código e antes do Verifier; achado novo vira tarefa de correção ou fica "em aberto com correção proposta" com dono | `seguranca.md` §11: "feita por subagente com contexto zerado antes do humano" | y |
+| **PARADA (autenticação).** Domínio dos links (achado 1, alto) | Em produção, um middleware global fixa a raiz de toda URL gerada no `APP_URL` (`URL::forceRootUrl` e o esquema dele) e o `trustHosts` aceita só o host do `APP_URL`; fora de produção, nada muda. O `DEPLOY.md` ganha `server_name` e um servidor padrão que responde 444 | O link do e-mail de redefinição, o logo do e-mail e o link dos avisos saíam do `Host` da requisição: um pedido sem login com `Host` falso mandava à vítima um link para o domínio do atacante. Só em produção, para não mexer no dev nem no e2e | y |
+| **PARADA (autenticação).** Conta desativada com a senha certa (achado 4) | `Auth::attemptWhen` com o callback "ativa e de backoffice": a conta recusada não chega a logar, e o cookie de sessão não muda | Antes, o `Auth::attempt` logava e o controller deslogava: o id da sessão trocado revelava a senha certa | y |
+| **PARADA (limitador).** Parâmetro em array (achado 5) | `Busca::termo`, a chave do limitador `login`, a tela de redefinir, o filtro de país dos clientes e as datas de *Minhas horas* só aceitam texto; array vira vazio (ou o padrão do filtro), sem 500 | `(string)` de array dava 500 antes da validação, inclusive no login público | y |
+| Recusa de dev ou QA fora do projeto (achado 6) | A mensagem passa a "A pessoa escolhida não está alocada neste projeto.", sem o nome | Percorrendo `developer_id`, um dev listava o nome de todos os usuários | y |
+| `TRUSTED_PROXIES` no `DEPLOY.md` (observação da revisão) | Com FastCGI o PHP recebe o IP do cliente pelo Nginx; `TRUSTED_PROXIES` só leva o IP de um proxy HTTP na frente do PHP, e nunca `*` | A frase anterior mandava pôr o IP do Nginx, que não tem efeito, e convidava a trocar por `*` | y |
 | Valores dos limites | Login 5/min por IP+conta e 20/min por IP (já em `config/auth.php:128-131`); `senha-atual` 5/min por usuário; IA 60/20 por minuto por autorização (B8, `config/hub.php:12-13`) | Os da casa; `seguranca.md` traz "a validar com o Alaor" | y |
 
 **Open questions:** none - all resolved or logged above (confirmadas por Lucas Scholz em 21/10/2026).
@@ -98,12 +103,14 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 3. WHEN o usuário logado envia a troca de senha pelo perfil com a senha atual certa e uma senha nova válida THEN o sistema SHALL gravar a senha nova e encerrar as outras sessões da conta.
 4. WHEN o usuário logado salva só o nome no perfil, sem preencher senha THEN o sistema SHALL gravar o nome sem pedir a senha atual.
 5. IF o mesmo usuário logado envia a 6ª troca de senha pelo perfil dentro de um minuto THEN o sistema SHALL responder 429 com a mensagem de limite do login.
-6. WHEN alguém tenta entrar com um e-mail que não tem conta THEN o sistema SHALL conferir a senha contra um hash descartável antes de responder.
+6. WHEN alguém tenta entrar com um e-mail que não tem conta, com a senha errada ou com uma conta desativada THEN o sistema SHALL responder só depois de `auth.timebox_duration` (500 ms em produção).
 7. WHEN alguém tenta entrar com um e-mail que não tem conta THEN o sistema SHALL responder com a mesma mensagem `INVALID_CREDENTIALS` de senha errada.
 8. WHEN alguém pede "esqueci a senha" para um e-mail que tem conta ativa THEN o sistema SHALL pôr o e-mail de redefinição na fila, sem enviá-lo dentro da requisição.
+10. WHEN alguém pede "esqueci a senha" ou envia "redefinir senha" THEN o sistema SHALL responder só depois de `auth.timebox_duration`, exista a conta ou não, esteja ativa ou não.
+11. IF a conta existe e a senha está certa, mas a conta está desativada ou não é de backoffice THEN o sistema SHALL recusar com `INVALID_CREDENTIALS` sem trocar o id da sessão.
 9. WHEN alguém pede "esqueci a senha" para um e-mail que não tem conta THEN o sistema SHALL responder com a mesma mensagem `GENERIC_MESSAGE` e sem e-mail na fila.
 
-**Independent Test**: no navegador, trocar a senha pelo perfil com a senha atual errada mostra o erro; o teste de feature com `Hash` espionado mostra a conferência no e-mail inexistente; `Mail::fake()` mostra o e-mail de redefinição na fila.
+**Independent Test**: no navegador, trocar a senha pelo perfil com a senha atual errada mostra o erro; o teste de feature mede o tempo mínimo das respostas recusadas; `Mail::fake()` mostra o e-mail de redefinição na fila.
 
 ---
 
@@ -183,6 +190,39 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 
 ---
 
+### P1: Links dos e-mails no domínio do Hub ⭐ MVP
+
+**User Story**: As a usuário do Hub, I want que todo link que o Hub manda aponte para o domínio do Hub, so that um pedido forjado não me mande para o site de outro.
+
+**Why P1**: Achado alto da revisão dirigida: tomada de conta pelo link de redefinição.
+
+**Acceptance Criteria**:
+
+1. WHILE `APP_ENV` = `production`, IF uma requisição chega com um `Host` diferente do host do `APP_URL` THEN o sistema SHALL responder 404 e não pôr e-mail na fila.
+2. WHILE `APP_ENV` = `production`, WHEN alguém pede "esqueci a senha" para uma conta ativa THEN o link do e-mail SHALL começar com o `APP_URL`, com o esquema dele, mesmo que a requisição tenha chegado por `http`.
+3. WHILE `APP_ENV` = `production`, WHEN o sistema gera uma URL durante uma requisição THEN a URL SHALL começar com o `APP_URL`.
+4. The `docs/DEPLOY.md` SHALL ter `server_name` no bloco do Nginx e um servidor padrão que responde 444 a qualquer outro host.
+
+**Independent Test**: teste de feature em `production` com `Host` estranho (404, nada na fila) e com `http` (link em `https`).
+
+---
+
+### P2: Entrada em array e recusa sem nome
+
+**User Story**: As a dono do sistema, I want que parâmetro em formato errado não derrube a requisição e que a recusa de alocação não revele nomes, so that ninguém tire 500 nem a lista de usuários do Hub.
+
+**Why P2**: Achados baixos da revisão dirigida.
+
+**Acceptance Criteria**:
+
+1. IF alguém envia `email` como array no login, no "esqueci a senha" ou no "redefinir" THEN o sistema SHALL responder com erro de validação, sem 500.
+2. IF alguém abre a tela de redefinir com `?email[]=x` THEN o sistema SHALL mostrar a tela com o e-mail vazio, sem 500.
+3. IF alguém envia `search`, `country`, `from` ou `to` como array nas listas THEN o sistema SHALL responder a lista com o filtro no padrão, sem 500.
+4. IF quem edita a ficha escolhe para dev ou QA alguém que não está alocado no projeto THEN o sistema SHALL recusar com "A pessoa escolhida não está alocada neste projeto.", sem o nome dela.
+5. The `docs/DEPLOY.md` SHALL dizer que, com FastCGI, `TRUSTED_PROXIES` leva só o IP de um proxy HTTP na frente do PHP, nunca `*`.
+
+---
+
 ### P2: Regras para o B8 (OAuth e MCP)
 
 **User Story**: As a Cauã (B8), I want as regras de segurança do `/oauth/token` e do `/mcp` escritas antes de eu começar, so that o B8 nasça com o limitador e a revisão do `mcp.md` §12.
@@ -237,8 +277,8 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-03 | P1: Headers (AC 5, `storage/{path}`) | Tasks | Implementing |
 | SEC-04 | P1: Senha (AC 1 a 4, senha atual no perfil) | Tasks | Implementing |
 | SEC-05 | P1: Senha (AC 5, limitador `senha-atual`) | Tasks | Implementing |
-| SEC-06 | P1: Senha (AC 6, 7, hash descartável) | Tasks | Implementing |
-| SEC-07 | P1: Senha (AC 8, 9, e-mail na fila) | Tasks | Implementing |
+| SEC-06 | P1: Senha (AC 6, 7, tempo mínimo do login) | Tasks | Pending |
+| SEC-07 | P1: Senha (AC 8 a 10, fila e tempo mínimo) | Tasks | Pending |
 | SEC-08 | P1: FormRequest (AC 1) | Tasks | Implementing |
 | SEC-09 | P1: FormRequest (AC 2, 4, A10) | Tasks | Implementing |
 | SEC-10 | P1: FormRequest (AC 3, teto da busca) | Tasks | Implementing |
@@ -252,8 +292,13 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-18 | P1: Dependências (AC 4, revisão dirigida) | Tasks | Implementing |
 | SEC-19 | P2: B8 (AC 1, nota) | Tasks | Implementing |
 | SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Implementing |
+| SEC-21 | P1: Links (AC 1 a 4, host e raiz das URLs) | Tasks | Pending |
+| SEC-22 | P1: Senha (AC 11, `attemptWhen`) | Tasks | Pending |
+| SEC-23 | P2: Entrada em array (AC 1 a 3) | Tasks | Pending |
+| SEC-24 | P2: Recusa sem nome (AC 4) | Tasks | Pending |
+| SEC-25 | P2: `TRUSTED_PROXIES` no `DEPLOY.md` (AC 5) | Tasks | Pending |
 
-**Coverage:** 20 total, 0 mapped to tasks (a fase Tasks vem depois da aprovação), 20 unmapped ⚠️
+**Coverage:** 25 total, 25 mapped to tasks (T1 a T19), 0 unmapped
 
 ---
 
