@@ -10,6 +10,7 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Timebox;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,17 @@ class NewPasswordController extends Controller
         ]);
     }
 
+    /**
+     * Inteira dentro do Timebox: conta inexistente, inativa ou token errado respondem no mesmo
+     * tempo mínimo (auth.timebox_duration), e a recusa sai depois dele (revisão dirigida do B9,
+     * achado 3; SEC-07).
+     */
     public function store(ResetPasswordRequest $request): RedirectResponse
+    {
+        return (new Timebox)->call(fn () => $this->reset($request), (int) config('auth.timebox_duration'));
+    }
+
+    private function reset(ResetPasswordRequest $request): RedirectResponse
     {
         $account = User::query()->where('email', $request->string('email'))->first();
 
@@ -40,16 +51,7 @@ class NewPasswordController extends Controller
         // auth.passwords.users.expire (60 minutes).
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password): void {
-                $user->forceFill([
-                    'password' => $password,
-                    'must_change_password' => false,
-                ])->save();
-
-                $this->sessions->terminateOthers($user);
-
-                event(new PasswordReset($user));
-            },
+            fn (User $user, string $password) => $this->applyNewPassword($user, $password),
         );
 
         if ($status !== Password::PASSWORD_RESET) {
@@ -59,5 +61,17 @@ class NewPasswordController extends Controller
         return redirect()
             ->route('login')
             ->with('success', 'Senha nova pronta. Entra quando quiser — a gente te espera.');
+    }
+
+    private function applyNewPassword(User $user, #[\SensitiveParameter] string $password): void
+    {
+        $user->forceFill([
+            'password' => $password,
+            'must_change_password' => false,
+        ])->save();
+
+        $this->sessions->terminateOthers($user);
+
+        event(new PasswordReset($user));
     }
 }

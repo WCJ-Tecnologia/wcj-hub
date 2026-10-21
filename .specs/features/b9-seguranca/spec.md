@@ -278,7 +278,7 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-04 | P1: Senha (AC 1 a 4, senha atual no perfil) | Tasks | Implementing |
 | SEC-05 | P1: Senha (AC 5, limitador `senha-atual`) | Tasks | Implementing |
 | SEC-06 | P1: Senha (AC 6, 7, tempo mínimo do login) | Tasks | Implementing |
-| SEC-07 | P1: Senha (AC 8 a 10, fila e tempo mínimo) | Tasks | Pending |
+| SEC-07 | P1: Senha (AC 8 a 10, fila e tempo mínimo) | Tasks | Implementing |
 | SEC-08 | P1: FormRequest (AC 1) | Tasks | Implementing |
 | SEC-09 | P1: FormRequest (AC 2, 4, A10) | Tasks | Implementing |
 | SEC-10 | P1: FormRequest (AC 3, teto da busca) | Tasks | Implementing |

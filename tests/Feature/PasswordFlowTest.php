@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\ResetPasswordMail;
 use App\Mail\TemporaryPasswordMail;
 use App\Platform\Controllers\Auth\ForgotPasswordController;
+use App\Platform\Controllers\Auth\NewPasswordController;
 use App\Platform\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -315,5 +316,37 @@ class PasswordFlowTest extends TestCase
         $this->actingAs($supervisor)
             ->post('/admin/users/'.$target->id.'/reset-password')
             ->assertForbidden();
+    }
+
+    /** O "esqueci" e o "redefinir" respondem no tempo do Timebox para todo e-mail (revisão dirigida, achado 3; B9, SEC-07). */
+    public function test_forgot_and_reset_answer_only_after_the_timebox_for_every_email(): void
+    {
+        config(['auth.timebox_duration' => 300_000]);
+        Mail::fake();
+        User::factory()->projectManager()->create(['email' => 'ativo@example.com']);
+        User::factory()->projectManager()->inactive()->create(['email' => 'inativo@example.com']);
+
+        $elapsedMs = function (callable $request): float {
+            $start = microtime(true);
+            $request();
+
+            return (microtime(true) - $start) * 1000;
+        };
+
+        foreach (['ativo@example.com', 'inativo@example.com', 'ninguem@example.com'] as $email) {
+            $ms = $elapsedMs(fn () => $this->post('/admin/forgot-password', ['email' => $email])
+                ->assertSessionHas('success', ForgotPasswordController::GENERIC_MESSAGE));
+            $this->assertGreaterThanOrEqual(300, $ms, "esqueci a senha ({$email}) respondeu antes do Timebox");
+        }
+
+        foreach (['ativo@example.com', 'inativo@example.com', 'ninguem@example.com'] as $email) {
+            $ms = $elapsedMs(fn () => $this->post('/admin/reset-password', [
+                'token' => 'token-que-nao-confere',
+                'email' => $email,
+                'password' => 'senha-nova-123',
+                'password_confirmation' => 'senha-nova-123',
+            ])->assertSessionHasErrors(['email' => NewPasswordController::INVALID_LINK]));
+            $this->assertGreaterThanOrEqual(300, $ms, "redefinir ({$email}) respondeu antes do Timebox");
+        }
     }
 }

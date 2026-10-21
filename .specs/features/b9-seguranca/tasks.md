@@ -508,9 +508,9 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] "Esqueci" para conta ativa, inativa e inexistente: resposta só depois de `auth.timebox_duration`
-- [ ] "Redefinir" com conta inexistente e com token errado: idem
-- [ ] Gate check passes: `composer lint && php artisan test --filter=PasswordFlow`
+- [x] "Esqueci" para conta ativa, inativa e inexistente: resposta só depois de `auth.timebox_duration`
+- [x] "Redefinir" com conta inexistente e com token errado: idem
+- [x] Gate check passes: `composer lint && php artisan test --filter=PasswordFlow`
 
 **Tests**: integration
 **Gate**: quick

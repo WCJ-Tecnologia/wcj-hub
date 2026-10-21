@@ -9,6 +9,5 @@ return [
         'app/Platform/Services/AuditService.php usa request()' => ['motivo' => 'o log de auditoria lê o IP da requisição corrente; decidir: exceção da regra ou contexto passado pelo controller', 'teto' => 1],
     ],
     'A6' => [
-        'app/Platform/Controllers/Auth/NewPasswordController.php::store' => ['motivo' => 'fluxo do broker de senha do Laravel (código do starter kit)', 'teto' => 39],
     ],
 ];

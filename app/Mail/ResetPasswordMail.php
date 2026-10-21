@@ -11,9 +11,10 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Na fila: o "esqueci a senha" responde sem esperar o SMTP, exista a conta ou não, e o tempo
- * de resposta não revela o e-mail cadastrado (seguranca.md §3; B9, SEC-07). Sem o worker
- * rodando, o e-mail atrasa (docs/DEPLOY.md).
+ * Na fila: o "esqueci a senha" responde sem esperar o SMTP. Quem iguala o tempo de resposta
+ * entre conta que existe e que não existe é o Timebox do controller (seguranca.md §3; B9,
+ * SEC-07); a fila tira do caminho o SMTP, que passaria do Timebox. Sem o worker rodando, o
+ * e-mail atrasa (docs/DEPLOY.md).
  */
 class ResetPasswordMail extends Mailable implements ShouldQueue
 {
