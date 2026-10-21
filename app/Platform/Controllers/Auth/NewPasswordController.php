@@ -4,12 +4,12 @@ namespace App\Platform\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Platform\Models\User;
+use App\Platform\Requests\Auth\ResetPasswordRequest;
 use App\Platform\Services\SessionService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,14 +28,8 @@ class NewPasswordController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ResetPasswordRequest $request): RedirectResponse
     {
-        $request->validate([
-            'token' => ['required', 'string'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', PasswordRule::defaults()],
-        ]);
-
         $account = User::query()->where('email', $request->string('email'))->first();
 
         if (! $account?->isBackofficeUser() || ! $account->isActive()) {

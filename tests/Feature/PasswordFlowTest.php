@@ -29,7 +29,9 @@ class PasswordFlowTest extends TestCase
             ->assertRedirect('/admin/forgot-password')
             ->assertSessionHas('success', ForgotPasswordController::GENERIC_MESSAGE);
 
-        Mail::assertSent(ResetPasswordMail::class, fn (ResetPasswordMail $mail) => $mail->hasTo($supervisor->email));
+        // Na fila, não na requisição: a resposta não espera o SMTP, exista a conta ou não (B9, SEC-07).
+        Mail::assertQueued(ResetPasswordMail::class, fn (ResetPasswordMail $mail) => $mail->hasTo($supervisor->email));
+        Mail::assertNothingSent();
 
         Mail::fake();
 
@@ -41,7 +43,7 @@ class PasswordFlowTest extends TestCase
                 ->assertSessionHasNoErrors();
         }
 
-        Mail::assertNothingSent();
+        Mail::assertNothingOutgoing();
     }
 
     public function test_reset_link_sets_a_new_password_and_clears_the_first_access_flag(): void

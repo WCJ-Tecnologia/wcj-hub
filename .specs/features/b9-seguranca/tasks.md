@@ -172,10 +172,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] E-mail com conta ativa: `ResetPasswordMail` na fila (`Mail::assertQueued`) e nada enviado na requisição (`assertNothingSent`)
-- [ ] E-mail sem conta: `GENERIC_MESSAGE` e nada na fila
-- [ ] Os testes de senha que já existem continuam verdes
-- [ ] Gate check passes: `composer lint && php artisan test --filter='PasswordFlow|LoginThrottle'`
+- [x] E-mail com conta ativa: `ResetPasswordMail` na fila (`Mail::assertQueued`) e nada enviado na requisição (`assertNothingSent`)
+- [x] E-mail sem conta: `GENERIC_MESSAGE` e nada na fila
+- [x] Os testes de senha que já existem continuam verdes
+- [x] Gate check passes: `composer lint && php artisan test --filter='PasswordFlow|LoginThrottle'`
 
 **Tests**: integration
 **Gate**: quick

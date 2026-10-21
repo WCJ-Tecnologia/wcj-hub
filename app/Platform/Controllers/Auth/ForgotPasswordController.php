@@ -4,8 +4,8 @@ namespace App\Platform\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Platform\Models\User;
+use App\Platform\Requests\Auth\ForgotPasswordRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,12 +23,8 @@ class ForgotPasswordController extends Controller
         return Inertia::render('auth/forgot-password');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ForgotPasswordRequest $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
         $user = User::query()->where('email', $request->string('email'))->first();
 
         if ($user?->isBackofficeUser() && $user->isActive() && $user->email) {

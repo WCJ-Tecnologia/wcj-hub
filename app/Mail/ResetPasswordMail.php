@@ -4,12 +4,18 @@ namespace App\Mail;
 
 use App\Platform\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPasswordMail extends Mailable
+/**
+ * Na fila: o "esqueci a senha" responde sem esperar o SMTP, exista a conta ou não, e o tempo
+ * de resposta não revela o e-mail cadastrado (seguranca.md §3; B9, SEC-07). Sem o worker
+ * rodando, o e-mail atrasa (docs/DEPLOY.md).
+ */
+class ResetPasswordMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
