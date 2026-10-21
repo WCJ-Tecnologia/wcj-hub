@@ -199,11 +199,11 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Senha atual errada: erro "A senha atual não confere" em `current_password`, senha gravada igual, outra sessão continua no banco
-- [ ] Senha atual certa + nova válida: senha nova gravada, outras sessões apagadas
-- [ ] Só o nome: grava sem pedir a senha atual
-- [ ] 6ª troca de senha no mesmo minuto: 429, sessão de pé; 6 saves só de nome não dão 429
-- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test && npm run typecheck && npm run lint`
+- [x] Senha atual errada: erro "A senha atual não confere" em `current_password`, senha gravada igual, outra sessão continua no banco
+- [x] Senha atual certa + nova válida: senha nova gravada, outras sessões apagadas
+- [x] Só o nome: grava sem pedir a senha atual
+- [x] 6ª troca de senha no mesmo minuto: 429, sessão de pé; 6 saves só de nome não dão 429
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test && npm run typecheck && npm run lint`
 
 **Tests**: integration
 **Gate**: build

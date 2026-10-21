@@ -3,10 +3,11 @@
 namespace App\Platform\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Platform\Models\User;
+use App\Platform\Requests\Admin\UpdateProfileRequest;
 use App\Platform\Services\SessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Password as PasswordRule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,30 +19,29 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        return Inertia::render('admin/profile/index', [
+        return Inertia::render('admin/profile/index', self::pageProps($user));
+    }
+
+    /**
+     * As props da tela, também usadas pela resposta 429 do limitador "senha-atual".
+     *
+     * @return array<string, mixed>
+     */
+    public static function pageProps(User $user): array
+    {
+        return [
             'profile' => [
                 'name' => $user->name,
                 'email' => $user->email,
                 'role_label' => $user->type()->label(),
             ],
-        ]);
+        ];
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateProfileRequest $request): RedirectResponse
     {
         $user = $request->user();
-
-        if (! $request->filled('password')) {
-            $request->merge([
-                'password' => null,
-                'password_confirmation' => null,
-            ]);
-        }
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'password' => ['nullable', 'confirmed', PasswordRule::defaults()],
-        ]);
+        $data = $request->validated();
 
         $user->fill([
             'name' => $data['name'],

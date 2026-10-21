@@ -77,7 +77,9 @@ Route::prefix('admin')
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile', [ProfileController::class, 'update'])
+            ->middleware('throttle:senha-atual')
+            ->name('profile.update');
 
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
