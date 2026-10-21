@@ -586,9 +586,9 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] A frase nova sobre FastCGI e nunca `*`
-- [ ] `AUTH_TIMEBOX_MS` na tabela
-- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test && npm run typecheck && npm run lint && npm run build && npm run test:guard`
+- [x] A frase nova sobre FastCGI e nunca `*`
+- [x] `AUTH_TIMEBOX_MS` na tabela
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test && npm run typecheck && npm run lint && npm run build && npm run test:guard`
 
 **Tests**: none
 **Gate**: build

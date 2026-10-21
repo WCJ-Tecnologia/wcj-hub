@@ -42,7 +42,7 @@ Todas as que o Hub lê estão no `.env.example`, com valores de dev. Em produç�
 | `APP_DISPLAY_TIMEZONE` | `America/Sao_Paulo` | fixo. O banco guarda UTC |
 | `APP_MAINTENANCE_DRIVER` | `file` | fixo |
 | `APP_BRAND_NAME`, `APP_THEME_COLOR` | `WCJ Hub`, a cor do tema | fixo (`docs/brand/`) |
-| `TRUSTED_PROXIES` | IP (ou faixa) do proxy que fica na frente do PHP | rede da VPS (Alaor). Vazio atrás de proxy = o limite de 20 logins por minuto por IP vale para todo mundo junto |
+| `TRUSTED_PROXIES` | vazio, com Nginx falando FastCGI com o PHP; o IP de um proxy HTTP só se houver um entre o Nginx e o PHP. **Nunca `*`** | rede da VPS (Alaor). Ver "IP real" na seção do Nginx |
 | `BCRYPT_ROUNDS` | `12` | fixo |
 | `LOG_CHANNEL`, `LOG_STACK`, `LOG_LEVEL` | `stack`, `daily`, `warning` | fixo. `debug` em produção enche o disco e pode gravar dado demais |
 | `LOG_DEPRECATIONS_CHANNEL` | `null` | fixo |
@@ -59,6 +59,7 @@ Todas as que o Hub lê estão no `.env.example`, com valores de dev. Em produç�
 | `CACHE_STORE` | `database` | fixo. O limitador de tentativas mora no cache |
 | `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT` | não usados com `CACHE_STORE=database` | só se o B10 trocar o cache para Redis; senha no cofre |
 | `AUTH_THROTTLE_PER_ACCOUNT`, `AUTH_THROTTLE_PER_IP` | `5`, `20` | fixo (`seguranca.md` §3). Só mudar com decisão registrada |
+| `AUTH_TIMEBOX_MS` | `500` | fixo. Tempo mínimo de todo login, "esqueci a senha" e "redefinir" recusados, para o tempo não revelar se o e-mail tem conta (B9). Tem de ficar acima do custo do bcrypt no servidor: confira com `php artisan tinker --execute="\$t=microtime(true); Hash::make('x'); echo round((microtime(true)-\$t)*1000);"` e, se passar de ~400 ms, suba o valor |
 | `CORS_ALLOWED_ORIGINS` | vazio | fixo. Só `api/health` aceita CORS, e nenhuma origem precisa dele hoje |
 | `MAIL_MAILER` | `smtp` | fixo. `app:conferir-producao` recusa `log` e `array`: com `log`, a senha provisória do convite iria em claro para `storage/logs` |
 | `MAIL_SCHEME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_ENCRYPTION` | os do SMTP Zoho da WCJ | o host, a porta e a criptografia estão no comentário do `.env.example` |
@@ -109,7 +110,7 @@ php artisan queue:restart                # o worker termina o job atual e sobe c
 
 ## Fila
 
-Saem pela fila o "esqueci a senha" (B9: a resposta não espera o SMTP, para o tempo não revelar se o e-mail tem conta) e os avisos de dev e QA (`TaskAssigned` e `TaskReturned`, P22). **Sem worker rodando, nenhum desses e-mails sai.** O convite com a senha provisória sai na própria requisição de quem convida (o Administrador vê o erro na hora se o SMTP falhar).
+Saem pela fila o "esqueci a senha" (B9: a resposta não espera o SMTP; quem iguala o tempo entre conta que existe e que não existe é o Timebox de `AUTH_TIMEBOX_MS`) e os avisos de dev e QA (`TaskAssigned` e `TaskReturned`, P22). **Sem worker rodando, nenhum desses e-mails sai.** O convite com a senha provisória sai na própria requisição de quem convida (o Administrador vê o erro na hora se o SMTP falhar).
 
 - Um processo `php artisan queue:work --tries=3 --max-time=3600` sob supervisão (supervisord, ou um container próprio com `restart: unless-stopped`), definido no B10.
 - `php artisan queue:restart` a cada deploy (passo 7).
@@ -183,7 +184,12 @@ server {
 
 No PHP (`php.ini` do container): `expose_php = Off`, `upload_max_filesize = 20M`, `post_max_size = 210M`, `max_file_uploads = 10` (os mesmos números do `config/hub.php`).
 
-Se o Nginx e o PHP ficam em containers separados, o `TRUSTED_PROXIES` é o IP do Nginx na rede dos containers; se há outro proxy na frente, os dois.
+**IP real.** O limite de tentativas por IP só funciona se o PHP enxergar o IP de quem acessa (`seguranca.md` §8).
+
+- Nginx falando com o PHP-FPM por FastCGI (o caso esperado): o PHP recebe o IP do cliente em `REMOTE_ADDR`, passado pelo próprio Nginx. `TRUSTED_PROXIES` fica **vazio**, mesmo com os dois em containers separados.
+- Proxy ou balanceador na frente do Nginx: o IP real entra pelo `set_real_ip_from` e `real_ip_header` do Nginx (bloco acima), não pelo `TRUSTED_PROXIES`.
+- `TRUSTED_PROXIES` só leva o IP de um proxy HTTP que fica entre o Nginx e o PHP (PHP servido por HTTP, não FastCGI).
+- **Nunca `*`.** Com `*`, qualquer um forja `X-Forwarded-For` e escapa do teto de 20 tentativas por IP.
 
 ## Verificação pós-deploy
 
