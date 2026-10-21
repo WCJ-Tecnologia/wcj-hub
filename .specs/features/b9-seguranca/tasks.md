@@ -419,9 +419,9 @@ T12 → T13
 
 **Done when**:
 
-- [ ] As seis perguntas respondidas com arquivo e linha
-- [ ] Zero achado "em aberto" sem dono
-- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+- [x] As seis perguntas respondidas com arquivo e linha
+- [x] Zero achado "em aberto" sem dono
+- [x] Gate check passes: `node .ai/skills/conferir-specs.mjs`
 
 **Tests**: none
 **Gate**: build
