@@ -74,8 +74,9 @@ class TimeEntryController extends Controller
     private function filters(Request $request): array
     {
         $today = CarbonImmutable::parse(DiasUteis::today());
-        $date = fn (string $key, string $default) => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $request->query($key)) === 1 && strtotime((string) $request->query($key)) !== false
-            ? (string) $request->query($key) : $default;
+        $date = fn (string $key, string $default) => is_string($request->query($key))
+            && preg_match('/^\d{4}-\d{2}-\d{2}$/', $request->query($key)) === 1 && strtotime($request->query($key)) !== false
+            ? $request->query($key) : $default;
         $from = $date('from', $today->startOfWeek(CarbonImmutable::MONDAY)->toDateString());
         $to = $date('to', $today->endOfWeek(CarbonImmutable::SUNDAY)->toDateString());
 

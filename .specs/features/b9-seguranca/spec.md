@@ -294,7 +294,7 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Implementing |
 | SEC-21 | P1: Links (AC 1 a 4, host e raiz das URLs) | Tasks | Implementing |
 | SEC-22 | P1: Senha (AC 11, `attemptWhen`) | Tasks | Implementing |
-| SEC-23 | P2: Entrada em array (AC 1 a 3) | Tasks | Pending |
+| SEC-23 | P2: Entrada em array (AC 1 a 3) | Tasks | Implementing |
 | SEC-24 | P2: Recusa sem nome (AC 4) | Tasks | Pending |
 | SEC-25 | P2: `TRUSTED_PROXIES` no `DEPLOY.md` (AC 5) | Tasks | Pending |
 

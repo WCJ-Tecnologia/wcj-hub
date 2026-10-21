@@ -93,7 +93,9 @@ class AppServiceProvider extends ServiceProvider
     private function registerRateLimiters(): void
     {
         RateLimiter::for('login', function (Request $request) {
-            $account = Str::lower(trim((string) $request->input('email', $request->user()?->email ?? '')));
+            // Só texto vira chave: `email[]=x` cairia num "Array to string" e daria 500 antes da validação (B9, SEC-23).
+            $email = $request->input('email', $request->user()?->email ?? '');
+            $account = is_string($email) ? Str::lower(trim($email)) : '';
             $response = fn (Request $request, array $headers) => (new ThrottledAuthResponse)($request, $headers);
 
             return [

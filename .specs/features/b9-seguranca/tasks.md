@@ -534,10 +534,10 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] Login, esqueci e redefinir com `email[]`: erro de validação, sem 500
-- [ ] `GET reset-password/x?email[]=y`: 200 com e-mail vazio
-- [ ] `search[]`, `country[]`, `from[]`, `to[]`: 200 com o filtro no padrão
-- [ ] Gate check passes: `composer lint && php artisan test --filter='EntradaEmArray|BuscaTeto'`
+- [x] Login, esqueci e redefinir com `email[]`: erro de validação, sem 500
+- [x] `GET reset-password/x?email[]=y`: 200 com e-mail vazio
+- [x] `search[]`, `country[]`, `from[]`, `to[]`: 200 com o filtro no padrão
+- [x] Gate check passes: `composer lint && php artisan test --filter='EntradaEmArray|BuscaTeto'`
 
 **Tests**: integration
 **Gate**: quick

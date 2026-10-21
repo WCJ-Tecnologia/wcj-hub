@@ -30,7 +30,7 @@ class ClientController extends Controller
     {
         $this->authorize('viewAny', Client::class);
 
-        $country = strtoupper((string) $request->string('country'));
+        $country = is_string($request->query('country')) ? strtoupper($request->query('country')) : '';
         $filters = [
             'search' => Busca::termo($request),
             'country' => in_array($country, Paises::codigos(), true) ? $country : null,

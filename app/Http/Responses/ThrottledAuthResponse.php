@@ -75,7 +75,7 @@ class ThrottledAuthResponse
     {
         return match ($component) {
             'auth/reset-password' => [
-                'email' => (string) $request->string('email'),
+                'email' => is_string($request->input('email')) ? $request->input('email') : '',
                 'token' => (string) $request->string('token'),
             ],
             'auth/change-password' => [
