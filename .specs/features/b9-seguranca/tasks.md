@@ -285,11 +285,11 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Cada um dos sete itens errados aparece pelo nome da variável e o código de saída é 1
-- [ ] Configuração certa: código 0
-- [ ] Nenhum valor (APP_KEY, URL, mailer) aparece na saída
-- [ ] 500 com debug desligado: sem o nome da classe da exceção, sem `.php`, sem `#0`
-- [ ] Gate check passes: `composer lint && php artisan test --filter='ConferirProducao|ErroSemStack'`
+- [x] Cada um dos sete itens errados aparece pelo nome da variável e o código de saída é 1
+- [x] Configuração certa: código 0
+- [x] Nenhum valor (APP_KEY, URL, mailer) aparece na saída
+- [x] 500 com debug desligado: sem o nome da classe da exceção, sem `.php`, sem `#0`
+- [x] Gate check passes: `composer lint && php artisan test --filter='ConferirProducao|ErroSemStack'`
 
 **Tests**: integration
 **Gate**: quick
