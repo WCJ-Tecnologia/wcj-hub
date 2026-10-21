@@ -11,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 /**
@@ -67,5 +68,22 @@ class AttachmentService
             ], null, $actor->id);
             DB::afterCommit(fn () => Storage::disk(TaskDetailPresenter::DISK)->delete($locked->path));
         });
+    }
+
+    /**
+     * Download com o nome original (P24). Imagem abre na própria página (miniatura e capa); o resto
+     * baixa. O Content-Type vem do tipo gravado, conferido pelos bytes no envio (seguranca.md §7), e
+     * sempre com nosniff. Quem chama já autorizou; arquivo que sumiu do disco é 404 (B9, SEC-11).
+     */
+    public function download(TaskAttachment $attachment): StreamedResponse
+    {
+        $disk = Storage::disk(TaskDetailPresenter::DISK);
+        abort_unless($disk->exists($attachment->path), 404);
+
+        $headers = ['Content-Type' => $attachment->mime_type, 'X-Content-Type-Options' => 'nosniff'];
+
+        return $attachment->isImage()
+            ? $disk->response($attachment->path, $attachment->original_name, $headers)
+            : $disk->download($attachment->path, $attachment->original_name, $headers);
     }
 }

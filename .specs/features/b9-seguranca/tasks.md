@@ -256,10 +256,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Não imagem: `attachment`, nome original, `Content-Type` gravado, `nosniff`; imagem: `inline`
-- [ ] 403 auditado para quem não vê o projeto; 404 de outro card; 404 de arquivo sumido
-- [ ] O controller não usa `Storage`
-- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test`
+- [x] Não imagem: `attachment`, nome original, `Content-Type` gravado, `nosniff`; imagem: `inline`
+- [x] 403 auditado para quem não vê o projeto; 404 de outro card; 404 de arquivo sumido
+- [x] O controller não usa `Storage`
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test`
 
 **Tests**: integration
 **Gate**: full
