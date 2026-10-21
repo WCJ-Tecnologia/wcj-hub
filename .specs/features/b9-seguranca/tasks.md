@@ -313,9 +313,9 @@ T12 → T13
 
 **Done when**:
 
-- [ ] `npm audit` local sem aviso alto
-- [ ] Os dois passos no `ci.yml`, sem job novo
-- [ ] Gate check passes: build
+- [x] `npm audit` local sem aviso alto
+- [x] Os dois passos no `ci.yml`, sem job novo
+- [x] Gate check passes: build
 
 **Tests**: none
 **Gate**: build
