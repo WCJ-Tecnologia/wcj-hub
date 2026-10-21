@@ -366,8 +366,8 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Os cinco itens do AC 1 de SEC-19
-- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+- [x] Os cinco itens do AC 1 de SEC-19
+- [x] Gate check passes: `node .ai/skills/conferir-specs.mjs`
 
 **Tests**: none
 **Gate**: build

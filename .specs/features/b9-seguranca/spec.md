@@ -250,8 +250,8 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-16 | P1: Dependências (AC 1, 2, 5, SCA e `npm audit fix`) | Tasks | Pending |
 | SEC-17 | P1: Dependências (AC 3, CI) | Tasks | Implementing |
 | SEC-18 | P1: Dependências (AC 4, revisão dirigida) | Tasks | Pending |
-| SEC-19 | P2: B8 (AC 1, nota) | Tasks | Pending |
-| SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Pending |
+| SEC-19 | P2: B8 (AC 1, nota) | Tasks | Implementing |
+| SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Implementing |
 
 **Coverage:** 20 total, 0 mapped to tasks (a fase Tasks vem depois da aprovação), 20 unmapped ⚠️
 
