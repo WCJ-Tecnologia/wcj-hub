@@ -178,9 +178,11 @@ class TaskDetailTest extends TestCase
         Notification::fake();
         $qa = User::factory()->developer()->create();
         $this->alocar($this->project, $qa);
-        $fora = User::factory()->developer()->create();
+        $fora = User::factory()->developer()->create(['name' => 'Fulana de Fora']);
 
-        $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $fora->id])->assertSessionHas('error');
+        // A recusa não diz o nome de quem foi escolhido (revisão dirigida do B9, achado 6; SEC-24).
+        $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $fora->id])
+            ->assertSessionHas('error', 'A pessoa escolhida não está alocada neste projeto.');
         $this->assertNull($this->task->fresh()->developer_id);
 
         $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $this->dev->id, 'qa_id' => $qa->id])->assertSessionHasNoErrors();

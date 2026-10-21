@@ -561,8 +561,8 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] `developer_id` de quem não está alocado: a mensagem nova, sem o nome
-- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test`
+- [x] `developer_id` de quem não está alocado: a mensagem nova, sem o nome
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test`
 
 **Tests**: integration
 **Gate**: full
