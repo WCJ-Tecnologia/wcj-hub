@@ -18,6 +18,16 @@ class LoginThrottleTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The array store expires the counters by the wall clock (60 s). A Mac
+        // in maintenance sleep suspends the process for ~100 s between two
+        // requests: the first hit expires and the 429 comes one request late.
+        $this->freezeTime();
+    }
+
     public function test_sixth_login_attempt_for_the_same_account_is_throttled_with_the_generic_message(): void
     {
         User::factory()->projectManager()->create(['email' => 'ana@example.com', 'password' => 'password']);
