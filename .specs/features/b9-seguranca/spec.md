@@ -107,7 +107,7 @@ Cada linha marcada **PARADA** mexe em autenticação, upload ou headers (inegoci
 7. WHEN alguém tenta entrar com um e-mail que não tem conta THEN o sistema SHALL responder com a mesma mensagem `INVALID_CREDENTIALS` de senha errada.
 8. WHEN alguém pede "esqueci a senha" para um e-mail que tem conta ativa THEN o sistema SHALL pôr o e-mail de redefinição na fila, sem enviá-lo dentro da requisição.
 10. WHEN alguém pede "esqueci a senha" ou envia "redefinir senha" THEN o sistema SHALL responder só depois de `auth.timebox_duration`, exista a conta ou não, esteja ativa ou não.
-11. IF a conta existe e a senha está certa, mas a conta está desativada ou não é de backoffice THEN o sistema SHALL recusar com `INVALID_CREDENTIALS` sem trocar o id da sessão.
+11. IF a conta existe e a senha está certa, mas a conta está desativada ou não é de backoffice THEN o sistema SHALL recusar com `INVALID_CREDENTIALS` sem logar a conta (sem o evento `Login`, que é quem troca o id da sessão).
 9. WHEN alguém pede "esqueci a senha" para um e-mail que não tem conta THEN o sistema SHALL responder com a mesma mensagem `GENERIC_MESSAGE` e sem e-mail na fila.
 
 **Independent Test**: no navegador, trocar a senha pelo perfil com a senha atual errada mostra o erro; o teste de feature mede o tempo mínimo das respostas recusadas; `Mail::fake()` mostra o e-mail de redefinição na fila.
@@ -277,7 +277,7 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-03 | P1: Headers (AC 5, `storage/{path}`) | Tasks | Implementing |
 | SEC-04 | P1: Senha (AC 1 a 4, senha atual no perfil) | Tasks | Implementing |
 | SEC-05 | P1: Senha (AC 5, limitador `senha-atual`) | Tasks | Implementing |
-| SEC-06 | P1: Senha (AC 6, 7, tempo mínimo do login) | Tasks | Pending |
+| SEC-06 | P1: Senha (AC 6, 7, tempo mínimo do login) | Tasks | Implementing |
 | SEC-07 | P1: Senha (AC 8 a 10, fila e tempo mínimo) | Tasks | Pending |
 | SEC-08 | P1: FormRequest (AC 1) | Tasks | Implementing |
 | SEC-09 | P1: FormRequest (AC 2, 4, A10) | Tasks | Implementing |
@@ -293,7 +293,7 @@ O Cauã segue B3 PR 3 → B4 → B6 → B8; não há branch do B8 em 21/10 (`git
 | SEC-19 | P2: B8 (AC 1, nota) | Tasks | Implementing |
 | SEC-20 | P2: B8 (AC 2, nota no repositório) | Tasks | Implementing |
 | SEC-21 | P1: Links (AC 1 a 4, host e raiz das URLs) | Tasks | Implementing |
-| SEC-22 | P1: Senha (AC 11, `attemptWhen`) | Tasks | Pending |
+| SEC-22 | P1: Senha (AC 11, `attemptWhen`) | Tasks | Implementing |
 | SEC-23 | P2: Entrada em array (AC 1 a 3) | Tasks | Pending |
 | SEC-24 | P2: Recusa sem nome (AC 4) | Tasks | Pending |
 | SEC-25 | P2: `TRUSTED_PROXIES` no `DEPLOY.md` (AC 5) | Tasks | Pending |

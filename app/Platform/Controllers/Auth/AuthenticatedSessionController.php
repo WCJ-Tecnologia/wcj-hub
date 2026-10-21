@@ -10,9 +10,6 @@ use App\Platform\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,20 +33,20 @@ class AuthenticatedSessionController extends Controller
     {
         $credentials = $request->validated();
 
-        // Sem "lembrar de mim": users não tem remember_token (docs/banco.md, seção 4).
-        if (! Auth::attempt($credentials)) {
-            $this->spendTheSameTimeWithoutAccount($credentials['password']);
+        // Sem "lembrar de mim": users não tem remember_token (docs/banco.md, seção 4). A conta
+        // desativada ou sem papel de backoffice nem chega a logar: o id da sessão não muda, e a
+        // recusa, de qualquer tipo, leva o tempo do Timebox (auth.timebox_duration; B9, SEC-06 e SEC-22).
+        $accepted = Auth::attemptWhen(
+            $credentials,
+            fn (User $user) => $user->isBackofficeUser() && $user->isActive(),
+        );
 
+        if (! $accepted) {
             throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
         }
 
+        /** @var User $user */
         $user = Auth::user();
-
-        if (! $user instanceof User || ! $user->isBackofficeUser() || ! $user->isActive()) {
-            Auth::guard('web')->logout();
-
-            throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
-        }
 
         $request->session()->regenerate();
 
@@ -60,23 +57,6 @@ class AuthenticatedSessionController extends Controller
         }
 
         return redirect()->intended(route('admin.dashboard'));
-    }
-
-    /**
-     * E-mail sem conta: o provider nem chega ao Hash::check, e a resposta sairia mais rápido que a
-     * de senha errada. Confere contra um hash descartável com o custo atual (seguranca.md §3; SEC-06).
-     * O hash fica no cache para não custar um Hash::make a cada tentativa.
-     */
-    private function spendTheSameTimeWithoutAccount(string $password): void
-    {
-        if (Auth::guard('web')->getLastAttempted() !== null) {
-            return;
-        }
-
-        $rounds = (int) config('hashing.bcrypt.rounds', 12);
-        $dummy = Cache::rememberForever("auth.dummy_hash.bcrypt.{$rounds}", fn () => Hash::make(Str::random(40)));
-
-        Hash::check($password, $dummy);
     }
 
     public function destroy(Request $request): RedirectResponse

@@ -4,41 +4,70 @@ namespace Tests\Feature;
 
 use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use App\Platform\Models\User;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
-use Mockery;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 /**
- * Mesma mensagem e mesmo trabalho para e-mail com e sem conta (seguranca.md §3; B9, SEC-06).
+ * Todo login recusado leva o mesmo tempo mínimo, o do Timebox do Laravel, e a conta desativada
+ * com a senha certa não chega a logar (seguranca.md §3; revisão dirigida, achados 2 e 4; B9,
+ * SEC-06 e SEC-22). Só o piso do tempo é conferido: o teto varia com a máquina.
  */
 class LoginTimingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_an_unknown_email_checks_the_password_against_a_throwaway_hash(): void
+    private const TIMEBOX_MS = 300;
+
+    protected function setUp(): void
     {
-        $bcrypt = Hash::make('descartavel');
-        Hash::shouldReceive('make')->andReturn($bcrypt);
-        Hash::shouldReceive('check')
-            ->once()
-            ->with('senha-qualquer-1', Mockery::on(fn ($hashed) => is_string($hashed) && str_starts_with($hashed, '$2y$')))
-            ->andReturnFalse();
+        parent::setUp();
 
-        $this->post('/admin/login', ['email' => 'ninguem@exemplo.wcj.test', 'password' => 'senha-qualquer-1'])
-            ->assertSessionHasErrors(['email' => AuthenticatedSessionController::INVALID_CREDENTIALS]);
-
-        $this->assertGuest();
+        // Antes do primeiro uso do guard: ele lê a duração quando é criado.
+        config(['auth.timebox_duration' => self::TIMEBOX_MS * 1000]);
+        User::factory()->projectManager()->create(['email' => 'existe@exemplo.wcj.test', 'password' => 'senha-certa-1']);
+        User::factory()->projectManager()->inactive()->create(['email' => 'inativo@exemplo.wcj.test', 'password' => 'senha-certa-1']);
     }
 
-    public function test_a_wrong_password_and_an_unknown_email_get_the_same_message(): void
+    public function test_the_production_timebox_is_500_ms_by_default(): void
     {
-        User::factory()->projectManager()->create(['email' => 'existe@exemplo.wcj.test', 'password' => 'senha-certa-1']);
+        $config = require config_path('auth.php');
 
-        $this->post('/admin/login', ['email' => 'existe@exemplo.wcj.test', 'password' => 'senha-errada-1'])
+        $this->assertSame(500_000, $config['timebox_duration']);
+    }
+
+    public function test_every_refused_login_waits_for_the_timebox_with_the_same_message(): void
+    {
+        $refused = [
+            'sem conta' => ['ninguem@exemplo.wcj.test', 'senha-certa-1'],
+            'senha errada' => ['existe@exemplo.wcj.test', 'senha-errada-1'],
+            'conta desativada' => ['inativo@exemplo.wcj.test', 'senha-certa-1'],
+        ];
+
+        foreach ($refused as $case => [$email, $password]) {
+            $start = microtime(true);
+            $this->post('/admin/login', ['email' => $email, 'password' => $password])
+                ->assertSessionHasErrors(['email' => AuthenticatedSessionController::INVALID_CREDENTIALS]);
+            $elapsedMs = (microtime(true) - $start) * 1000;
+
+            $this->assertGreaterThanOrEqual(self::TIMEBOX_MS, $elapsedMs, "login recusado ({$case}) respondeu antes do Timebox");
+            $this->assertGuest();
+        }
+    }
+
+    /**
+     * O id da sessão troca no SessionGuard::login() (updateSession → migrate), que dispara o
+     * evento Login. Conta recusada que não dispara Login não trocou a sessão.
+     */
+    public function test_a_deactivated_account_with_the_right_password_never_logs_in(): void
+    {
+        Event::fake([Login::class]);
+
+        $this->post('/admin/login', ['email' => 'inativo@exemplo.wcj.test', 'password' => 'senha-certa-1'])
             ->assertSessionHasErrors(['email' => AuthenticatedSessionController::INVALID_CREDENTIALS]);
-        $this->post('/admin/login', ['email' => 'ninguem@exemplo.wcj.test', 'password' => 'senha-errada-1'])
-            ->assertSessionHasErrors(['email' => AuthenticatedSessionController::INVALID_CREDENTIALS]);
+
+        Event::assertNotDispatched(Login::class);
         $this->assertGuest();
     }
 }

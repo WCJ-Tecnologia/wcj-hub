@@ -481,10 +481,10 @@ T14 → T15 → T16 → T17 → T18 → T19
 
 **Done when**:
 
-- [ ] E-mail sem conta, senha errada e conta desativada: resposta recusada só depois de `auth.timebox_duration` (medido com o valor do teste)
-- [ ] Conta desativada com a senha certa: `INVALID_CREDENTIALS` e o id da sessão não muda
-- [ ] Login certo continua entrando
-- [ ] Gate check passes: `composer lint && php artisan test --filter='Login|BackofficeAccess'`
+- [x] E-mail sem conta, senha errada e conta desativada: resposta recusada só depois de `auth.timebox_duration` (medido com o valor do teste)
+- [x] Conta desativada com a senha certa: `INVALID_CREDENTIALS` e o guard não loga (sem evento `Login`)
+- [x] Login certo continua entrando
+- [x] Gate check passes: `composer lint && php artisan test --filter='Login|BackofficeAccess'`
 
 **Tests**: integration
 **Gate**: quick

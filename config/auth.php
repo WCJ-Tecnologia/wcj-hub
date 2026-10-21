@@ -130,4 +130,18 @@ return [
         'per_ip' => (int) env('AUTH_THROTTLE_PER_IP', 20),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Timebox of the credential checks
+    |--------------------------------------------------------------------------
+    |
+    | Minimum time, in microseconds, of every refused login, forgot and reset
+    | (the guard and the password broker read it; the forgot and reset actions
+    | wrap themselves in it too). Above the bcrypt cost (12), so an e-mail
+    | without an account answers as slowly as a wrong password (B9, SEC-06).
+    |
+    */
+
+    'timebox_duration' => (int) env('AUTH_TIMEBOX_MS', 500) * 1000,
+
 ];
