@@ -17,6 +17,7 @@ use App\Domains\Projetos\Services\TaskCommentService;
 use App\Domains\Projetos\Services\TaskHoursService;
 use App\Domains\Projetos\Services\TaskPullRequestService;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -135,7 +136,11 @@ class TaskDetailController extends Controller
         $this->belongsToCard($attachment, $card);
         $this->authorize('view', $card);
 
-        return $this->attachments->download($attachment);
+        try {
+            return $this->attachments->download($attachment);
+        } catch (FileNotFoundException) {
+            abort(404);
+        }
     }
 
     private function belongsToCard(Model $child, Task $card): void

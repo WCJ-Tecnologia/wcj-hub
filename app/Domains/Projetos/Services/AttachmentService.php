@@ -7,6 +7,7 @@ use App\Domains\Projetos\Models\TaskAttachment;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -73,12 +74,17 @@ class AttachmentService
     /**
      * Download com o nome original (P24). Imagem abre na própria página (miniatura e capa); o resto
      * baixa. O Content-Type vem do tipo gravado, conferido pelos bytes no envio (seguranca.md §7), e
-     * sempre com nosniff. Quem chama já autorizou; arquivo que sumiu do disco é 404 (B9, SEC-11).
+     * sempre com nosniff. Quem chama já autorizou (B9, SEC-11).
+     *
+     * @throws FileNotFoundException o arquivo sumiu do disco; o controller responde 404
      */
     public function download(TaskAttachment $attachment): StreamedResponse
     {
         $disk = Storage::disk(TaskDetailPresenter::DISK);
-        abort_unless($disk->exists($attachment->path), 404);
+
+        if (! $disk->exists($attachment->path)) {
+            throw new FileNotFoundException("Anexo {$attachment->id} sem arquivo no disco.");
+        }
 
         $headers = ['Content-Type' => $attachment->mime_type, 'X-Content-Type-Options' => 'nosniff'];
 
