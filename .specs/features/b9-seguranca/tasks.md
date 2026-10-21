@@ -91,10 +91,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] 404 sem rota, `GET /up` e `GET /api/health` trazem CSP, `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy`
-- [ ] Com `APP_ENV=production`, o 404 traz o HSTS
-- [ ] Nenhuma resposta traz `X-Powered-By`, mesmo quando a rota o define
-- [ ] Gate check passes: `composer lint && php artisan test --filter=SecurityHeaders`
+- [x] 404 sem rota, `GET /up` e `GET /api/health` trazem CSP, `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy`
+- [x] Com `APP_ENV=production`, o 404 traz o HSTS
+- [x] Nenhuma resposta traz `X-Powered-By`, mesmo quando a rota o define
+- [x] Gate check passes: `composer lint && php artisan test --filter=SecurityHeaders`
 
 **Tests**: integration
 **Gate**: quick

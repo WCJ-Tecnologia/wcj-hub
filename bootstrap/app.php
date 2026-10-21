@@ -22,8 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Proxies come from TRUSTED_PROXIES via config/app.php (see the class).
         $middleware->replace(Illuminate\Http\Middleware\TrustProxies::class, TrustProxies::class);
 
+        // Global, not web-only: a 404 without a route, /up and api/health get the headers too (B9, SEC-01).
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->web(append: [
-            SecurityHeaders::class,
             HandleInertiaRequests::class,
         ]);
 
