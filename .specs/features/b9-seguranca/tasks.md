@@ -118,8 +118,8 @@ T12 → T13
 
 **Done when**:
 
-- [ ] `GET /storage/qualquer-coisa` responde 404 e nenhuma rota `storage/{path}` está registrada
-- [ ] Gate check passes: `composer lint && caffeinate -i php artisan test`
+- [x] `GET /storage/qualquer-coisa` responde 404 e nenhuma rota `storage/{path}` está registrada
+- [x] Gate check passes: `composer lint && caffeinate -i php artisan test`
 
 **Tests**: integration
 **Gate**: full

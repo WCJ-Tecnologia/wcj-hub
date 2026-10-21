@@ -63,6 +63,14 @@ class SecurityHeadersTest extends TestCase
         $this->get('/caminho-que-nao-existe')->assertNotFound()->assertHeaderMissing('X-Powered-By');
     }
 
+    public function test_the_private_disk_is_not_served_over_http(): void
+    {
+        $uris = collect(Route::getRoutes()->getRoutes())->map(fn ($route) => $route->uri());
+
+        $this->assertFalse($uris->contains(fn (string $uri) => str_starts_with($uri, 'storage/')));
+        $this->get('/storage/qualquer-coisa')->assertNotFound();
+    }
+
     public function test_hsts_is_sent_only_in_production(): void
     {
         $this->app['env'] = 'production';
