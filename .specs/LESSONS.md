@@ -174,6 +174,54 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: validation.md rodada 1 d10c-d10e (PR e anexo de outro card) (tests/escopo-id)
 - last seen: 2026-10-20T14:22:18Z
 
+### L-028 - Prove an architecture-test detector against a registered fake route and against fixtures that isolate each pattern it claims to catch
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `arch` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M36 M38 tests/Arch/RotasAutorizadasTest.php:124 (arch)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-029 - Assert the served Content-Type with a fixture whose stored type differs from what the file extension or bytes would infer
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `uploads` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M42 app/Domains/Projetos/Services/AttachmentService.php:89 (uploads)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-030 - Test host allowlists with lookalike hosts such as a subdomain and a suffix-appended host, not only an unrelated host
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `auth` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M05 M06 bootstrap/app.php:32-34 (auth)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-031 - Test a forced root URL with a request whose host differs from APP_URL only by port
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `auth` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M11 app/Http/Middleware/UseAppUrl.php:24 (auth)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-032 - Test the non-production branch of every environment-gated middleware
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `middleware` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M10 app/Http/Middleware/UseAppUrl.php:21 (middleware)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-033 - Cover the throttled response path with the same malformed input tested on the normal path
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `auth` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M32 app/Http/Responses/ThrottledAuthResponse.php:78 (auth)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-034 - Assert user-facing messages by literal text, not by the constant defined in the code under test
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md M24 tests/Feature/ProfilePasswordTest.php:44 (tests)
+- last seen: 2026-10-21T16:26:59Z
+
+### L-035 - Enumerate the exact header names when a spec requires headers to be repeated in another layer
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `docs` · harmful: 0
+- features: b9-seguranca
+- evidence: validation.md SEC-14 AC 8 docs/DEPLOY.md:168-176 (docs)
+- last seen: 2026-10-21T16:26:59Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
