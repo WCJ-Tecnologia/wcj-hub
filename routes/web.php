@@ -2,6 +2,7 @@
 
 use App\Domains\Projetos\Controllers\BoardController;
 use App\Domains\Projetos\Controllers\BoardStageController;
+use App\Domains\Projetos\Controllers\IndicatorsController;
 use App\Domains\Projetos\Controllers\ProjectAreaController;
 use App\Domains\Projetos\Controllers\ProjectController;
 use App\Domains\Projetos\Controllers\ProjectMemberController;
@@ -11,6 +12,7 @@ use App\Domains\Projetos\Controllers\SprintController;
 use App\Domains\Projetos\Controllers\SprintTaskController;
 use App\Domains\Projetos\Controllers\TaskController;
 use App\Domains\Projetos\Controllers\TaskDetailController;
+use App\Domains\Projetos\Controllers\TaskHistoryController;
 use App\Domains\Projetos\Controllers\TaskTypeController;
 use App\Domains\Projetos\Controllers\TimeEntryController;
 use App\Platform\Controllers\Admin\AuditLogController;
@@ -204,6 +206,11 @@ Route::prefix('projetos')
             Route::post('{project}/cards/{card}/anexos', [TaskDetailController::class, 'storeAttachments'])->name('cards.attachments.store');
             Route::get('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'downloadAttachment'])->name('cards.attachments.show');
             Route::delete('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'destroyAttachment'])->name('cards.attachments.destroy');
+
+            // Indicadores e histórico (F7, escopo B7): só leitura. A tela de indicadores é de quem vê o
+            // projeto; as abas do gestor pedem viewIndicators (o dev recebe só a dele, P54).
+            Route::get('{project}/indicadores', [IndicatorsController::class, 'show'])->name('indicators');
+            Route::get('{project}/cards/{card}/historico', [TaskHistoryController::class, 'show'])->name('cards.history');
 
             // Tipos do projeto, criados e editados pela etiqueta do quadro (14/10); as mesmas quatro
             // portas da área (desativar, reativar, excluir o nunca usado), só quem gere.

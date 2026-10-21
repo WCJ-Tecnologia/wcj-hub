@@ -146,8 +146,8 @@ class TaskDetailPresenter
             'created_by' => $this->person($creation?->movedBy),
             'created_at' => LocalTime::format($task->created_at, 'Y-m-d H:i'),
             'url' => $task->url(),
-            // Linha do tempo: B7.
-            'history_url' => null,
+            // A linha do tempo (F7, B7): quem vê o card vê o histórico dele.
+            'history_url' => route('projects.cards.history', [$task->project_id, $task->key()]),
             'abilities' => [
                 'update' => $viewer->can('update', $task),
                 'comment' => $viewer->can('comment', $task),
