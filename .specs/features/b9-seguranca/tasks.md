@@ -393,9 +393,9 @@ T12 → T13
 
 **Done when**:
 
-- [ ] Cada aviso com pacote, versão, identificador, severidade e alcance
-- [ ] Zero "pendência" sem correção ou dono
-- [ ] Gate check passes: `node .ai/skills/conferir-specs.mjs`
+- [x] Cada aviso com pacote, versão, identificador, severidade e alcance
+- [x] Zero "pendência" sem correção ou dono
+- [x] Gate check passes: `node .ai/skills/conferir-specs.mjs`
 
 **Tests**: none
 **Gate**: build
