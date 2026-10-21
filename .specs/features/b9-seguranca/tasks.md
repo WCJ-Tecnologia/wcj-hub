@@ -145,10 +145,10 @@ T12 → T13
 
 **Done when**:
 
-- [ ] E-mail sem conta: `Hash::check` é chamado uma vez e a resposta traz `INVALID_CREDENTIALS` no campo `email`
-- [ ] E-mail com conta e senha errada: a mesma mensagem
-- [ ] Login certo continua entrando (testes que já existem verdes)
-- [ ] Gate check passes: `composer lint && php artisan test --filter='Login|BackofficeAccess'`
+- [x] E-mail sem conta: `Hash::check` é chamado uma vez e a resposta traz `INVALID_CREDENTIALS` no campo `email`
+- [x] E-mail com conta e senha errada: a mesma mensagem
+- [x] Login certo continua entrando (testes que já existem verdes)
+- [x] Gate check passes: `composer lint && php artisan test --filter='Login|BackofficeAccess'`
 
 **Tests**: integration
 **Gate**: quick
