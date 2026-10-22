@@ -195,8 +195,16 @@ class TaskArchiveTest extends TestCase
     public function test_a_never_used_card_is_deleted_with_criteria_participants_and_the_creation_movement(): void
     {
         $pai = $this->tarefa($this->project, $this->etapa($this->project, StageRole::DEVELOPMENT));
-        $task = $this->novo(['parent_task_id' => $pai->id]);
+        $task = $this->novo([
+            'parent_task_id' => $pai->id,
+            'developer_id' => $this->dev->id,
+            'story_as' => 'gestor da frota',
+            'story_want' => 'exportar as multas',
+            'story_so_that' => 'fechar o mês',
+            'description' => 'Planilha com as colunas do relatório do ERP.',
+        ]);
         $task->acceptanceCriteria()->create(['number' => 1, 'description' => 'CA', 'test_result_id' => TestResult::PENDING]);
+        $task->acceptanceCriteria()->create(['number' => 2, 'description' => 'Total por placa', 'test_result_id' => TestResult::PENDING]);
         $task->participants()->attach($this->dev->id);
 
         $this->actingAs($this->gestor)->delete($this->card($task))
@@ -211,7 +219,13 @@ class TaskArchiveTest extends TestCase
 
         $audit = AuditLog::query()->where('action', 'deleted')->sole();
         $this->assertSame(['task', $task->id, $this->gestor->id], [$audit->auditable_type, $audit->auditable_id, $audit->user_id]);
-        $this->assertSame([['SGM-2', null], [1, null], [$pai->id, null]], [$audit->changes['key'], $audit->changes['criteria_count'], $audit->changes['parent_task_id'] ?? null]);
+        $this->assertSame([['SGM-2', null], [$pai->id, null]], [$audit->changes['key'], $audit->changes['parent_task_id'] ?? null]);
+        // O antes leva o conteúdo que some com o card (G3): a requisição, o dev e o texto dos critérios, não só a contagem.
+        $this->assertSame(
+            [[$this->dev->id, null], ['gestor da frota', null], ['exportar as multas', null], ['fechar o mês', null], ['Planilha com as colunas do relatório do ERP.', null]],
+            [$audit->changes['developer_id'], $audit->changes['story_as'], $audit->changes['story_want'], $audit->changes['story_so_that'], $audit->changes['description']],
+        );
+        $this->assertSame([[['number' => 1, 'description' => 'CA'], ['number' => 2, 'description' => 'Total por placa']], null], $audit->changes['criteria']);
     }
 
     public function test_the_key_of_a_deleted_card_is_not_given_again(): void

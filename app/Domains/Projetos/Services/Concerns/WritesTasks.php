@@ -21,12 +21,23 @@ trait WritesTasks
     /** A linha do card, travada e relida, com a etapa atual; arquivado não muda (P26). */
     protected function lockTask(Task $task): Task
     {
-        $locked = Task::query()->with('boardStage')->lockForUpdate()->findOrFail($task->id);
+        $locked = $this->lockTaskRow($task);
         if ($locked->archived_at !== null) {
             throw new DomainException(self::ARCHIVED);
         }
 
         return $locked;
+    }
+
+    /**
+     * Só a releitura travada, sem a recusa do arquivado: para desarquivar e excluir, que aceitam o
+     * card arquivado (TaskArchiveService). Toda escrita de card relê por aqui.
+     *
+     * @param  list<string>  $with
+     */
+    protected function lockTaskRow(Task $task, array $with = ['boardStage']): Task
+    {
+        return Task::query()->with($with)->lockForUpdate()->findOrFail($task->id);
     }
 
     /** As etapas de fila, sprint e suporte existem sempre, uma ativa de cada (P11). */

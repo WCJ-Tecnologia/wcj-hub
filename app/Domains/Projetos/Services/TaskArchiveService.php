@@ -58,7 +58,7 @@ class TaskArchiveService
     {
         return DB::transaction(function () use ($task, $actor) {
             $project = $this->sprints->lockProject($task->project);
-            $locked = Task::query()->with('boardStage')->lockForUpdate()->findOrFail($task->id);
+            $locked = $this->lockTaskRow($task);
             if ($locked->archived_at === null) {
                 throw new DomainException(self::NOT_ARCHIVED);
             }
@@ -94,18 +94,13 @@ class TaskArchiveService
     {
         DB::transaction(function () use ($task, $actor) {
             $this->sprints->lockProject($task->project);
-            $locked = Task::query()->with('project')->lockForUpdate()->findOrFail($task->id);
+            $locked = $this->lockTaskRow($task, ['project']);
             $key = $locked->key();
             if (! $this->usage->isUnused($locked)) {
                 throw new DomainException("{$key} já foi usado: arquive em vez de excluir.");
             }
 
-            $before = [
-                ...$this->snapshot($locked),
-                'key' => $key,
-                'parent_task_id' => $locked->parent_task_id,
-                'criteria_count' => $locked->acceptanceCriteria()->count(),
-            ];
+            $before = $this->deletionSnapshot($locked, $key);
 
             DatabaseNotification::query()
                 ->whereIn('type', [TaskAssigned::class, TaskReturned::class])
@@ -115,6 +110,35 @@ class TaskArchiveService
             $locked->delete();
             $this->audit->log(AuditActionEnum::DELETED, $locked, $before, null, $actor->id);
         });
+    }
+
+    /**
+     * O antes da linha `deleted` (G3): a exclusão não se desfaz, então a auditoria leva o que o card
+     * tinha de conteúdo e some com ele, não só o retrato do movimento: a requisição, as pessoas, o
+     * pedido do cliente, o arquivamento e os critérios (número e texto), como o CriterionService leva
+     * os subitens (CR-1-02 da revisão do B3 PR 3).
+     *
+     * @return array<string, mixed>
+     */
+    private function deletionSnapshot(Task $task, string $key): array
+    {
+        return [
+            ...$this->snapshot($task),
+            ...$this->archiving($task),
+            'key' => $key,
+            'parent_task_id' => $task->parent_task_id,
+            'developer_id' => $task->developer_id,
+            'qa_id' => $task->qa_id,
+            'story_as' => $task->story_as,
+            'story_want' => $task->story_want,
+            'story_so_that' => $task->story_so_that,
+            'description' => $task->description,
+            'requester_contact_id' => $task->requester_contact_id,
+            'contact_channel_id' => $task->contact_channel_id,
+            'criteria' => $task->acceptanceCriteria()->orderBy('id')->get(['number', 'description'])
+                ->map(fn ($criterion) => ['number' => $criterion->number, 'description' => $criterion->description])
+                ->all(),
+        ];
     }
 
     /** @return array{archived_at: ?string, archive_reason: ?string, archived_by: ?int} */
