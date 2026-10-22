@@ -23,7 +23,7 @@ Checkout do head do PR (`3b3e9fd`) num worktree próprio, com o Mac acordado (`c
 | `npm run specs:check` | exit 1, **14 problemas, todos da aprovação da spec** (falta `**Approved by**: <nome>, <AAAA-MM-DD>`; 13 premissas sem `y` em *Confirmed?*; aviso da open question). As outras 5 features ok |
 | e2e (`npm run e2e:prepare` + `npm run e2e:serve` + `caffeinate -i npx playwright test`, chromium, 1 worker) | `e2e/arquivar.spec.ts` sozinho: **3 passed** (setup + os 2 do PR, 8,7 s); a suíte inteira: **82 passed (2,2 min)**, exit 0, axe e guarda de console verdes. É o que o corpo do PR não tinha depois do merge do B7 (CR-1-01), mas ainda **sem o B9** |
 
-Sobre a `main` atual (merge local de `origin/main` `c532b37` no head do PR, num branch descartável, só para a evidência; o único conflito é o `AGENTS.md`, resolvido mantendo os dois lados; `routes/web.php` e `RotasAutorizadasTest.php` automergeiam limpos, conferidos linha a linha): `caffeinate -i php -d memory_limit=1G artisan test --compact` → **779 passed (6643 assertions)**, 140 s, exit 0 (os 739 da `main` + os 40 do PR); `npm run typecheck`, `npm run lint` e `npm run build` exit 0. **Atenção para quem rodar no Mac:** com o `memory_limit` padrão do CLI (128M) a mesma suíte sobre o merge morre com "Allowed memory size of 134217728 bytes exhausted" antes de imprimir o resultado, enquanto a `origin/main` sozinha (739 testes) passa com 128M e o head do PR também; é o tamanho da suíte, não a branch. A partir deste merge, a escada local pede `php -d memory_limit=1G artisan test` ou o `php.ini` ajustado; o CI (sem limite) não é afetado.
+Sobre a `main` atual (merge local de `origin/main` `c532b37` no head do PR, num branch descartável, só para a evidência; o único conflito é o `AGENTS.md`, resolvido mantendo os dois lados; `routes/web.php` e `RotasAutorizadasTest.php` automergeiam limpos, conferidos linha a linha): `caffeinate -i php -d memory_limit=1G artisan test --compact` → **779 passed (6643 assertions)**, 140 s, exit 0 (os 739 da `main` + os 40 do PR); `npm run typecheck`, `npm run lint` e `npm run build` exit 0. **Atenção para quem rodar no Mac:** com o `memory_limit` padrão do CLI (128M) a mesma suíte sobre o merge morre com "Allowed memory size of 134217728 bytes exhausted" antes de imprimir o resultado, enquanto a `origin/main` sozinha (739 testes) passa com 128M e o head do PR também; é o tamanho da suíte, não a branch. O `php -d memory_limit=1G artisan test` não resolve de verdade: o `artisan test` abre o PHPUnit num processo filho, que só obedece ao `php.ini` ou ao `<ini>` do `phpunit.xml` (a rodada de 1G passou por estar na beira do limite; a seguinte, com três asserções a mais, morreu no `json_encode` do result cache). A correção que ficou na branch é o `<ini name="memory_limit" value="1G"/>` no `phpunit.xml` (seção "Correções aplicadas"); o CI (sem limite) não é afetado.
 
 CI do PR (`gh pr checks 22`, run 39653870804, 21/10): PHP (Pint + PHPUnit) **verde**; Segredos **verde**; JS **vermelho só no último passo**, o `npm run specs:check` (typecheck, lint, build, storybook e test:guard passaram); E2E **pulado** porque depende do JS. `gh pr view 22` em 22/10: **mergeable: CONFLICTING** (o #21 entrou na `main` depois do PR).
 
@@ -166,7 +166,7 @@ Quando o Lucas aprovar a spec, no mesmo PR: (a) `banco.md`, linha do "tirar do q
 - **A lista de arquivados reaproveita a consulta do quadro inteira** (`BoardQuery::cards` com os `withCount` e `with` do card e o `planning`): não é N+1, são as mesmas consultas do quadro; o `LateQuery` já pula o arquivado.
 - **`TaskPolicy.php` entra no diff só pelo docblock** do `delete`: sem Policy nova nem alterada, como o PR diz.
 - **O `AGENTS.md` da branch, na linha do B7 e do B9, está com o texto da `main` de 21/10** (o B9 ainda como "commits locais"): o merge do CR-1-01 traz a versão nova; não é deste PR.
-- **A suíte PHP passou do `memory_limit` de 128M do CLI do Mac depois do merge com a `main`** (779 testes): não é da branch (a `origin/main` e o head do PR passam com 128M); vale uma linha no `AGENTS.md` ("Como rodar") quando o próximo PR tocar nele.
+- **A suíte PHP passou do `memory_limit` de 128M do CLI do Mac depois do merge com a `main`** (779 testes): não é da branch (a `origin/main` e o head do PR passam com 128M, na beira). Resolvido na branch pelo `<ini>` do `phpunit.xml`; o crescimento de memória ao longo da suíte (~160 KB por teste) fica registrado para quando a suíte dobrar.
 - **Os mutantes equivalentes do Verifier (a6 `trim`, b2 `whereHas` do quadro)** têm a guarda nomeada no `validation.md`; conferidos por amostragem (o `TrimStrings` global apara antes; `BoardStageService::archive` move os cards ativos antes de remover a etapa). Não pedir de novo.
 
 ## Resumo executivo
@@ -185,3 +185,29 @@ Achados anteriores: não há (ciclo 1). Regressões: 0.
 **Avaliação geral:** a branch segue o padrão da casa: autorização antes da validação no FormRequest e `authorize()` auditado nas ações sem corpo, negação com a ação certa e uma linha por requisição, card de outro projeto 404 antes da Policy, aviso de outra pessoa 404, "nunca usado" num lugar só com lista fechada de FKs e teste que acusa FK nova, auditoria e avisos na mesma transação do delete, `LateQuery` como um jeito só para quadro e ficha, Presenter para a linha, componente novo registrado. Verifier PASS em agente separado com 57 mutantes e três sondas. Os 739 testes, Pint, typecheck, lint, build e o guard passaram no Mac neste ciclo; o Specs gate fica vermelho só pela aprovação.
 
 **Recomendação final: apta com ajustes**, condicionada ao rito do trilho completo que o próprio PR declara: (1) o "aprovo" do Lucas Scholz na spec, com a resposta à pergunta dos avisos e o `y` nas 13 premissas (o Specs gate do CI só fica verde depois disso); (2) o merge da `main` atual com a suíte e o e2e rodados no resultado, citados no corpo (CR-1-01); (3) CR-1-02 corrigido ou justificado no PR, e as três linhas de documento do CR-1-04 no commit da aprovação. Sem bloqueante em aberto.
+
+---
+
+## Correções aplicadas depois do ciclo 1 (22/10, Lucas Scholz com IA, na própria branch)
+
+Por pedido do Lucas Scholz ("arruma os erros e deixa tudo pronto pra eu dar merge"), os quatro achados foram corrigidos na branch, sem Verifier novo: nenhum muda a regra de permissão nem a conta de "nunca usado" (o CR-1-02 só amplia o `before` da auditoria, coberto por teste). O ciclo 2, se houver, confere pelo código.
+
+| Achado | Commit | Estado |
+|---|---|---|
+| CR-1-01 merge da `main` + evidência | `4f3a110` (merge de `origin/main` `c532b37`; conflito só no `AGENTS.md`, os dois lados ficaram, linhas de B7 e B9 atualizadas para "na `main`") | escada e e2e rodados sobre o resultado: ver a seção "Evidência depois das correções" |
+| CR-1-02 retrato parcial na linha `deleted` | `42b443a` (`TaskArchiveService::deletionSnapshot`: requisição, dev, QA, pedido do cliente, arquivamento e os critérios com número e texto; o teste afirma campo a campo) | ✅ corrigido |
+| CR-1-03 releitura travada copiada | `42b443a` (`WritesTasks::lockTaskRow()`; `lockTask` só acrescenta a recusa do arquivado; `unarchive` e `delete` usam o trait) | ✅ corrigido |
+| CR-1-04 documentos sem as decisões da spec; P57 × P26 | `b62f2ac` (`banco.md` "tirar do quadro", F3 §04 e §07, P57 reescrito: o pai com filhos é usado e não se exclui) | ✅ corrigido; a leitura escolhida para o P57 é a do P26 e do código |
+| (ambiente) suíte acima do `memory_limit` de 128M do CLI | commit seguinte (`phpunit.xml`: `<ini name="memory_limit" value="1G"/>`, que o processo filho do `artisan test` obedece) | ✅ a suíte volta a rodar com `php artisan test` no Mac |
+
+### Evidência depois das correções (head da branch com os quatro commits)
+
+| Comando | Saída |
+|---|---|
+| `composer lint` | passed |
+| `npm run typecheck` · `npm run lint` · `npm run build` | exit 0 os três |
+| `npm run build-storybook` | a 1ª rodada saiu com "Storybook exited with an error" (só a cauda do log foi guardada); a 2ª, com a saída inteira, **"Storybook build completed successfully"**, exit 0. Registrado como intermitente de ambiente |
+| `caffeinate -i php artisan test --compact` (com o `<ini>` do `phpunit.xml`) | **779 passed (6645 assertions)**, 238 s (o Timebox do B9 pesa), exit 0 |
+| `npm run test:guard` | 1053 verdes |
+| `npm run specs:check` | 14 problemas, todos da aprovação desta spec (as outras 6 features ok) |
+| `npm run e2e:prepare` + `e2e:serve` + `caffeinate -i npx playwright test` | **83 passed (3,0 min)**, exit 0: os 81 da `main` com o B9 + os 2 deste PR |
