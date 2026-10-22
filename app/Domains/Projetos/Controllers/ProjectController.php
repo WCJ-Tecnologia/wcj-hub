@@ -10,6 +10,7 @@ use App\Domains\Projetos\Services\ProjectService;
 use App\Http\Controllers\Controller;
 use App\Platform\Requests\Admin\StoreClientRequest;
 use App\Platform\Services\ClientService;
+use App\Support\Busca;
 use App\Support\LocalTime;
 use App\Support\Paises;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,7 @@ class ProjectController extends Controller
 
         $user = $request->user();
         $filters = [
-            'search' => trim((string) $request->string('search')),
+            'search' => Busca::termo($request),
             'client_id' => $request->integer('client_id') ?: null,
             'manager_id' => $request->integer('manager_id') ?: null,
             'type' => in_array($request->query('type'), ['delivery', 'continuous'], true) ? (string) $request->query('type') : null,

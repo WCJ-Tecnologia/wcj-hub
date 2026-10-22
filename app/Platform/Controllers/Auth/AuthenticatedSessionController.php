@@ -5,6 +5,7 @@ namespace App\Platform\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\User;
+use App\Platform\Requests\Auth\LoginRequest;
 use App\Platform\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,25 +29,24 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $credentials = $request->validated();
 
-        // Sem "lembrar de mim": users não tem remember_token (docs/banco.md, seção 4).
-        if (! Auth::attempt($credentials)) {
+        // Sem "lembrar de mim": users não tem remember_token (docs/banco.md, seção 4). A conta
+        // desativada ou sem papel de backoffice nem chega a logar: o id da sessão não muda, e a
+        // recusa, de qualquer tipo, leva o tempo do Timebox (auth.timebox_duration; B9, SEC-06 e SEC-22).
+        $accepted = Auth::attemptWhen(
+            $credentials,
+            fn (User $user) => $user->isBackofficeUser() && $user->isActive(),
+        );
+
+        if (! $accepted) {
             throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
         }
 
+        /** @var User $user */
         $user = Auth::user();
-
-        if (! $user instanceof User || ! $user->isBackofficeUser() || ! $user->isActive()) {
-            Auth::guard('web')->logout();
-
-            throw ValidationException::withMessages(['email' => self::INVALID_CREDENTIALS]);
-        }
 
         $request->session()->regenerate();
 

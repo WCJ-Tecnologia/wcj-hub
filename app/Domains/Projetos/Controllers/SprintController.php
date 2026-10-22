@@ -9,6 +9,7 @@ use App\Domains\Projetos\Requests\StoreSprintRequest;
 use App\Domains\Projetos\Services\SprintScreen;
 use App\Domains\Projetos\Services\SprintService;
 use App\Http\Controllers\Controller;
+use App\Support\Busca;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -92,7 +93,7 @@ class SprintController extends Controller
 
         return [
             'sprint' => $int('sprint'),
-            'search' => trim((string) $request->query('search', '')),
+            'search' => Busca::termo($request),
             'status' => $pick('status', ['open', 'closed']),
             'developer_id' => $int('developer_id'),
             'stage_id' => $int('stage_id'),

@@ -27,6 +27,8 @@ class TaskAssignmentService
 {
     public const NOT_ALLOCATED = 'não está alocado neste projeto';
 
+    public const PERSON_NOT_ALLOCATED = 'A pessoa escolhida não está alocada neste projeto.';
+
     /** @var array<string, int> */
     public const PRIORITIES = [
         'low' => TaskPriority::LOW,
@@ -110,8 +112,9 @@ class TaskAssignmentService
     {
         $missing = array_diff($userIds, $this->allocated($task->project_id, array_values($userIds)));
         if ($missing !== []) {
-            $name = User::query()->whereKey(reset($missing))->value('name') ?? 'A pessoa';
-            throw new DomainException("{$name} ".self::NOT_ALLOCATED.'.');
+            // Sem o nome de quem foi escolhido: percorrendo ids, quem edita a ficha listaria todos os
+            // usuários do Hub (revisão dirigida do B9, achado 6; SEC-24).
+            throw new DomainException(self::PERSON_NOT_ALLOCATED);
         }
     }
 

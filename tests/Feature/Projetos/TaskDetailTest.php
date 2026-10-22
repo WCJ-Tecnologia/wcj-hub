@@ -178,9 +178,11 @@ class TaskDetailTest extends TestCase
         Notification::fake();
         $qa = User::factory()->developer()->create();
         $this->alocar($this->project, $qa);
-        $fora = User::factory()->developer()->create();
+        $fora = User::factory()->developer()->create(['name' => 'Fulana de Fora']);
 
-        $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $fora->id])->assertSessionHas('error');
+        // A recusa não diz o nome de quem foi escolhido (revisão dirigida do B9, achado 6; SEC-24).
+        $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $fora->id])
+            ->assertSessionHas('error', 'A pessoa escolhida não está alocada neste projeto.');
         $this->assertNull($this->task->fresh()->developer_id);
 
         $this->actingAs($this->dev)->patch($this->url(), ['developer_id' => $this->dev->id, 'qa_id' => $qa->id])->assertSessionHasNoErrors();
@@ -364,5 +366,72 @@ class TaskDetailTest extends TestCase
             ->assertOk()->assertDownload('Relatorio final.pdf')->assertHeader('X-Content-Type-Options', 'nosniff');
         $this->assertStringContainsString("filename*=utf-8''Relat%C3%B3rio%20final.pdf", $download->headers->get('Content-Disposition'));
         $this->actingAs(User::factory()->developer()->create())->get($this->url("/anexos/{$file->id}"))->assertForbidden();
+    }
+
+    /** O download sai do AttachmentService, com o mesmo comportamento de antes (B9, SEC-11). */
+    public function test_an_image_attachment_opens_inline_and_a_document_downloads_both_with_nosniff(): void
+    {
+        $this->actingAs($this->dev)->post($this->url('/anexos'), ['files' => [
+            UploadedFile::fake()->image('tela.png'),
+            UploadedFile::fake()->create('ata.pdf', 10, 'application/pdf'),
+        ]])->assertSessionHasNoErrors();
+        $image = TaskAttachment::query()->where('original_name', 'tela.png')->sole();
+        $pdf = TaskAttachment::query()->where('original_name', 'ata.pdf')->sole();
+
+        $inline = $this->actingAs($this->dev)->get($this->url("/anexos/{$image->id}"))
+            ->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringStartsWith('inline', (string) $inline->headers->get('Content-Disposition'));
+
+        $download = $this->actingAs($this->dev)->get($this->url("/anexos/{$pdf->id}"))
+            ->assertOk()->assertDownload('ata.pdf')->assertHeader('Content-Type', 'application/pdf')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringStartsWith('attachment', (string) $download->headers->get('Content-Disposition'));
+    }
+
+    public function test_downloading_without_seeing_the_project_is_forbidden_and_audited(): void
+    {
+        $this->actingAs($this->dev)->post($this->url('/anexos'), ['files' => [UploadedFile::fake()->image('tela.png')]]);
+        $file = TaskAttachment::query()->sole();
+        $stranger = User::factory()->developer()->create();
+
+        $this->actingAs($stranger)->get($this->url("/anexos/{$file->id}"))->assertForbidden();
+
+        $denied = AuditLog::query()->where('user_id', $stranger->id)->where('outcome', 'denied')->sole();
+        $this->assertSame(['task', $this->task->id, 'viewed'], [$denied->auditable_type, $denied->auditable_id, $denied->action]);
+    }
+
+    public function test_an_attachment_whose_file_is_gone_answers_404(): void
+    {
+        $this->actingAs($this->dev)->post($this->url('/anexos'), ['files' => [UploadedFile::fake()->create('ata.pdf', 10, 'application/pdf')]]);
+        $file = TaskAttachment::query()->sole();
+        Storage::disk('local')->delete($file->path);
+
+        $this->actingAs($this->dev)->get($this->url("/anexos/{$file->id}"))->assertNotFound();
+    }
+
+    public function test_the_controller_does_not_serve_files_itself(): void
+    {
+        $source = (string) file_get_contents(app_path('Domains/Projetos/Controllers/TaskDetailController.php'));
+
+        $this->assertStringNotContainsString('Storage::', $source);
+        $this->assertStringContainsString('$this->attachments->download(', $source);
+    }
+
+    /**
+     * Um .txt com HTML dentro sai como o tipo gravado, em download, nunca como text/html na página
+     * (spec, caso de borda do SEC-11; Verifier do B9, rodada 1: M42). O arquivo é gravado direto: o
+     * envio pela rota recusaria o HTML pelos bytes.
+     */
+    public function test_a_text_attachment_with_html_inside_downloads_with_the_stored_type(): void
+    {
+        Storage::disk('local')->put('tasks/nota.txt', '<!DOCTYPE html><html><body><script>alert(1)</script></body></html>');
+        $file = $this->task->attachments()->create([
+            'path' => 'tasks/nota.txt', 'original_name' => 'nota.txt', 'mime_type' => 'text/plain', 'user_id' => $this->dev->id,
+        ]);
+
+        $response = $this->actingAs($this->dev)->get($this->url("/anexos/{$file->id}"))
+            ->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+
+        $this->assertStringStartsWith('text/plain', (string) $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('attachment', (string) $response->headers->get('Content-Disposition'));
     }
 }

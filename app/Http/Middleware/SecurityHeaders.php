@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Every response carries the security headers from the application itself, so
- * they survive a change of web server. Changing the CSP is an ADR.
+ * they survive a change of web server. Registered as global middleware, so error
+ * pages and the health checks get them too. Changing the CSP is an ADR.
  */
 class SecurityHeaders
 {
@@ -28,6 +29,14 @@ class SecurityHeaders
         $headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
         $headers->set('X-Frame-Options', 'SAMEORIGIN');
         $headers->set('X-Content-Type-Options', 'nosniff');
+
+        // Nothing tells the version of PHP or of the framework (seguranca.md §5). The PHP
+        // SAPI adds its own outside the response object; expose_php=Off covers it too (DEPLOY.md).
+        $headers->remove('X-Powered-By');
+
+        if (! headers_sent()) {
+            header_remove('X-Powered-By');
+        }
 
         if (app()->isProduction()) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

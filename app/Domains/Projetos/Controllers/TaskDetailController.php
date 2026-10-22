@@ -14,14 +14,13 @@ use App\Domains\Projetos\Requests\StoreAttachmentsRequest;
 use App\Domains\Projetos\Services\AttachmentService;
 use App\Domains\Projetos\Services\CriterionService;
 use App\Domains\Projetos\Services\TaskCommentService;
-use App\Domains\Projetos\Services\TaskDetailPresenter;
 use App\Domains\Projetos\Services\TaskHoursService;
 use App\Domains\Projetos\Services\TaskPullRequestService;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -131,21 +130,17 @@ class TaskDetailController extends Controller
         return $this->attempt(fn () => $this->attachments->remove($attachment, $request->user()), fn () => back());
     }
 
-    /**
-     * Download com o nome original (P24). Imagem abre na própria página (miniatura e capa); o resto
-     * baixa. O Content-Type vem do tipo gravado, conferido pelos bytes no envio (seguranca.md §7).
-     */
+    /** Download pelo AttachmentService (B9, SEC-11): aqui só o card da rota e a Policy. */
     public function downloadAttachment(Request $request, Project $project, Task $card, TaskAttachment $attachment): StreamedResponse
     {
         $this->belongsToCard($attachment, $card);
         $this->authorize('view', $card);
-        abort_unless(Storage::disk(TaskDetailPresenter::DISK)->exists($attachment->path), 404);
 
-        $headers = ['Content-Type' => $attachment->mime_type, 'X-Content-Type-Options' => 'nosniff'];
-
-        return $attachment->isImage()
-            ? Storage::disk(TaskDetailPresenter::DISK)->response($attachment->path, $attachment->original_name, $headers)
-            : Storage::disk(TaskDetailPresenter::DISK)->download($attachment->path, $attachment->original_name, $headers);
+        try {
+            return $this->attachments->download($attachment);
+        } catch (FileNotFoundException) {
+            abort(404);
+        }
     }
 
     private function belongsToCard(Model $child, Task $card): void
