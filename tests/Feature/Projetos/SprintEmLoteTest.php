@@ -308,7 +308,8 @@ class SprintEmLoteTest extends TestCase
             app(SprintTaskService::class)->addMany($this->project, [['id' => $a->id], ['id' => $b->id, 'developer_id' => $deFora->id]], $this->gestor, self::NOVA);
             $this->fail('Aceitou dev fora do projeto.');
         } catch (DomainException $e) {
-            $this->assertSame('Zé de Fora não está alocado neste projeto.', $e->getMessage());
+            // Sem o nome: percorrendo ids, a recusa listaria todos os usuários (B9, SEC-24).
+            $this->assertSame('A pessoa escolhida não está alocada neste projeto.', $e->getMessage());
         }
 
         // A sprint nova e a 1ª tarefa (já posta na sprint) voltam junto.

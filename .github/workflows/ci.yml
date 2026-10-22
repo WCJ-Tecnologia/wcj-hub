@@ -73,6 +73,8 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Pint
         run: composer lint
+      - name: Composer audit (no security advisory; seguranca.md §10)
+        run: composer audit
       - name: PHPUnit on MySQL 8.4 (.env.testing; includes the Arquitetura suite)
         run: php artisan test
       - name: Proof that the suite ran on MySQL
@@ -92,6 +94,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: npm audit (production dependencies, high and above; seguranca.md §10)
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build

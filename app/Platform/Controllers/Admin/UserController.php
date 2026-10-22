@@ -8,6 +8,7 @@ use App\Platform\Models\User;
 use App\Platform\Requests\Admin\StoreUserRequest;
 use App\Platform\Services\UserPresenter;
 use App\Platform\Services\UserService;
+use App\Support\Busca;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class UserController extends Controller
         $this->authorize('viewAny', User::class);
 
         $filters = [
-            'search' => (string) $request->string('search'),
+            'search' => Busca::termo($request),
             'role_id' => $request->integer('role_id') ?: null,
             'show_inactive' => $request->boolean('show_inactive'),
         ];

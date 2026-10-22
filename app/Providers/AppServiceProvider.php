@@ -87,13 +87,15 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * "login" guards every credential endpoint: login, forgot, reset and first
-     * access. Two keys: IP + account, and a ceiling per IP. Limits live in
+     * access; "senha-atual" guards the password change in Meu perfil. Two keys: IP + account, and a ceiling per IP. Limits live in
      * config/auth.php so a test environment can loosen the per-IP ceiling.
      */
     private function registerRateLimiters(): void
     {
         RateLimiter::for('login', function (Request $request) {
-            $account = Str::lower(trim((string) $request->input('email', $request->user()?->email ?? '')));
+            // Só texto vira chave: `email[]=x` cairia num "Array to string" e daria 500 antes da validação (B9, SEC-23).
+            $email = $request->input('email', $request->user()?->email ?? '');
+            $account = is_string($email) ? Str::lower(trim($email)) : '';
             $response = fn (Request $request, array $headers) => (new ThrottledAuthResponse)($request, $headers);
 
             return [
@@ -104,6 +106,18 @@ class AppServiceProvider extends ServiceProvider
                     ->by('login-ip:'.$request->ip())
                     ->response($response),
             ];
+        });
+
+        // Meu perfil confere a senha atual ao trocar a senha (B9, SEC-04): vira lugar de
+        // adivinhar senha. Conta por usuário logado e só quando há senha nova (SEC-05).
+        RateLimiter::for('senha-atual', function (Request $request) {
+            if (! $request->filled('password')) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute((int) config('auth.throttle.per_account', 5))
+                ->by('senha-atual:'.$request->user()?->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => (new ThrottledAuthResponse)($request, $headers));
         });
     }
 

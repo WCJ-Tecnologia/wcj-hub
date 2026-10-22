@@ -3,11 +3,11 @@
 namespace App\Platform\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Platform\Requests\Auth\FirstAccessPasswordRequest;
 use App\Platform\Services\SessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,7 +29,7 @@ class ChangePasswordController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(FirstAccessPasswordRequest $request): RedirectResponse
     {
         $user = $request->user();
 
@@ -37,9 +37,7 @@ class ChangePasswordController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $data = $request->validate([
-            'password' => ['required', 'confirmed', PasswordRule::defaults()],
-        ]);
+        $data = $request->validated();
 
         if (Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([

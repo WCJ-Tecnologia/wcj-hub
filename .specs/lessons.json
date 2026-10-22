@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 28,
+  "next_id": 36,
   "lessons": [
     {
       "id": "L-001",
@@ -503,6 +503,150 @@
       ],
       "created": "2026-10-20T14:22:18Z",
       "last_seen": "2026-10-20T14:22:18Z"
+    },
+    {
+      "id": "L-028",
+      "key": "surviving_mutant::prove an architecture test detector against a registered fake route and against fixtures that isolate each pattern it claims to catch",
+      "text": "Prove an architecture-test detector against a registered fake route and against fixtures that isolate each pattern it claims to catch",
+      "signal": "surviving_mutant",
+      "scope": "arch",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M36 M38 tests/Arch/RotasAutorizadasTest.php:124 (arch)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-029",
+      "key": "surviving_mutant::assert the served content type with a fixture whose stored type differs from what the file extension or bytes would infer",
+      "text": "Assert the served Content-Type with a fixture whose stored type differs from what the file extension or bytes would infer",
+      "signal": "surviving_mutant",
+      "scope": "uploads",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M42 app/Domains/Projetos/Services/AttachmentService.php:89 (uploads)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-030",
+      "key": "surviving_mutant::test host allowlists with lookalike hosts such as a subdomain and a suffix appended host not only an unrelated host",
+      "text": "Test host allowlists with lookalike hosts such as a subdomain and a suffix-appended host, not only an unrelated host",
+      "signal": "surviving_mutant",
+      "scope": "auth",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M05 M06 bootstrap/app.php:32-34 (auth)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-031",
+      "key": "surviving_mutant::test a forced root url with a request whose host differs from app url only by port",
+      "text": "Test a forced root URL with a request whose host differs from APP_URL only by port",
+      "signal": "surviving_mutant",
+      "scope": "auth",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M11 app/Http/Middleware/UseAppUrl.php:24 (auth)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-032",
+      "key": "surviving_mutant::test the non production branch of every environment gated middleware",
+      "text": "Test the non-production branch of every environment-gated middleware",
+      "signal": "surviving_mutant",
+      "scope": "middleware",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M10 app/Http/Middleware/UseAppUrl.php:21 (middleware)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-033",
+      "key": "surviving_mutant::cover the throttled response path with the same malformed input tested on the normal path",
+      "text": "Cover the throttled response path with the same malformed input tested on the normal path",
+      "signal": "surviving_mutant",
+      "scope": "auth",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M32 app/Http/Responses/ThrottledAuthResponse.php:78 (auth)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-034",
+      "key": "surviving_mutant::assert user facing messages by literal text not by the constant defined in the code under test",
+      "text": "Assert user-facing messages by literal text, not by the constant defined in the code under test",
+      "signal": "surviving_mutant",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M24 tests/Feature/ProfilePasswordTest.php:44 (tests)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
+    },
+    {
+      "id": "L-035",
+      "key": "spec_precision_gap::enumerate the exact header names when a spec requires headers to be repeated in another layer",
+      "text": "Enumerate the exact header names when a spec requires headers to be repeated in another layer",
+      "signal": "spec_precision_gap",
+      "scope": "docs",
+      "status": "candidate",
+      "features": [
+        "b9-seguranca"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md SEC-14 AC 8 docs/DEPLOY.md:168-176 (docs)"
+      ],
+      "created": "2026-10-21T16:26:59Z",
+      "last_seen": "2026-10-21T16:26:59Z"
     }
   ]
 }

@@ -16,6 +16,7 @@ export interface WProfilePageProps {
 export function WProfilePage({ profile }: WProfilePageProps) {
     const form = useForm({
         name: profile.name,
+        current_password: '',
         password: '',
         password_confirmation: '',
     });
@@ -24,7 +25,7 @@ export function WProfilePage({ profile }: WProfilePageProps) {
         event.preventDefault();
         form.put('/admin/profile', {
             preserveScroll: true,
-            onSuccess: () => form.reset('password', 'password_confirmation'),
+            onSuccess: () => form.reset('current_password', 'password', 'password_confirmation'),
         });
     };
 
@@ -54,6 +55,20 @@ export function WProfilePage({ profile }: WProfilePageProps) {
                                 <KeyRound className="size-3.5" aria-hidden /> Trocar senha
                             </legend>
                             <div className="space-y-3">
+                                <WFormFieldMolecule
+                                    label="Senha atual"
+                                    htmlFor="current_password"
+                                    error={form.errors.current_password}
+                                    hint="Só para trocar a senha. Para mudar só o nome, deixe em branco."
+                                >
+                                    <Input
+                                        id="current_password"
+                                        type="password"
+                                        autoComplete="current-password"
+                                        value={form.data.current_password}
+                                        onChange={(event) => form.setData('current_password', event.target.value)}
+                                    />
+                                </WFormFieldMolecule>
                                 <WFormFieldMolecule
                                     label="Nova senha"
                                     htmlFor="password"

@@ -10,6 +10,7 @@ use App\Domains\Projetos\Services\TimeEntryPresenter;
 use App\Domains\Projetos\Services\TimeEntryQuery;
 use App\Domains\Projetos\Services\TimeEntryService;
 use App\Http\Controllers\Controller;
+use App\Support\Busca;
 use App\Support\DiasUteis;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -73,8 +74,9 @@ class TimeEntryController extends Controller
     private function filters(Request $request): array
     {
         $today = CarbonImmutable::parse(DiasUteis::today());
-        $date = fn (string $key, string $default) => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $request->query($key)) === 1 && strtotime((string) $request->query($key)) !== false
-            ? (string) $request->query($key) : $default;
+        $date = fn (string $key, string $default) => is_string($request->query($key))
+            && preg_match('/^\d{4}-\d{2}-\d{2}$/', $request->query($key)) === 1 && strtotime($request->query($key)) !== false
+            ? $request->query($key) : $default;
         $from = $date('from', $today->startOfWeek(CarbonImmutable::MONDAY)->toDateString());
         $to = $date('to', $today->endOfWeek(CarbonImmutable::SUNDAY)->toDateString());
 
@@ -82,7 +84,7 @@ class TimeEntryController extends Controller
             'from' => min($from, $to),
             'to' => max($from, $to),
             'project_id' => $request->integer('project_id') > 0 ? $request->integer('project_id') : null,
-            'search' => trim((string) $request->query('search', '')),
+            'search' => Busca::termo($request),
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Responses;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Platform\Controllers\Admin\ProfileController;
 use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ class ThrottledAuthResponse
         'password.email' => 'auth/forgot-password',
         'password.store' => 'auth/reset-password',
         'password.change.update' => 'auth/change-password',
+        'admin.profile.update' => 'admin/profile/index',
     ];
 
     /**
@@ -46,7 +48,11 @@ class ThrottledAuthResponse
         Inertia::version(fn () => $inertia->version($request));
         Inertia::share($inertia->share($request));
 
-        $field = $component === 'auth/change-password' ? 'password' : 'email';
+        $field = match ($component) {
+            'auth/change-password' => 'password',
+            'admin/profile/index' => 'current_password',
+            default => 'email',
+        };
 
         $response = Inertia::render($component, [
             ...$this->componentProps($component, $request),
@@ -69,12 +75,13 @@ class ThrottledAuthResponse
     {
         return match ($component) {
             'auth/reset-password' => [
-                'email' => (string) $request->string('email'),
+                'email' => is_string($request->input('email')) ? $request->input('email') : '',
                 'token' => (string) $request->string('token'),
             ],
             'auth/change-password' => [
                 'firstName' => $request->user()?->firstName() ?? '',
             ],
+            'admin/profile/index' => ProfileController::pageProps($request->user()),
             default => [],
         };
     }
