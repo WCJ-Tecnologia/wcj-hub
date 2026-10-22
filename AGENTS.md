@@ -180,7 +180,7 @@ composer setup                       # sobe o MySQL (docker compose), instala, m
 php artisan app:create-admin voce@wcjtecnologia.com.br   # imprime a senha uma vez; troca no 1º acesso
 composer dev                         # servidor, fila, logs e Vite
 
-composer lint && php artisan test    # MySQL 8 (wcj_hub_test); precisa do docker compose up -d mysql
+composer lint && php artisan test    # MySQL 8 (wcj_hub_test); precisa do docker compose up -d mysql; com o memory_limit de 128M do CLI, php -d memory_limit=1G artisan test
 npm run typecheck && npm run lint && npm run build
 npm run storybook                    # catálogo dos componentes em http://localhost:6006
 npm run e2e:prepare && npm run e2e:serve   # em outro terminal: npx playwright test

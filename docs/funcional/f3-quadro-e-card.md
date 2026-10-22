@@ -183,7 +183,7 @@ Os demais campos da ficha valem igual no card de suporte, depois de criado.
 | Histórico | Qualquer alocado | Abre a linha do tempo do card (F7). | |
 | Arquivar | Gestor do projeto, Administrador | Pede o motivo. O card sai do quadro e das contas de prazo, atraso e capacidade; as horas lançadas nele continuam nos indicadores de horas (P26). | "Arquivar SGM-17? Ele sai do quadro e volta pelo filtro Arquivados." |
 | Desarquivar | Gestor do projeto, Administrador | Limpa o arquivamento, tira da sprint e leva ao `Backlog`. Não conta retrabalho (P26). | |
-| Excluir card | Gestor do projeto, Administrador | Só o card nunca usado: nenhum movimento além da criação; sem horas, comentários, anexos nem PRs; nenhum bug de produção apontando para ele; sem teste cruzado marcado. Os critérios saem junto (P26). | "Excluir de verdade. Não dá para desfazer. A chave SGM-17 não volta a ser usada." Card com histórico: o botão não aparece; só *Arquivar*. |
+| Excluir card | Gestor do projeto, Administrador | Só o card nunca usado: nenhum movimento além da criação; fora de sprint; sem horas, comentários, anexos nem PRs; nenhum bug de produção nem card filho apontando para ele; sem teste cruzado marcado. Os critérios, os participantes e o movimento de criação saem junto; os avisos do card ficam, sem o link (§07); o card arquivado nunca usado também se exclui (P26). | "Excluir de verdade. Não dá para desfazer. A chave SGM-17 não volta a ser usada." Card com histórico: o botão não aparece; só *Arquivar*. |
 
 ### Pela IA (fatia 1)
 
@@ -227,6 +227,8 @@ São os únicos avisos de Projetos na fatia 1 (P22, R3). Cada um sai **no sistem
 | A pessoa é definida como dev do card | A pessoa definida | "Você é o dev de SGM-17 — <título> (projeto <nome>), definido por Fulano." + link para o card. |
 | A pessoa é definida como QA do card | A pessoa definida | "Você é o QA de SGM-17 — <título> (projeto <nome>), definido por Fulano." + link para o card. |
 | O card volta para sprint ou desenvolvimento (retrabalho), pela tela, pela IA ou pela homologação do pacote (F6) | O dev do card; sem dev, ninguém | "SGM-17 — <título> voltou para <coluna>: origem <QA>, motivo <Ajuste visual / texto do Outro>, por Fulano." + link para o card. |
+
+Card excluído (§04 "Excluir card"): os avisos dele ficam na lista da pessoa, com o mesmo texto e sem o link; o aviso é sempre da pessoa, e cada uma marca só os próprios como lidos (B3 PR 3).
 
 Proposta: quem define a si mesmo como dev ou QA não recebe aviso (ver 10.5). Nenhum documento é gerado: o documento de requisição em Word ou PDF fica para depois da v1 (P55).
 
