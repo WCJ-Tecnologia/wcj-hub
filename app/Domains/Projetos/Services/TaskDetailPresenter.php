@@ -30,6 +30,7 @@ class TaskDetailPresenter
         private readonly TaskPresenter $board,
         private readonly LateQuery $late,
         private readonly DueDateService $dueDates,
+        private readonly TaskUsageQuery $usage,
     ) {}
 
     /**
@@ -156,9 +157,9 @@ class TaskDetailPresenter
                 'decide_hours' => $manages,
                 'move' => $viewer->can('move', $task),
                 'manage_sprint' => $manages,
-                // Arquivar e excluir: PR 3 do B3.
-                'archive' => false,
-                'delete' => false,
+                // Arquivar serve também para desarquivar (F3 §09); excluir, só o card nunca usado (P26).
+                'archive' => $viewer->can('archive', $task),
+                'delete' => $viewer->can('delete', $task) && $this->usage->isUnused($task),
                 'manage_types' => $viewer->can('manage', $task->project),
                 'manage_areas' => $viewer->can('manage', $task->project),
             ],

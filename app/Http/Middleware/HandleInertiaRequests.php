@@ -8,6 +8,7 @@ use App\Platform\Models\AuditLog;
 use App\Platform\Models\Client;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
+use App\Platform\Services\NotificationPresenter;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -47,6 +48,9 @@ class HandleInertiaRequests extends Middleware
                 // em seguida (o "Novo cliente" do formulário do projeto, N6).
                 'created_id' => fn () => $request->session()->get('created_id'),
             ],
+            // O sino do shell (F3 §07): só os avisos de quem está logado. Closure: o sino recarrega
+            // só esta prop (`only: ['notifications']`) ao marcar como lido.
+            'notifications' => fn () => $user instanceof User ? app(NotificationPresenter::class)->payload($user) : null,
         ];
     }
 

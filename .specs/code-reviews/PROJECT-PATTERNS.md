@@ -5,7 +5,7 @@
 >
 > Esta cópia, na `feat/b2-projeto-e-configuracao`, é a da `main` mais o que os ciclos 1 (do lado do Vitinho) e 2 do PR-6 anotaram (CV-13, AP-05 ocorrência, DA-11, DA-12, FP-07 e o bloco do PR-6); a versão própria que a branch trazia (30 linhas) foi absorvida aqui. O ciclo 1 do PR-8 (`chore/marca-wcj`) acrescentou CV-12, AP-05, AP-06, DA-09, DA-10, FP-06 e o bloco "Registrado sem achado no ciclo 1 do PR-8"; o resto é do B1 (ciclos 1 a 6). Os caminhos de componente citados nos itens do B1 são os de antes do ADR-003 (`components/ui/`, `components/*.tsx`); desde o rebase do #8 valem os `w-*` da tabela do `AGENTS.md`.
 
-**Última atualização:** 2026-10-20 · **Reviews acumulados:** 11 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; b3-quadro-e-card ciclo 1 (PR-17); b3-ficha ciclo 1 (PR-18); a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
+**Última atualização:** 2026-10-22 · **Reviews acumulados:** 12 (b1-nucleo ciclos 1 a 6; pr-8 ciclo 1; pr-6 ciclos 1 e 2; b3-quadro-e-card ciclo 1 (PR-17); b3-ficha ciclo 1 (PR-18); b3-arquivar-e-avisos ciclo 1 (PR-22); a revisão de 07/10 em `docs/revisoes/` é anterior à skill)
 
 ---
 
@@ -103,7 +103,17 @@
 ### CV-18 — O Specs gate do CI é literal: `**Approved by**: Nome, AAAA-MM-DD` sem nada depois, `y` exato em Confirmed?, `**Acceptance Criteria**:` antes da lista numerada, e um veredito só no `validation.md`
 - **Escopo:** `.specs/features/*/spec.md` e `validation.md`; `npm run specs:check` (`.ai/skills/conferir-specs.mjs` → `validate_spec.py`, `validate_state.py`)
 - **Evidência:** CI do #17 em 19/10 (run 39312637589) vermelho por formato; `validate_state.py::_verdict` junta todas as linhas `## Validation`/`**Result**:` e, com PASS e FAIL juntos, devolve "placeholder"
-- **Visto em:** b3-quadro-e-card (correção `f41436f`), b3-ficha ciclo 1 (CR-1-05). Histórico de rodadas no `validation.md` sem a palavra `Result:` (`Sensor da rodada N`, `Veredito da rodada N`)
+- **Visto em:** b3-quadro-e-card (correção `f41436f`), b3-ficha ciclo 1 (CR-1-05). Histórico de rodadas no `validation.md` sem a palavra `Result:` (`Sensor da rodada N`, `Veredito da rodada N`). **PR-22:** o `validation.md` do B3 PR 3 já nasceu no formato; o gate ficou vermelho só pela aprovação
+
+### CV-19 — "Nunca usado" do card é a lista fechada do `TaskUsageQuery` (não o `isReferenced()`), conferida com a linha travada; FK nova para `tasks` entra em `USES` ou `GOES_ALONG`
+- **Escopo:** `app/Domains/Projetos/Services/TaskUsageQuery.php`, `TaskArchiveService::delete`, `TaskDetailPresenter` (`abilities.delete`)
+- **Evidência:** `TaskUsageQuery.php:19-33` (as duas listas), `:39-62` (`isUnused`: `cross_tested_at`, `sprint_id`, `movements_count > 1`, `withExists` das seis relações); `TaskUsageQueryTest.php:19-34` (toda FK do `information_schema` para `tasks` está numa das listas; falha com FK nova sem decisão); `B3ArquivarTransacaoTest.php:104-123` (o comentário gravado no meio espera a linha do card, 1205)
+- **Visto em:** b3-arquivar-e-avisos ciclo 1. Como no projeto (CV-13), o genérico `Deactivatable::isReferenced()` não serve: critério, participação e movimento de criação saem por cascade e não são uso, e `cross_tested_at`/`sprint_id` não são FK. A trava do card basta porque toda FK de `USES` aponta para `tasks` (o INSERT do filho pega S na linha travada). **A prova de trava com `Concorrencia` relê o model na outra conexão** (`Task::query()->findOrFail($id)` dentro do closure): a instância Eloquent carrega a conexão em que nasceu, e gravar pelo `$task` da principal entra na própria transação (lição do Verifier, `validation.md` rodada 1). Uma segunda conta de "nunca usado" fora do `TaskUsageQuery`, ou `TaskType::isReferenced()`-like no card, é desvio
+
+### CV-20 — Aviso do sino é da pessoa: procurado em `$request->user()->notifications()`, 404 para o de outra; marcar lido não audita
+- **Escopo:** `app/Platform/Controllers/NotificationController.php`, `app/Platform/Services/NotificationPresenter.php`, `HandleInertiaRequests::share()` (`notifications`)
+- **Evidência:** `NotificationController.php:18` (`whereKey()->firstOrFail()->markAsRead()`), `:25` (`unreadNotifications()->update`); `routes/web.php:75-81` (`whereUuid`); `RotasAutorizadasTest.php:61-62` (lista do A5, "ação sobre a própria conta"); `NotificationsTest.php` (404, continua não lido, só os meus); `NotificationPresenter.php:17-37` (10 mais recentes, não lidos primeiro, hora de São Paulo)
+- **Visto em:** b3-arquivar-e-avisos ciclo 1. O Núcleo só lê `data.text`/`data.url`/`data.key` que o módulo gravou (A9). O aviso de um card excluído fica com `url` nula pelo `TaskArchiveService::delete`, casado por `data->key` (seguro: prefixo unique e congelado após a 1ª tarefa). `DatabaseNotification::query()` sem o escopo da pessoa é desvio (o mutante w1 do Verifier)
 
 ## Anti-padrões recorrentes
 
@@ -128,6 +138,7 @@
 - **Ação sugerida:** em commit de decisão, `git grep` do termo antigo ("dono do módulo", o nome da regra) em `docs/` e `.specs/` antes de fechar
 - **Ocorrência (b3-quadro-e-card ciclo 1, CR-1-04):** a spec e o `AGENTS.md` dizem que lançar horas fica na `TimeEntryPolicy` (sem `logTime` na `TaskPolicy`) e que as queries ficam em `Services/`; o `docs/escopo.md` B3 seguiu com `logTime` e `Queries/`
 - **Ocorrência (b3-ficha ciclo 1, CR-1-06):** o `TaskEditService` virou a porta do `PATCH` da ficha e o `AGENTS.md` ainda diz que etiquetas e participante entram pelo `TaskTagService`; as 4 colunas de "quem" não estão no `docs/banco.md`
+- **Ocorrência (b3-arquivar-e-avisos ciclo 1, CR-1-04):** a spec decide "fora de sprint" como uso, "card filho" como uso e "aviso do card excluído fica sem link", e o `docs/banco.md` (linha do "tirar do quadro"), a F3 §04 (linha "Excluir card") e a F3 §07 seguem sem; o P57 ("excluir o pai não mexe nos filhos: ficam sem pai") contradiz o P26 ("ter cards filhos conta"), que é o que o código segue. Sinal novo: **spec com premissa que estende uma regra do `banco.md` sem tocar o `banco.md`**
 
 ### AP-05 — Fundação de front aberta em paralelo a blocos funcionais, renomeando o que eles editam
 - **Ocorrências:** pr-8 ciclo 1 (CR-1-02): o #8 parte do B0 e move/renomeia `components/ui/*`, `layouts/`, `data-table`, `row-actions`, `search-input`, `status-pill`, `user-form-dialog`, `app-sidebar`, que o #5 (B1) e o #6 (B2) editam; `git merge-tree` dá 9 conflitos com o #5 e 1 com o #6; 30 arquivos do B1 e 21 do B2 importam `@/components/ui/` ou `@/layouts/`; os componentes e hooks do B1 (CV-07, CV-09, `StatusPill` contact/audit, `DataTable rowClassName`, `SearchInput` do CR-1-10) não existem no #8
@@ -138,6 +149,7 @@
 
 ### AP-06 — Corpo do PR afirma "verde" com CI vermelho ou sem rodar
 - **Ocorrências:** pr-8 ciclo 1 (CR-1-01): "typecheck, lint e build verdes · E2E 13/13" com o job JS caído no `npm ci` em 9 s (lock fora de sincronia) e o E2E pulado
+- **Ocorrência (b3-arquivar-e-avisos ciclo 1, CR-1-01), a versão honesta:** o corpo diz "80 passed, rodado antes do merge do B7; depois do merge não rodei o e2e local: o CI do PR roda", e o CI pulou o E2E porque o job JS cai no Specs gate (spec sem aprovação, CV-18). Enquanto a spec do PR estiver sem aprovação, **o E2E do CI nunca roda**: a evidência do e2e tem de ser local, no corpo. A branch ainda conflitava com a `main` (`AGENTS.md`, B9 mergeado depois do PR); o `git merge-tree --write-tree origin/main <branch>` no início do review mostra isso em segundos
 - **Regressões:** 0
 - **Sinal:** `gh pr checks <n>` com fail/skipping; lock gerado numa máquina e `npm ci` em outra; PR sem link do run
 - **Ação sugerida:** o review começa por `gh pr checks` antes de ler o corpo; o corpo do PR cita o run; `npm ci` local reproduz o CI em segundos
@@ -212,6 +224,10 @@
 - **Motivo:** com o B1 na `main`, `ClientPolicy`/`ContactPolicy` perguntam ao contrato `ClientManagement`, ligado a `NoClientManagement`: o gestor não gere cliente nem vê contato (F1 §09) até o B2 entregar a real (escopo B2)
 - **Origem:** pr-6 ciclo 2 (CR-2-05)
 - **Implica:** no ciclo seguinte do PR-6, conferir se o PR declara o passo em que entra ou já entrega; o `ClientManagementFalso` dos testes do Núcleo continua valendo
+
+### DA-13 — Decisões pendentes do Lucas no B3 PR 3 (não são achados novos)
+- **Origem:** b3-arquivar-e-avisos ciclo 1 (PR-22), seção "Para o Lucas decidir" do relatório: (1) a aprovação da spec com o `y` nas 13 premissas; (2) a pergunta aberta do EXC-02: aviso do card excluído fica sem link (o que o código faz) ou sai junto; (3) a ficha do card arquivado ainda mostra *Mover para…* e deixa editar (`abilities.move`/`update` não olham o arquivamento; o servidor recusa); (4) a negação do desarquivar gravada como `archived`, sem ability nova; (5) P57 × P26: o pai com filhos se exclui ou não (CR-1-04 c)
+- **Implica:** reverificar como "aguarda decisão", sem reabrir como achado nem subir criticidade. Se o Lucas decidir "saem junto" no (2), o EXC-02, o `TaskArchiveService::delete` (`:110-113`) e o teste dos avisos invertem, e o mutante d9 do Verifier vira o comportamento. Se decidir esconder no (3), é `TaskDetailPresenter` + `types/quadro.ts` no mesmo commit, sem Policy nova. O que ele aceitar como está vira `FP-`
 
 ## Falsos positivos
 
@@ -307,3 +323,13 @@
 - Anexo de 20 MB pede `upload_max_filesize`/`post_max_size` no servidor: `docs/DEPLOY.md` no B10.
 - Quem não vê o projeto recebe 404 num filho alheio pela edição (premissa 4 do PR): só a coerência entre rotas foi apontada (CR-1-04).
 - As duas perguntas da spec (4 colunas de "quem"; número do critério após excluir o último) são decisão do Lucas, não achado; o código segue o recomendado (migração aditiva; "maior + 1" do banco.md).
+
+### Registrado sem achado no ciclo 1 do PR-22 (b3-arquivar-e-avisos; não é FP: o Lucas não foi consultado)
+- Avisos do card excluído casados por `data->key`, não por id: `TaskAssigned`/`TaskReturned::toArray` não gravam `task_id`; seguro por construção (prefixo unique e congelado após a 1ª tarefa, `ProjectService.php:65-66`; projeto sem tarefa não tem aviso). Não reabrir sem `task_id` no payload ou regra nova de prefixo.
+- `notifications.data` é `TEXT` e o `where('data->key')` varre a tabela: até 14 pessoas. Não apontar.
+- Desarquivar card que estava no Backlog vai ao fim da fila sem movimento: fluxo aberto e "fim da ordem manual" do `banco.md`.
+- Tempo arquivado entra no intervalo da etapa quando o card volta (não há movimento de arquivar, só auditoria): é do F7, não do PR 3.
+- A ficha roda `isUnused` (1 consulta) por abertura para quem gere; a lista de arquivados reaproveita a consulta do quadro inteira: não é N+1.
+- O card pai ou a tarefa de origem arquivado continua aceito na ficha (pendência do PR-18 decidida na spec do PR 3, "Out of Scope"): fluxo aberto, P25.
+- A escada num worktree com `vendor/` em link simbólico dá "Class … not found" nas classes novas da branch (o autoloader resolve `__DIR__` pelo caminho real e aponta para o `app/` do outro checkout): copiar o `vendor/`, não linkar. Falso negativo de ambiente, não da branch.
+- A spec sem aprovação com o código pronto é condição do trilho (recomendação do relatório), como no PR-17 e no PR-18, não achado de código.

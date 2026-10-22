@@ -137,7 +137,9 @@ class BoardTest extends TestCase
         $arquivado = $this->tarefa($this->project, null, ['archived_at' => now(), 'archive_reason' => 'Duplicado']);
 
         $this->assertSame($this->ordenadas([$ativo]), $this->chaves());
-        $this->assertSame($this->ordenadas([$arquivado]), $this->chaves(['archived' => 1]));
+        // Com o filtro, o quadro vira a lista (F3 §03): os cards vão em `archived`, não em `cards`.
+        $this->assertSame([], $this->chaves(['archived' => 1]));
+        $this->assertSame($this->ordenadas([$arquivado]), collect($this->quadro(['archived' => 1])['archived'])->pluck('key')->all());
     }
 
     public function test_search_by_key_or_title_and_the_simple_filters(): void

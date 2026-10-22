@@ -60,6 +60,8 @@ class RotasAutorizadasTest extends TestCase
         'App\Platform\Controllers\Admin\DashboardController@index' => 'painel de quem está logado: contagens gerais; a atividade recente só chega ao admin',
         'App\Platform\Controllers\Admin\ProfileController@edit' => 'o próprio perfil',
         'App\Platform\Controllers\Admin\ProfileController@update' => 'o próprio perfil',
+        'App\Platform\Controllers\NotificationController@read' => 'marca como lido um aviso da própria pessoa (procurado só entre os dela: de outra, 404)',
+        'App\Platform\Controllers\NotificationController@readAll' => 'marca como lidos os avisos da própria pessoa',
     ];
 
     // Autoriza dentro da ação: Policy, Gate, helper do controller com nome de checagem

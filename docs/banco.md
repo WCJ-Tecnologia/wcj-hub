@@ -586,8 +586,11 @@ Regras do Service:
 - tirar do quadro, só gestor e admin (P26):
     · excluir de verdade só o card nunca usado: nenhum movimento além da criação e nenhuma linha em
       time_entries, task_comments, task_attachments, task_pull_requests ou em tasks com
-      origin_task_id ou parent_task_id apontando para ele, e cross_tested_at nulo. Conferido com a linha travada (banco.md §4). Os critérios,
-      as participações e o movimento de criação saem junto (cascade); ter card pai ou capa não é uso;
+      origin_task_id ou parent_task_id apontando para ele, cross_tested_at nulo e sprint_id nulo (o card de
+      suporte entra na sprint sem trocar de coluna, P52: na sprint já é uso; spec b3-arquivar-e-avisos). Conferido com a linha travada (banco.md §4). Os critérios,
+      as participações e o movimento de criação saem junto (cascade); ter card pai ou capa não é uso. Os avisos
+      (notifications) que apontavam para o card ficam, com o texto e sem o link (data.url nula), na mesma
+      transação; a linha deleted da auditoria leva a requisição, as pessoas e os critérios (G3);
     · card com histórico: arquivar (archived_at + archive_reason). Sai do quadro e das contas de prazo,
       atraso e capacidade; as horas lançadas continuam nos indicadores de horas (P53). Desarquivar
       limpa os dois, limpa sprint_id e leva à etapa de papel queue (Backlog).

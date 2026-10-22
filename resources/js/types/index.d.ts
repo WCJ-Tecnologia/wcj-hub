@@ -78,7 +78,7 @@ export interface AppInfo {
     brand: AppBrand;
 }
 
-/** Um aviso da tabela `notifications` do Laravel (P22, R3), como o `HandleInertiaRequests` vai compartilhar. */
+/** Um aviso da tabela `notifications` do Laravel (P22, R3), como o `HandleInertiaRequests` compartilha. */
 export interface HubNotification {
     /** UUID da notificação. */
     id: string;
@@ -101,7 +101,7 @@ export interface SharedProps extends InertiaPageProps {
     app: AppInfo;
     auth: { user: AuthUser | null };
     flash: FlashMessages;
-    /** Avisos da pessoa (F3 §07). Proposta do kit: o backend ainda não manda; o sino renderiza vazio sem ela. */
-    notifications?: NotificationsPayload;
+    /** Avisos da pessoa (F3 §07), do `NotificationPresenter` (B3, PR 3); nula sem login. O sino renderiza vazio sem ela. */
+    notifications?: NotificationsPayload | null;
     [key: string]: unknown;
 }

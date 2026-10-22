@@ -95,7 +95,7 @@ class TaskPolicy
         return $user->can('manage', $task->project);
     }
 
-    /** Exclusão de verdade: quem gere; "só o nunca usado" é do TaskService (G2, P26). */
+    /** Exclusão de verdade: quem gere; "só o nunca usado" é do TaskArchiveService, pelo TaskUsageQuery (G2, P26). */
     public function delete(User $user, Task $task): bool
     {
         return $user->can('manage', $task->project);

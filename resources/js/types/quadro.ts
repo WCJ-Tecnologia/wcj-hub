@@ -274,6 +274,23 @@ export interface BoardFilters {
     archived: boolean;
 }
 
+/**
+ * Uma linha da lista de arquivados (F3 §03: Chave, Título, Tipo, Arquivado em, Motivo; P26), do
+ * mais recente para o mais antigo. Vem em `archived` quando o filtro *Arquivados* está ligado, e o
+ * quadro manda `cards` vazio (B3, PR 3: `TaskPresenter::archivedRow`).
+ */
+export interface ArchivedCard {
+    id: number;
+    key: string;
+    title: string;
+    type: TaskTypeRef | null;
+    /** `AAAA-MM-DD HH:MM` no fuso de São Paulo. */
+    archived_at: string;
+    archive_reason: string;
+    /** A ficha, que continua abrindo (F3 §11.12); é nela que se desarquiva. */
+    url: string;
+}
+
 /* ------------------------------------------------------------------------------------------------
  * Ficha do card (F3 §02 "Card (ficha)", §03 "Dentro da ficha", §04 "Na ficha"; F5 §02 "Horas e data
  * prevista"). O que o `TaskPresenter::detail()` do B3 manda para `/projetos/{id}/cards/{chave}`.

@@ -25,6 +25,7 @@ use App\Platform\Controllers\Auth\AuthenticatedSessionController;
 use App\Platform\Controllers\Auth\ChangePasswordController;
 use App\Platform\Controllers\Auth\ForgotPasswordController;
 use App\Platform\Controllers\Auth\NewPasswordController;
+use App\Platform\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'admin.dashboard' : 'login'));
@@ -69,6 +70,15 @@ Route::middleware('auth')->group(function () {
             ->name('password.change.update');
     });
 });
+
+// O sino do shell (F3 §07): cada pessoa marca só os próprios avisos.
+Route::prefix('avisos')
+    ->name('notifications.')
+    ->middleware(['auth', 'backoffice', 'password.current'])
+    ->group(function () {
+        Route::post('lidas', [NotificationController::class, 'readAll'])->name('read-all');
+        Route::post('{notification}/lida', [NotificationController::class, 'read'])->whereUuid('notification')->name('read');
+    });
 
 Route::prefix('admin')
     ->name('admin.')
@@ -178,6 +188,10 @@ Route::prefix('projetos')
             Route::post('{project}/cards/{card}/mover', [TaskController::class, 'move'])->name('cards.move');
             Route::patch('{project}/cards/{card}', [TaskController::class, 'update'])->name('cards.update');
             Route::post('{project}/cards/{card}/participantes', [TaskController::class, 'participant'])->name('cards.participants');
+            // Tirar do quadro (P26; B3, PR 3): arquivar com motivo, desarquivar, excluir o nunca usado.
+            Route::post('{project}/cards/{card}/arquivar', [TaskController::class, 'archive'])->name('cards.archive');
+            Route::post('{project}/cards/{card}/desarquivar', [TaskController::class, 'unarchive'])->name('cards.unarchive');
+            Route::delete('{project}/cards/{card}', [TaskController::class, 'destroy'])->name('cards.destroy');
 
             // A ficha do card (F3 §04 "Na ficha"; B3, PR 2). O filho é do card da rota: de outro card, 404.
             Route::post('{project}/cards/{card}/horas/propor', [TaskDetailController::class, 'proposeHours'])->name('cards.hours.propose');
