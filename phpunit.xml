@@ -21,6 +21,9 @@
         </include>
     </source>
     <php>
+        <!-- A suíte inteira (780+ testes) passa do memory_limit de 128M do CLI do Mac no fim, ao gravar o
+             result cache; o artisan test abre o PHPUnit num processo filho, que só obedece ao ini daqui. -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
