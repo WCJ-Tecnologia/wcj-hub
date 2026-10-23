@@ -85,10 +85,11 @@ class TaskMoveService
             if ($current->id !== $target->id) {
                 $isRework = $fields['rework_origin_id'] !== null;
                 if ($isRework) {
-                    // P34, P37: a volta limpa a marca de teste cruzado e o roteiro inteiro volta a testar.
+                    // P34, P37: a volta limpa a marca de teste cruzado e o roteiro inteiro volta a testar,
+                    // sem a última marcação: ninguém marcou A testar, e cada marcação já está na auditoria do critério.
                     $locked->cross_tested_by = null;
                     $locked->cross_tested_at = null;
-                    $locked->acceptanceCriteria()->update(['test_result_id' => TestResult::PENDING]);
+                    $locked->acceptanceCriteria()->update(['test_result_id' => TestResult::PENDING, 'marked_by' => null, 'marked_at' => null]);
                 }
 
                 $locked->board_stage_id = $target->id;

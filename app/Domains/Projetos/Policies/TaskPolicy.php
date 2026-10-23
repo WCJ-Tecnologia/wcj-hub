@@ -15,7 +15,7 @@ use Illuminate\Auth\Access\Response;
  * "alocado" nem de "gestor": pergunta à ProjectPolicy (`view` = qualquer alocado, `manage` = quem
  * gere) e, para a sprint, à SprintPolicy. Projeto encerrado e card arquivado não são permissão: o
  * TaskService recusa com mensagem (P7, P26). Lançar horas é da TimeEntryPolicy (B5). Spec
- * b3-quadro-e-card (trilho completo).
+ * b3-quadro-e-card (trilho completo); teste cruzado e roteiro de QA, spec b4-teste-e-qa.
  */
 class TaskPolicy
 {
@@ -85,6 +85,38 @@ class TaskPolicy
     }
 
     public function attach(User $user, Task $task): bool
+    {
+        return $user->can('view', $task->project);
+    }
+
+    /**
+     * Marcar o teste cruzado (P34; F4 §04, §09): quem vê o projeto e não é o dev da tarefa, em
+     * qualquer papel, inclusive quem gere (spec b4-teste-e-qa). Tarefa sem dev: qualquer alocado.
+     * O TaskService confere de novo com a linha travada (o dev pode ter mudado no meio).
+     */
+    public function crossTest(User $user, Task $task): bool
+    {
+        return $user->can('view', $task->project) && $task->developer_id !== $user->id;
+    }
+
+    /**
+     * Desfazer a marca (F4 §04, §09, §10.2): quem gere o projeto, ou quem marcou enquanto ainda vê
+     * o projeto (como o comentário e o lançamento de horas).
+     */
+    public function undoCrossTest(User $user, Task $task): bool
+    {
+        if ($user->can('manage', $task->project)) {
+            return true;
+        }
+
+        return $task->cross_tested_by === $user->id && $user->can('view', $task->project);
+    }
+
+    /**
+     * Marcar o resultado de um item do roteiro (P36; F4 §04, §09, §10.1): qualquer alocado; o QA
+     * da tarefa é o caso normal, sem trava (premissa de Projetos). A evidência é anexo: `attach`.
+     */
+    public function runQa(User $user, Task $task): bool
     {
         return $user->can('view', $task->project);
     }

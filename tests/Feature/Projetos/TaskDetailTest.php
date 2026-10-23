@@ -97,6 +97,11 @@ class TaskDetailTest extends TestCase
             ->where('task.abilities.set_hours', false)
             ->where('task.abilities.archive', false)
             ->where('task.abilities.delete', false)
+            // B4: o card sem dev deixa qualquer alocado marcar; sem marca, ninguém além de quem gere desfaz.
+            ->where('task.abilities.cross_test', true)
+            ->where('task.abilities.undo_cross_test', false)
+            ->where('task.abilities.run_qa', true)
+            ->where('task.criteria.0.marked', null)
             ->has('options.stages', 8)
             ->has('options.cards', 0));
     }
@@ -129,7 +134,7 @@ class TaskDetailTest extends TestCase
         $base = (int) $this->task->acceptanceCriteria()->whereNull('parent_id')->max('number');
         for ($i = 1; $i <= $quantos; $i++) {
             $criterio = $this->task->acceptanceCriteria()->create(['number' => $base + $i, 'description' => "CA {$i}", 'test_result_id' => TestResult::PENDING]);
-            $criterio->children()->create(['task_id' => $this->task->id, 'number' => 1, 'description' => 'Sub', 'test_result_id' => TestResult::PASSED]);
+            $criterio->children()->create(['task_id' => $this->task->id, 'number' => 1, 'description' => 'Sub', 'test_result_id' => TestResult::PASSED, 'marked_by' => $outro->id, 'marked_at' => now()]);
             $this->task->comments()->create(['user_id' => $i % 2 ? $this->dev->id : $outro->id, 'body' => "Comentário {$i}"]);
             $this->task->pullRequests()->create(['url' => "https://github.com/x/y/pull/{$base}{$i}", 'user_id' => $outro->id]);
             Storage::disk('local')->put("tasks/{$this->task->id}/{$base}-{$i}.png", 'png');

@@ -3,6 +3,8 @@
 namespace App\Domains\Projetos\Services;
 
 use App\Domains\Projetos\Models\Task;
+use App\Domains\Projetos\Models\TestResult;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * "Nunca usado" do card (P26; docs/banco.md, tasks, "tirar do quadro"): só o card nunca usado se
@@ -35,6 +37,8 @@ class TaskUsageQuery
     /**
      * Uma consulta só. Fora de sprint também é condição: o card comum que entra na sprint já se
      * moveu, mas o de suporte entra sem trocar de coluna (P52), e P26 diz "não saiu do Backlog".
+     * O critério sai junto, mas o item do roteiro já marcado é teste, como a marca do teste
+     * cruzado: card com item marcado foi usado (B4, spec b4-teste-e-qa).
      */
     public function isUnused(Task $task): bool
     {
@@ -46,9 +50,11 @@ class TaskUsageQuery
             ->whereKey($task->id)
             ->withCount('movements')
             ->withExists(array_values(self::USES))
+            ->withExists(['acceptanceCriteria as marked_criteria_exists' => fn (Builder $criterion) => $criterion
+                ->where(fn (Builder $item) => $item->where('test_result_id', '<>', TestResult::PENDING)->orWhereNotNull('marked_at'))])
             ->firstOrFail();
 
-        if ($row->movements_count > 1) {
+        if ($row->movements_count > 1 || $row->getAttribute('marked_criteria_exists')) {
             return false;
         }
 
