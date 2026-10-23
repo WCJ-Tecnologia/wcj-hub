@@ -127,7 +127,7 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
 /**
  * Projeto do B4 com o quadro padrão, o dev alocado, uma sprint aberta e um card em In test, do dev
  * (o admin do e2e não é o dev, então marca o teste cruzado), com o roteiro CA_1, CA_2 (com o subitem
- * CA_2.1) e CA_3, tudo A testar. Devolve o id do projeto.
+ * CA_2.1) e CA_3, tudo A testar, e um 2º card em In test sem critério. Devolve o id do projeto.
  */
 export function createTestProject(prefix: string, devId: number): number {
     const out = tinker(`
@@ -153,6 +153,12 @@ export function createTestProject(prefix: string, devId: number): number {
         $erro = $item(2, 'Boleto vencido mostra o valor com juros.');
         $item(1, 'Os juros aparecem separados do valor original.', $erro->id);
         $item(3, 'O download repete o mesmo PDF.');
+        // O 2º card, também em In test, sem critério: o roteiro vazio (F4 §03).
+        $project->increment('last_task_number');
+        App\\Domains\\Projetos\\Models\\Task::query()->create([
+            'project_id' => $project->id, 'number' => $project->last_task_number, 'board_stage_id' => $test,
+            'sprint_id' => $sprint->id, 'title' => 'Ajustar o rodapé do boleto', 'developer_id' => ${devId},
+        ]);
         echo $project->id;
     `);
     const last = out.split(/\s+/).pop() ?? '';

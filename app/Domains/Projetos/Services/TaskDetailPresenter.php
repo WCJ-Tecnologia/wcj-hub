@@ -63,7 +63,7 @@ class TaskDetailPresenter
             'participants', 'parent.project', 'originTask.project', 'productionBugs.project', 'children.boardStage.stageRole',
             'children.developer', 'children.project', 'proposedBy', 'archivedBy', 'crossTestedBy', 'sprint', 'package',
             'requesterContact', 'contactChannel', 'pullRequests.user', 'comments.user', 'attachments.user',
-            'acceptanceCriteria.testResult', 'acceptanceCriteria.markedBy',
+            'acceptanceCriteria.markedBy',
         ]);
         // As Policies perguntam "alocado?" linha a linha (cada comentário tem o `can`): a alocação
         // carregada uma vez, e cada comentário apontando para este card, sem consulta por item.

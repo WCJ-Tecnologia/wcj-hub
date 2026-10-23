@@ -83,3 +83,52 @@ test('@smoke @critical a seção Teste marca o teste cruzado, roda o roteiro com
     await expect(secao.getByRole('button', { name: '1 evidência' })).toBeVisible();
     await print(page, '03-depois-do-retrabalho', secao);
 });
+
+/**
+ * TELA-01 AC 4, 5, 7 e 8 (Verifier rodada 1, Fix 7): enquanto a marca grava, os botões da seção
+ * ficam travados; desfazer pede confirmação com o nome; o *Devolver* do bloco do teste cruzado
+ * abre o diálogo com a origem "Teste cruzado"; o roteiro vazio leva ao campo do critério novo.
+ */
+test('@smoke a seção Teste trava enquanto grava, confirma o desfazer e leva ao critério novo', async ({ page }) => {
+    test.setTimeout(90_000);
+    const prefix = `${PREFIX}B`;
+    const devId = createUser(`Dev ${prefix}`, 3);
+    const projectId = createTestProject(prefix, devId);
+
+    await page.goto(`/projetos/${projectId}/cards/${prefix}-1`);
+    await page.getByRole('button', { name: /^Teste/ }).click();
+    const secao = page.locator('[data-slot="w-task-test-section-organism"]');
+
+    // AC 8: a requisição da marca fica presa até a seção mostrar os botões travados.
+    await page.route('**/teste-cruzado', async (route) => {
+        await expect(secao.getByRole('button', { name: 'Devolver para desenvolvimento' }).first()).toBeDisabled();
+        await expect(
+            secao.getByRole('group', { name: 'Resultado de CA_1', exact: true }).getByRole('button', { name: 'Aprovado' }),
+        ).toBeDisabled();
+        await route.continue();
+    });
+    await secao.getByRole('button', { name: 'Marquei: testado por mim' }).click();
+    await expect(secao.getByText(/^Testado por E2E Admin em /)).toBeVisible();
+    await page.unroute('**/teste-cruzado');
+
+    // AC 7: desfazer confirma com o nome de quem marcou.
+    await secao.getByRole('button', { name: 'Desfazer a marca' }).click();
+    const confirmar = page.getByRole('dialog', { name: 'Desfazer a marca de teste cruzado de E2E Admin?' });
+    await expect(confirmar).toBeVisible();
+    await confirmar.getByRole('button', { name: 'Desfazer' }).click();
+    await expect(secao.getByText('Ainda não marcado')).toBeVisible();
+
+    // AC 5: o Devolver do bloco do teste cruzado já vem com a origem "Teste cruzado" e destino To do.
+    await secao.getByRole('button', { name: 'Devolver para desenvolvimento' }).first().click();
+    const dialog = page.getByRole('dialog', { name: `Devolver ${prefix}-1 para To do` });
+    await expect(dialog.getByRole('combobox', { name: 'Origem' })).toHaveText('Teste cruzado');
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).toBeHidden();
+
+    // AC 4: o card sem critério mostra o roteiro vazio, e *Novo critério* abre o campo na seção de critérios.
+    await page.goto(`/projetos/${projectId}/cards/${prefix}-2`);
+    await page.getByRole('button', { name: /^Teste/ }).click();
+    await expect(secao.getByText('Esta tarefa não tem critérios de aceite.')).toBeVisible();
+    await secao.getByRole('button', { name: 'Novo critério' }).click();
+    await expect(page.getByLabel('Novo critério')).toBeFocused();
+});

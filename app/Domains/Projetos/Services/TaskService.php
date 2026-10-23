@@ -37,6 +37,8 @@ class TaskService
 
     public const NOT_CROSS_TESTED = 'Este card não tem teste cruzado marcado.';
 
+    public const CROSS_TEST_CHANGED = 'A marca de teste cruzado mudou: recarregue a ficha.';
+
     public function __construct(
         private readonly AuditService $audit,
         private readonly SprintService $sprints,
@@ -140,7 +142,11 @@ class TaskService
         });
     }
 
-    /** Desfazer a marca (F4 §04, §10.2): limpa quem e quando, juntos; o antes fica na auditoria (G3). */
+    /**
+     * Desfazer a marca (F4 §04, §10.2): limpa quem e quando, juntos; o antes fica na auditoria (G3).
+     * A Policy olhou a marca de antes da trava: com a linha travada, quem não gere confere de novo
+     * que a marca ainda é dele, para não limpar a de outra pessoa feita no meio (Verifier, rodada 1).
+     */
     public function undoCrossTested(Task $task, User $actor): Task
     {
         return DB::transaction(function () use ($task, $actor) {
@@ -149,6 +155,9 @@ class TaskService
 
             if ($locked->cross_tested_by === null) {
                 throw new DomainException(self::NOT_CROSS_TESTED);
+            }
+            if (! $actor->can('undoCrossTest', $locked)) {
+                throw new DomainException(self::CROSS_TEST_CHANGED);
             }
 
             $before = $this->crossTest($locked);

@@ -9,9 +9,11 @@ use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskAcceptanceCriterion;
 use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\ValidationType;
+use App\Domains\Projetos\Services\TaskService;
 use App\Domains\Projetos\Services\TaskUsageQuery;
 use App\Platform\Models\AuditLog;
 use App\Platform\Models\User;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -138,11 +140,32 @@ class TaskTestTest extends TestCase
         $this->assertNull($this->task->fresh()->cross_tested_by);
     }
 
+    /**
+     * A Policy olha o card de antes da trava: se a pessoa virou o dev no meio, o TaskService recusa
+     * com a linha travada (Verifier rodada 1, Fix 1: todo teste chegava pelo HTTP e parava na Policy).
+     */
+    public function test_the_service_refuses_whoever_became_the_developer_after_the_policy(): void
+    {
+        $antes = $this->task->fresh();
+        Task::query()->whereKey($this->task->id)->update(['developer_id' => $this->outroDev->id]);
+
+        try {
+            app(TaskService::class)->markCrossTested($antes, $this->outroDev);
+            $this->fail('o dev da tarefa marcou');
+        } catch (DomainException $e) {
+            $this->assertSame('Você é o dev desta tarefa: o teste cruzado é de outra pessoa.', $e->getMessage());
+        }
+
+        $this->assertNull($this->task->fresh()->cross_tested_by);
+    }
+
     public function test_the_ability_hides_the_button_for_the_developer_only(): void
     {
         $this->assertFalse($this->ficha($this->dev)['abilities']['cross_test']);
         $this->assertTrue($this->ficha($this->outroDev)['abilities']['cross_test']);
         $this->assertTrue($this->ficha($this->gestor)['abilities']['cross_test']);
+        // O roteiro o dev da tarefa marca (F4 §10.1; Verifier rodada 1, Fix 6).
+        $this->assertTrue($this->ficha($this->dev)['abilities']['run_qa']);
     }
 
     public function test_marking_again_is_refused_and_keeps_the_first_mark(): void
@@ -233,6 +256,39 @@ class TaskTestTest extends TestCase
             ->assertSessionHas('error', 'Este card não tem teste cruzado marcado.');
     }
 
+    /**
+     * A Policy deixou quem marcou desfazer; no meio, o gestor desfez e outra pessoa marcou: com a
+     * linha travada, o TaskService vê que a marca não é mais dela e não a limpa (Verifier rodada 1).
+     */
+    public function test_undo_does_not_clear_a_mark_that_changed_hands_in_the_meantime(): void
+    {
+        $terceiro = User::factory()->developer()->create();
+        $this->alocar($this->project, $terceiro);
+        $antes = $this->task->fresh()->forceFill(['cross_tested_by' => $this->outroDev->id, 'cross_tested_at' => now()]);
+        Task::query()->whereKey($this->task->id)->update(['cross_tested_by' => $terceiro->id, 'cross_tested_at' => now()]);
+
+        try {
+            app(TaskService::class)->undoCrossTested($antes, $this->outroDev);
+            $this->fail('limpou a marca de outra pessoa');
+        } catch (DomainException $e) {
+            $this->assertSame('A marca de teste cruzado mudou: recarregue a ficha.', $e->getMessage());
+        }
+
+        $this->assertSame($terceiro->id, $this->task->fresh()->cross_tested_by);
+    }
+
+    public function test_an_archived_card_keeps_its_mark(): void
+    {
+        $this->task->forceFill([
+            'cross_tested_by' => $this->outroDev->id, 'cross_tested_at' => now(), 'archived_at' => now(), 'archive_reason' => 'Parado',
+        ])->save();
+
+        $this->actingAs($this->gestor)->post($this->url('/teste-cruzado/desfazer'))
+            ->assertSessionHas('error', 'Card arquivado não muda: desarquive antes.');
+
+        $this->assertSame($this->outroDev->id, $this->task->fresh()->cross_tested_by);
+    }
+
     /* ---------------------------------------------------------------- ROTEIRO-01: resultado do item */
 
     public function test_marking_an_item_records_the_result_who_and_when(): void
@@ -306,6 +362,16 @@ class TaskTestTest extends TestCase
 
         $this->actingAs($this->outroDev)->post($this->url("/criterios/{$item->id}/resultado"), ['result' => 'passed'])
             ->assertSessionHasErrors(['result' => 'Escolha Aprovado, Reprovado ou A testar.']);
+
+        $this->assertSame(TestResult::PENDING, $item->fresh()->test_result_id);
+    }
+
+    public function test_a_missing_result_is_refused_on_the_field(): void
+    {
+        $item = $this->criterio(1);
+
+        $this->actingAs($this->outroDev)->post($this->url("/criterios/{$item->id}/resultado"), [])
+            ->assertSessionHasErrors(['result']);
 
         $this->assertSame(TestResult::PENDING, $item->fresh()->test_result_id);
     }
@@ -410,6 +476,19 @@ class TaskTestTest extends TestCase
         $this->assertSame([], Storage::disk('local')->allFiles(), 'o arquivo gravado antes da recusa sai do disco');
     }
 
+    public function test_evidence_is_not_attached_to_an_archived_card(): void
+    {
+        $item = $this->criterio(1);
+        $this->task->forceFill(['archived_at' => now(), 'archive_reason' => 'Parado'])->save();
+
+        $this->actingAs($this->outroDev)->post($this->url('/anexos'), [
+            'files' => [UploadedFile::fake()->image('print.png')], 'criterion_id' => $item->id,
+        ])->assertSessionHas('error', 'Card arquivado não muda: desarquive antes.');
+
+        $this->assertSame(0, $this->task->attachments()->count());
+        $this->assertSame([], Storage::disk('local')->allFiles(), 'o arquivo não fica no disco');
+    }
+
     public function test_removing_evidence_deletes_the_file_and_the_row(): void
     {
         $item = $this->criterio(1);
@@ -460,7 +539,10 @@ class TaskTestTest extends TestCase
         $this->assertTrue($usage->isUnused($novo), 'critério A testar sem marcação não é uso');
 
         $item->forceFill(['test_result_id' => TestResult::PASSED])->save();
-        $this->assertFalse($usage->isUnused($novo), 'item com resultado é uso');
+        $this->assertFalse($usage->isUnused($novo), 'item aprovado é uso');
+
+        $item->forceFill(['test_result_id' => TestResult::FAILED])->save();
+        $this->assertFalse($usage->isUnused($novo), 'item reprovado é uso');
 
         $item->forceFill(['test_result_id' => TestResult::PENDING, 'marked_by' => $this->gestor->id, 'marked_at' => now()])->save();
         $this->assertFalse($usage->isUnused($novo), 'A testar marcado à mão é uso');
