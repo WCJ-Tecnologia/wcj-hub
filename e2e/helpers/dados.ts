@@ -125,6 +125,42 @@ export function createSprintProject(prefix: string, devId: number): { projectId:
 }
 
 /**
+ * Projeto do B4 com o quadro padrão, o dev alocado, uma sprint aberta e um card em In test, do dev
+ * (o admin do e2e não é o dev, então marca o teste cruzado), com o roteiro CA_1, CA_2 (com o subitem
+ * CA_2.1) e CA_3, tudo A testar. Devolve o id do projeto.
+ */
+export function createTestProject(prefix: string, devId: number): number {
+    const out = tinker(`
+        $admin = App\\Platform\\Models\\User::query()->where('email', 'like', '%e2e%')->where('role_id', 1)->orderBy('id')->firstOrFail();
+        $client = App\\Platform\\Models\\Client::query()->create(['name' => ${JSON.stringify(`Cliente ${prefix}`)}, 'country' => 'US', 'document' => null]);
+        $project = App\\Domains\\Projetos\\Models\\Project::query()->create([
+            'client_id' => $client->id, 'manager_id' => $admin->id, 'key_prefix' => ${JSON.stringify(prefix)},
+            'name' => ${JSON.stringify(`Teste ${prefix}`)}, 'starts_on' => now('America/Sao_Paulo')->toDateString(),
+        ]);
+        app(App\\Domains\\Projetos\\Services\\BoardStageService::class)->createDefaultBoard($project);
+        app(App\\Domains\\Projetos\\Services\\TaskTypeService::class)->createDefaults($project);
+        $project->members()->create(['user_id' => ${devId}]);
+        $sprint = $project->sprints()->create(['name' => 'Sprint 1', 'starts_on' => now('America/Sao_Paulo')->toDateString(), 'ends_on' => now('America/Sao_Paulo')->addDays(9)->toDateString()]);
+        $test = $project->boardStages()->where('stage_role_id', 5)->value('id');
+        $project->increment('last_task_number');
+        $task = App\\Domains\\Projetos\\Models\\Task::query()->create([
+            'project_id' => $project->id, 'number' => $project->last_task_number, 'board_stage_id' => $test,
+            'sprint_id' => $sprint->id, 'title' => 'Emitir segunda via do boleto', 'developer_id' => ${devId},
+        ]);
+        App\\Domains\\Projetos\\Models\\TaskStageMovement::query()->create(['task_id' => $task->id, 'moved_by' => $admin->id, 'to_board_stage_id' => $test]);
+        $item = fn (int $number, string $text, ?int $parent = null) => $task->acceptanceCriteria()->create(['number' => $number, 'parent_id' => $parent, 'description' => $text, 'test_result_id' => 1]);
+        $item(1, 'A segunda via sai com o mesmo código de barras.');
+        $erro = $item(2, 'Boleto vencido mostra o valor com juros.');
+        $item(1, 'Os juros aparecem separados do valor original.', $erro->id);
+        $item(3, 'O download repete o mesmo PDF.');
+        echo $project->id;
+    `);
+    const last = out.split(/\s+/).pop() ?? '';
+    if (!/^\d+$/.test(last)) throw new Error(`createTestProject falhou: ${out}`);
+    return Number(last);
+}
+
+/**
  * Projeto do B7 com o quadro padrão, o dev alocado, uma sprint aberta e cards com movimentos
  * datados para trás (criação, Doing, pausa com motivo, volta de code review com retrabalho, pronto),
  * horas lançadas e um bug de produção ligado ao card pronto. Devolve os ids.
