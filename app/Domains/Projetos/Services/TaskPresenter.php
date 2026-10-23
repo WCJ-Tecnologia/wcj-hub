@@ -84,8 +84,10 @@ class TaskPresenter
             'pause_reason' => $task->getAttribute('pause_reason'),
             'rework_count' => (int) $task->rework_count,
             'support_requester' => $task->requesterContact?->name,
-            // Roteiro de QA: B4.
-            'qa_summary' => null,
+            // Roteiro de QA (B4, P38): pai e subitem contam um a um; sem critério, sem roteiro (F4 §10.6).
+            'qa_summary' => (int) $task->criteria_count === 0 ? null : [
+                'rejected' => (int) $task->criteria_failed_count, 'pending' => (int) $task->criteria_pending_count,
+            ],
             'url' => $task->url(),
         ];
     }

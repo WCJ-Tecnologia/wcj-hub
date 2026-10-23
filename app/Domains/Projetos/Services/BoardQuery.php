@@ -7,6 +7,7 @@ use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskStageMovement;
 use App\Domains\Projetos\Models\TaskType;
+use App\Domains\Projetos\Models\TestResult;
 use App\Platform\Models\User;
 use App\Support\Like;
 use Illuminate\Database\Eloquent\Builder;
@@ -53,6 +54,10 @@ class BoardQuery
                 'comments',
                 'attachments',
                 'movements as rework_count' => fn (Builder $movement) => $movement->whereNotNull('rework_origin_id'),
+                // O roteiro (B4) para o aviso do Done (P38): subconsultas no mesmo select, sem consulta por card.
+                'acceptanceCriteria as criteria_count',
+                'acceptanceCriteria as criteria_failed_count' => fn (Builder $criterion) => $criterion->where('test_result_id', TestResult::FAILED),
+                'acceptanceCriteria as criteria_pending_count' => fn (Builder $criterion) => $criterion->where('test_result_id', TestResult::PENDING),
             ]);
 
         // A lista de arquivados (F3 §03) mostra também o card arquivado numa etapa removida depois;
