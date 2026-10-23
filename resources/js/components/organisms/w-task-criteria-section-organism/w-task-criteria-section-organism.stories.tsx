@@ -52,7 +52,10 @@ function CriteriaSectionDemo({ criteria: initial, canEdit, busy, errors, onAdd, 
                     later((list) => {
                         if (payload.parent_id === null) {
                             const number = `CA_${lastNumber(list.map((item) => item.number)) + 1}`;
-                            return [...list, { id, number, description: payload.description, result: 'pending', marked: null, children: [] }];
+                            return [
+                                ...list,
+                                { id, number, description: payload.description, result: 'pending', marked: null, children: [] },
+                            ];
                         }
                         return list.map((item) =>
                             item.id === payload.parent_id
@@ -77,7 +80,9 @@ function CriteriaSectionDemo({ criteria: initial, canEdit, busy, errors, onAdd, 
                 onUpdate={(id, description) => {
                     onUpdate(id, description);
                     const edit = (item: AcceptanceCriterion): AcceptanceCriterion =>
-                        item.id === id ? { ...item, description, result: 'pending', marked: null } : { ...item, children: item.children.map(edit) };
+                        item.id === id
+                            ? { ...item, description, result: 'pending', marked: null }
+                            : { ...item, children: item.children.map(edit) };
                     later((list) => list.map(edit));
                 }}
                 onDelete={(id) => {

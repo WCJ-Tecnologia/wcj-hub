@@ -122,7 +122,7 @@ class B3FichaTransacaoTest extends TestCase
         $attachment = $this->task->attachments()->create([
             'path' => "tasks/{$this->task->id}/a.pdf", 'original_name' => 'a.pdf', 'mime_type' => 'application/pdf', 'user_id' => $this->dev->id,
         ]);
-        $service = new AttachmentService($this->failingAudit());
+        $service = new AttachmentService($this->failingAudit(), app(SprintService::class));
 
         $this->assertSame('a auditoria falhou', $this->failure(fn () => $service->remove($attachment, $this->dev)));
 
