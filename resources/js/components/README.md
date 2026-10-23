@@ -102,6 +102,12 @@ Etiquetas (decisões de 14/10, como no Trello): tipo e área são `atoms/w-tag-a
 
 Regra do kit, a mesma do quadro: os organismos só devolvem intenção por callback e recebem `busy` e `errors`; quem grava é a página, uma escrita por vez, e o erro do servidor abre a seção do campo (`FIELD_SECTION`). As rotas estão no topo de `w-task-detail-page.tsx` e de `w-notifications-bell-organism.tsx`, como proposta; o B3 confirma.
 
+## Teste cruzado e roteiro de QA (F4)
+
+O B4, sem kit à parte (o front saiu junto do servidor, no padrão dos kits): a seção _Teste_ da ficha do card. O contrato continua em `types/quadro.ts` (`TaskDetail.cross_tested` com a hora, `AcceptanceCriterion.marked`, `TaskAbilities.cross_test`/`undo_cross_test`/`run_qa`, `BoardOptions.rework_origins` com o `slug`, e o `BoardCard.qa_summary`, que o quadro agora recebe); os textos e as contas em `lib/ficha.ts` (`scriptSummaryText`, `scriptProgressText`, `markedText`, `evidencesOf`, `dateAtTimeBr`, `undoCrossTestText`; `criterionDeletable` passou a olhar a evidência).
+
+Como se encaixa: `pages/w-task-detail-page` ganhou a seção _Teste_ (logo abaixo de _Critérios de aceite_), com o `organisms/w-task-test-section-organism` dentro do `WCollapsibleSectionMolecule` e o `testSummary()` no cabeçalho. A evidência é anexo (`criterion_id`, a rota de anexos); o atalho _Devolver para desenvolvimento_ abre o diálogo de retrabalho do kit do quadro pelo `useBoardMove().start(intent, { reworkOriginId })`, com destino `To do` e a origem já escolhida no `WReworkDialogOrganism` (`initial`). O _Novo critério_ do roteiro vazio abre a seção de critérios pelo `addRequest` do `WTaskCriteriaSectionOrganism`.
+
 ## Configuração do projeto e listas gerais (F2)
 
 O B2 passo 2: `/projetos/{id}/configuracao` e `/admin/listas`, já com backend. O contrato é `types/configuracao.ts` (o que o `ProjectSettingsPresenter` manda) e as fixtures, `.storybook/fixtures-configuracao.ts`.

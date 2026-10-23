@@ -45,13 +45,21 @@ interface Flow {
     payload: MovePayload;
     /** Falso fecha os diálogos e mantém o resto, para a animação de saída ainda ter o que mostrar. */
     open: boolean;
+    /** A origem já escolhida no diálogo de retrabalho (o atalho *Devolver* da seção Teste, F4 §04). */
+    reworkOriginId?: number;
+}
+
+/** O que quem começa o movimento já sabe: hoje, só a origem do retrabalho do atalho *Devolver* (P39). */
+export interface MoveStartOptions {
+    reworkOriginId?: number;
 }
 
 /**
  * Encadeia os diálogos de um movimento no quadro (F3 §01/§04, F5 §02), um jeito só para a
  * página do quadro e a ficha (*Mover para…*).
  *
- * `start(intent)` roda o `classifyMove`:
+ * `start(intent, { reworkOriginId })` roda o `classifyMove` (a origem, quando vem, já aparece escolhida
+ * no diálogo de retrabalho, F4 §04):
  * - recusado (dev tirando do Backlog, não alocado): chama `onDenied(reason)` e nada sai;
  * - sem passos (mesma coluna, ou coluna que não pergunta nada): chama `onCommit` na hora;
  * - com passos: abre os diálogos na ordem dos `steps` (*Nova sprint* → *Motivo da pausa* →
@@ -90,7 +98,7 @@ export function useBoardMove({ project, abilities, options, today, onCommit, onD
     const [flow, setFlow] = useState<Flow | null>(null);
 
     /** Começa um movimento: recusa, manda direto ou abre o primeiro diálogo. */
-    const start = (intent: MoveIntent) => {
+    const start = (intent: MoveIntent, startOptions: MoveStartOptions = {}) => {
         const decision = classifyMove(intent, project, abilities);
         if (!decision.allowed) {
             onDenied(decision.reason);
@@ -105,7 +113,7 @@ export function useBoardMove({ project, abilities, options, today, onCommit, onD
             onCommit(intent, payload);
             return;
         }
-        setFlow({ intent, steps: decision.steps, step: 0, payload, open: true });
+        setFlow({ intent, steps: decision.steps, step: 0, payload, open: true, reworkOriginId: startOptions.reworkOriginId });
     };
 
     /** Fecha os diálogos e encerra o fluxo. Também é o "terminou" que a página chama no sucesso. */
@@ -161,6 +169,7 @@ export function useBoardMove({ project, abilities, options, today, onCommit, onD
                     to={to}
                     origins={options.rework_origins}
                     reasons={options.rework_reasons}
+                    initial={flow.reworkOriginId ? { rework_origin_id: flow.reworkOriginId } : undefined}
                     loading={current === 'rework' && loading}
                     errors={current === 'rework' ? stepErrors : undefined}
                     onConfirm={(rework) => answer(rework)}

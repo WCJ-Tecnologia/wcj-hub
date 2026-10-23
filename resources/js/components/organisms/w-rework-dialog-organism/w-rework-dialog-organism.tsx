@@ -27,7 +27,7 @@ export interface WReworkDialogOrganismProps {
     origins: BoardOptions['rework_origins'];
     /** Motivos ativos da lista geral (P40); o de `slug === 'other'` pede texto. */
     reasons: BoardOptions['rework_reasons'];
-    /** Valores iniciais (stories; a tela normalmente não precisa): tudo vazio e "Foi engano" desmarcado por padrão. */
+    /** Valores iniciais: o atalho *Devolver* da seção Teste da ficha traz a origem (F4 §04); sem eles, tudo vazio e "Foi engano" desmarcado. */
     initial?: { mistake?: boolean; rework_origin_id?: number; rework_reason_id?: number };
     /** Desabilita, mostra o spinner no botão e impede fechar. */
     loading?: boolean;

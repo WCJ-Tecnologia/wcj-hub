@@ -73,10 +73,10 @@ export const BOARD_OPTIONS: BoardOptions = {
         { id: 5, slug: 'other', label: 'Outro' },
     ],
     rework_origins: [
-        { id: 1, label: 'Code review' },
-        { id: 2, label: 'Teste cruzado' },
-        { id: 3, label: 'QA' },
-        { id: 4, label: 'Homologação' },
+        { id: 1, slug: 'code_review', label: 'Code review' },
+        { id: 2, slug: 'cross_test', label: 'Teste cruzado' },
+        { id: 3, slug: 'qa', label: 'QA' },
+        { id: 4, slug: 'homologation', label: 'Homologação' },
     ],
     contacts: [
         { id: 1, name: 'Marcos Vieira' },

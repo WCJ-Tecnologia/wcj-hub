@@ -37,7 +37,7 @@ test('@smoke @critical a ficha abre do quadro e grava critério, comentário e P
     await page.getByLabel('Novo critério').fill('O recurso aceita PDF de até 5 MB');
     await page.getByRole('button', { name: 'Adicionar', exact: true }).click();
     await expect(page.getByRole('list', { name: 'Critérios de aceite' }).getByText('O recurso aceita PDF de até 5 MB')).toBeVisible();
-    await expect(page.getByText('CA_1')).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Critérios de aceite' }).getByText('CA_1')).toBeVisible();
 
     // 3. Comentário com autor (P24).
     await section(page, 'Comentários').click();

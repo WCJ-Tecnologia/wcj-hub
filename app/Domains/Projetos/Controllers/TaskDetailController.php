@@ -119,7 +119,7 @@ class TaskDetailController extends Controller
 
     public function storeAttachments(StoreAttachmentsRequest $request, Project $project, Task $card): RedirectResponse
     {
-        return $this->attempt(fn () => $this->attachments->upload($card, $request->user(), $request->uploads()), fn () => back());
+        return $this->attempt(fn () => $this->attachments->upload($card, $request->user(), $request->uploads(), $request->criterionId()), fn () => back());
     }
 
     public function destroyAttachment(Request $request, Project $project, Task $card, TaskAttachment $attachment): RedirectResponse

@@ -9,7 +9,8 @@ use Illuminate\Http\UploadedFile;
 /**
  * Anexar ao card (P24; F3 §04): até `hub.attachments.max_files` arquivos por envio, cada um até
  * `hub.attachments.max_kb`, nos tipos de `hub.attachments.mimes`, conferidos pelos bytes
- * (`mimes` lê o conteúdo; seguranca.md §7).
+ * (`mimes` lê o conteúdo; seguranca.md §7). Com `criterion_id`, é a evidência do QA no item (B4;
+ * F4 §09: a mesma ability `attach`); o AttachmentService confere que o critério é deste card.
  */
 class StoreAttachmentsRequest extends FormRequest
 {
@@ -28,7 +29,16 @@ class StoreAttachmentsRequest extends FormRequest
         return [
             'files' => ['required', 'array', 'min:1', 'max:'.config('hub.attachments.max_files')],
             'files.*' => ['file', 'max:'.config('hub.attachments.max_kb'), 'mimes:'.config('hub.attachments.mimes')],
+            'criterion_id' => ['nullable', 'integer'],
         ];
+    }
+
+    /** O item do roteiro da evidência, ou null para o anexo comum. */
+    public function criterionId(): ?int
+    {
+        $id = $this->validated('criterion_id');
+
+        return $id === null ? null : (int) $id;
     }
 
     /** @return list<UploadedFile> */

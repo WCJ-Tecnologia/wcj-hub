@@ -3,7 +3,9 @@
 namespace App\Domains\Projetos\Services;
 
 use App\Domains\Projetos\Models\Task;
+use App\Domains\Projetos\Models\TaskAcceptanceCriterion;
 use App\Domains\Projetos\Models\TaskAttachment;
+use App\Domains\Projetos\Services\Concerns\WritesTasks;
 use App\Platform\Enums\AuditActionEnum;
 use App\Platform\Models\User;
 use App\Platform\Services\AuditService;
@@ -12,6 +14,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -23,17 +26,35 @@ use Throwable;
  */
 class AttachmentService
 {
-    public function __construct(private readonly AuditService $audit) {}
+    use WritesTasks;
+
+    public function __construct(
+        private readonly AuditService $audit,
+        private readonly SprintService $sprints,
+    ) {}
 
     /**
+     * Com `$criterionId`, os arquivos são a evidência do QA naquele item do roteiro (P36; F4 §02,
+     * B4): o critério tem de ser deste card, e a escrita trava o projeto e o card como o
+     * CriterionService (card arquivado recusa; excluir o critério e anexar nele não se cruzam).
+     *
      * @param  list<UploadedFile>  $files
      * @return list<TaskAttachment>
      */
-    public function upload(Task $task, User $actor, array $files): array
+    public function upload(Task $task, User $actor, array $files, ?int $criterionId = null): array
     {
         $stored = [];
         try {
-            return DB::transaction(function () use ($task, $actor, $files, &$stored) {
+            return DB::transaction(function () use ($task, $actor, $files, $criterionId, &$stored) {
+                if ($criterionId !== null) {
+                    $this->sprints->lockProject($task->project);
+                    $task = $this->lockTask($task);
+                    $criterion = TaskAcceptanceCriterion::query()->where('task_id', $task->id)->lockForUpdate()->find($criterionId);
+                    if ($criterion === null) {
+                        throw ValidationException::withMessages(['criterion_id' => 'Escolha um critério deste card.']);
+                    }
+                }
+
                 $created = [];
                 foreach ($files as $file) {
                     $path = $file->storeAs("tasks/{$task->id}", Str::uuid().'.'.$file->extension(), TaskDetailPresenter::DISK);
@@ -43,9 +64,11 @@ class AttachmentService
                         'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
                         'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
                         'user_id' => $actor->id,
+                        'task_acceptance_criterion_id' => $criterionId,
                     ]);
                     $this->audit->log(AuditActionEnum::CREATED, $attachment, null, [
                         'task_id' => $task->id, 'original_name' => $attachment->original_name, 'mime_type' => $attachment->mime_type,
+                        'task_acceptance_criterion_id' => $criterionId,
                     ], $actor->id);
                     $created[] = $attachment;
                 }

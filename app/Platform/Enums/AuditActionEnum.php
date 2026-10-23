@@ -68,6 +68,8 @@ enum AuditActionEnum: string
             $ability === 'createSupport' => self::CREATED,
             $ability === 'move' => self::MOVED,
             in_array($ability, ['manageSprint', 'comment', 'attach', 'proposeHours'], true) => self::UPDATED,
+            // Teste cruzado e roteiro de QA (B4): marcar, desfazer, marcar o item.
+            in_array($ability, ['crossTest', 'undoCrossTest', 'runQa'], true) => self::UPDATED,
             $ability === 'archive' => self::ARCHIVED,
             $ability === 'delete' => self::DELETED,
             $ability === 'deactivate' => self::DEACTIVATED,

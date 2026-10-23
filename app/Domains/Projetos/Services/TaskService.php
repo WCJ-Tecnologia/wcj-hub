@@ -18,7 +18,8 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Criar card (escopo B3, PR 1; F3 §01 e §04; P7, P16, P17, P52, P56): o card rápido no Backlog e o
- * card de suporte. Mover é do TaskMoveService; etiquetas e participante, do TaskTagService.
+ * card de suporte; e o teste cruzado (B4; F4 §04; P34): marcar e desfazer. Mover é do
+ * TaskMoveService (que limpa a marca no retrabalho); etiquetas e participante, do TaskTagService.
  * Recusa só por dado inválido (ValidationException, volta para o campo) e por estado
  * (DomainException, vira toast); permissão é da TaskPolicy.
  *
@@ -31,6 +32,12 @@ class TaskService
     use WritesTasks;
 
     public const FINISHED_PROJECT = 'Projeto encerrado não recebe card novo.';
+
+    public const OWN_CROSS_TEST = 'Você é o dev desta tarefa: o teste cruzado é de outra pessoa.';
+
+    public const NOT_CROSS_TESTED = 'Este card não tem teste cruzado marcado.';
+
+    public const CROSS_TEST_CHANGED = 'A marca de teste cruzado mudou: recarregue a ficha.';
 
     public function __construct(
         private readonly AuditService $audit,
@@ -104,6 +111,67 @@ class TaskService
 
             return $task;
         });
+    }
+
+    /**
+     * *Marquei: testado por mim* (P34; F4 §02, §04): grava quem e quando, juntos. Em qualquer etapa
+     * (o normal é In test, P35) e com o projeto encerrado (P7 só barra card novo). Com a linha
+     * travada: o dev da tarefa não marca, mesmo que tenha virado o dev depois do `authorize()`, e
+     * o segundo de dois cliques simultâneos encontra a marca do primeiro e é recusado.
+     */
+    public function markCrossTested(Task $task, User $actor): Task
+    {
+        return DB::transaction(function () use ($task, $actor) {
+            $this->sprints->lockProject($task->project);
+            $locked = $this->lockTask($task);
+
+            if ($locked->developer_id === $actor->id) {
+                throw new DomainException(self::OWN_CROSS_TEST);
+            }
+            if ($locked->cross_tested_by !== null) {
+                $name = User::query()->whereKey($locked->cross_tested_by)->value('name');
+
+                throw new DomainException("Teste cruzado já marcado por {$name}: desfaça antes.");
+            }
+
+            $before = $this->crossTest($locked);
+            $locked->forceFill(['cross_tested_by' => $actor->id, 'cross_tested_at' => now()])->save();
+            $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->crossTest($locked), $actor->id);
+
+            return $locked;
+        });
+    }
+
+    /**
+     * Desfazer a marca (F4 §04, §10.2): limpa quem e quando, juntos; o antes fica na auditoria (G3).
+     * A Policy olhou a marca de antes da trava: com a linha travada, quem não gere confere de novo
+     * que a marca ainda é dele, para não limpar a de outra pessoa feita no meio (Verifier, rodada 1).
+     */
+    public function undoCrossTested(Task $task, User $actor): Task
+    {
+        return DB::transaction(function () use ($task, $actor) {
+            $this->sprints->lockProject($task->project);
+            $locked = $this->lockTask($task);
+
+            if ($locked->cross_tested_by === null) {
+                throw new DomainException(self::NOT_CROSS_TESTED);
+            }
+            if (! $actor->can('undoCrossTest', $locked)) {
+                throw new DomainException(self::CROSS_TEST_CHANGED);
+            }
+
+            $before = $this->crossTest($locked);
+            $locked->forceFill(['cross_tested_by' => null, 'cross_tested_at' => null])->save();
+            $this->audit->log(AuditActionEnum::UPDATED, $locked, $before, $this->crossTest($locked), $actor->id);
+
+            return $locked;
+        });
+    }
+
+    /** @return array{cross_tested_by: ?int, cross_tested_at: ?string} */
+    private function crossTest(Task $task): array
+    {
+        return ['cross_tested_by' => $task->cross_tested_by, 'cross_tested_at' => $task->cross_tested_at?->toIso8601String()];
     }
 
     private function lockOpenProject(Project $project): Project

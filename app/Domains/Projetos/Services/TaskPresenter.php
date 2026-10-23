@@ -84,8 +84,10 @@ class TaskPresenter
             'pause_reason' => $task->getAttribute('pause_reason'),
             'rework_count' => (int) $task->rework_count,
             'support_requester' => $task->requesterContact?->name,
-            // Roteiro de QA: B4.
-            'qa_summary' => null,
+            // Roteiro de QA (B4, P38): pai e subitem contam um a um; sem critério, sem roteiro (F4 §10.6).
+            'qa_summary' => (int) $task->criteria_count === 0 ? null : [
+                'rejected' => (int) $task->criteria_failed_count, 'pending' => (int) $task->criteria_pending_count,
+            ],
             'url' => $task->url(),
         ];
     }
@@ -180,8 +182,8 @@ class TaskPresenter
                 ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name])->all(),
             'rework_reasons' => ReworkReason::query()->active()->orderBy('id')->get(['id', 'slug', 'label'])
                 ->map(fn ($reason) => ['id' => $reason->id, 'slug' => $reason->slug, 'label' => $reason->label])->all(),
-            'rework_origins' => ValidationType::query()->orderBy('id')->get(['id', 'label'])
-                ->map(fn ($origin) => ['id' => $origin->id, 'label' => $origin->label])->all(),
+            'rework_origins' => ValidationType::query()->orderBy('id')->get(['id', 'slug', 'label'])
+                ->map(fn ($origin) => ['id' => $origin->id, 'slug' => $origin->slug, 'label' => $origin->label])->all(),
             'contacts' => ! $canCreateSupport ? [] : Contact::query()->active()->where('client_id', $project->client_id)->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Contact $contact) => ['id' => $contact->id, 'name' => $contact->name])->all(),
             'channels' => ! $canCreateSupport ? [] : ContactChannel::query()->orderBy('id')->get(['id', 'label'])

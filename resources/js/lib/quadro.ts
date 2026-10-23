@@ -48,7 +48,8 @@ export function childProgressPercent(progress: ChildProgress | null): number {
 }
 
 /** Papéis de onde a volta para sprint ou desenvolvimento conta retrabalho (P39). */
-const REWORK_FROM: StageRoleSlug[] = ['code_review', 'test', 'done'];
+/** De onde voltar é retrabalho (P39): também decide se a seção Teste da ficha mostra o atalho *Devolver*. */
+export const REWORK_FROM: StageRoleSlug[] = ['code_review', 'test', 'done'];
 const REWORK_TO: StageRoleSlug[] = ['sprint', 'development'];
 
 /** Um passo que a tela precisa cumprir antes de mandar o movimento. */

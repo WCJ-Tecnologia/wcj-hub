@@ -7,6 +7,7 @@ use App\Domains\Projetos\Models\ReworkReason;
 use App\Domains\Projetos\Models\StageRole;
 use App\Domains\Projetos\Models\Task;
 use App\Domains\Projetos\Models\TaskStageMovement;
+use App\Domains\Projetos\Models\TestResult;
 use App\Domains\Projetos\Models\ValidationType;
 use App\Platform\Models\Contact;
 use App\Platform\Models\User;
@@ -242,6 +243,29 @@ class BoardTest extends TestCase
         $this->assertSame(array_column($options['types'], 'label'), array_column($doDev['types'], 'label'), 'o resto das opções é igual');
     }
 
+    /**
+     * DONE-01 (spec b4-teste-e-qa; P38, F4 §06): o resumo do roteiro conta pai e subitem um a um,
+     * reprovados e a testar; card sem critério vem sem resumo (sem roteiro, sem aviso, F4 §10.6).
+     */
+    public function test_each_card_brings_the_qa_summary_for_the_done_warning(): void
+    {
+        $test = $this->etapa($this->project, StageRole::TEST);
+        $comRoteiro = $this->tarefa($this->project, $test);
+        $pai = $comRoteiro->acceptanceCriteria()->create(['number' => 1, 'description' => 'Pai', 'test_result_id' => TestResult::PASSED]);
+        $comRoteiro->acceptanceCriteria()->create(['number' => 1, 'parent_id' => $pai->id, 'description' => 'Sub', 'test_result_id' => TestResult::FAILED]);
+        $comRoteiro->acceptanceCriteria()->create(['number' => 2, 'description' => 'Outro', 'test_result_id' => TestResult::PENDING]);
+        $comRoteiro->acceptanceCriteria()->create(['number' => 3, 'description' => 'Mais um', 'test_result_id' => TestResult::FAILED]);
+        $tudoAprovado = $this->tarefa($this->project, $test);
+        $tudoAprovado->acceptanceCriteria()->create(['number' => 1, 'description' => 'Ok', 'test_result_id' => TestResult::PASSED]);
+        $semCriterio = $this->tarefa($this->project, $test);
+
+        $cards = collect($this->quadro()['cards'])->keyBy('id');
+
+        $this->assertSame(['rejected' => 2, 'pending' => 1], $cards[$comRoteiro->id]['qa_summary']);
+        $this->assertSame(['rejected' => 0, 'pending' => 0], $cards[$tudoAprovado->id]['qa_summary']);
+        $this->assertNull($cards[$semCriterio->id]['qa_summary']);
+    }
+
     public function test_the_number_of_queries_does_not_grow_with_the_cards(): void
     {
         $contar = function (): int {
@@ -274,6 +298,8 @@ class BoardTest extends TestCase
             TaskStageMovement::query()->create(['task_id' => $task->id, 'moved_by' => $this->dev->id, 'to_board_stage_id' => $stage->id, 'reason_text' => 'x']);
             $task->participants()->attach($this->gestor->id);
             $task->comments()->create(['user_id' => $this->dev->id, 'body' => 'c']);
+            // O roteiro (B4): o qa_summary sai das subconsultas do select, não por card.
+            $task->acceptanceCriteria()->create(['number' => 1, 'description' => 'CA', 'test_result_id' => 1 + $i % 3]);
         }
     }
 

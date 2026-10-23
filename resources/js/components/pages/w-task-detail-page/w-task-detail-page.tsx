@@ -20,7 +20,10 @@
  * - `POST   /projetos/{id}/cards/{chave}/comentarios`           `{ body }` (P24)
  * - `PATCH  /projetos/{id}/cards/{chave}/comentarios/{cid}`     `{ body }`
  * - `DELETE /projetos/{id}/cards/{chave}/comentarios/{cid}`
- * - `POST   /projetos/{id}/cards/{chave}/anexos`                multipart `files[]` (P24)
+ * - `POST   /projetos/{id}/cards/{chave}/teste-cruzado`         *Marquei: testado por mim* (P34; F4, B4)
+ * - `POST   /projetos/{id}/cards/{chave}/teste-cruzado/desfazer` (F4 §10.2)
+ * - `POST   /projetos/{id}/cards/{chave}/criterios/{cid}/resultado` `{ result }` (P36, P37)
+ * - `POST   /projetos/{id}/cards/{chave}/anexos`                multipart `files[]` (P24), com `criterion_id` na evidência do QA (P36)
  * - `DELETE /projetos/{id}/cards/{chave}/anexos/{aid}`          (P24, P59: era a capa → sem capa)
  * - `POST   /projetos/{id}/cards/{chave}/arquivar`              `{ archive_reason }` (P26)
  * - `POST   /projetos/{id}/cards/{chave}/desarquivar`           (P26)
@@ -77,9 +80,15 @@ import {
     requisitionSummary,
     WTaskRequisitionSectionOrganism,
 } from '@/components/organisms/w-task-requisition-section-organism/w-task-requisition-section-organism';
+import {
+    type ReturnOrigin,
+    testSummary,
+    WTaskTestSectionOrganism,
+} from '@/components/organisms/w-task-test-section-organism/w-task-test-section-organism';
 import { WAppLayoutTemplate } from '@/components/templates/w-app-layout-template/w-app-layout-template';
 import { useBoardMove } from '@/hooks/use-board-move';
 import { countCriteria, deleteTaskText, detailToBoardCard } from '@/lib/ficha';
+import { REWORK_FROM } from '@/lib/quadro';
 import type { SharedProps } from '@/types';
 import type {
     BoardAbilities,
@@ -103,7 +112,17 @@ export interface WTaskDetailPageProps {
 
 /** As seções da ficha, na ordem da tela; cada uma começa recolhida (R4) e abre sozinha quando o servidor devolve erro nela. */
 type Section =
-    'requisition' | 'criteria' | 'pull_requests' | 'comments' | 'attachments' | 'attributes' | 'people' | 'hours' | 'parent' | 'origin';
+    | 'requisition'
+    | 'criteria'
+    | 'test'
+    | 'pull_requests'
+    | 'comments'
+    | 'attachments'
+    | 'attributes'
+    | 'people'
+    | 'hours'
+    | 'parent'
+    | 'origin';
 
 /** Em que seção cada campo do payload mora: o erro do servidor abre a seção certa. */
 const FIELD_SECTION: Record<string, Section> = {
@@ -125,6 +144,8 @@ const FIELD_SECTION: Record<string, Section> = {
     body: 'comments',
     file: 'attachments',
     cover_attachment_id: 'attachments',
+    result: 'test',
+    criterion_id: 'test',
 };
 
 type RequestPayload = NonNullable<Parameters<typeof router.post>[1]>;
@@ -144,11 +165,15 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
     const [open, setOpen] = useState<Partial<Record<Section, boolean>>>({});
     const [archiving, setArchiving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [criterionRequest, setCriterionRequest] = useState(0);
 
     const busy = pending !== null;
     const openSection = (section: Section) => setOpen((state) => ({ ...state, [section]: true }));
 
-    /** Toda escrita da ficha passa aqui: trava, limpa os erros, e no erro abre a seção do campo. */
+    /**
+     * Toda escrita da ficha passa aqui: trava, limpa os erros, e no erro abre a seção do campo. A
+     * escrita da seção Teste (`name === 'test'`) abre a própria seção, inclusive no erro do envio da evidência.
+     */
     const visit = (name: string, extra?: Visit): Visit => ({
         preserveScroll: true,
         ...extra,
@@ -158,9 +183,12 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
         },
         onError: (serverErrors) => {
             setErrors(serverErrors);
-            const section = Object.keys(serverErrors)
-                .map((field) => FIELD_SECTION[field])
-                .find(Boolean);
+            const section: Section | undefined =
+                name === 'test'
+                    ? 'test'
+                    : Object.keys(serverErrors)
+                          .map((field) => FIELD_SECTION[field])
+                          .find(Boolean);
             if (section) openSection(section);
             else toast.error(Object.values(serverErrors)[0] ?? `Não foi possível salvar ${task.key}`);
             extra?.onError?.(serverErrors);
@@ -205,6 +233,16 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
     const card = detailToBoardCard(task);
     const startMove = (to: BoardStage) => move.start({ card, from: task.stage, to, index: null, sequence: null });
 
+    // *Devolver para desenvolvimento* da seção Teste (F4 §04, P39): o diálogo de retrabalho do F3, com
+    // destino `To do` e a origem já escolhida. Só onde voltar é retrabalho (Code-review, In test, Done).
+    const todo = options.stages.find((stage) => stage.role === 'sprint');
+    const canReturn = task.abilities.move && todo !== undefined && REWORK_FROM.includes(task.stage.role);
+    const returnToDevelopment = (origin: ReturnOrigin) => {
+        if (!todo) return;
+        const originId = options.rework_origins.find((item) => item.slug === origin)?.id;
+        move.start({ card, from: task.stage, to: todo, index: null, sequence: null }, { reworkOriginId: originId });
+    };
+
     const archive = (payload: ArchivePayload) => post('/arquivar', { ...payload }, 'archive', { onSuccess: () => setArchiving(false) });
 
     const section = (id: Section, title: string, summary: string, count: number | undefined, children: ReactNode) => (
@@ -243,14 +281,10 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
                     areas={options.areas}
                     onChangeType={(type) => patch({ type_id: type.id }, 'attributes')}
                     onCreateType={(payload) => router.post(`/projetos/${project.id}/tipos`, { ...payload }, visit('type'))}
-                    onUpdateType={(type, payload) =>
-                        router.put(`/projetos/${project.id}/tipos/${type.id}`, { ...payload }, visit('type'))
-                    }
+                    onUpdateType={(type, payload) => router.put(`/projetos/${project.id}/tipos/${type.id}`, { ...payload }, visit('type'))}
                     onChangeArea={(area) => patch({ area_id: area?.id ?? null }, 'attributes')}
                     onCreateArea={(payload) => router.post(`/projetos/${project.id}/areas`, { ...payload }, visit('area'))}
-                    onUpdateArea={(area, payload) =>
-                        router.put(`/projetos/${project.id}/areas/${area.id}`, { ...payload }, visit('area'))
-                    }
+                    onUpdateArea={(area, payload) => router.put(`/projetos/${project.id}/areas/${area.id}`, { ...payload }, visit('area'))}
                 />
 
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
@@ -276,11 +310,44 @@ export function WTaskDetailPage({ project, task, options, today }: WTaskDetailPa
                             <WTaskCriteriaSectionOrganism
                                 criteria={task.criteria}
                                 canEdit={task.abilities.update}
+                                attachments={task.attachments}
+                                addRequest={criterionRequest}
                                 busy={busy}
                                 errors={errors}
                                 onAdd={(payload) => post('/criterios', { ...payload }, 'criteria')}
                                 onUpdate={(id, description) => router.patch(`${base}/criterios/${id}`, { description }, visit('criteria'))}
                                 onDelete={(id) => destroy(`/criterios/${id}`, 'criteria')}
+                            />,
+                        )}
+                        {section(
+                            'test',
+                            'Teste',
+                            testSummary(task.cross_tested, task.criteria),
+                            undefined,
+                            <WTaskTestSectionOrganism
+                                criteria={task.criteria}
+                                crossTested={task.cross_tested}
+                                attachments={task.attachments}
+                                canCrossTest={task.abilities.cross_test}
+                                canUndoCrossTest={task.abilities.undo_cross_test}
+                                canRunQa={task.abilities.run_qa}
+                                canAttach={task.abilities.attach}
+                                canEdit={task.abilities.update}
+                                canReturn={canReturn}
+                                busy={busy}
+                                errors={errors}
+                                onMarkCrossTest={() => post('/teste-cruzado', {}, 'test')}
+                                onUndoCrossTest={() => post('/teste-cruzado/desfazer', {}, 'test')}
+                                onSetResult={(id, result) => post(`/criterios/${id}/resultado`, { result }, 'test')}
+                                onUploadEvidence={(criterionId, files) =>
+                                    post('/anexos', { files, criterion_id: criterionId }, 'test', { forceFormData: true })
+                                }
+                                onRemoveEvidence={(id) => destroy(`/anexos/${id}`, 'test')}
+                                onReturn={returnToDevelopment}
+                                onNewCriterion={() => {
+                                    openSection('criteria');
+                                    setCriterionRequest((value) => value + 1);
+                                }}
                             />,
                         )}
                         {section(

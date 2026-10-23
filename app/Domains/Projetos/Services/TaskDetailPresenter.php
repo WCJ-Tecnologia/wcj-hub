@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Storage;
 /**
  * A ficha do card (F3 §02 a §04, F5 §02): cumpre o `TaskDetail` e o `TaskDetailOptions` do kit
  * (bloco "Ficha do card" de resources/js/types/quadro.ts). As abilities saem das Policies e só
- * escondem botão. Arquivar e excluir vão `false` até as rotas do PR 3 existirem.
+ * escondem botão. A seção Teste (B4) lê `cross_tested`, o `result` e o `marked` de cada critério e
+ * a evidência (`criterion_id` do anexo).
  */
 class TaskDetailPresenter
 {
@@ -62,7 +63,7 @@ class TaskDetailPresenter
             'participants', 'parent.project', 'originTask.project', 'productionBugs.project', 'children.boardStage.stageRole',
             'children.developer', 'children.project', 'proposedBy', 'archivedBy', 'crossTestedBy', 'sprint', 'package',
             'requesterContact', 'contactChannel', 'pullRequests.user', 'comments.user', 'attachments.user',
-            'acceptanceCriteria.testResult',
+            'acceptanceCriteria.markedBy',
         ]);
         // As Policies perguntam "alocado?" linha a linha (cada comentário tem o `can`): a alocação
         // carregada uma vez, e cada comentário apontando para este card, sem consulta por item.
@@ -132,7 +133,7 @@ class TaskDetailPresenter
             'late' => (bool) $task->getAttribute('late'),
             'sprint' => $task->sprint === null ? null : ['id' => $task->sprint->id, 'name' => $task->sprint->name],
             'package' => $task->package === null ? null : ['id' => $task->package->id, 'name' => $task->package->name],
-            'cross_tested' => $task->crossTestedBy === null ? null : ['by' => $this->person($task->crossTestedBy), 'at' => LocalTime::format($task->cross_tested_at, 'Y-m-d')],
+            'cross_tested' => $task->crossTestedBy === null ? null : ['by' => $this->person($task->crossTestedBy), 'at' => LocalTime::format($task->cross_tested_at, 'Y-m-d H:i')],
             'archived' => $task->archived_at === null ? null : [
                 'at' => LocalTime::format($task->archived_at, 'Y-m-d'), 'reason' => $task->archive_reason, 'by' => $this->person($task->archivedBy),
             ],
@@ -162,6 +163,10 @@ class TaskDetailPresenter
                 'delete' => $viewer->can('delete', $task) && $this->usage->isUnused($task),
                 'manage_types' => $viewer->can('manage', $task->project),
                 'manage_areas' => $viewer->can('manage', $task->project),
+                // Seção Teste (F4 §09, B4): o dev da tarefa não marca; desfaz quem marcou e quem gere.
+                'cross_test' => $viewer->can('crossTest', $task),
+                'undo_cross_test' => $viewer->can('undoCrossTest', $task),
+                'run_qa' => $viewer->can('runQa', $task),
             ],
         ];
     }
@@ -183,18 +188,32 @@ class TaskDetailPresenter
         $children = $all->whereNotNull('parent_id')->groupBy('parent_id');
 
         return $all->whereNull('parent_id')->sortBy('number')->map(fn (TaskAcceptanceCriterion $criterion) => [
-            'id' => $criterion->id,
-            'number' => "CA_{$criterion->number}",
-            'description' => $criterion->description,
-            'result' => $criterion->testResult->slug === 'passed' ? 'approved' : $criterion->testResult->slug,
+            ...$this->criterion($criterion, "CA_{$criterion->number}"),
             'children' => ($children->get($criterion->id) ?? collect())->sortBy('number')->map(fn (TaskAcceptanceCriterion $item) => [
-                'id' => $item->id,
-                'number' => "CA_{$criterion->number}.{$item->number}",
-                'description' => $item->description,
-                'result' => $item->testResult->slug === 'passed' ? 'approved' : $item->testResult->slug,
+                ...$this->criterion($item, "CA_{$criterion->number}.{$item->number}"),
                 'children' => [],
             ])->values()->all(),
         ])->values()->all();
+    }
+
+    /**
+     * Um item, sem os subitens: o resultado no vocabulário da tela (`passed` vira `approved`) e a
+     * última marcação (F4 §02), nula nas linhas de antes da coluna e quando o item voltou sozinho
+     * para A testar (P37).
+     *
+     * @return array<string, mixed>
+     */
+    private function criterion(TaskAcceptanceCriterion $criterion, string $number): array
+    {
+        return [
+            'id' => $criterion->id,
+            'number' => $number,
+            'description' => $criterion->description,
+            'result' => array_search($criterion->test_result_id, CriterionService::RESULTS, true),
+            'marked' => $criterion->markedBy === null ? null : [
+                'by' => $this->person($criterion->markedBy), 'at' => LocalTime::format($criterion->marked_at, 'Y-m-d H:i'),
+            ],
+        ];
     }
 
     /**

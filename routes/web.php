@@ -13,6 +13,7 @@ use App\Domains\Projetos\Controllers\SprintTaskController;
 use App\Domains\Projetos\Controllers\TaskController;
 use App\Domains\Projetos\Controllers\TaskDetailController;
 use App\Domains\Projetos\Controllers\TaskHistoryController;
+use App\Domains\Projetos\Controllers\TaskTestController;
 use App\Domains\Projetos\Controllers\TaskTypeController;
 use App\Domains\Projetos\Controllers\TimeEntryController;
 use App\Platform\Controllers\Admin\AuditLogController;
@@ -205,6 +206,11 @@ Route::prefix('projetos')
             Route::post('{project}/cards/{card}/comentarios', [TaskDetailController::class, 'storeComment'])->name('cards.comments.store');
             Route::patch('{project}/cards/{card}/comentarios/{comment}', [TaskDetailController::class, 'updateComment'])->name('cards.comments.update');
             Route::delete('{project}/cards/{card}/comentarios/{comment}', [TaskDetailController::class, 'destroyComment'])->name('cards.comments.destroy');
+            // Seção Teste da ficha (F4, B4): teste cruzado e resultado do item do roteiro; a evidência
+            // vai pelos anexos, com criterion_id.
+            Route::post('{project}/cards/{card}/teste-cruzado', [TaskTestController::class, 'markCrossTest'])->name('cards.cross-test.mark');
+            Route::post('{project}/cards/{card}/teste-cruzado/desfazer', [TaskTestController::class, 'undoCrossTest'])->name('cards.cross-test.undo');
+            Route::post('{project}/cards/{card}/criterios/{acceptanceCriterion}/resultado', [TaskTestController::class, 'setResult'])->name('cards.criteria.result');
             Route::post('{project}/cards/{card}/anexos', [TaskDetailController::class, 'storeAttachments'])->name('cards.attachments.store');
             Route::get('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'downloadAttachment'])->name('cards.attachments.show');
             Route::delete('{project}/cards/{card}/anexos/{attachment}', [TaskDetailController::class, 'destroyAttachment'])->name('cards.attachments.destroy');
