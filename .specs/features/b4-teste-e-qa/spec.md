@@ -163,16 +163,16 @@ O banco do B0 já guarda tudo do B4, menos uma coisa: `tasks.cross_tested_by/at`
 
 | Requirement ID | Story | Phase | Status | Teste |
 |---|---|---|---|---|
-| CRUZ-01 | Só outra pessoa marca o teste cruzado | Specify | Pending | |
-| CRUZ-02 | Desfazer a marca do teste cruzado | Specify | Pending | |
-| ROTEIRO-01 | Marcar o resultado de cada item do roteiro | Specify | Pending | |
-| ROTEIRO-02 | A volta para A testar limpa a última marcação | Specify | Pending | |
-| EXC-01 | Exclusão de verdade não apaga teste | Specify | Pending | |
-| EVID-01 | Evidência no item | Specify | Pending | |
-| TELA-01 | A seção *Teste* da ficha | Specify | Pending | |
-| DONE-01 | O aviso do Done no quadro | Specify | Pending | |
+| CRUZ-01 | Só outra pessoa marca o teste cruzado | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_another_allocated_person_marks…`, `…without_a_developer…`, `…developer_of_the_task_never_marks…`, `…ability_hides_the_button…`, `…marking_again_is_refused…`, `…archived_card…`, `…finished_project…`); `TaskTestPolicyTest.php` (não alocado, o dev da tarefa); `TesteCruzadoConcorrenciaTest.php` |
+| CRUZ-02 | Desfazer a marca do teste cruzado | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_who_marked_undoes…`, `…manager_and_the_admin…`, `…another_developer_does_not_undo…`, `…left_the_project…`, `…undoing_without_a_mark…`); `TaskTestPolicyTest.php` |
+| ROTEIRO-01 | Marcar o resultado de cada item do roteiro | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_marking_an_item_records…`, `…failed_item_does_not_move…`, `…pending_marked_by_hand…`, `…same_result_again…`, `…subitem_is_marked_apart…`, `…unknown_result…`, `…item_of_another_card_is_404`, `…archived_card_is_not_marked`); `TaskTestPolicyTest.php` |
+| ROTEIRO-02 | A volta para A testar limpa a última marcação | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_editing_a_tested_item_clears…`, `…rework_sends_every_item_back…`, `…return_marked_as_mistake…`); `MigracaoMarcacaoTest.php` (a migração desce e sobe) |
+| EXC-01 | Exclusão de verdade não apaga teste | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_a_pending_item_with_evidence…`, `…pending_subitem_has_evidence…`, `…card_with_a_marked_item_is_used`): sem a guarda, o primeiro dava o erro 1451 do MySQL (visto falhar em 23/10) |
+| EVID-01 | Evidência no item | Execute | Implemented (Verifier pendente) | `TaskTestTest.php` (`test_evidence_is_an_attachment…`, `…another_card_is_refused…`, `…removing_evidence…`); `TaskTestPolicyTest.php` |
+| TELA-01 | A seção *Teste* da ficha | Execute | Implemented (Verifier pendente) | `e2e/teste-e-qa.spec.ts`; `TaskDetailTest.php` (contrato: abilities e `marked`; consultas da ficha com itens marcados); stories `Organisms/Task Test Section` |
+| DONE-01 | O aviso do Done no quadro | Execute | Implemented (Verifier pendente) | `BoardTest.php` (`test_each_card_brings_the_qa_summary…`, `test_the_number_of_queries_does_not_grow…` com um critério por card) |
 
-**Coverage:** 8 total, 0 mapped to tests, 8 unmapped.
+**Coverage:** 8 total, 8 mapped to tests, 0 unmapped; 0 verified (Verifier ainda não rodou).
 
 ## Success Criteria
 
