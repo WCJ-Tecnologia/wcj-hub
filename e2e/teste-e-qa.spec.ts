@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from './fixtures';
 import { createTestProject, createUser } from './helpers/dados';
@@ -15,8 +15,17 @@ const PREFIX = `Q${Date.now().toString(36).slice(-5).toUpperCase()}`;
 /** Um PNG de 1×1 px, para a evidência. */
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 
-async function print(page: Page, name: string) {
-    if (process.env.PRINTS) await page.screenshot({ path: `test-results/prints-b4-teste/${name}.png`, fullPage: true });
+/** O print do PR: a seção Teste recortada, ou a tela quando há diálogo aberto. */
+async function print(page: Page, name: string, target: Locator | null = null) {
+    if (!process.env.PRINTS) return;
+    const path = `test-results/prints-b4-teste/${name}.png`;
+    if (!target) return void (await page.screenshot({ path }));
+    // A barra do topo é fixa: a seção desce abaixo dela antes do recorte, numa janela alta que a cabe inteira.
+    await page.setViewportSize({ width: 1280, height: 1200 });
+    await target.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 96));
+    const box = await target.boundingBox();
+    if (box) await page.screenshot({ path, clip: { x: box.x - 8, y: box.y - 8, width: box.width + 16, height: box.height + 16 } });
+    await page.setViewportSize({ width: 1280, height: 720 });
 }
 
 test('@smoke @critical a seção Teste marca o teste cruzado, roda o roteiro com evidência e devolve', async ({ page, axe }) => {
@@ -54,7 +63,7 @@ test('@smoke @critical a seção Teste marca o teste cruzado, roda o roteiro com
         secao.getByRole('list', { name: 'Evidências de CA_2', exact: true }).getByRole('link', { name: 'juros-errados.png' }),
     ).toBeVisible();
     expect((await axe().analyze()).violations).toEqual([]);
-    await print(page, '01-roteiro-com-evidencia');
+    await print(page, '01-roteiro-com-evidencia', secao);
 
     // 4. Devolver pelo roteiro: o diálogo do F3 com destino To do e a origem QA já escolhida (P39).
     await secao.getByRole('button', { name: 'Devolver para desenvolvimento' }).last().click();
@@ -72,5 +81,5 @@ test('@smoke @critical a seção Teste marca o teste cruzado, roda o roteiro com
     await expect(secao.getByText(/E2E Admin, \d{2}\/\d{2}/)).toHaveCount(0);
     // A evidência antiga fica (F4 §10.5).
     await expect(secao.getByRole('button', { name: '1 evidência' })).toBeVisible();
-    await print(page, '03-depois-do-retrabalho');
+    await print(page, '03-depois-do-retrabalho', secao);
 });
