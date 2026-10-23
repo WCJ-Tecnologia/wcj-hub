@@ -163,7 +163,8 @@ export interface BoardOptions {
     /** Motivos de retrabalho ativos, lista geral (P40); `slug === 'other'` pede texto. */
     rework_reasons: { id: number; slug: string | null; label: string }[];
     /** Origem do retrabalho (`validation_types`, P39). */
-    rework_origins: { id: number; label: string }[];
+    /** Origens do retrabalho (`validation_types`, P39); o slug escolhe a origem do atalho *Devolver* da seção Teste (F4 §04). */
+    rework_origins: { id: number; slug: ReworkOriginSlug; label: string }[];
     /** Contatos ativos do cliente do projeto, para o card de suporte (P52). */
     contacts: PersonRef[];
     /** Por onde o pedido chegou (`contact_channels`, P52). */
@@ -300,6 +301,9 @@ export interface ArchivedCard {
 /** Espelho de `test_results.slug` (P36): o resultado do critério, marcado pelo QA em F4. */
 export type CriterionResult = 'pending' | 'approved' | 'failed';
 
+/** Espelho de `validation_types.slug` (P39): a origem do retrabalho. */
+export type ReworkOriginSlug = 'code_review' | 'cross_test' | 'qa' | 'homologation';
+
 /**
  * Critério de aceite `CA_n`, com os subitens `CA_n.m` logo abaixo (um nível, P17, T9).
  * `number` já vem montado pelo servidor ("CA_3", "CA_4.1"); excluir não renumera.
@@ -310,6 +314,11 @@ export interface AcceptanceCriterion {
     number: string;
     description: string;
     result: CriterionResult;
+    /**
+     * A última marcação do resultado (F4 §02, B4): quem e quando (`AAAA-MM-DD HH:MM` no fuso de São
+     * Paulo). null nas linhas de antes da coluna e quando o item voltou sozinho para A testar (P37).
+     */
+    marked: { by: PersonRef; at: string } | null;
     /** Só no critério; o subitem vem com `[]`. */
     children: AcceptanceCriterion[];
 }
@@ -413,6 +422,12 @@ export interface TaskAbilities {
     manage_types: boolean;
     /** Gestor do projeto e Administrador: criar área e editar nome e cor pela etiqueta da ficha (14/10). */
     manage_areas: boolean;
+    /** Alocado e não é o dev da tarefa, em qualquer papel: *Marquei: testado por mim* (P34; F4 §09, B4). */
+    cross_test: boolean;
+    /** Quem gere o projeto, ou quem marcou enquanto vê o projeto: *Desfazer a marca* (F4 §10.2). */
+    undo_cross_test: boolean;
+    /** Alocado: marcar o resultado de cada item do roteiro (P36; F4 §10.1). A evidência pede `attach`. */
+    run_qa: boolean;
 }
 
 /** A ficha inteira (F3 §02). Tudo que é "quando há" vem null ou `[]`. */
@@ -473,7 +488,7 @@ export interface TaskDetail {
     sprint: { id: number; name: string } | null;
     /** Nome da versão, ou null (P41; F6). */
     package: { id: number; name: string } | null;
-    /** "Testado por Fulano em DD/MM/AAAA" (P34); null = sem teste cruzado. `at` em `AAAA-MM-DD`. */
+    /** "Testado por Fulano em DD/MM/AAAA às HH:MM" (P34; F4 §01); null = sem teste cruzado. `at` em `AAAA-MM-DD HH:MM`. */
     cross_tested: { by: PersonRef; at: string } | null;
     /** Arquivado (P26): quando (`AAAA-MM-DD`), motivo e quem; null = Ativo. */
     archived: { at: string; reason: string; by: PersonRef } | null;

@@ -8,12 +8,19 @@ import { Button } from '@/components/shadcn/button';
 import { Textarea } from '@/components/shadcn/textarea';
 import { countCriteria, CRITERION_RETEST_TEXT, criterionDeletable, deleteCriterionText } from '@/lib/ficha';
 import { cn } from '@/lib/utils';
-import type { AcceptanceCriterion } from '@/types/quadro';
+import type { AcceptanceCriterion, TaskAttachment } from '@/types/quadro';
 
 export interface WTaskCriteriaSectionOrganismProps {
     criteria: AcceptanceCriterion[];
     /** `abilities.update`: adicionar, editar e excluir (qualquer alocado). */
     canEdit: boolean;
+    /** Os anexos do card: critério com evidência do QA conta como testado e não se exclui (T1; F4 §10.5, B4). */
+    attachments?: Pick<TaskAttachment, 'criterion_id'>[];
+    /**
+     * Pedido de fora para abrir o campo do critério novo (o *Novo critério* da seção Teste, F4 §03):
+     * cada valor novo, maior que zero, abre o campo.
+     */
+    addRequest?: number;
     busy?: boolean;
     /** Erros do servidor: `description` (do critério em edição ou novo). */
     errors?: Record<string, string>;
@@ -69,6 +76,8 @@ const DESCRIPTION_REQUIRED = 'Informe a descrição do critério.';
 export function WTaskCriteriaSectionOrganism({
     criteria,
     canEdit,
+    attachments = [],
+    addRequest = 0,
     busy = false,
     errors,
     onAdd,
@@ -101,6 +110,18 @@ export function WTaskCriteriaSectionOrganism({
             }
         }
         if (deleteTarget && !findCriterion(criteria, deleteTarget.id)) setDeleteTarget(null);
+    }
+
+    // O *Novo critério* da seção Teste: abre o campo do critério novo (o mesmo ajuste durante a renderização).
+    const [seenRequest, setSeenRequest] = useState(addRequest);
+    if (seenRequest !== addRequest) {
+        setSeenRequest(addRequest);
+        if (addRequest > 0 && canEdit) {
+            setEditor({ mode: 'add', parentId: null });
+            setDraft('');
+            setTried(false);
+            setPending(null);
+        }
     }
 
     const open = (next: Editor, text = '') => {
@@ -229,7 +250,7 @@ export function WTaskCriteriaSectionOrganism({
                                         Subitem
                                     </Button>
                                 )}
-                                {criterionDeletable(criterion) && (
+                                {criterionDeletable(criterion, attachments) && (
                                     <Button
                                         variant="ghost"
                                         size="sm"

@@ -67,9 +67,15 @@ export function formatBytes(size: number): string {
 
 /* ---------- Situação e só leitura (F3 §02) ---------- */
 
-/** "Testado por Fulano em DD/MM/AAAA" ou "—" (P34). */
+/** `AAAA-MM-DD HH:MM` → "DD/MM/AAAA às HH:MM" (F4 §01, §02), sem passar por `Date`. */
+export function dateAtTimeBr(value: string): string {
+    const [date, time] = value.split(' ');
+    return time ? `${dateBr(date)} às ${time}` : dateBr(date);
+}
+
+/** "Testado por Fulano em DD/MM/AAAA às HH:MM" ou "—" (P34; F4 §01). */
 export const crossTestedText = (crossTested: TaskDetail['cross_tested']) =>
-    crossTested ? `Testado por ${crossTested.by.name} em ${dateBr(crossTested.at)}` : '—';
+    crossTested ? `Testado por ${crossTested.by.name} em ${dateAtTimeBr(crossTested.at)}` : '—';
 
 /** "Ativo" ou "Arquivado em DD/MM/AAAA: motivo" (P26). */
 export const situationText = (archived: TaskDetail['archived']) =>
@@ -86,9 +92,14 @@ export const requisitionIsEmpty = (requisition: TaskDetail['requisition']) =>
 
 export const CRITERION_RESULT_LABEL: Record<CriterionResult, string> = { pending: 'A testar', approved: 'Aprovado', failed: 'Reprovado' };
 
-/** Excluir só enquanto o critério e cada subitem dele estão A testar (F3 §04, T1); testado, o botão não aparece. */
-export function criterionDeletable(criterion: AcceptanceCriterion): boolean {
-    return criterion.result === 'pending' && criterion.children.every((child) => child.result === 'pending');
+/**
+ * Excluir só enquanto o critério e cada subitem dele estão A testar e sem evidência (F3 §04, T1; F4
+ * §10.5, B4); testado, o botão não aparece.
+ */
+export function criterionDeletable(criterion: AcceptanceCriterion, attachments: Pick<TaskAttachment, 'criterion_id'>[] = []): boolean {
+    const items = [criterion, ...criterion.children];
+    const withEvidence = new Set(attachments.map((attachment) => attachment.criterion_id));
+    return items.every((item) => item.result === 'pending' && !withEvidence.has(item.id));
 }
 
 /** Quantos critérios e subitens o card tem, para o resumo da seção. */
@@ -108,6 +119,49 @@ export function qaSummaryOf(criteria: AcceptanceCriterion[]): BoardCard['qa_summ
         pending: all.filter((item) => item.result === 'pending').length,
     };
 }
+
+/* ---------- Teste cruzado e roteiro de QA (F4, B4; P34 a P39) ---------- */
+
+export const CROSS_TEST_PENDING_TEXT = 'Ainda não marcado';
+export const NO_CRITERIA_TEXT = 'Esta tarefa não tem critérios de aceite.';
+export const REMOVE_EVIDENCE_TEXT = (name: string) => `Excluir o arquivo ${name}? Não dá para desfazer.`;
+
+/** "Desfazer a marca de teste cruzado de Fulano?" (F4 §04). */
+export const undoCrossTestText = (name: string) => `Desfazer a marca de teste cruzado de ${name}?`;
+
+/** "Fulano, DD/MM/AAAA às HH:MM" ou "—": a última marcação do item (F4 §02). */
+export const markedText = (marked: AcceptanceCriterion['marked']) => (marked ? `${marked.by.name}, ${dateAtTimeBr(marked.at)}` : '—');
+
+/** Os itens do roteiro, pai e subitem um a um, na ordem da tela (F4 §10.4). */
+export const scriptItems = (criteria: AcceptanceCriterion[]) => criteria.flatMap((criterion) => [criterion, ...criterion.children]);
+
+const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+/** "Roteiro: 7 itens · 4 aprovados · 1 reprovado · 2 a testar" (F4 §02), com as contagens zero também. */
+export function scriptSummaryText(criteria: AcceptanceCriterion[]): string {
+    const items = scriptItems(criteria);
+    const count = (result: CriterionResult) => items.filter((item) => item.result === result).length;
+    return [
+        `Roteiro: ${plural(items.length, 'item', 'itens')}`,
+        plural(count('approved'), 'aprovado', 'aprovados'),
+        plural(count('failed'), 'reprovado', 'reprovados'),
+        `${count('pending')} a testar`,
+    ].join(' · ');
+}
+
+/** "4 de 7 aprovados · 1 reprovado" (F4 §03, coluna Roteiro); reprovado zero sai; sem item, "Sem roteiro". */
+export function scriptProgressText(criteria: AcceptanceCriterion[]): string {
+    const items = scriptItems(criteria);
+    if (items.length === 0) return 'Sem roteiro';
+    const approved = items.filter((item) => item.result === 'approved').length;
+    const failed = items.filter((item) => item.result === 'failed').length;
+    const progress = `${approved} de ${items.length} ${items.length === 1 ? 'aprovado' : 'aprovados'}`;
+    return failed > 0 ? `${progress} · ${plural(failed, 'reprovado', 'reprovados')}` : progress;
+}
+
+/** As evidências de um item: os anexos com o `criterion_id` dele (F4 §02). */
+export const evidencesOf = (attachments: TaskAttachment[], criterionId: number) =>
+    attachments.filter((attachment) => attachment.criterion_id === criterionId);
 
 /* ---------- PRs (P23) ---------- */
 

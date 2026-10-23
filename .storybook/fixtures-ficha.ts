@@ -31,6 +31,9 @@ export const ABILITIES_FICHA_GESTOR: TaskAbilities = {
     delete: false,
     manage_types: true,
     manage_areas: true,
+    cross_test: true,
+    undo_cross_test: true,
+    run_qa: true,
 };
 
 export const ABILITIES_FICHA_DEV: TaskAbilities = {
@@ -46,7 +49,14 @@ export const ABILITIES_FICHA_DEV: TaskAbilities = {
     delete: false,
     manage_types: false,
     manage_areas: false,
+    // O dev da ficha de exemplo não é o dev da tarefa (Bruno): marca o teste cruzado, não desfaz o de outra pessoa.
+    cross_test: true,
+    undo_cross_test: false,
+    run_qa: true,
 };
+
+/** O dev da própria tarefa: *Marquei: testado por mim* não aparece (P34). */
+export const ABILITIES_FICHA_DEV_DA_TAREFA: TaskAbilities = { ...ABILITIES_FICHA_DEV, cross_test: false };
 
 /** Gestor num card nunca usado: *Excluir* aparece (P26). */
 export const ABILITIES_FICHA_NUNCA_USADO: TaskAbilities = { ...ABILITIES_FICHA_GESTOR, delete: true };
@@ -65,6 +75,9 @@ export const ABILITIES_FICHA_LEITURA: TaskAbilities = {
     delete: false,
     manage_types: false,
     manage_areas: false,
+    cross_test: false,
+    undo_cross_test: false,
+    run_qa: false,
 };
 
 const stage = (role: BoardStage['role']) => STAGES.find((item) => item.role === role)!;
@@ -161,6 +174,7 @@ export const CRITERIA: AcceptanceCriterion[] = [
         number: 'CA_1',
         description: 'A guia sai com o código de barras no padrão FEBRABAN e o leitor do banco reconhece.',
         result: 'approved',
+        marked: { by: CARLA, at: '2026-10-13 14:52' },
         children: [],
     },
     {
@@ -168,9 +182,24 @@ export const CRITERIA: AcceptanceCriterion[] = [
         number: 'CA_2',
         description: 'O contribuinte sem débito vê a mensagem "Nenhuma guia em aberto" (SGM-20).',
         result: 'failed',
+        marked: { by: CARLA, at: '2026-10-13 14:58' },
         children: [
-            { id: 4, number: 'CA_2.1', description: 'A mensagem aparece também no celular.', result: 'pending', children: [] },
-            { id: 5, number: 'CA_2.2', description: 'O botão "Emitir" fica desabilitado.', result: 'failed', children: [] },
+            {
+                id: 4,
+                number: 'CA_2.1',
+                description: 'A mensagem aparece também no celular.',
+                result: 'pending',
+                marked: null,
+                children: [],
+            },
+            {
+                id: 5,
+                number: 'CA_2.2',
+                description: 'O botão "Emitir" fica desabilitado.',
+                result: 'failed',
+                marked: { by: CARLA, at: '2026-10-13 15:01' },
+                children: [],
+            },
         ],
     },
     {
@@ -178,10 +207,20 @@ export const CRITERIA: AcceptanceCriterion[] = [
         number: 'CA_3',
         description: 'A guia emitida fica no histórico do contribuinte por 5 anos.',
         result: 'pending',
-        children: [{ id: 6, number: 'CA_3.1', description: 'O download repete o mesmo PDF.', result: 'pending', children: [] }],
+        marked: null,
+        children: [
+            { id: 6, number: 'CA_3.1', description: 'O download repete o mesmo PDF.', result: 'pending', marked: null, children: [] },
+        ],
     },
     // CA_4 foi excluído: o número não volta (T9).
-    { id: 7, number: 'CA_5', description: 'A emissão fica registrada na auditoria com o CPF mascarado.', result: 'pending', children: [] },
+    {
+        id: 7,
+        number: 'CA_5',
+        description: 'A emissão fica registrada na auditoria com o CPF mascarado.',
+        result: 'pending',
+        marked: null,
+        children: [],
+    },
 ];
 
 export const PULL_REQUESTS: TaskPullRequest[] = [
@@ -364,7 +403,7 @@ export const TASK_COMPLETO: TaskDetail = detail({
     late: true,
     sprint: { id: 3, name: 'Sprint 3' },
     package: { id: 1, name: 'v1.4.0' },
-    cross_tested: { by: ANA, at: '2026-10-12' },
+    cross_tested: { by: ANA, at: '2026-10-12 16:40' },
     rework_count: 2,
     created_by: RAFAEL,
     created_at: '2026-10-06 14:20',
