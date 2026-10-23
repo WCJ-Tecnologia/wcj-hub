@@ -277,6 +277,24 @@ class TaskTestTest extends TestCase
         $this->assertSame($terceiro->id, $this->task->fresh()->cross_tested_by);
     }
 
+    /**
+     * Quem marcou desfaz depois de o gestor já ter desfeito: com a linha travada não há marca, e a
+     * resposta é a do CRUZ-02 AC 7, não a de "mudou" (Verifier rodada 2, Fix 8: a ordem das recusas).
+     */
+    public function test_undo_after_someone_else_already_undid_says_there_is_no_mark(): void
+    {
+        $antes = $this->task->fresh()->forceFill(['cross_tested_by' => $this->outroDev->id, 'cross_tested_at' => now()]);
+
+        try {
+            app(TaskService::class)->undoCrossTested($antes, $this->outroDev);
+            $this->fail('desfez uma marca que não existe');
+        } catch (DomainException $e) {
+            $this->assertSame(TaskService::NOT_CROSS_TESTED, $e->getMessage());
+        }
+
+        $this->assertNull($this->task->fresh()->cross_tested_by);
+    }
+
     public function test_an_archived_card_keeps_its_mark(): void
     {
         $this->task->forceFill([

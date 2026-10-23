@@ -2,6 +2,240 @@
 
 ## Validation: FAIL
 
+**Result**: FAIL na rodada 2 (23/10), por um mutante só, e ele é de mensagem. Os 11 sobreviventes da rodada 1 morrem com os testes do commit `b71d5c0`, cada um no teste do seu Fix. Os 3 de confirmação seguem mortos, e o gate está verde. A guarda nova do `undoCrossTested` passou pela mutação completa (tirar, inverter, `manage`, antes da trava) e por mais três extras: 6 dos 7 mutantes morrem. O que sobrevive é o **x6**, a guarda posta antes da recusa sem marca.
+
+Com o x6, quem marcou e desfaz numa corrida, depois de o gestor já ter desfeito, recebe "A marca de teste cruzado mudou: recarregue a ficha." no lugar de "Este card não tem teste cruzado marcado.". O x6 não é equivalente: a spec dá a segunda mensagem ao card sem marca (CRUZ-02 AC 7; premissa "Desfazer sem marca", `spec.md:46`), e a sonda x6 mata. Nada muda no banco nos dois casos. Falta só o teste da ordem das duas recusas (Fix 8, Minor).
+
+O que a rodada 2 acrescenta ao que a rodada 1 já provou:
+- a recusa do dev pelo `TaskService` com a linha relida, sem passar pela Policy (s1);
+- a marca, o desfazer, o resultado do item e a evidência num commit só com a auditoria, no banco de verdade (s7, d5, c7, a7);
+- o card arquivado recusa o desfazer e a evidência (d4, a3, a3b);
+- o `result` ausente vira erro no campo (q4);
+- o Reprovado conta como uso (qu6);
+- o `run_qa` do dev da tarefa (t3b);
+- a guarda nova do desfazer, que decide pela linha travada: quem marcou desfaz, quem gere desfaz a marca de outra pessoa, e a marca que trocou de mão no meio não se limpa (x1 a x5, x7);
+- TELA-01 AC 4, 5, 7 e 8, pela leitura do 2º teste do e2e (não rodado);
+- a ficha com uma consulta a menos (o `testResult` que não era lido saiu do eager load).
+
+CRUZ-01, ROTEIRO-01, ROTEIRO-02, EXC-01, EVID-01, TELA-01 (pela leitura) e DONE-01 estão ✅ Verified. CRUZ-02 fica ⚠️ só pelo Fix 8.
+
+Sensor: rodada 2, 21 aplicados (os 11 + 7 na guarda nova, 3 deles extras, + 3 de confirmação), 20 mortos, 1 sobrevivente não equivalente (x6). Consolidado das duas rodadas: 109 mutantes distintos, 5 equivalentes (os da rodada 1), **103/104** contados mortos.
+
+Fica para o humano, e não é Fix: a spec segue **sem aprovação do Lucas Scholz**. Agora são 19 premissas sem `y` em *Confirmed?*, porque a premissa nova da L47 ("A Policy olhou o card antes da trava") entrou com a mudança de produção do `b71d5c0`.
+
+---
+
+## Rodada 2 (23/10)
+
+**Date**: 2026-10-23
+**Spec**: `.specs/features/b4-teste-e-qa/spec.md` (CRUZ-01, CRUZ-02, ROTEIRO-01, ROTEIRO-02, EXC-01, EVID-01, TELA-01, DONE-01), com a premissa nova da L47. **Approved by: aguardando Lucas Scholz.**
+**Diff range**: `a414931..b71d5c0` (1 commit, `test(projetos): os 7 Fix do Verifier do B4 PR 1 (rodada 1) e a trava do desfazer`). Sete arquivos:
+- `tests/Feature/Projetos/B4TransacaoTest.php`, novo, com 4 testes: Fix 2;
+- `TaskTestTest.php`, com 5 testes novos e 2 asserções novas: Fix 1, 3, 4, 5 e 6, e o teste da guarda nova;
+- `e2e/teste-e-qa.spec.ts`, com o 2º teste, e `e2e/helpers/dados.ts`, com o 2º card sem critério: Fix 7;
+- `spec.md`: a premissa da L47 e a rastreabilidade;
+- **produção**, 2 arquivos (11 linhas a mais, 2 a menos):
+  - `TaskService.php`: a constante `CROSS_TEST_CHANGED` (`:40`), a guarda `if (! $actor->can('undoCrossTest', $locked))` com a linha travada (`:159-161`) e o docblock (`:145-149`);
+  - `TaskDetailPresenter.php:66`: sem o `acceptanceCriteria.testResult`.
+
+  O `git diff --stat a414931..b71d5c0 -- app resources routes database config bootstrap` lista só esses dois.
+
+**Verifier**: agente separado de quem implementou e de quem aplicou os Fix, sem acesso ao raciocínio deles; julgado só pela spec, pelo diff e pelos testes.
+
+### Gate Check (árvore real, HEAD `b71d5c0`, sem edição)
+
+| Comando | Saída |
+|---|---|
+| `composer lint` (`pint --test`) | `{"tool":"pint","result":"passed"}`, exit 0 |
+| `npm run typecheck` (`tsc --noEmit`) | exit 0 |
+| `npm run lint` (`eslint .`) | exit 0 |
+| `node .ai/skills/conferir-specs.mjs` (antes deste relatório) | `conferir-specs: 8 feature(s), 21 problema(s)`, exit 1, tudo no B4: <br>1) `validate_state.py`: "validation.md verdict is FAIL" (o da rodada 1); <br>2) `spec.md` sem `**Approved by**: <nome>, <AAAA-MM-DD>`; <br>3) 19 premissas sem `y` (L42 a L60; a L47 é a nova). <br>Mais o aviso "open questions do not read as resolved". As outras 7 features ok |
+| `node .ai/skills/conferir-specs.mjs` (depois deste relatório) | ver "Depois do relatório", no fim desta rodada |
+| `php artisan test --compact` (na worktree descartável `/tmp/tlc-b4-teste-e-qa-2`, HEAD `b71d5c0` sem mutação, depois do sensor; MySQL 8, `wcj_hub_test`) | **826 passed (6947 assertions)**, 147,98 s, exit 0. São os 817 da rodada 1 mais 9: os 4 do `B4TransacaoTest` e os 5 testes novos do `TaskTestTest` |
+| Base do sensor (worktree, sem mutação) | os 10 arquivos pedidos (`TaskTestTest`, `TaskTestPolicyTest`, `TesteCruzadoConcorrenciaTest`, `B4TransacaoTest`, `MigracaoMarcacaoTest`, `TaskDetailTest`, `BoardTest`, `TaskUsageQueryTest`, `TaskArchiveTest`, `B3FichaTransacaoTest`): **109 passed (858 assertions)**, 32,55 s, nenhum pulado. O `--list-tests` confirma os 4 do `B4TransacaoTest` e os 5 do `B3FichaTransacaoTest` no conjunto. A sonda x6 contra o código real: 1 passed |
+
+Não rodei o Playwright (o servidor de e2e é de outra sessão) nem o Storybook. TELA-01 foi julgada pela leitura.
+
+### Cada Fix Plan da rodada 1 e o teste que o cumpre
+
+Abreviaturas da rodada 1, mais **B4T** = `tests/Feature/Projetos/B4TransacaoTest.php`. As linhas são as de agora.
+
+| Fix | O que a rodada 1 pediu | Evidência (`arquivo:linha` + asserção) | Prova de verdade? |
+|---|---|---|---|
+| **Fix 1**: o Service recusa o dev com a linha travada (s1) | o Service chamado direto; e a corrida, o card lido sem dev e o dev trocado no banco | TT:147-160 `test_the_service_refuses_whoever_became_the_developer_after_the_policy`: o card lido antes (`$antes`, :149); o Outro posto como dev no banco (:150); `markCrossTested($antes, $this->outroDev)` sem a rota (:153); `assertSame('Você é o dev desta tarefa: o teste cruzado é de outra pessoa.', …)` (:156); `assertNull(cross_tested_by)` (:159) | **Sim.** O s1 morre em TT:154 ("o dev da tarefa marcou"). Só a variante da corrida tem teste; a chamada direta pelo dev fica coberta pelo mesmo teste, porque o s1 tira a checagem inteira |
+| **Fix 2**: "na mesma transação" (s7, d5, c7, a7) | `DatabaseTruncation` + `UsaBancoDeVerdade`, sem `RefreshDatabase`, `transactionLevel()` 0, a auditoria que lança, nada fica | B4T:37 (`CriaProjeto, DatabaseTruncation, UsaBancoDeVerdade`); `exigirBancoDeVerdade()` antes do `parent::setUp()` (:47-48); `limparOQueFicou()` no `tearDown` (:59); `failingAudit()` (:63-72); `assertSame(0, DB::transactionLevel())` em :93, :103, :113 e :125. A marca: :95 a falha é a da auditoria, :97-98 os dois campos nulos. O desfazer: :106, :108 "a marca continua". O resultado: :117, :120 `[PENDING, null, null]`. A evidência: :129, :133 0 anexos, :134 o disco vazio | **Sim.** s7 morre em B4T:97, d5 em :108, c7 em :120 e a7 em :133 |
+| **Fix 3**: card arquivado no desfazer e na evidência (d4, a3, a3b) | as duas recusas com a mensagem; a marca fica; 0 anexos | TT:280-290 `test_an_archived_card_keeps_its_mark` (o gestor desfaz; :287 `assertSessionHas('error', 'Card arquivado não muda: desarquive antes.')`; :289 a marca fica). TT:479-490 `test_evidence_is_not_attached_to_an_archived_card` (:486 a mensagem; :488 0 anexos; :489 o disco vazio) | **Sim.** d4 morre em TT:287; a3 e a3b em TT:486 |
+| **Fix 4**: o `result` ausente (q4) | `assertSessionHasErrors('result')` | TT:369-377 `test_a_missing_result_is_refused_on_the_field`: corpo vazio; :374 `assertSessionHasErrors(['result'])`; :376 o resultado igual | **Sim.** q4 morre em TT:374 |
+| **Fix 5**: o Reprovado conta como uso (qu6) | `FAILED` sem `marked_at`, `assertFalse(isUnused)` | TT:544-545 ("item reprovado é uso"), entre o Aprovado (:541-542) e o A testar marcado à mão (:547-548) | **Sim.** qu6 morre em TT:545 |
+| **Fix 6**: `run_qa` do dev da tarefa (t3b) | `assertTrue(ficha($dev)['abilities']['run_qa'])` | TT:168, no mesmo teste que afirma `cross_test` falso para o dev (:164) | **Sim.** t3b morre em TT:168 |
+| **Fix 7**: TELA-01 AC 4, 5, 7 e 8 | e2e do *Devolver* do teste cruzado, da confirmação, do roteiro vazio; AC 8 por `play` ou pela leitura | E2E:92-134, o 2º teste (detalhe na tabela abaixo) | **Sim, pela leitura** (não rodado) |
+
+O achado da rodada 1 sobre o desfazer também foi atendido, e com código: o `undoCrossTested` confere de novo com a linha travada (`TaskService.php:159-161`), com o teste `test_undo_does_not_clear_a_mark_that_changed_hands_in_the_meantime` (TT:263-278). Os outros dois achados também:
+- o `acceptanceCriteria.testResult` saiu do eager load: o benchmark da ficha agora é 45 consultas, contra 46 na rodada 1 (ver o t11);
+- a mensagem `OWN_CROSS_TEST` está na spec (premissa L47).
+
+#### TELA-01 AC 4, 5, 7 e 8 (leitura do `e2e/teste-e-qa.spec.ts`, não rodado)
+
+| Critério | Evidência | Resultado |
+|---|---|---|
+| AC 4: sem critério → "Esta tarefa não tem critérios de aceite." + *Novo critério*, que abre a criação | E2E:128-133. O card `-2` sem critério vem do helper (`e2e/helpers/dados.ts:156-161`); :131 o texto; :132 o clique em *Novo critério*; :133 `expect(page.getByLabel('Novo critério')).toBeFocused()`. O caminho no código: `onNewCriterion` abre a seção `criteria` e incrementa o `addRequest` (`w-task-detail-page.tsx:347-350`); o organism dos critérios abre o editor do critério novo (`w-task-criteria-section-organism.tsx:117-123`), com o rótulo "Novo critério" (`:305`) e `autoFocus` (`:193`) | PASS pela leitura |
+| AC 5: *Devolver* do bloco do teste cruzado → To do, origem "Teste cruzado" | E2E:121-126. Clica no primeiro *Devolver* da seção, que é o do bloco do teste cruzado: `returnButton('cross_test')` (`w-task-test-section-organism.tsx:312`) vem antes do `returnButton('qa')` (`:339`) no DOM. :123 o diálogo `Devolver <prefixo>-1 para To do`; :124 `Origem` com o texto "Teste cruzado" | PASS pela leitura |
+| AC 7: "Desfazer a marca de teste cruzado de Fulano?" antes de enviar | E2E:114-119: :116-117 o diálogo com o nome; :118 *Desfazer*; :119 "Ainda não marcado" só depois. O "antes de enviar" vale pela ordem; nenhuma asserção diz que a marca continua enquanto o diálogo está aberto | PASS pela leitura |
+| AC 8: os botões da seção desabilitados durante a escrita | E2E:102-112: `page.route('**/teste-cruzado')` prende o POST da marca. Dentro do handler: `toBeDisabled()` no primeiro *Devolver* (:104) e no *Aprovado* de CA_1 (:105-107); só então `route.continue()` (:108). Se a asserção falha, o handler lança, o POST não segue e o :111 estoura o tempo: o teste falha de qualquer jeito. O glob não pega `…/teste-cruzado/desfazer`, e o `unroute` (:112) vem antes do desfazer | PASS pela leitura (dois dos botões com `disabled={busy}`, numa das escritas) |
+
+O *Novo critério* do roteiro vazio (`w-task-test-section-organism.tsx:324`) não tem `disabled={busy}`. Não é Fix: ele não grava, só abre o campo na seção dos critérios.
+
+As linhas da rodada 1 no `TaskTestTest.php` andaram com o diff:
+- +1 depois de `:11` e +1 depois de `:14` (os `use`);
+- +19 depois de `:140` e +2 depois de `:145`;
+- +33 depois de `:235`, +10 depois de `:312` e +13 depois de `:412`;
+- a `:463` virou `:542-545`.
+
+Exemplos: TT:153 → `:176`; TT:233 → `:256`; TT:245 → `:301`; TT:434 → `:513`; TT:463 → `:542`. `TaskTestPolicyTest`, `TesteCruzadoConcorrenciaTest`, `MigracaoMarcacaoTest`, `TaskDetailTest`, `BoardTest` e E2E:1-85 não mudaram de linha. No `TaskService.php`, as linhas da rodada 1 andaram +2 depois de `:38`, +4 no docblock do `undoCrossTested` e +3 na guarda; a tabela abaixo já usa as de agora.
+
+### Discrimination Sensor
+
+**Método.** O mesmo da rodada 1, pelo script `/tmp/verifier-b4-pr1-r2/run2.py`. Ele é cópia do `run.py` da rodada 1, com os mesmos trechos de troca e dois ajustes:
+- o trecho do t11 mudou, porque a linha do eager load mudou;
+- entraram os mutantes x1 a x7 da guarda nova.
+
+Os resultados ficam em `results.json` (o do conjunto R2 também em `results-r2-set.json`), a saída em `out-<id>.txt`, o log em `run-log.txt`.
+
+Worktree `/tmp/tlc-b4-teste-e-qa-2` (`git worktree add … HEAD`), com o `vendor/` **copiado** (`cp -a`) e o `node_modules` em symlink. Antes do primeiro mutante, o script confere que a classe carregada é a da worktree: `ReflectionClass::getFileName()` deu `/tmp/tlc-b4-teste-e-qa-2/app/…`. Para cada mutante, o script:
+1. confere o arquivo limpo;
+2. aplica a troca exata (falha se o trecho não for único);
+3. roda `php -l` e `php artisan test --compact --filter=<R2>`;
+4. reverte com `git checkout -- <arquivo>` e confere limpo de novo.
+
+`git status --porcelain` da worktree estava vazio antes e saiu vazio no fim (`porcelain final: ''`). A worktree foi removida (`git worktree remove --force`), e a árvore real não foi tocada fora deste arquivo.
+
+Conjunto **R2** = os 10 arquivos pedidos (109 testes). O sobrevivente x6 rodou também contra a suíte inteira (`--filter .`, 826 testes) e passou.
+
+| # | Mutante (o mesmo trecho da rodada 1, onde houver) | `arquivo:linha` (agora) | Saída | Quem matou |
+|---|---|---|---|---|
+| s1 | `markCrossTested` sem a recusa do dev | `TaskService.php:128-130` | morto | TT:154 ("o dev da tarefa marcou") |
+| s7 | auditoria da marca em `DB::afterCommit` | `TaskService.php:139` | morto | B4T:97 (a marca ficou, a auditoria caiu depois do commit) |
+| d4 | `undoCrossTested` com `lockTaskRow` (aceita o arquivado) | `TaskService.php:154` | morto | TT:287 (sem a mensagem do arquivado) |
+| d5 | auditoria do desfazer em `DB::afterCommit` | `TaskService.php:165` | morto | B4T:108 ("a marca continua") |
+| c7 | auditoria do resultado em `DB::afterCommit` | `CriterionService.php:101` | morto | B4T:120 |
+| a3 | `upload` com `lockTaskRow` (aceita o arquivado) | `AttachmentService.php:51` | morto | TT:486 |
+| a3b | `upload` com critério sem trava nenhuma | `AttachmentService.php:50-51` | morto | TT:486 |
+| a7 | auditoria do anexo em `DB::afterCommit` | `AttachmentService.php:69-72` | morto | B4T:133 ("a linha não ficou") |
+| q4 | `result` sem `required` | `CriterionResultRequest.php:32` | morto | TT:374 |
+| qu6 | só Aprovado conta como uso | `TaskUsageQuery.php:54` | morto | TT:545 ("item reprovado é uso") |
+| t3b | `run_qa` pela `crossTest` | `TaskDetailPresenter.php:169` | morto | TT:168 |
+| x1 | `undoCrossTested` sem a guarda nova | `TaskService.php:159-161` | morto | TT:272 ("limpou a marca de outra pessoa") |
+| x2 | a guarda invertida (recusa quem pode) | `TaskService.php:159` | morto | B4T:106 (a `DomainException` escapa do `failure()`); TT:210; TT:224; TT:272 |
+| x3 | a guarda pede `manage` em vez de `undoCrossTest` | `TaskService.php:159` | morto | B4T:106; TT:210 (quem marcou e não gere não desfaz) |
+| x4 | a guarda movida para antes da trava (com o `$task` da rota) | `TaskService.php:153` | morto | TT:272 |
+| x5 | [extra] a guarda depois da trava, mas com o `$task` de antes | `TaskService.php:159` | morto | TT:272 |
+| x6 | [extra] a guarda antes da recusa sem marca | `TaskService.php:156-161` | **sobreviveu** | nenhum: 109 passed no R2 e 826 passed na suíte inteira. A sonda x6 mata. Fix 8 |
+| x7 | [extra] a guarda só com "foi quem marcou" (sem o ramo de quem gere) | `TaskService.php:159` | morto | TT:224 (o gestor e o Administrador desfazem a marca de outra pessoa) |
+| d1 | [confirma] `undoCrossTested` sem a recusa sem marca | `TaskService.php:156` | morto | TT:256 |
+| c12 | [confirma] `CriterionService::delete` sem a guarda da evidência | `CriterionService.php:120` | morto | TT:513; TT:527 |
+| t11 | [confirma] a ficha sem o eager load de `acceptanceCriteria.markedBy` | `TaskDetailPresenter.php:66` | morto | TD:125 (75 consultas em vez de 45; na rodada 1, 76 em vez de 46) |
+
+**Total da rodada 2**: 21 aplicados. Destes:
+- os 11 sobreviventes da rodada 1, todos mortos;
+- 7 na guarda nova: os 4 pedidos (x1 a x4) e 3 extras (x5 a x7); 6 mortos, 1 sobrevivente (x6);
+- 3 de confirmação (d1, c12, t11), mortos.
+
+São 20 mortos, 1 sobrevivente não equivalente e 0 equivalentes novos.
+**Consolidado**: 109 mutantes distintos nas duas rodadas (os 102 da rodada 1 + x1 a x7); 5 equivalentes (q1, q2, q6, qu5, g3, com a guarda nomeada na rodada 1); **103/104** contados mortos. Por família, onde mudou: `TaskService` 15/15 (era 11/15), guarda nova 6/7, `CriterionService` 16/16, `AttachmentService` e `StoreAttachmentsRequest` 8/8, `TaskUsageQuery` 5/5, `CriterionResultRequest` 3/3, `TaskDetailPresenter` 13/13.
+**Sensor depth**: P0, manual.
+
+### Sonda (rascunho em `/tmp/verifier-b4-pr1-r2/`, fora do repositório)
+
+`SondaR2Test.php` (`RefreshDatabase`) roda contra o código real com `php artisan test --compact /tmp/verifier-b4-pr1-r2/SondaR2Test.php` (1 passed, 3 assertions). Os passos:
+1. Monta um card do dev, com o gestor e o Outro alocados.
+2. Lê o card com a marca do Outro em memória (`forceFill`); no banco, sem marca, como se o gestor já tivesse desfeito.
+3. Confere que a Policy, com o card de antes, deixa o Outro desfazer.
+4. Chama `undoCrossTested($antes, $outro)`.
+5. Afirma a `DomainException` com "Este card não tem teste cruzado marcado." e `cross_tested_by` nulo.
+
+| Sonda | Código real | Mutante |
+|---|---|---|
+| x6 | passa | x6: falha em `:41`, com `'A marca de teste cruzado mudou: recarregue a ficha.'` em vez de `'Este card não tem teste cruzado marcado.'` |
+
+O script também rodou essa sonda depois dos mutantes que a rodada 1 marcava com sonda (s1, s7, d4, d5, c7, a3, a3b, a7). Ela passou em todos, como esperado: só vale para o x6.
+
+### Code Quality (só o diff da rodada 2)
+
+| Princípio | Status |
+|---|---|
+| Surgical changes | ✅ Só testes, o helper do e2e e a spec, mais duas mudanças de produção pequenas: a guarda do desfazer (3 linhas, a constante e o docblock) e uma relação a menos no eager load da ficha. A guarda é o que a rodada 1 apontou ("`undoCrossTested` não confere de novo, com a linha travada, quem marcou"), e a spec ganhou a premissa L47 no mesmo commit |
+| Matches patterns | ✅ A guarda pergunta à mesma Policy (`$actor->can('undoCrossTest', $locked)`) com a linha travada, como o `markCrossTested` repete o "não é o dev". A recusa é uma `DomainException`, que vira toast pelo `attempt()`. O `B4TransacaoTest` segue o molde do `B3FichaTransacaoTest` (L-017): `exigirBancoDeVerdade()` antes do `parent::setUp()`, `limparOQueFicou()` no `tearDown`, `transactionLevel()` 0 afirmado e `failingAudit()` |
+| Every test maps to a spec requirement | ✅ O docblock do `B4TransacaoTest` cita a spec, os AC e o Fix 2; os testes novos do `TaskTestTest` citam o Fix ou a premissa |
+| Spec-anchored outcome check | ✅ As mensagens são afirmadas por `assertSame`, assim como o `[PENDING, null, null]`, o disco vazio e o `run_qa` literal |
+
+Notas que não bloqueiam:
+- **As duas recusas novas do Service não gravam `denied`.** São `DomainException`, como a "Teste cruzado já marcado…", e não o `authorize()`. Isso segue o padrão da casa: a recusa de regra vira toast, e o `denied` é a negação da Policy. Também só aparecem numa corrida.
+- **A corrida é simulada, não disputada.** O Fix 1 e o teste da guarda põem o card de antes em memória, diferente do banco, sem o `Concorrencia`. Provam a decisão pela linha relida; não provam a espera da trava, que o CC prova para a marca. Basta: o x4 e o x5 (a guarda pelo card de antes) morrem ali.
+- Segue da rodada 1: a hora do `cross_tested_at` na auditoria e a do A testar à mão continuam só com `assertNotNull`.
+
+### Fix Plans
+
+Só teste. Nenhum código de produção precisa mudar.
+
+**Fix 8: CRUZ-02 AC 7 na corrida, a ordem das duas recusas do desfazer** (mata x6; Minor)
+- No `TaskTestTest.php`, junto do `test_undo_does_not_clear_a_mark_that_changed_hands_in_the_meantime` (TT:263-278):
+  - o card lido com a marca do Outro (`$this->task->fresh()->forceFill(['cross_tested_by' => $this->outroDev->id, 'cross_tested_at' => now()])`) e, no banco, sem marca;
+  - `app(TaskService::class)->undoCrossTested($antes, $this->outroDev)`;
+  - a `DomainException` com `TaskService::NOT_CROSS_TESTED` ("Este card não tem teste cruzado marcado.") e `cross_tested_by` nulo.
+- O molde é a sonda x6.
+- Por que não é equivalente: com o x6, a mesma requisição recebe "A marca de teste cruzado mudou: recarregue a ficha.". Para o card sem marca, a spec pede "Este card não tem teste cruzado marcado." (CRUZ-02 AC 7, que não distingue quem desfaz, e a premissa "Desfazer sem marca", `spec.md:46`). A premissa nova (`spec.md:47`) cobre a marca que "ainda é dele", e o código decide a precedência: sem marca primeiro (`TaskService.php:156-161`). Se o Lucas Scholz preferir a outra mensagem nesse caso, muda a spec e o teste afirma a outra. O que não pode é a ordem ficar sem teste.
+
+#### Para o humano decidir (não é Fix Plan)
+
+- **A spec não está aprovada.** São as quatro open questions, mais 19 premissas sem `y`. A da L47 é nova e é decisão de produção tomada depois da rodada 1: com a linha travada, quem não gere só desfaz a marca que ainda é dele, e as duas mensagens só aparecem numa corrida.
+- **A regra da worktree do sensor** (`.ai/core/especificacao.md` §5 item 8) continua com o `ln -s` para o `vendor/`. Nesta rodada, a cópia (`cp -a`) mais a conferência do `getFileName()` funcionaram de primeira. A sugestão de texto da rodada 1 segue de pé; não editei o arquivo.
+
+### Requirement Traceability Update
+
+| Requirement ID | Status | Teste |
+|---|---|---|
+| CRUZ-01 | ✅ Verified (rodada 2) | TT:99-200; TP:98-127; CC:38-61; B4T:91-99 |
+| CRUZ-02 | ⚠️ Needs Fix 8: AC 1 a 6 PASS. AC 7 PASS pela rota (TT:253-257), sem teste na corrida (x6). A transação (B4T:101-109), o arquivado (TT:280-290) e a guarda nova (TT:263-278) estão provados | TT:204-290; TP:110, TP:129-136; B4T:101-109 |
+| ROTEIRO-01 | ✅ Verified (rodada 2) | TT:294-399; TP:111, TP:138-143; B4T:111-121 |
+| ROTEIRO-02 | ✅ Verified | TT:402-449; MM:47-70 |
+| EXC-01 | ✅ Verified (rodada 2) | TT:506-553 |
+| EVID-01 | ✅ Verified (rodada 2) | TT:452-503; TP:112-114; B4T:123-135 |
+| TELA-01 | ✅ Verified pela leitura do e2e, não rodado (rodada 2) | E2E:31-134; TT:115, TT:162-169, TT:307-309; TD:101-104 |
+| DONE-01 | ✅ Verified | BT:250-266, BT:269-284 |
+
+O `spec.md` não foi editado: o Verifier só reporta.
+
+### Summary
+
+**Overall**: ❌ Not ready, por um Fix só (Fix 8, Minor, um teste). Os sete Fix da rodada 1 fecharam todas as lacunas que abriram.
+
+**Spec-anchored check**: 7 de 8 requisitos verificados; CRUZ-02 fica só pela ordem das duas recusas na corrida.
+**Sensor**: rodada 2, 20/21 mortos; consolidado, 103/104 contados mortos, 5 equivalentes, 1 sobrevivente não equivalente (x6), morto pela sonda.
+**Gate**: 826 passed (6947 assertions) na worktree, no HEAD sem mutação; Pint, typecheck e lint verdes na árvore real. O `conferir-specs` fica vermelho pelo veredito FAIL e pela aprovação da spec (ver "Depois do relatório").
+
+**Lições** (`lessons.py`): não gravei, porque a instrução era deixar só este arquivo modificado na árvore. Candidatas:
+- duas recusas seguidas, com a linha travada, pedem um teste da ordem (qual mensagem vence quando as duas valem);
+- a da rodada 1 sobre o `vendor/` copiado e o `getFileName()`, confirmada nesta rodada.
+
+**Next steps**:
+1. Quem implementou aplica o Fix 8 (só teste) num commit local.
+2. Verifier rodada 3 em agente separado: o x6 e uma amostra dos mortos. Ao gravar um PASS no topo, a rodada 3 precisa renomear o rótulo `Result` das linhas de veredito das rodadas 1 e 2 (como no B3, "**Veredito da rodada N**"). O `_verdict` do `validate_state.py` (`:52-69`) junta o título `## Validation` com toda linha que tenha o rótulo `Result` seguido de dois-pontos, e PASS com FAIL nelas é lido como "unfilled" (esta mesma frase, escrita com o rótulo literal, fez o script ler "unfilled" na 1ª gravação deste relatório).
+3. Lucas Scholz aprova a spec, responde às quatro open questions e marca as 19 premissas, inclusive a L47, antes do PR.
+
+### Depois do relatório
+
+`node .ai/skills/conferir-specs.mjs` depois de gravar esta rodada: `conferir-specs: 8 feature(s), 21 problema(s)`, exit 1, os mesmos 21 de antes:
+1. `[b4-teste-e-qa] validate_state.py reprovou`: "validation.md verdict is FAIL", agora o desta rodada (sai com o PASS da rodada 3);
+2. `spec.md` sem `**Approved by**: <nome>, <AAAA-MM-DD>`;
+3. 19 premissas sem `y` em *Confirmed?* (`spec.md` L42 a L60);
+4. o aviso "open questions do not read as resolved".
+
+As outras 7 features seguem ok. Os itens 2 a 4 são a aprovação do Lucas Scholz: decisão humana, não Fix.
+
+---
+
+## Rodada 1 (23/10)
+
 **Result**: FAIL na rodada 1 (23/10). Nenhum defeito de comportamento no código de produção: em toda checagem, inclusive nas duas sondas (seção "Sondas"), o código fez o que a spec pede. O que falta é teste. Onze mutantes não equivalentes sobrevivem à suíte inteira, e cada um morre numa sonda fora do repositório, o que prova que não são equivalentes.
 
 O que está provado:
