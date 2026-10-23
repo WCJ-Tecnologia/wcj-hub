@@ -647,7 +647,8 @@ Semente (P40): Ajuste visual · Regra de negócio · Erro / bug · Requisito inc
 
 CA_1…CA_n do documento de requisição (P17). Cada critério é também o item do roteiro de teste (P36):
 o QA marca o resultado aqui, e a evidência vai em task_attachments. Quem marcou e quando: audit_logs
-(D-GER-20), no histórico do critério.
+(D-GER-20), no histórico do critério; a última marcação também na linha (marked_by, marked_at;
+diferença de 23/10, seção 7).
 P37: editar um critério já testado volta o resultado para pending (o antigo fica em audit_logs).
 Depois de retrabalho, todos os itens voltam a pending e o roteiro é o mesmo (P37).
 
@@ -668,6 +669,8 @@ parent_key            bigint unsigned  GENERATED ALWAYS AS (IFNULL(parent_id, 0)
                                                                        FK com cascade (seção 0, onDelete)
 description           text                         not null
 test_result_id        fk test_results              not null  restrict  default 1
+marked_by             fk users                     null      restrict  a última marcação do resultado
+marked_at             datetime                     null                (seção 7, diferença de 23/10)
 unique: (task_id, parent_key, number)
 índices: task_id, parent_id, test_result_id
 ```
@@ -1163,6 +1166,15 @@ critérios não mudam de número", sem prometer que o número não volta.
   etiqueta. A ordem por prioridade põe os sem prioridade no fim. O card de suporte continua nascendo
   com tipo support e prioridade escolhida no diálogo (P52). A lista geral de tipos sai de F2
   (ficam só os motivos de retrabalho); a tela de configuração do projeto ganha a aba Tipos (como Áreas).
+
+Diferença de 23/10 (B4 PR 1, teste cruzado e roteiro de QA; spec `b4-teste-e-qa`). AGUARDANDO Lucas
+Scholz; migração aditiva `2026_10_23_000010`, tudo nulo (as linhas de antes mostram "—"):
+- task_acceptance_criteria.marked_by (fk users, null, restrict) e marked_at (datetime, null): a última
+  marcação do resultado do item (F4 §02, "Última marcação"). Gravados a cada marcação, inclusive A
+  testar marcado à mão; limpos quando o item volta sozinho para A testar (texto editado, retrabalho;
+  P37). O antes e o depois de cada marcação seguem em audit_logs (G3).
+Motivo: o mesmo da diferença de 16/10: a ficha mostra o "quem" pela linha, sem montar histórico a
+partir do JSON de audit_logs. Alternativa na spec: ler audit_logs, sem migração.
 
 ## 8. ESCOLHAS TÉCNICAS (24/09, Lucas Scholz)
 

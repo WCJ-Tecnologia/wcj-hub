@@ -2,13 +2,15 @@
 
 namespace App\Domains\Projetos\Models;
 
+use App\Platform\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Critério de aceite = item do roteiro de QA (P17, P36; docs/banco.md, task_acceptance_criteria).
- * number é estável (T9); parent_key é coluna gerada (VIRTUAL): nunca se grava.
+ * number é estável (T9); parent_key é coluna gerada (VIRTUAL): nunca se grava. marked_by e
+ * marked_at: a última marcação do resultado (F4 §02; B4), só pelo CriterionService.
  */
 class TaskAcceptanceCriterion extends Model
 {
@@ -20,6 +22,8 @@ class TaskAcceptanceCriterion extends Model
         'number',
         'description',
         'test_result_id',
+        'marked_by',
+        'marked_at',
     ];
 
     protected function casts(): array
@@ -27,6 +31,7 @@ class TaskAcceptanceCriterion extends Model
         return [
             'number' => 'integer',
             'parent_key' => 'integer',
+            'marked_at' => 'datetime',
         ];
     }
 
@@ -48,6 +53,11 @@ class TaskAcceptanceCriterion extends Model
     public function testResult(): BelongsTo
     {
         return $this->belongsTo(TestResult::class);
+    }
+
+    public function markedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'marked_by');
     }
 
     public function evidences(): HasMany
